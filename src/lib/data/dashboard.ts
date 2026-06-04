@@ -25,9 +25,14 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   }
 
   const totalWeightG = sumWeight(ownedGear);
-  const totalValueJpy = ownedGear.reduce((total, item) => {
-    return total + Number(item.purchase_price_jpy ?? item.msrp_jpy ?? 0);
+  const totalMsrpJpy = ownedGear.reduce((total, item) => {
+    return total + Number(item.msrp_jpy ?? 0);
   }, 0);
+  const totalPurchaseJpy = ownedGear.reduce((total, item) => {
+    return total + Number(item.purchase_price_jpy ?? 0);
+  }, 0);
+  const savingsJpy = Math.max(0, totalMsrpJpy - totalPurchaseJpy);
+  const savingsRate = totalMsrpJpy > 0 ? savingsJpy / totalMsrpJpy : 0;
   const baseWeightG = sumWeight(ownedGear.filter((item) => item.weight_type === "base"));
   const consumableWeightG = sumWeight(
     ownedGear.filter((item) => item.weight_type === "consumable")
@@ -39,7 +44,10 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     ownedCount: ownedGear.length,
     wishlistCount: gear.filter((item) => item.status === "wishlist").length,
     totalWeightG,
-    totalValueJpy,
+    totalMsrpJpy,
+    totalPurchaseJpy,
+    savingsJpy,
+    savingsRate,
     baseWeightG,
     consumableWeightG,
     wornWeightG,

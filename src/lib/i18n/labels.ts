@@ -46,14 +46,14 @@ export const weatherRiskLabels: Record<WeatherRisk, string> = {
 };
 
 export const categoryLabels: Record<string, string> = {
-  sleep: "Sleep",
-  shelter: "Shelter",
-  carry: "Carry",
-  clothing: "Clothing",
-  cooking: "Cooking",
-  electronics: "Electronics",
-  navigation: "Navigation",
-  safety: "Safety",
-  hydration: "Hydration",
-  other: "Other"
+  backpack: "バックパック（Backpack）",
+  shelter: "テント・シェルター（Tent / Shelter）",
+  sleep: "寝具（Sleep System）",
+  clothing: "ウェア（Clothing）",
+  rainwear: "レインウェア（Rainwear）",
+  cooking: "クッキング（Cooking）",
+  electronics: "電子機器（Electronics）",
+  first_aid: "応急処置（First Aid）",
+  bear_safety: "熊対策（Bear Safety）",
+  other: "その他（Other）"
 };

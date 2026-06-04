@@ -16,10 +16,7 @@ type RecommendationDetailProps = {
 export function RecommendationDetail({ record }: RecommendationDetailProps) {
   const missing = record.missing_analysis;
   const owned = record.owned_analysis;
-  const budgetGap = Math.max(
-    0,
-    (missing?.estimated_missing_budget_jpy ?? 0) - record.input.budget_jpy
-  );
+  const missingBudget = missing?.estimated_missing_budget_jpy ?? 0;
   const missingRequiredCount = missing?.missing_required_items.length ?? 0;
 
   return (
@@ -49,15 +46,32 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
           </p>
         </div>
         <div className="rounded-lg bg-white p-4 shadow-soft">
-          <p className="text-sm text-stone-500">予算差額</p>
+          <p className="text-sm text-stone-500">追加金額</p>
           <p className="mt-2 text-2xl font-semibold text-ink">
-            {formatJpy(budgetGap)}
+            {formatJpy(missingBudget)}
           </p>
         </div>
       </section>
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
         <p className="text-sm leading-6 text-stone-700">{record.output.trip_summary}</p>
+      </section>
+
+      <section className="rounded-lg bg-white p-5 shadow-soft">
+        <h2 className="text-lg font-semibold text-ink">ルール</h2>
+        <div className="mt-4 grid gap-3">
+          {[...record.output.mountain_rules, ...record.output.season_rules].map(
+            (rule) => (
+              <p key={rule} className="rounded-lg bg-stone-50 p-3 text-sm text-stone-700">
+                {rule}
+              </p>
+            )
+          )}
+          <p className="rounded-lg bg-forest-50 p-3 text-sm text-forest-900">
+            熊リスク: {record.output.bear_risk_level} /{" "}
+            {record.output.bear_risk_reason}
+          </p>
+        </div>
       </section>
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
@@ -181,7 +195,8 @@ function RecommendationItems({
               </span>
             </div>
             <p className="mt-3 text-xs text-stone-500">
-              {item.subcategory} / {weightTypeLabels[item.weight_type]} /{" "}
+              {item.rule_basis} / {item.subcategory} /{" "}
+              {weightTypeLabels[item.weight_type]} /{" "}
               {formatWeight(item.estimated_weight_g)} /{" "}
               {formatJpy(item.estimated_price_jpy)}
             </p>

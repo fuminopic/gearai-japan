@@ -1,4 +1,4 @@
-import { Backpack, CircleDollarSign, Gauge, Layers3 } from "lucide-react";
+import { Backpack, CircleDollarSign, Gauge, Percent, Wallet } from "lucide-react";
 import Link from "next/link";
 
 import { StatCard } from "@/components/stat-card";
@@ -37,22 +37,37 @@ export default async function DashboardPage() {
           icon={<Backpack className="h-5 w-5" />}
         />
         <StatCard
-          label="パック重量"
+          label="Pack Weight"
           value={formatWeight(summary.totalPackWeightG)}
           detail="ベース + 消耗品"
           icon={<Gauge className="h-5 w-5" />}
         />
         <StatCard
-          label="総価値"
-          value={formatJpy(summary.totalValueJpy)}
-          detail="価格入力済み装備の合計"
+          label="総装備価値"
+          value={formatJpy(summary.totalMsrpJpy)}
+          detail="MSRP 合計"
           icon={<CircleDollarSign className="h-5 w-5" />}
         />
         <StatCard
-          label="ベース重量"
-          value={formatWeight(summary.baseWeightG)}
-          detail="消耗品・着用品を除く重量"
-          icon={<Layers3 className="h-5 w-5" />}
+          label="実際購入額"
+          value={formatJpy(summary.totalPurchaseJpy)}
+          detail="購入価格の合計"
+          icon={<Wallet className="h-5 w-5" />}
+        />
+      </section>
+
+      <section className="grid gap-3 sm:grid-cols-2">
+        <StatCard
+          label="節約額"
+          value={formatJpy(summary.savingsJpy)}
+          detail="MSRP - 実際購入額"
+          icon={<CircleDollarSign className="h-5 w-5" />}
+        />
+        <StatCard
+          label="節約率"
+          value={`${Math.round(summary.savingsRate * 100).toLocaleString("ja-JP")}%`}
+          detail="MSRP に対する節約割合"
+          icon={<Percent className="h-5 w-5" />}
         />
       </section>
 

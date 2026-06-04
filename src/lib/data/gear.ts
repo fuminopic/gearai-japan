@@ -10,15 +10,15 @@ import type {
 } from "@/lib/types";
 
 const PRODUCT_CATEGORY_KEYS = [
-  "sleep",
+  "backpack",
   "shelter",
-  "carry",
+  "sleep",
   "clothing",
+  "rainwear",
   "cooking",
   "electronics",
-  "navigation",
-  "safety",
-  "hydration",
+  "first_aid",
+  "bear_safety",
   "other"
 ];
 

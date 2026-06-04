@@ -4,6 +4,7 @@ export type ExperienceLevel = "beginner" | "intermediate" | "advanced" | "expert
 export type AccommodationStyle = "day_hike" | "hut" | "tent";
 export type WeatherRisk = "stable" | "rain" | "cold" | "wind" | "snow";
 export type Season = "spring" | "summer" | "autumn" | "winter";
+export type BearRiskLevel = "low" | "medium" | "high";
 
 export type GearCategory = {
   id: string;
@@ -31,10 +32,18 @@ export type GearProduct = {
   category_id: string;
   subcategory_id: string | null;
   weight_grams: number | null;
+  official_weight_grams: number | null;
+  measured_weight_grams: number | null;
   msrp_jpy: number | null;
   size: string | null;
   volume: string | null;
+  color: string | null;
+  material: string | null;
   capacity: string | null;
+  official_url: string | null;
+  image_url: string | null;
+  released_at: string | null;
+  discontinued: boolean;
   created_at: string;
   gear_categories?: Pick<GearCategory, "id" | "name_ja" | "name_en"> | null;
   gear_subcategories?: Pick<GearSubcategory, "id" | "name_ja" | "name_en"> | null;
@@ -51,11 +60,17 @@ export type UserGear = {
   brand: string | null;
   model: string | null;
   weight_grams: number;
+  official_weight_grams: number | null;
+  measured_weight_grams: number | null;
   msrp_jpy: number | null;
   purchase_price_jpy: number | null;
   size: string | null;
   volume: string | null;
+  color: string | null;
+  material: string | null;
   capacity: string | null;
+  official_url: string | null;
+  image_url: string | null;
   purchase_date: string | null;
   status: GearStatus;
   weight_type: WeightType;
@@ -79,7 +94,10 @@ export type DashboardSummary = {
   ownedCount: number;
   wishlistCount: number;
   totalWeightG: number;
-  totalValueJpy: number;
+  totalMsrpJpy: number;
+  totalPurchaseJpy: number;
+  savingsJpy: number;
+  savingsRate: number;
   baseWeightG: number;
   consumableWeightG: number;
   wornWeightG: number;
@@ -113,13 +131,13 @@ export type RecommendationPriority = "high" | "medium" | "low";
 export type RecommendationCategory =
   | "sleep"
   | "shelter"
-  | "carry"
+  | "backpack"
   | "clothing"
+  | "rainwear"
   | "cooking"
-  | "safety"
   | "electronics"
-  | "navigation"
-  | "hydration"
+  | "first_aid"
+  | "bear_safety"
   | "other";
 
 export type AIRecommendedItem = {
@@ -131,6 +149,7 @@ export type AIRecommendedItem = {
   estimated_weight_g: number;
   estimated_price_jpy: number;
   weight_type: WeightType;
+  rule_basis: string;
 };
 
 export type AIRiskWarning = {
@@ -148,6 +167,10 @@ export type AIRecommendationOutput = {
   estimated_total_budget_jpy: number;
   budget_comment: string;
   safety_note: string;
+  mountain_rules: string[];
+  season_rules: string[];
+  bear_risk_level: BearRiskLevel;
+  bear_risk_reason: string;
 };
 
 export type OwnedAnalysisItem = {
@@ -181,10 +204,10 @@ export type AIRecommendationRecord = {
   input: {
     mountain_region: string;
     season: Season;
+    month: number;
     weather_risk: WeatherRisk;
     days: number;
     accommodation_style: AccommodationStyle;
-    budget_jpy: number;
     experience_level: ExperienceLevel;
   };
   output: AIRecommendationOutput;

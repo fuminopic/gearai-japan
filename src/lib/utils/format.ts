@@ -17,11 +17,7 @@ export function formatWeight(grams: number) {
 }
 
 export function formatJpy(value: number) {
-  return new Intl.NumberFormat("ja-JP", {
-    style: "currency",
-    currency: "JPY",
-    maximumFractionDigits: 0
-  }).format(value);
+  return `¥${Math.round(value).toLocaleString("ja-JP")}`;
 }
 
 export function toNumber(value: FormDataEntryValue | null) {

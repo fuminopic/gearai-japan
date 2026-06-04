@@ -43,7 +43,7 @@ export function GearList({ gear, categories, filters }: GearListProps) {
             defaultValue={filters.category ?? ""}
             className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm"
           >
-            <option value="">カテゴリー</option>
+            <option value="">カテゴリーを選択</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name_ja}
@@ -107,7 +107,9 @@ export function GearList({ gear, categories, filters }: GearListProps) {
                 <div>
                   <p className="text-stone-400">重量</p>
                   <p className="font-semibold text-ink">
-                    {formatWeight(Number(item.weight_grams))}
+                    {formatWeight(
+                      Number(item.measured_weight_grams ?? item.official_weight_grams ?? item.weight_grams)
+                    )}
                   </p>
                 </div>
                 <div>

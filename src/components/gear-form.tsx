@@ -11,6 +11,7 @@ import type {
   GearSubcategory,
   UserGear
 } from "@/lib/types";
+import { formatJpy } from "@/lib/utils/format";
 
 type GearFormProps = {
   categories: GearCategory[];
@@ -29,16 +30,20 @@ export function GearForm({
   gear,
   error
 }: GearFormProps) {
-  const initialCategoryId = gear?.category_id ?? categories[0]?.id ?? "";
+  const initialCategoryId = gear?.category_id ?? "";
   const initialSubcategoryId = gear?.subcategory_id ?? "";
   const [categoryId, setCategoryId] = useState(initialCategoryId);
   const [subcategoryId, setSubcategoryId] = useState(initialSubcategoryId);
   const [productId, setProductId] = useState(gear?.product_id ?? "");
+  const [query, setQuery] = useState(gear?.name ?? "");
   const [name, setName] = useState(gear?.name ?? "");
   const [brand, setBrand] = useState(gear?.brand ?? "");
   const [model, setModel] = useState(gear?.model ?? "");
-  const [weightGrams, setWeightGrams] = useState(
-    String(gear?.weight_grams ?? 0)
+  const [officialWeightGrams, setOfficialWeightGrams] = useState(
+    String(gear?.official_weight_grams ?? gear?.weight_grams ?? "")
+  );
+  const [measuredWeightGrams, setMeasuredWeightGrams] = useState(
+    String(gear?.measured_weight_grams ?? "")
   );
   const [msrpJpy, setMsrpJpy] = useState(String(gear?.msrp_jpy ?? ""));
   const [purchasePriceJpy, setPurchasePriceJpy] = useState(
@@ -46,38 +51,70 @@ export function GearForm({
   );
   const [size, setSize] = useState(gear?.size ?? "");
   const [volume, setVolume] = useState(gear?.volume ?? "");
+  const [color, setColor] = useState(gear?.color ?? "");
+  const [material, setMaterial] = useState(gear?.material ?? "");
   const [capacity, setCapacity] = useState(gear?.capacity ?? "");
+  const [officialUrl, setOfficialUrl] = useState(gear?.official_url ?? "");
+  const [imageUrl, setImageUrl] = useState(gear?.image_url ?? "");
 
   const subcategoriesForCategory = useMemo(
     () => subcategories.filter((item) => item.category_id === categoryId),
     [categoryId, subcategories]
   );
 
-  function applyProduct(rawValue: string) {
-    setName(rawValue);
-    const product = products.find((item) =>
-      getProductSearchValues(item).some(
-        (value) => normalize(value) === normalize(rawValue)
+  const filteredProducts = useMemo(() => {
+    const normalizedQuery = normalize(query);
+    if (!normalizedQuery) {
+      return products.slice(0, 12);
+    }
+
+    return products
+      .filter((product) =>
+        getProductSearchValues(product).some((value) =>
+          normalize(value).includes(normalizedQuery)
+        )
+      )
+      .slice(0, 12);
+  }, [products, query]);
+
+  function handleProductQuery(value: string) {
+    setQuery(value);
+    setName(value);
+    const exactProduct = products.find((product) =>
+      getProductSearchValues(product).some(
+        (searchValue) => normalize(searchValue) === normalize(value)
       )
     );
 
-    if (!product) {
+    if (exactProduct) {
+      applyProduct(exactProduct);
+    } else {
       setProductId("");
-      return;
     }
+  }
 
+  function applyProduct(product: GearProduct) {
+    const productName = product.name_ja ?? product.model;
     setProductId(product.id);
     setCategoryId(product.category_id);
     setSubcategoryId(product.subcategory_id ?? "");
-    setName(product.name_ja ?? product.model);
+    setQuery(productName);
+    setName(productName);
     setBrand(product.brand);
     setModel(product.model);
-    setWeightGrams(String(product.weight_grams ?? 0));
+    setOfficialWeightGrams(
+      String(product.official_weight_grams ?? product.weight_grams ?? "")
+    );
+    setMeasuredWeightGrams("");
     setMsrpJpy(String(product.msrp_jpy ?? ""));
-    setPurchasePriceJpy(String(product.msrp_jpy ?? ""));
+    setPurchasePriceJpy("");
     setSize(product.size ?? "");
     setVolume(product.volume ?? "");
+    setColor(product.color ?? "");
+    setMaterial(product.material ?? "");
     setCapacity(product.capacity ?? "");
+    setOfficialUrl(product.official_url ?? "");
+    setImageUrl(product.image_url ?? "");
   }
 
   return (
@@ -87,6 +124,7 @@ export function GearForm({
       ) : null}
 
       <input type="hidden" name="product_id" value={productId} />
+      <input type="hidden" name="image_url" value={imageUrl} />
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
         <div className="grid gap-4">
@@ -95,20 +133,43 @@ export function GearForm({
             <input
               name="name"
               required
-              list="gear-product-options"
-              value={name}
-              onChange={(event) => applyProduct(event.target.value)}
+              value={query}
+              onChange={(event) => handleProductQuery(event.target.value)}
               className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-              placeholder="例: ストームクルーザー ジャケット"
+              placeholder="例：Mountain Shot 2"
+              autoComplete="off"
             />
-            <datalist id="gear-product-options">
-              {products.flatMap((product) =>
-                getProductSearchValues(product).map((value) => (
-                  <option key={`${product.id}-${value}`} value={value} />
-                ))
-              )}
-            </datalist>
           </label>
+
+          {filteredProducts.length > 0 ? (
+            <div className="grid gap-2">
+              {filteredProducts.map((product) => (
+                <button
+                  key={product.id}
+                  type="button"
+                  onClick={() => applyProduct(product)}
+                  className="grid grid-cols-[1fr_auto] gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-left transition hover:border-forest-500 hover:bg-white"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-ink">
+                      {product.name_ja ?? product.model}
+                    </span>
+                    <span className="mt-1 block truncate text-xs text-stone-500">
+                      {product.brand}
+                    </span>
+                  </span>
+                  <span className="text-right text-xs text-stone-500">
+                    <span className="block">
+                      {product.official_weight_grams ?? product.weight_grams ?? "-"}g
+                    </span>
+                    <span className="mt-1 block">
+                      {product.msrp_jpy ? formatJpy(product.msrp_jpy) : "-"}
+                    </span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : null}
 
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block">
@@ -118,7 +179,7 @@ export function GearForm({
                 value={brand}
                 onChange={(event) => setBrand(event.target.value)}
                 className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                placeholder="例: mont-bell"
+                placeholder="例：finetrack"
               />
             </label>
 
@@ -129,7 +190,7 @@ export function GearForm({
                 value={model}
                 onChange={(event) => setModel(event.target.value)}
                 className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                placeholder="例: Storm Cruiser"
+                placeholder="例：MINI2"
               />
             </label>
           </div>
@@ -147,6 +208,7 @@ export function GearForm({
                 }}
                 className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
               >
+                <option value="">カテゴリーを選択</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name_ja}
@@ -163,7 +225,7 @@ export function GearForm({
                 onChange={(event) => setSubcategoryId(event.target.value)}
                 className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
               >
-                <option value="">未設定</option>
+                <option value="">サブカテゴリーを選択</option>
                 {subcategoriesForCategory.map((subcategory) => (
                   <option key={subcategory.id} value={subcategory.id}>
                     {subcategory.name_ja}
@@ -176,23 +238,39 @@ export function GearForm({
       </section>
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <label className="block">
-            <span className="text-sm font-medium text-stone-700">重量（g）</span>
+            <span className="text-sm font-medium text-stone-700">公式重量（g）</span>
             <input
-              name="weight_grams"
+              name="official_weight_grams"
               type="number"
               min="0"
               step="1"
-              required
-              value={weightGrams}
-              onChange={(event) => setWeightGrams(event.target.value)}
+              value={officialWeightGrams}
+              onChange={(event) => setOfficialWeightGrams(event.target.value)}
               className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+              placeholder="例：398"
             />
           </label>
 
           <label className="block">
-            <span className="text-sm font-medium text-stone-700">MSRP（円）</span>
+            <span className="text-sm font-medium text-stone-700">実測重量（g）</span>
+            <input
+              name="measured_weight_grams"
+              type="number"
+              min="0"
+              step="1"
+              value={measuredWeightGrams}
+              onChange={(event) => setMeasuredWeightGrams(event.target.value)}
+              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+              placeholder="例：398"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-medium text-stone-700">
+              メーカー希望小売価格（円）
+            </span>
             <input
               name="msrp_jpy"
               type="number"
@@ -228,7 +306,7 @@ export function GearForm({
               value={size}
               onChange={(event) => setSize(event.target.value)}
               className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-              placeholder="例: L"
+              placeholder="例：M"
             />
           </label>
 
@@ -239,22 +317,62 @@ export function GearForm({
               value={volume}
               onChange={(event) => setVolume(event.target.value)}
               className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-              placeholder="例: 55L"
+              placeholder="例：25-35L"
             />
           </label>
 
           <label className="block">
-            <span className="text-sm font-medium text-stone-700">対応量</span>
+            <span className="text-sm font-medium text-stone-700">対応人数</span>
             <input
               name="capacity"
               value={capacity}
               onChange={(event) => setCapacity(event.target.value)}
               className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-              placeholder="例: 2人用"
+              placeholder="例：2人用"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-medium text-stone-700">カラー</span>
+            <input
+              name="color"
+              value={color}
+              onChange={(event) => setColor(event.target.value)}
+              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-medium text-stone-700">素材</span>
+            <input
+              name="material"
+              value={material}
+              onChange={(event) => setMaterial(event.target.value)}
+              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-medium text-stone-700">公式URL</span>
+            <input
+              name="official_url"
+              value={officialUrl}
+              onChange={(event) => setOfficialUrl(event.target.value)}
+              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
             />
           </label>
         </div>
       </section>
+
+      {imageUrl ? (
+        <section className="rounded-lg bg-white p-5 shadow-soft">
+          <img
+            src={imageUrl}
+            alt=""
+            className="h-40 w-full rounded-lg object-cover"
+          />
+        </section>
+      ) : null}
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
         <div className="grid gap-3 sm:grid-cols-3">
@@ -332,6 +450,7 @@ function getProductSearchValues(product: GearProduct) {
   return [
     product.name_ja,
     product.model,
+    product.brand,
     `${product.brand} ${product.model}`,
     ...(product.gear_product_aliases?.map((item) => item.alias) ?? [])
   ].filter((value): value is string => Boolean(value));

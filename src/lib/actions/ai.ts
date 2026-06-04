@@ -1,6 +1,7 @@
 "use server";
 
 import OpenAI from "openai";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getUserGear, requireUser } from "@/lib/data/gear";
@@ -24,12 +25,12 @@ export async function createRecommendation(formData: FormData) {
   const input: RuleEngineInput = {
     mountain_region: String(formData.get("mountain_region") ?? "").trim(),
     season: parseSeason(formData.get("season")),
+    month: clampMonth(toNumber(formData.get("month"))),
     weather_risk: parseWeatherRisk(formData.get("weather_risk")),
     days: toNumber(formData.get("days")) ?? 1,
     accommodation_style: parseAccommodationStyle(
       formData.get("accommodation_style")
     ),
-    budget_jpy: toNumber(formData.get("budget_jpy")) ?? 0,
     experience_level: parseExperienceLevel(formData.get("experience_level"))
   };
 
@@ -66,6 +67,42 @@ export async function createRecommendation(formData: FormData) {
   }
 
   redirect(`/ai/recommendations/${data.id}`);
+}
+
+export async function deleteRecommendation(id: string) {
+  const { supabase, user } = await requireUser();
+  const { data, error } = await supabase
+    .from("ai_recommendations")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select("id");
+
+  if (error) {
+    redirect(`/ai/history?error=${encodeURIComponent(error.message)}`);
+  }
+
+  if (data.length === 0) {
+    redirect(
+      `/ai/history?error=${encodeURIComponent("推薦履歴を削除できませんでした")}`
+    );
+  }
+
+  revalidatePath("/ai/history");
+}
+
+export async function deleteAllRecommendations() {
+  const { supabase, user } = await requireUser();
+  const { error } = await supabase
+    .from("ai_recommendations")
+    .delete()
+    .eq("user_id", user.id);
+
+  if (error) {
+    redirect(`/ai/history?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/ai/history");
 }
 
 async function addAIExplanations(
@@ -318,6 +355,14 @@ function parseExperienceLevel(value: FormDataEntryValue | null) {
     value === "expert"
     ? value
     : "beginner";
+}
+
+function clampMonth(value: number | null) {
+  if (!value) {
+    return new Date().getMonth() + 1;
+  }
+
+  return Math.min(12, Math.max(1, Math.round(value)));
 }
 
 function redirectWithError(message: string): never {

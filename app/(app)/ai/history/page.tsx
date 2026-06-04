@@ -3,7 +3,16 @@ import Link from "next/link";
 import { RecommendationHistoryList } from "@/components/recommendation-history-list";
 import { getRecommendationHistory } from "@/lib/data/recommendations";
 
-export default async function RecommendationHistoryPage() {
+type RecommendationHistoryPageProps = {
+  searchParams: Promise<{
+    error?: string;
+  }>;
+};
+
+export default async function RecommendationHistoryPage({
+  searchParams
+}: RecommendationHistoryPageProps) {
+  const params = await searchParams;
   const records = await getRecommendationHistory();
 
   return (
@@ -22,6 +31,11 @@ export default async function RecommendationHistoryPage() {
           新規作成
         </Link>
       </section>
+      {params.error ? (
+        <p className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+          {params.error}
+        </p>
+      ) : null}
       <RecommendationHistoryList records={records} />
     </div>
   );

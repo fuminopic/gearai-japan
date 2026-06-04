@@ -62,10 +62,12 @@ export async function deleteGear(id: string) {
 }
 
 function getGearPayload(formData: FormData) {
-  const weight = toNumber(formData.get("weight_grams"));
+  const officialWeight = toNumber(formData.get("official_weight_grams"));
+  const measuredWeight = toNumber(formData.get("measured_weight_grams"));
   const msrp = toNumber(formData.get("msrp_jpy"));
   const purchasePrice = toNumber(formData.get("purchase_price_jpy"));
   const purchaseDate = String(formData.get("purchase_date") ?? "");
+  const storedWeight = measuredWeight ?? officialWeight ?? 0;
 
   return {
     product_id: optionalString(formData.get("product_id")),
@@ -74,13 +76,21 @@ function getGearPayload(formData: FormData) {
     name: String(formData.get("name") ?? "").trim(),
     brand: optionalString(formData.get("brand")),
     model: optionalString(formData.get("model")),
-    weight_grams: Math.max(0, Math.round(weight ?? 0)),
+    weight_grams: Math.max(0, Math.round(storedWeight)),
+    official_weight_grams:
+      officialWeight === null ? null : Math.max(0, Math.round(officialWeight)),
+    measured_weight_grams:
+      measuredWeight === null ? null : Math.max(0, Math.round(measuredWeight)),
     msrp_jpy: msrp === null ? null : Math.round(msrp),
     purchase_price_jpy:
       purchasePrice === null ? null : Math.round(purchasePrice),
     size: optionalString(formData.get("size")),
     volume: optionalString(formData.get("volume")),
+    color: optionalString(formData.get("color")),
+    material: optionalString(formData.get("material")),
     capacity: optionalString(formData.get("capacity")),
+    official_url: optionalString(formData.get("official_url")),
+    image_url: optionalString(formData.get("image_url")),
     purchase_date: purchaseDate || null,
     status: String(formData.get("status") ?? "owned") as GearStatus,
     weight_type: String(formData.get("weight_type") ?? "base") as WeightType,

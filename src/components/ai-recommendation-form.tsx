@@ -23,6 +23,8 @@ const mountainRegions = [
 ];
 
 export function AIRecommendationForm({ error }: AIRecommendationFormProps) {
+  const currentMonth = new Date().getMonth() + 1;
+
   return (
     <div className="space-y-5">
       <section className="flex items-end justify-between gap-4">
@@ -64,7 +66,7 @@ export function AIRecommendationForm({ error }: AIRecommendationFormProps) {
               </datalist>
             </label>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-3">
               <label className="block">
                 <span className="text-sm font-medium text-stone-700">季節</span>
                 <select
@@ -78,6 +80,19 @@ export function AIRecommendationForm({ error }: AIRecommendationFormProps) {
                     </option>
                   ))}
                 </select>
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">月</span>
+                <input
+                  name="month"
+                  type="number"
+                  min="1"
+                  max="12"
+                  required
+                  defaultValue={currentMonth}
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                />
               </label>
 
               <label className="block">
@@ -126,17 +141,6 @@ export function AIRecommendationForm({ error }: AIRecommendationFormProps) {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block">
-                <span className="text-sm font-medium text-stone-700">予算（円）</span>
-                <input
-                  name="budget_jpy"
-                  type="number"
-                  min="0"
-                  defaultValue={50000}
-                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                />
-              </label>
-
               <label className="block">
                 <span className="text-sm font-medium text-stone-700">経験レベル</span>
                 <select

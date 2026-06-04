@@ -1,5 +1,6 @@
 export type GearStatus = "owned" | "wishlist";
 export type WeightType = "base" | "consumable" | "worn";
+export type VerificationStatus = "verified" | "unverified" | "needs_review";
 export type ExperienceLevel = "beginner" | "intermediate" | "advanced" | "expert";
 export type AccommodationStyle = "day_hike" | "hut" | "tent";
 export type WeatherRisk = "stable" | "rain" | "cold" | "wind" | "snow";
@@ -44,6 +45,9 @@ export type GearProduct = {
   image_url: string | null;
   released_at: string | null;
   discontinued: boolean;
+  msrp_source_url: string | null;
+  last_verified_at: string | null;
+  verification_status: VerificationStatus;
   created_at: string;
   gear_categories?: Pick<GearCategory, "id" | "name_ja" | "name_en"> | null;
   gear_subcategories?: Pick<GearSubcategory, "id" | "name_ja" | "name_en"> | null;
@@ -79,7 +83,17 @@ export type UserGear = {
   updated_at: string;
   gear_categories?: Pick<GearCategory, "id" | "name_ja" | "name_en"> | null;
   gear_subcategories?: Pick<GearSubcategory, "id" | "name_ja" | "name_en"> | null;
-  gear_products?: Pick<GearProduct, "id" | "brand" | "model" | "name_ja"> | null;
+  gear_products?: Pick<
+    GearProduct,
+    | "id"
+    | "brand"
+    | "model"
+    | "name_ja"
+    | "official_url"
+    | "msrp_source_url"
+    | "last_verified_at"
+    | "verification_status"
+  > | null;
 };
 
 export type GearFilters = {
@@ -109,6 +123,14 @@ export type DashboardSummary = {
     count: number;
   }>;
   recentGear: UserGear[];
+};
+
+export type DataQualitySummary = {
+  missingMsrpCount: number;
+  missingWeightCount: number;
+  missingOfficialUrlCount: number;
+  missingCategoryCount: number;
+  unverifiedCount: number;
 };
 
 export type Mountain = {

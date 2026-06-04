@@ -217,7 +217,7 @@ export function GearForm({
       </section>
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-3">
           <label className="block">
             <span className="text-sm font-medium text-stone-700">購入価格（円）</span>
             <input
@@ -244,6 +244,16 @@ export function GearForm({
                 </option>
               ))}
             </select>
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-medium text-stone-700">購入日</span>
+            <input
+              name="purchase_date"
+              type="date"
+              defaultValue={gear?.purchase_date ?? ""}
+              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+            />
           </label>
         </div>
 
@@ -387,15 +397,6 @@ export function GearForm({
             </select>
           </label>
 
-          <label className="block">
-            <span className="text-sm font-medium text-stone-700">購入日</span>
-            <input
-              name="purchase_date"
-              type="date"
-              defaultValue={gear?.purchase_date ?? ""}
-              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-            />
-          </label>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">

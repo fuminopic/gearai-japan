@@ -86,7 +86,12 @@ export function GearList({ gear, categories, filters }: GearListProps) {
             <article key={item.id} className="rounded-lg bg-white p-4 shadow-soft">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="truncate text-lg font-semibold text-ink">{item.name}</p>
+                  <Link
+                    href={`/gear/${item.id}`}
+                    className="block truncate text-lg font-semibold text-ink"
+                  >
+                    {item.name}
+                  </Link>
                   <p className="mt-1 text-sm text-stone-500">
                     {[
                       item.brand,

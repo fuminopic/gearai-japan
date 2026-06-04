@@ -2,6 +2,7 @@ import type {
   AccommodationStyle,
   GearStatus,
   Season,
+  VerificationStatus,
   WeatherRisk,
   WeightType
 } from "@/lib/types";
@@ -15,6 +16,27 @@ export const weightTypeLabels: Record<WeightType, string> = {
   base: "ベース",
   consumable: "消耗品",
   worn: "着用"
+};
+
+export const verificationStatusLabels: Record<
+  VerificationStatus,
+  { label: string; marker: string; className: string }
+> = {
+  verified: {
+    label: "公式検証データ",
+    marker: "✓",
+    className: "border-forest-100 bg-forest-50 text-forest-700"
+  },
+  unverified: {
+    label: "未検証データ",
+    marker: "⚠",
+    className: "border-amber-100 bg-amber-50 text-amber-700"
+  },
+  needs_review: {
+    label: "需要人工审核",
+    marker: "⚠",
+    className: "border-red-100 bg-red-50 text-red-700"
+  }
 };
 
 export const experienceLabels = {

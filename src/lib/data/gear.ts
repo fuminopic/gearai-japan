@@ -22,6 +22,9 @@ const PRODUCT_CATEGORY_KEYS = [
   "other"
 ];
 
+const USER_GEAR_SELECT =
+  "*, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_products:product_id(id, brand, model, name_ja, official_url, msrp_source_url, last_verified_at, verification_status)";
+
 export async function requireUser() {
   const supabase = await createClient();
   const {
@@ -71,6 +74,7 @@ export async function getGearProducts() {
     .select(
       "*, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_product_aliases(alias)"
     )
+    .eq("discontinued", false)
     .order("brand", { ascending: true })
     .order("model", { ascending: true });
 
@@ -85,9 +89,7 @@ export async function getUserGear(filters: GearFilters = {}) {
   const { supabase, user } = await requireUser();
   let query = supabase
     .from("user_gear")
-    .select(
-      "*, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_products:product_id(id, brand, model, name_ja)"
-    )
+    .select(USER_GEAR_SELECT)
     .eq("user_id", user.id);
 
   if (filters.q) {
@@ -131,9 +133,7 @@ export async function getUserGearById(id: string) {
   const { supabase, user } = await requireUser();
   const { data, error } = await supabase
     .from("user_gear")
-    .select(
-      "*, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_products:product_id(id, brand, model, name_ja)"
-    )
+    .select(USER_GEAR_SELECT)
     .eq("id", id)
     .eq("user_id", user.id)
     .single();

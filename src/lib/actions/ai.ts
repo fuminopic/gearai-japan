@@ -71,7 +71,24 @@ export async function createRecommendation(formData: FormData) {
 
 export async function deleteRecommendation(id: string) {
   const { supabase, user } = await requireUser();
-  const { data, error } = await supabase
+  const { data: existing, error: selectError } = await supabase
+    .from("ai_recommendations")
+    .select("id")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (selectError) {
+    redirect(`/ai/history?error=${encodeURIComponent(selectError.message)}`);
+  }
+
+  if (!existing) {
+    redirect(
+      `/ai/history?error=${encodeURIComponent("推薦履歴が見つかりませんでした")}`
+    );
+  }
+
+  const { data: deleted, error } = await supabase
     .from("ai_recommendations")
     .delete()
     .eq("id", id)
@@ -82,27 +99,54 @@ export async function deleteRecommendation(id: string) {
     redirect(`/ai/history?error=${encodeURIComponent(error.message)}`);
   }
 
-  if (data.length === 0) {
+  if (!deleted || deleted.length !== 1) {
     redirect(
-      `/ai/history?error=${encodeURIComponent("推薦履歴を削除できませんでした")}`
+      `/ai/history?error=${encodeURIComponent("推薦履歴を削除できませんでした。RLS の delete policy を確認してください")}`
     );
   }
 
   revalidatePath("/ai/history");
+  redirect("/ai/history");
 }
 
 export async function deleteAllRecommendations() {
   const { supabase, user } = await requireUser();
-  const { error } = await supabase
+  const { data: existing, error: selectError } = await supabase
+    .from("ai_recommendations")
+    .select("id")
+    .eq("user_id", user.id);
+
+  if (selectError) {
+    redirect(`/ai/history?error=${encodeURIComponent(selectError.message)}`);
+  }
+
+  if (!existing || existing.length === 0) {
+    revalidatePath("/ai/history");
+    redirect("/ai/history");
+  }
+
+  const { data: deleted, error } = await supabase
     .from("ai_recommendations")
     .delete()
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .in(
+      "id",
+      existing.map((record) => record.id)
+    )
+    .select("id");
 
   if (error) {
     redirect(`/ai/history?error=${encodeURIComponent(error.message)}`);
   }
 
+  if (!deleted || deleted.length !== existing.length) {
+    redirect(
+      `/ai/history?error=${encodeURIComponent("推薦履歴をすべて削除できませんでした。RLS の delete policy を確認してください")}`
+    );
+  }
+
   revalidatePath("/ai/history");
+  redirect("/ai/history");
 }
 
 async function addAIExplanations(

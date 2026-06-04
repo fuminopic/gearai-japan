@@ -29,18 +29,27 @@ export async function updateGear(id: string, formData: FormData) {
   const { supabase, user } = await requireUser();
   const payload = getGearPayload(formData);
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("user_gear")
     .update(payload)
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .select("id")
+    .maybeSingle();
 
   if (error) {
     redirect(`/gear/${id}/edit?error=${encodeURIComponent(error.message)}`);
   }
 
+  if (!data) {
+    redirect(
+      `/gear/${id}/edit?error=${encodeURIComponent("装備を保存できませんでした")}`
+    );
+  }
+
   revalidatePath("/dashboard");
   revalidatePath("/gear");
+  revalidatePath(`/gear/${id}/edit`);
   redirect("/gear");
 }
 

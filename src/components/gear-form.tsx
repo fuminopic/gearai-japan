@@ -61,6 +61,49 @@ export function GearForm({
     () => subcategories.filter((item) => item.category_id === categoryId),
     [categoryId, subcategories]
   );
+  const categoryOptions = useMemo(() => {
+    if (
+      !gear?.gear_categories ||
+      categories.some((category) => category.id === gear.category_id)
+    ) {
+      return categories;
+    }
+
+    return [
+      ...categories,
+      {
+        id: gear.category_id,
+        name_ja: gear.gear_categories.name_ja,
+        name_en: gear.gear_categories.name_en,
+        sort_order: Number.MAX_SAFE_INTEGER,
+        is_default: false,
+        created_at: gear.created_at
+      }
+    ];
+  }, [categories, gear]);
+  const subcategoryOptions = useMemo(() => {
+    if (
+      !gear?.subcategory_id ||
+      !gear.gear_subcategories ||
+      subcategoriesForCategory.some(
+        (subcategory) => subcategory.id === gear.subcategory_id
+      )
+    ) {
+      return subcategoriesForCategory;
+    }
+
+    return [
+      ...subcategoriesForCategory,
+      {
+        id: gear.subcategory_id,
+        category_id: gear.category_id,
+        name_ja: gear.gear_subcategories.name_ja,
+        name_en: gear.gear_subcategories.name_en,
+        sort_order: Number.MAX_SAFE_INTEGER,
+        created_at: gear.created_at
+      }
+    ];
+  }, [gear, subcategoriesForCategory]);
 
   const filteredProducts = useMemo(() => {
     const normalizedQuery = normalize(query);
@@ -170,7 +213,57 @@ export function GearForm({
               ))}
             </div>
           ) : null}
+        </div>
+      </section>
 
+      <section className="rounded-lg bg-white p-5 shadow-soft">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="text-sm font-medium text-stone-700">購入価格（円）</span>
+            <input
+              name="purchase_price_jpy"
+              type="number"
+              min="0"
+              step="1"
+              value={purchasePriceJpy}
+              onChange={(event) => setPurchasePriceJpy(event.target.value)}
+              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-medium text-stone-700">ステータス</span>
+            <select
+              name="status"
+              defaultValue={gear?.status ?? "owned"}
+              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+            >
+              {Object.entries(statusLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <label className="mt-3 block">
+          <span className="text-sm font-medium text-stone-700">メモ</span>
+          <textarea
+            name="memo"
+            rows={3}
+            defaultValue={gear?.memo ?? ""}
+            className="mt-2 w-full resize-none rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+            placeholder="使用感、買い替え候補、注意点など"
+          />
+        </label>
+      </section>
+
+      <details className="rounded-lg bg-white p-5 shadow-soft">
+        <summary className="cursor-pointer text-sm font-semibold text-forest-700">
+          詳細設定
+        </summary>
+        <div className="mt-4 grid gap-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block">
               <span className="text-sm font-medium text-stone-700">ブランド</span>
@@ -209,7 +302,7 @@ export function GearForm({
                 className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
               >
                 <option value="">カテゴリーを選択</option>
-                {categories.map((category) => (
+                {categoryOptions.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name_ja}
                   </option>
@@ -226,7 +319,7 @@ export function GearForm({
                 className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
               >
                 <option value="">サブカテゴリーを選択</option>
-                {subcategoriesForCategory.map((subcategory) => (
+                {subcategoryOptions.map((subcategory) => (
                   <option key={subcategory.id} value={subcategory.id}>
                     {subcategory.name_ja}
                   </option>
@@ -234,11 +327,8 @@ export function GearForm({
               </select>
             </label>
           </div>
-        </div>
-      </section>
 
-      <section className="rounded-lg bg-white p-5 shadow-soft">
-        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
           <label className="block">
             <span className="text-sm font-medium text-stone-700">公式重量（g）</span>
             <input
@@ -283,22 +373,32 @@ export function GearForm({
           </label>
 
           <label className="block">
-            <span className="text-sm font-medium text-stone-700">購入価格（円）</span>
+            <span className="text-sm font-medium text-stone-700">重量タイプ</span>
+            <select
+              name="weight_type"
+              defaultValue={gear?.weight_type ?? "base"}
+              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+            >
+              {Object.entries(weightTypeLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-medium text-stone-700">購入日</span>
             <input
-              name="purchase_price_jpy"
-              type="number"
-              min="0"
-              step="1"
-              value={purchasePriceJpy}
-              onChange={(event) => setPurchasePriceJpy(event.target.value)}
+              name="purchase_date"
+              type="date"
+              defaultValue={gear?.purchase_date ?? ""}
               className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
             />
           </label>
-        </div>
-      </section>
+          </div>
 
-      <section className="rounded-lg bg-white p-5 shadow-soft">
-        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-3">
           <label className="block">
             <span className="text-sm font-medium text-stone-700">サイズ</span>
             <input
@@ -361,8 +461,9 @@ export function GearForm({
               className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
             />
           </label>
+          </div>
         </div>
-      </section>
+      </details>
 
       {imageUrl ? (
         <section className="rounded-lg bg-white p-5 shadow-soft">
@@ -373,63 +474,6 @@ export function GearForm({
           />
         </section>
       ) : null}
-
-      <section className="rounded-lg bg-white p-5 shadow-soft">
-        <div className="grid gap-3 sm:grid-cols-3">
-          <label className="block">
-            <span className="text-sm font-medium text-stone-700">ステータス</span>
-            <select
-              name="status"
-              defaultValue={gear?.status ?? "owned"}
-              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-            >
-              {Object.entries(statusLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-medium text-stone-700">重量タイプ</span>
-            <select
-              name="weight_type"
-              defaultValue={gear?.weight_type ?? "base"}
-              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-            >
-              {Object.entries(weightTypeLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-medium text-stone-700">購入日</span>
-            <input
-              name="purchase_date"
-              type="date"
-              defaultValue={gear?.purchase_date ?? ""}
-              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-            />
-          </label>
-        </div>
-      </section>
-
-      <section className="rounded-lg bg-white p-5 shadow-soft">
-        <label className="block">
-          <span className="text-sm font-medium text-stone-700">メモ</span>
-          <textarea
-            name="memo"
-            rows={3}
-            defaultValue={gear?.memo ?? ""}
-            className="mt-2 w-full resize-none rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-            placeholder="使用感、買い替え候補、注意点など"
-          />
-        </label>
-      </section>
 
       <div className="flex gap-3 pb-4">
         <Link

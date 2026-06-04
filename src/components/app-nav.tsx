@@ -1,4 +1,5 @@
 import { Backpack, Home, Sparkles, UserRound } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 
 import { signOut } from "@/lib/actions/auth";
@@ -8,7 +9,11 @@ const navItems = [
   { href: "/gear", label: "装備", icon: Backpack },
   { href: "/ai", label: "AI推薦", icon: Sparkles },
   { href: "/profile", label: "自分", icon: UserRound }
-];
+] satisfies Array<{
+  href: Route;
+  label: string;
+  icon: typeof Home;
+}>;
 
 export function AppNav() {
   return (

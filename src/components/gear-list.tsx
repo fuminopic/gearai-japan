@@ -88,7 +88,14 @@ export function GearList({ gear, categories, filters }: GearListProps) {
                 <div className="min-w-0">
                   <p className="truncate text-lg font-semibold text-ink">{item.name}</p>
                   <p className="mt-1 text-sm text-stone-500">
-                    {[item.brand, item.gear_categories?.name_ja].filter(Boolean).join(" / ")}
+                    {[
+                      item.brand,
+                      item.model,
+                      item.gear_categories?.name_ja,
+                      item.gear_subcategories?.name_ja
+                    ]
+                      .filter(Boolean)
+                      .join(" / ")}
                   </p>
                 </div>
                 <span className="rounded-lg bg-forest-50 px-3 py-1 text-xs font-semibold text-forest-700">
@@ -99,12 +106,16 @@ export function GearList({ gear, categories, filters }: GearListProps) {
               <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
                 <div>
                   <p className="text-stone-400">重量</p>
-                  <p className="font-semibold text-ink">{formatWeight(Number(item.weight_g))}</p>
+                  <p className="font-semibold text-ink">
+                    {formatWeight(Number(item.weight_grams))}
+                  </p>
                 </div>
                 <div>
                   <p className="text-stone-400">価格</p>
                   <p className="font-semibold text-ink">
-                    {formatJpy(Number(item.price_jpy ?? 0))}
+                    {formatJpy(
+                      Number(item.purchase_price_jpy ?? item.msrp_jpy ?? 0)
+                    )}
                   </p>
                 </div>
                 <div>
@@ -138,4 +149,3 @@ export function GearList({ gear, categories, filters }: GearListProps) {
     </div>
   );
 }
-

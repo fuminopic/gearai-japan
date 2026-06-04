@@ -3,26 +3,34 @@ import { History, Sparkles } from "lucide-react";
 
 import { SubmitButton } from "@/components/submit-button";
 import { createRecommendation } from "@/lib/actions/ai";
-import { experienceLabels } from "@/lib/i18n/labels";
+import {
+  accommodationStyleLabels,
+  experienceLabels,
+  seasonLabels,
+  weatherRiskLabels
+} from "@/lib/i18n/labels";
 
 type AIRecommendationFormProps = {
   error?: string;
 };
 
-export function AIRecommendationForm({ error }: AIRecommendationFormProps) {
-  const currentMonth = new Date().getMonth() + 1;
+const mountainRegions = [
+  "富士山",
+  "北アルプス",
+  "南アルプス",
+  "八ヶ岳",
+  "谷川岳"
+];
 
+export function AIRecommendationForm({ error }: AIRecommendationFormProps) {
   return (
     <div className="space-y-5">
       <section className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-forest-700">AI装備推薦</p>
+          <p className="text-sm font-semibold text-forest-700">Rule Engine + AI</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">
-            山行に必要な装備を確認
+            装備推薦
           </h1>
-          <p className="mt-2 text-sm leading-6 text-stone-600">
-            天気APIは使わず、山域・季節・日数・経験レベルから保守的に提案します。
-          </p>
         </div>
         <Link
           href="/ai/history"
@@ -33,7 +41,7 @@ export function AIRecommendationForm({ error }: AIRecommendationFormProps) {
         </Link>
       </section>
 
-      <form action={createRecommendation} className="space-y-5">
+      <form action={createRecommendation} className="space-y-4">
         {error ? (
           <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
         ) : null}
@@ -41,29 +49,54 @@ export function AIRecommendationForm({ error }: AIRecommendationFormProps) {
         <section className="rounded-lg bg-white p-5 shadow-soft">
           <div className="grid gap-4">
             <label className="block">
-              <span className="text-sm font-medium text-stone-700">山名</span>
+              <span className="text-sm font-medium text-stone-700">山域</span>
               <input
-                name="mountain_name"
+                name="mountain_region"
                 required
+                list="mountain-region-options"
                 className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
                 placeholder="例: 富士山"
               />
+              <datalist id="mountain-region-options">
+                {mountainRegions.map((region) => (
+                  <option key={region} value={region} />
+                ))}
+              </datalist>
             </label>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <label className="block">
-                <span className="text-sm font-medium text-stone-700">月</span>
-                <input
-                  name="month"
-                  type="number"
-                  min="1"
-                  max="12"
-                  required
-                  defaultValue={currentMonth}
+                <span className="text-sm font-medium text-stone-700">季節</span>
+                <select
+                  name="season"
+                  defaultValue="summer"
                   className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                />
+                >
+                  {Object.entries(seasonLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
               </label>
 
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">天候リスク</span>
+                <select
+                  name="weather_risk"
+                  defaultValue="stable"
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                >
+                  {Object.entries(weatherRiskLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
               <label className="block">
                 <span className="text-sm font-medium text-stone-700">日数</span>
                 <input
@@ -75,45 +108,50 @@ export function AIRecommendationForm({ error }: AIRecommendationFormProps) {
                   className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
                 />
               </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">宿泊</span>
+                <select
+                  name="accommodation_style"
+                  defaultValue="day_hike"
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                >
+                  {Object.entries(accommodationStyleLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
 
-            <label className="flex items-center justify-between rounded-lg border border-stone-200 bg-stone-50 px-4 py-3">
-              <span>
-                <span className="block text-sm font-medium text-stone-700">テント泊</span>
-                <span className="text-xs text-stone-500">キャンプ装備を含める</span>
-              </span>
-              <input
-                name="is_camping"
-                type="checkbox"
-                className="h-5 w-5 accent-forest-700"
-              />
-            </label>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">予算（円）</span>
+                <input
+                  name="budget_jpy"
+                  type="number"
+                  min="0"
+                  defaultValue={50000}
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                />
+              </label>
 
-            <label className="block">
-              <span className="text-sm font-medium text-stone-700">予算（円）</span>
-              <input
-                name="budget_jpy"
-                type="number"
-                min="0"
-                defaultValue={50000}
-                className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-              />
-            </label>
-
-            <label className="block">
-              <span className="text-sm font-medium text-stone-700">経験レベル</span>
-              <select
-                name="experience_level"
-                defaultValue="beginner"
-                className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-              >
-                {Object.entries(experienceLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">経験レベル</span>
+                <select
+                  name="experience_level"
+                  defaultValue="beginner"
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                >
+                  {Object.entries(experienceLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
           </div>
         </section>
 
@@ -122,10 +160,9 @@ export function AIRecommendationForm({ error }: AIRecommendationFormProps) {
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-forest-700 px-5 py-4 text-base font-semibold text-white disabled:opacity-60"
         >
           <Sparkles className="h-5 w-5" />
-          AI推薦を作成
+          推薦を作成
         </SubmitButton>
       </form>
     </div>
   );
 }
-

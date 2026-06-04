@@ -19,15 +19,20 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       count: 0
     };
 
-    current.weightG += Number(item.weight_g ?? 0);
+    current.weightG += Number(item.weight_grams ?? 0);
     current.count += 1;
     categoryWeights.set(categoryId, current);
   }
 
   const totalWeightG = sumWeight(ownedGear);
   const totalValueJpy = ownedGear.reduce((total, item) => {
-    return total + Number(item.price_jpy ?? 0);
+    return total + Number(item.purchase_price_jpy ?? item.msrp_jpy ?? 0);
   }, 0);
+  const baseWeightG = sumWeight(ownedGear.filter((item) => item.weight_type === "base"));
+  const consumableWeightG = sumWeight(
+    ownedGear.filter((item) => item.weight_type === "consumable")
+  );
+  const wornWeightG = sumWeight(ownedGear.filter((item) => item.weight_type === "worn"));
 
   return {
     totalCount: gear.length,
@@ -35,11 +40,10 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     wishlistCount: gear.filter((item) => item.status === "wishlist").length,
     totalWeightG,
     totalValueJpy,
-    baseWeightG: sumWeight(ownedGear.filter((item) => item.weight_type === "base")),
-    consumableWeightG: sumWeight(
-      ownedGear.filter((item) => item.weight_type === "consumable")
-    ),
-    wornWeightG: sumWeight(ownedGear.filter((item) => item.weight_type === "worn")),
+    baseWeightG,
+    consumableWeightG,
+    wornWeightG,
+    totalPackWeightG: baseWeightG + consumableWeightG,
     categoryWeights: Array.from(categoryWeights.values()).sort(
       (a, b) => b.weightG - a.weightG
     ),
@@ -48,6 +52,5 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
 }
 
 function sumWeight(items: UserGear[]) {
-  return items.reduce((total, item) => total + Number(item.weight_g ?? 0), 0);
+  return items.reduce((total, item) => total + Number(item.weight_grams ?? 0), 0);
 }
-

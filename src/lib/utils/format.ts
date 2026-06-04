@@ -8,7 +8,8 @@ export function cn(...inputs: ClassValue[]) {
 export function formatWeight(grams: number) {
   if (grams >= 1000) {
     return `${(grams / 1000).toLocaleString("ja-JP", {
-      maximumFractionDigits: 1
+      minimumFractionDigits: grams % 1000 === 0 ? 0 : 2,
+      maximumFractionDigits: 2
     })} kg`;
   }
 
@@ -31,4 +32,3 @@ export function toNumber(value: FormDataEntryValue | null) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
-

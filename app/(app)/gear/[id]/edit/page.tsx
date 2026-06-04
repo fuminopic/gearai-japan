@@ -1,6 +1,11 @@
 import { GearForm } from "@/components/gear-form";
 import { updateGear } from "@/lib/actions/gear";
-import { getGearCategories, getUserGearById } from "@/lib/data/gear";
+import {
+  getGearCategories,
+  getGearProducts,
+  getGearSubcategories,
+  getUserGearById
+} from "@/lib/data/gear";
 
 type EditGearPageProps = {
   params: Promise<{
@@ -16,8 +21,10 @@ export default async function EditGearPage({
   searchParams
 }: EditGearPageProps) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  const [categories, gear] = await Promise.all([
+  const [categories, subcategories, products, gear] = await Promise.all([
     getGearCategories(),
+    getGearSubcategories(),
+    getGearProducts(),
     getUserGearById(id)
   ]);
 
@@ -29,6 +36,8 @@ export default async function EditGearPage({
       </div>
       <GearForm
         categories={categories}
+        subcategories={subcategories}
+        products={products}
         gear={gear}
         action={updateGear.bind(null, id)}
         error={query.error}

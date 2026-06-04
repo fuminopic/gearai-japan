@@ -5,10 +5,12 @@ import { redirect } from "next/navigation";
 
 import { getUserGear, requireUser } from "@/lib/data/gear";
 import { findMountainByName } from "@/lib/data/recommendations";
+import {
+  createRuleBasedRecommendation,
+  type RuleEngineInput
+} from "@/lib/recommendations/rule-engine";
 import type {
   AIRecommendationOutput,
-  AIRecommendedItem,
-  ExperienceLevel,
   GearAnalysis,
   MissingGearAnalysis,
   UserGear
@@ -19,43 +21,29 @@ const MODEL = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
 
 export async function createRecommendation(formData: FormData) {
   const { supabase, user } = await requireUser();
-
-  const input = {
-    mountain_name: String(formData.get("mountain_name") ?? "").trim(),
-    month: toNumber(formData.get("month")) ?? new Date().getMonth() + 1,
+  const input: RuleEngineInput = {
+    mountain_region: String(formData.get("mountain_region") ?? "").trim(),
+    season: parseSeason(formData.get("season")),
+    weather_risk: parseWeatherRisk(formData.get("weather_risk")),
     days: toNumber(formData.get("days")) ?? 1,
-    is_camping: formData.get("is_camping") === "on",
+    accommodation_style: parseAccommodationStyle(
+      formData.get("accommodation_style")
+    ),
     budget_jpy: toNumber(formData.get("budget_jpy")) ?? 0,
-    experience_level: String(
-      formData.get("experience_level") ?? "beginner"
-    ) as ExperienceLevel
+    experience_level: parseExperienceLevel(formData.get("experience_level"))
   };
 
-  if (!input.mountain_name) {
-    redirectWithError("山名を入力してください");
-  }
-
-  if (!process.env.OPENAI_API_KEY) {
-    redirectWithError("OPENAI_API_KEY が設定されていません");
+  if (!input.mountain_region) {
+    redirectWithError("山域を入力してください");
   }
 
   const [gear, mountain] = await Promise.all([
     getUserGear(),
-    findMountainByName(input.mountain_name)
+    findMountainByName(input.mountain_region)
   ]);
 
-  let output: AIRecommendationOutput;
-
-  try {
-    output = await requestAIRecommendation({
-      input,
-      mountain,
-      gear
-    });
-  } catch {
-    redirectWithError("AI推薦の作成に失敗しました。少し時間をおいて再度お試しください。");
-  }
-
+  const ruleOutput = createRuleBasedRecommendation(input);
+  const output = await addAIExplanations(ruleOutput, input, gear);
   const ownedAnalysis = analyzeOwnedGear(output, gear);
   const missingAnalysis = analyzeMissingGear(output, ownedAnalysis);
 
@@ -68,7 +56,7 @@ export async function createRecommendation(formData: FormData) {
       output,
       owned_analysis: ownedAnalysis,
       missing_analysis: missingAnalysis,
-      model: MODEL
+      model: process.env.OPENAI_API_KEY ? `rules+${MODEL}` : "rules"
     })
     .select("id")
     .single();
@@ -80,24 +68,33 @@ export async function createRecommendation(formData: FormData) {
   redirect(`/ai/recommendations/${data.id}`);
 }
 
-function redirectWithError(message: string): never {
-  redirect(`/ai?error=${encodeURIComponent(message)}`);
+async function addAIExplanations(
+  output: AIRecommendationOutput,
+  input: RuleEngineInput,
+  gear: UserGear[]
+) {
+  if (!process.env.OPENAI_API_KEY) {
+    return output;
+  }
+
+  try {
+    return mergeExplanation(
+      output,
+      await requestAIExplanation({ output, input, gear })
+    );
+  } catch (error) {
+    logAIRecommendationError(error);
+    return output;
+  }
 }
 
-async function requestAIRecommendation({
+async function requestAIExplanation({
+  output,
   input,
-  mountain,
   gear
 }: {
-  input: {
-    mountain_name: string;
-    month: number;
-    days: number;
-    is_camping: boolean;
-    budget_jpy: number;
-    experience_level: ExperienceLevel;
-  };
-  mountain: unknown;
+  output: AIRecommendationOutput;
+  input: RuleEngineInput;
   gear: UserGear[];
 }) {
   const openai = new OpenAI({
@@ -110,32 +107,31 @@ async function requestAIRecommendation({
       {
         role: "system",
         content:
-          "あなたは日本の登山・キャンプ装備に詳しい安全重視のギアアドバイザーです。出力は必ず日本語にしてください。天気APIや現在の天気を使わず、季節・日数・宿泊方式・経験レベル・山域の基本情報だけで保守的に判断してください。道案内やGPS情報は提供しないでください。"
+          "あなたは日本の登山装備に詳しい編集者です。装備の追加・削除・カテゴリ変更は絶対にせず、渡されたルールエンジン結果の説明文だけを自然な日本語に整えてください。"
       },
       {
         role: "user",
         content: JSON.stringify({
-          request: input,
-          mountain,
-          user_gear: gear.map((item) => ({
-            name: item.name,
-            brand: item.brand,
-            category: item.gear_categories?.name_en,
-            status: item.status,
-            weight_g: item.weight_g,
-            price_jpy: item.price_jpy
-          })),
-          instruction:
-            "既存装備は参考情報です。必要装備、推奨装備、任意装備、リスク、重量、予算を日本語で返してください。category は指定 enum の英語値だけを使ってください。"
+          trip_input: input,
+          user_owned_gear: gear
+            .filter((item) => item.status === "owned")
+            .map((item) => ({
+              name: item.name,
+              brand: item.brand,
+              category: item.gear_categories?.name_en,
+              subcategory: item.gear_subcategories?.name_en,
+              weight_grams: item.weight_grams
+            })),
+          rule_output: output
         })
       }
     ],
     response_format: {
       type: "json_schema",
       json_schema: {
-        name: "gearai_recommendation",
+        name: "gearai_rule_explanation",
         strict: true,
-        schema: recommendationJsonSchema
+        schema: explanationJsonSchema
       }
     }
   });
@@ -143,10 +139,38 @@ async function requestAIRecommendation({
   const content = completion.choices[0]?.message.content;
 
   if (!content) {
-    throw new Error("AI推薦の生成に失敗しました。");
+    throw new Error("AI説明の生成に失敗しました。");
   }
 
-  return JSON.parse(content) as AIRecommendationOutput;
+  return JSON.parse(content) as ExplanationPatch;
+}
+
+function mergeExplanation(
+  output: AIRecommendationOutput,
+  explanation: ExplanationPatch
+): AIRecommendationOutput {
+  return {
+    ...output,
+    trip_summary: explanation.trip_summary || output.trip_summary,
+    budget_comment: explanation.budget_comment || output.budget_comment,
+    safety_note: explanation.safety_note || output.safety_note,
+    required_items: mergeItemReasons(output.required_items, explanation.item_reasons),
+    recommended_items: mergeItemReasons(
+      output.recommended_items,
+      explanation.item_reasons
+    ),
+    optional_items: mergeItemReasons(output.optional_items, explanation.item_reasons)
+  };
+}
+
+function mergeItemReasons(
+  items: AIRecommendationOutput["required_items"],
+  reasons: ExplanationPatch["item_reasons"]
+) {
+  return items.map((item) => {
+    const reason = reasons.find((entry) => entry.name === item.name)?.reason;
+    return reason ? { ...item, reason } : item;
+  });
 }
 
 function analyzeOwnedGear(
@@ -160,12 +184,15 @@ function analyzeOwnedGear(
 
   for (const recommended of allRecommended) {
     const matches = ownedGear.filter((item) => {
-      const categoryMatch = item.gear_categories?.name_en === recommended.category;
+      const categoryMatch =
+        item.gear_categories?.name_en === recommended.category;
+      const subcategoryMatch =
+        item.gear_subcategories?.name_en === recommended.subcategory;
       const nameMatch =
         normalize(item.name).includes(normalize(recommended.name)) ||
         normalize(recommended.name).includes(normalize(item.name));
 
-      return categoryMatch || nameMatch;
+      return subcategoryMatch || categoryMatch || nameMatch;
     });
 
     const exact = matches.find((item) =>
@@ -181,10 +208,12 @@ function analyzeOwnedGear(
       recommended_name: recommended.name,
       matched_user_gear_id: match.id,
       matched_user_gear_name: match.name,
-      match_confidence: exact ? "high" : "medium"
+      match_confidence: exact || itemHasSubcategory(match, recommended.subcategory)
+        ? "high"
+        : "medium"
     } as const;
 
-    if (exact) {
+    if (analysisItem.match_confidence === "high") {
       ownedItems.push(analysisItem);
     } else {
       maybeOwnedItems.push(analysisItem);
@@ -240,6 +269,10 @@ function flattenRecommendedItems(output: AIRecommendationOutput) {
   ];
 }
 
+function itemHasSubcategory(item: UserGear, subcategory: string) {
+  return item.gear_subcategories?.name_en === subcategory;
+}
+
 function dedupeOwnedAnalysis(items: GearAnalysis["owned_items"]) {
   const seen = new Set<string>();
   return items.filter((item) => {
@@ -253,76 +286,101 @@ function dedupeOwnedAnalysis(items: GearAnalysis["owned_items"]) {
   });
 }
 
-function normalize(value: string) {
-  return value.toLowerCase().replace(/\s+/g, "");
+function parseSeason(value: FormDataEntryValue | null) {
+  return value === "spring" ||
+    value === "summer" ||
+    value === "autumn" ||
+    value === "winter"
+    ? value
+    : "summer";
 }
 
-const itemSchema = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    name: { type: "string" },
-    category: {
-      type: "string",
-      enum: [
-        "backpacking",
-        "sleeping",
-        "clothing",
-        "cooking",
-        "safety",
-        "electronics",
-        "other"
-      ]
-    },
-    reason: { type: "string" },
-    priority: { type: "string", enum: ["high", "medium", "low"] },
-    estimated_weight_g: { type: "number" },
-    estimated_price_jpy: { type: "number" }
-  },
-  required: [
-    "name",
-    "category",
-    "reason",
-    "priority",
-    "estimated_weight_g",
-    "estimated_price_jpy"
-  ]
+function parseWeatherRisk(value: FormDataEntryValue | null) {
+  return value === "stable" ||
+    value === "rain" ||
+    value === "cold" ||
+    value === "wind" ||
+    value === "snow"
+    ? value
+    : "stable";
+}
+
+function parseAccommodationStyle(value: FormDataEntryValue | null) {
+  return value === "day_hike" || value === "hut" || value === "tent"
+    ? value
+    : "day_hike";
+}
+
+function parseExperienceLevel(value: FormDataEntryValue | null) {
+  return value === "beginner" ||
+    value === "intermediate" ||
+    value === "advanced" ||
+    value === "expert"
+    ? value
+    : "beginner";
+}
+
+function redirectWithError(message: string): never {
+  redirect(`/ai?error=${encodeURIComponent(message)}`);
+}
+
+function logAIRecommendationError(error: unknown) {
+  if (!isErrorLike(error)) {
+    console.error("[AI recommendation] Unknown explanation error", error);
+    return;
+  }
+
+  console.error("[AI recommendation] OpenAI explanation failed", {
+    name: error.name,
+    status: error.status,
+    code: error.code,
+    type: error.type,
+    message: error.message,
+    stack: error.stack
+  });
+}
+
+function isErrorLike(error: unknown): error is Error & {
+  status?: number;
+  code?: string;
+  type?: string;
+} {
+  return typeof error === "object" && error !== null && "message" in error;
+}
+
+function normalize(value: string) {
+  return value.toLocaleLowerCase().replace(/\s+/g, "");
+}
+
+type ExplanationPatch = {
+  trip_summary: string;
+  budget_comment: string;
+  safety_note: string;
+  item_reasons: Array<{
+    name: string;
+    reason: string;
+  }>;
 };
 
-const recommendationJsonSchema = {
+const explanationJsonSchema = {
   type: "object",
   additionalProperties: false,
   properties: {
     trip_summary: { type: "string" },
-    required_items: { type: "array", items: itemSchema },
-    recommended_items: { type: "array", items: itemSchema },
-    optional_items: { type: "array", items: itemSchema },
-    risk_warnings: {
+    budget_comment: { type: "string" },
+    safety_note: { type: "string" },
+    item_reasons: {
       type: "array",
       items: {
         type: "object",
         additionalProperties: false,
         properties: {
-          level: { type: "string", enum: ["high", "medium", "low"] },
-          message: { type: "string" }
+          name: { type: "string" },
+          reason: { type: "string" }
         },
-        required: ["level", "message"]
+        required: ["name", "reason"]
       }
-    },
-    estimated_total_weight_g: { type: "number" },
-    estimated_total_budget_jpy: { type: "number" },
-    budget_comment: { type: "string" },
-    safety_note: { type: "string" }
+    }
   },
-  required: [
-    "trip_summary",
-    "required_items",
-    "recommended_items",
-    "optional_items",
-    "risk_warnings",
-    "estimated_total_weight_g",
-    "estimated_total_budget_jpy",
-    "budget_comment",
-    "safety_note"
-  ]
+  required: ["trip_summary", "budget_comment", "safety_note", "item_reasons"]
 };

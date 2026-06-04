@@ -2,6 +2,11 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 import type { AIRecommendationRecord } from "@/lib/types";
+import {
+  accommodationStyleLabels,
+  seasonLabels,
+  weatherRiskLabels
+} from "@/lib/i18n/labels";
 import { formatJpy, formatWeight } from "@/lib/utils/format";
 
 type RecommendationHistoryListProps = {
@@ -36,10 +41,12 @@ export function RecommendationHistoryList({ records }: RecommendationHistoryList
         >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-lg font-semibold text-ink">{record.input.mountain_name}</p>
+              <p className="text-lg font-semibold text-ink">{record.input.mountain_region}</p>
               <p className="mt-1 text-sm text-stone-500">
-                {record.input.month}月 / {record.input.days}日 /{" "}
-                {record.input.is_camping ? "テント泊" : "日帰り・小屋泊"}
+                {record.input.days}日 /{" "}
+                {seasonLabels[record.input.season]} /{" "}
+                {weatherRiskLabels[record.input.weather_risk]} /{" "}
+                {accommodationStyleLabels[record.input.accommodation_style]}
               </p>
             </div>
             <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-stone-400" />
@@ -63,4 +70,3 @@ export function RecommendationHistoryList({ records }: RecommendationHistoryList
     </div>
   );
 }
-

@@ -1,6 +1,9 @@
 export type GearStatus = "owned" | "wishlist";
 export type WeightType = "base" | "consumable" | "worn";
 export type ExperienceLevel = "beginner" | "intermediate" | "advanced" | "expert";
+export type AccommodationStyle = "day_hike" | "hut" | "tent";
+export type WeatherRisk = "stable" | "rain" | "cold" | "wind" | "snow";
+export type Season = "spring" | "summer" | "autumn" | "winter";
 
 export type GearCategory = {
   id: string;
@@ -11,21 +14,57 @@ export type GearCategory = {
   created_at: string;
 };
 
+export type GearSubcategory = {
+  id: string;
+  category_id: string;
+  name_ja: string;
+  name_en: string;
+  sort_order: number;
+  created_at: string;
+};
+
+export type GearProduct = {
+  id: string;
+  brand: string;
+  model: string;
+  name_ja: string | null;
+  category_id: string;
+  subcategory_id: string | null;
+  weight_grams: number | null;
+  msrp_jpy: number | null;
+  size: string | null;
+  volume: string | null;
+  capacity: string | null;
+  created_at: string;
+  gear_categories?: Pick<GearCategory, "id" | "name_ja" | "name_en"> | null;
+  gear_subcategories?: Pick<GearSubcategory, "id" | "name_ja" | "name_en"> | null;
+  gear_product_aliases?: Array<{ alias: string }> | null;
+};
+
 export type UserGear = {
   id: string;
   user_id: string;
+  product_id: string | null;
   category_id: string;
+  subcategory_id: string | null;
   name: string;
   brand: string | null;
-  weight_g: number;
-  price_jpy: number | null;
+  model: string | null;
+  weight_grams: number;
+  msrp_jpy: number | null;
+  purchase_price_jpy: number | null;
+  size: string | null;
+  volume: string | null;
+  capacity: string | null;
   purchase_date: string | null;
   status: GearStatus;
   weight_type: WeightType;
-  notes: string | null;
+  memo: string | null;
   created_at: string;
   updated_at: string;
   gear_categories?: Pick<GearCategory, "id" | "name_ja" | "name_en"> | null;
+  gear_subcategories?: Pick<GearSubcategory, "id" | "name_ja" | "name_en"> | null;
+  gear_products?: Pick<GearProduct, "id" | "brand" | "model" | "name_ja"> | null;
 };
 
 export type GearFilters = {
@@ -44,6 +83,7 @@ export type DashboardSummary = {
   baseWeightG: number;
   consumableWeightG: number;
   wornWeightG: number;
+  totalPackWeightG: number;
   categoryWeights: Array<{
     categoryId: string;
     nameJa: string;
@@ -71,21 +111,26 @@ export type Mountain = {
 
 export type RecommendationPriority = "high" | "medium" | "low";
 export type RecommendationCategory =
-  | "backpacking"
-  | "sleeping"
+  | "sleep"
+  | "shelter"
+  | "carry"
   | "clothing"
   | "cooking"
   | "safety"
   | "electronics"
+  | "navigation"
+  | "hydration"
   | "other";
 
 export type AIRecommendedItem = {
   name: string;
   category: RecommendationCategory;
+  subcategory: string;
   reason: string;
   priority: RecommendationPriority;
   estimated_weight_g: number;
   estimated_price_jpy: number;
+  weight_type: WeightType;
 };
 
 export type AIRiskWarning = {
@@ -134,10 +179,11 @@ export type AIRecommendationRecord = {
   user_id: string;
   mountain_id: string | null;
   input: {
-    mountain_name: string;
-    month: number;
+    mountain_region: string;
+    season: Season;
+    weather_risk: WeatherRisk;
     days: number;
-    is_camping: boolean;
+    accommodation_style: AccommodationStyle;
     budget_jpy: number;
     experience_level: ExperienceLevel;
   };

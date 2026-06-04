@@ -37,9 +37,9 @@ export default async function DashboardPage() {
           icon={<Backpack className="h-5 w-5" />}
         />
         <StatCard
-          label="総重量"
-          value={formatWeight(summary.totalWeightG)}
-          detail="所有装備のみ"
+          label="パック重量"
+          value={formatWeight(summary.totalPackWeightG)}
+          detail="ベース + 消耗品"
           icon={<Gauge className="h-5 w-5" />}
         />
         <StatCard
@@ -63,11 +63,14 @@ export default async function DashboardPage() {
             {[
               ["base", summary.baseWeightG],
               ["consumable", summary.consumableWeightG],
-              ["worn", summary.wornWeightG]
+              ["worn", summary.wornWeightG],
+              ["total", summary.totalWeightG]
             ].map(([type, weight]) => (
               <div key={type} className="flex items-center justify-between border-b border-stone-100 pb-3 last:border-0 last:pb-0">
                 <span className="text-sm font-medium text-stone-600">
-                  {weightTypeLabels[type as keyof typeof weightTypeLabels]}
+                  {type === "total"
+                    ? "総重量"
+                    : weightTypeLabels[type as keyof typeof weightTypeLabels]}
                 </span>
                 <span className="text-sm font-semibold text-ink">
                   {formatWeight(Number(weight))}
@@ -123,11 +126,17 @@ export default async function DashboardPage() {
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-ink">{item.name}</p>
                   <p className="mt-1 text-xs text-stone-500">
-                    {item.gear_categories?.name_ja ?? "その他"} / {statusLabels[item.status]}
+                    {[
+                      item.gear_categories?.name_ja ?? "その他",
+                      item.gear_subcategories?.name_ja,
+                      statusLabels[item.status]
+                    ]
+                      .filter(Boolean)
+                      .join(" / ")}
                   </p>
                 </div>
                 <p className="shrink-0 text-sm font-semibold text-ink">
-                  {formatWeight(Number(item.weight_g))}
+                  {formatWeight(Number(item.weight_grams))}
                 </p>
               </div>
             ))
@@ -137,4 +146,3 @@ export default async function DashboardPage() {
     </div>
   );
 }
-

@@ -1,7 +1,26 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
-import type { GearCategory, GearFilters, UserGear } from "@/lib/types";
+import type {
+  GearCategory,
+  GearFilters,
+  GearProduct,
+  GearSubcategory,
+  UserGear
+} from "@/lib/types";
+
+const PRODUCT_CATEGORY_KEYS = [
+  "sleep",
+  "shelter",
+  "carry",
+  "clothing",
+  "cooking",
+  "electronics",
+  "navigation",
+  "safety",
+  "hydration",
+  "other"
+];
 
 export async function requireUser() {
   const supabase = await createClient();
@@ -21,6 +40,7 @@ export async function getGearCategories() {
   const { data, error } = await supabase
     .from("gear_categories")
     .select("*")
+    .in("name_en", PRODUCT_CATEGORY_KEYS)
     .order("sort_order", { ascending: true });
 
   if (error) {
@@ -30,19 +50,52 @@ export async function getGearCategories() {
   return data as GearCategory[];
 }
 
+export async function getGearSubcategories() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("gear_subcategories")
+    .select("*")
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as GearSubcategory[];
+}
+
+export async function getGearProducts() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("gear_products")
+    .select(
+      "*, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_product_aliases(alias)"
+    )
+    .order("brand", { ascending: true })
+    .order("model", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as GearProduct[];
+}
+
 export async function getUserGear(filters: GearFilters = {}) {
   const { supabase, user } = await requireUser();
   let query = supabase
     .from("user_gear")
     .select(
-      "*, gear_categories:category_id(id, name_ja, name_en)"
+      "*, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_products:product_id(id, brand, model, name_ja)"
     )
     .eq("user_id", user.id);
 
   if (filters.q) {
     const keyword = filters.q.replaceAll("%", "").trim();
     if (keyword) {
-      query = query.or(`name.ilike.%${keyword}%,brand.ilike.%${keyword}%`);
+      query = query.or(
+        `name.ilike.%${keyword}%,brand.ilike.%${keyword}%,model.ilike.%${keyword}%,memo.ilike.%${keyword}%`
+      );
     }
   }
 
@@ -55,9 +108,12 @@ export async function getUserGear(filters: GearFilters = {}) {
   }
 
   if (filters.sort === "weight") {
-    query = query.order("weight_g", { ascending: false });
+    query = query.order("weight_grams", { ascending: false });
   } else if (filters.sort === "price") {
-    query = query.order("price_jpy", { ascending: false, nullsFirst: false });
+    query = query.order("purchase_price_jpy", {
+      ascending: false,
+      nullsFirst: false
+    });
   } else {
     query = query.order("created_at", { ascending: false });
   }
@@ -75,7 +131,9 @@ export async function getUserGearById(id: string) {
   const { supabase, user } = await requireUser();
   const { data, error } = await supabase
     .from("user_gear")
-    .select("*, gear_categories:category_id(id, name_ja, name_en)")
+    .select(
+      "*, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_products:product_id(id, brand, model, name_ja)"
+    )
     .eq("id", id)
     .eq("user_id", user.id)
     .single();
@@ -86,4 +144,3 @@ export async function getUserGearById(id: string) {
 
   return data as UserGear;
 }
-

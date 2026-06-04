@@ -5,6 +5,8 @@ import type {
   AIRecommendedItem,
   MissingAnalysisItem
 } from "@/lib/types";
+import { accommodationStyleLabels } from "@/lib/i18n/labels";
+import { weightTypeLabels } from "@/lib/i18n/labels";
 import { formatJpy, formatWeight } from "@/lib/utils/format";
 
 type RecommendationDetailProps = {
@@ -14,20 +16,26 @@ type RecommendationDetailProps = {
 export function RecommendationDetail({ record }: RecommendationDetailProps) {
   const missing = record.missing_analysis;
   const owned = record.owned_analysis;
+  const budgetGap = Math.max(
+    0,
+    (missing?.estimated_missing_budget_jpy ?? 0) - record.input.budget_jpy
+  );
+  const missingRequiredCount = missing?.missing_required_items.length ?? 0;
 
   return (
     <div className="space-y-5">
       <section>
         <p className="text-sm font-semibold text-forest-700">推薦結果</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">
-          {record.input.mountain_name}
+          {record.input.mountain_region}
         </h1>
         <p className="mt-2 text-sm leading-6 text-stone-600">
-          {record.output.trip_summary}
+          {accommodationStyleLabels[record.input.accommodation_style]} /{" "}
+          {record.input.days}日
         </p>
       </section>
 
-      <section className="grid grid-cols-2 gap-3">
+      <section className="grid grid-cols-3 gap-3">
         <div className="rounded-lg bg-white p-4 shadow-soft">
           <p className="text-sm text-stone-500">推定総重量</p>
           <p className="mt-2 text-2xl font-semibold text-ink">
@@ -35,11 +43,21 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
           </p>
         </div>
         <div className="rounded-lg bg-white p-4 shadow-soft">
-          <p className="text-sm text-stone-500">推定予算</p>
+          <p className="text-sm text-stone-500">不足必須</p>
           <p className="mt-2 text-2xl font-semibold text-ink">
-            {formatJpy(record.output.estimated_total_budget_jpy)}
+            {missingRequiredCount.toLocaleString("ja-JP")} 点
           </p>
         </div>
+        <div className="rounded-lg bg-white p-4 shadow-soft">
+          <p className="text-sm text-stone-500">予算差額</p>
+          <p className="mt-2 text-2xl font-semibold text-ink">
+            {formatJpy(budgetGap)}
+          </p>
+        </div>
+      </section>
+
+      <section className="rounded-lg bg-white p-5 shadow-soft">
+        <p className="text-sm leading-6 text-stone-700">{record.output.trip_summary}</p>
       </section>
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
@@ -163,7 +181,9 @@ function RecommendationItems({
               </span>
             </div>
             <p className="mt-3 text-xs text-stone-500">
-              {formatWeight(item.estimated_weight_g)} / {formatJpy(item.estimated_price_jpy)}
+              {item.subcategory} / {weightTypeLabels[item.weight_type]} /{" "}
+              {formatWeight(item.estimated_weight_g)} /{" "}
+              {formatJpy(item.estimated_price_jpy)}
             </p>
           </article>
         ))}

@@ -105,6 +105,8 @@ insert into public.gear_product_aliases (product_id, alias)
 select p.id, v.alias
 from (
   values
+    ('SOD-310', 'WindMaster'),
+    ('SOD-310', 'Micro Regulator Stove WindMaster'),
     ('ST-711', 'Gas Canister CB TOUGH 125'),
     ('ST-711', 'CB Tough 125 Gas Canister'),
     ('ST-712', 'Gas Canister CB TOUGH 220'),

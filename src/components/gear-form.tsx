@@ -112,7 +112,7 @@ export function GearForm({
     }
 
     return products
-      .filter((product) => matchesProductQuery(product, normalizedQuery));
+      .filter((product) => matchesProductQuery(product, query));
   }, [products, query]);
 
   function handleProductQuery(value: string) {
@@ -481,6 +481,7 @@ function getProductSearchValues(product: GearProduct) {
     product.name_ja,
     product.model,
     product.brand,
+    product.capacity,
     `${product.brand} ${product.model}`,
     ...(product.gear_product_aliases?.map((item) => item.alias) ?? [])
   ].filter((value): value is string => Boolean(value));
@@ -490,14 +491,29 @@ function normalize(value: string) {
   return value.toLocaleLowerCase().replace(/\s+/g, "");
 }
 
-function matchesProductQuery(product: GearProduct, normalizedQuery: string) {
+function matchesProductQuery(product: GearProduct, query: string) {
   const values = getProductSearchValues(product);
+  const tokens = query
+    .toLocaleLowerCase()
+    .split(/\s+/)
+    .map(normalize)
+    .filter(Boolean);
 
-  if (/^[a-z0-9]+$/.test(normalizedQuery) && normalizedQuery.length <= 3) {
-    return [product.brand, product.model].some((value) =>
-      normalize(value).startsWith(normalizedQuery)
-    );
+  return tokens.every((token) => matchesProductToken(product, values, token));
+}
+
+function matchesProductToken(
+  product: GearProduct,
+  values: string[],
+  normalizedToken: string
+) {
+  if (/^\d+$/.test(normalizedToken)) {
+    return values.some((value) => normalize(value).includes(normalizedToken));
   }
 
-  return values.some((value) => normalize(value).includes(normalizedQuery));
+  if (normalizedToken === "st" || normalizedToken === "sod") {
+    return normalize(product.model).startsWith(normalizedToken);
+  }
+
+  return values.some((value) => normalize(value).includes(normalizedToken));
 }

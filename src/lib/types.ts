@@ -155,7 +155,6 @@ export type RecommendationCategory =
   | "shelter"
   | "backpack"
   | "clothing"
-  | "rainwear"
   | "cooking"
   | "electronics"
   | "first_aid"

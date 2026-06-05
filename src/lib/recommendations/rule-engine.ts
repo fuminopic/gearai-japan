@@ -123,7 +123,7 @@ function createRequiredItems(
 ) {
   const items: AIRecommendedItem[] = [
     item("バックパック", "backpack", "backpack", "行動時間と装備量に合う容量を確保。", "high", 850, 22000, "base", "山域共通ルール"),
-    item("レインウェア", "rainwear", "rainwear", "日本の山岳では雨と風による体温低下対策を最優先。", "high", 260, 26000, "base", "天候リスクルール"),
+    item("レインウェア", "clothing", "rainwear", "日本の山岳では雨と風による体温低下対策を最優先。", "high", 260, 26000, "base", "天候リスクルール"),
     item("ヘッドランプ", "electronics", "headlamp", "下山遅れや山小屋到着遅れに備える。", "high", 80, 7000, "base", "安全装備ルール"),
     item("ファーストエイドキット", "first_aid", "first_aid_kit", "擦過傷、捻挫、低体温の初期対応に使う。", "high", 160, 4500, "base", "安全装備ルール")
   ];

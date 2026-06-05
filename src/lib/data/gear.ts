@@ -14,7 +14,6 @@ const PRODUCT_CATEGORY_KEYS = [
   "shelter",
   "sleep",
   "clothing",
-  "rainwear",
   "cooking",
   "electronics",
   "first_aid",

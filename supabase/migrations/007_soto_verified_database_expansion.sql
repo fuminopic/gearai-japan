@@ -1,3 +1,11 @@
+insert into public.gear_subcategories (category_id, name_ja, name_en, sort_order)
+select c.id, 'アクセサリー', 'accessory', 40
+from public.gear_categories c
+where c.name_en = 'cooking'
+on conflict (category_id, name_en) do update
+set name_ja = excluded.name_ja,
+    sort_order = excluded.sort_order;
+
 insert into public.gear_products (
   brand,
   model,
@@ -56,7 +64,19 @@ from (
     ('ST-950', 'ステンレスヘビーポット GORA(ゴーラ)', 'cookware', 3500, 19800, '20cmポット、16cmポット、14cmポット、リッド、リフターのセット', 'ポット・リッド：ステンレス / リフター：アルミニウム / 収納袋：綿', '2,500ml / 1,200ml / 900ml', 'https://soto.shinfuji.co.jp/products/st-950/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/ST-950_01-1.jpg', 'https://soto.shinfuji.co.jp/products/st-950/'),
     ('ST-950P', 'GORA パンチングザル', 'cookware', 196, 3520, '直径195×高さ76mm', 'ステンレス', null, 'https://soto.shinfuji.co.jp/products/st-950p/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/ST-950P_01-1.jpg', 'https://soto.shinfuji.co.jp/products/st-950p/'),
     ('ST-950FP22', 'GORA フライパン22cm', 'cookware', 855, 2970, '直径240×高さ52mm', '鉄（シリコンクリア塗装）', null, 'https://soto.shinfuji.co.jp/products/st-950fp22/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/ST-950FP22_01-1.jpg', 'https://soto.shinfuji.co.jp/products/st-950fp22/'),
-    ('ST-950FP16', 'GORA フライパン16cm', 'cookware', 433, 2090, '直径180×高さ37mm', '鉄（シリコンクリア塗装）', null, 'https://soto.shinfuji.co.jp/products/st-950fp16/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/ST-950FP16_01-1.jpg', 'https://soto.shinfuji.co.jp/products/st-950fp16/')
+    ('ST-950FP16', 'GORA フライパン16cm', 'cookware', 433, 2090, '直径180×高さ37mm', '鉄（シリコンクリア塗装）', null, 'https://soto.shinfuji.co.jp/products/st-950fp16/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/ST-950FP16_01-1.jpg', 'https://soto.shinfuji.co.jp/products/st-950fp16/'),
+    ('SOD-532', 'チタンマグ450', 'cookware', 53, 4400, null, 'マグ本体／ハンドル：チタン', '450ml', 'https://soto.shinfuji.co.jp/products/sod-532-2/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/SOD-532_01.jpg', 'https://soto.shinfuji.co.jp/products/sod-532-2/'),
+    ('SOD-533', 'チタンマグ600', 'cookware', 64, 4950, null, 'マグ本体／ハンドル：チタン', '600ml', 'https://soto.shinfuji.co.jp/products/%e3%83%81%e3%82%bf%e3%83%b3%e3%83%9e%e3%82%b0600-sod-533/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/SOD-533_04.jpg', 'https://soto.shinfuji.co.jp/products/%e3%83%81%e3%82%bf%e3%83%b3%e3%83%9e%e3%82%b0600-sod-533/'),
+    ('SOD-520', 'サーモスタック', 'cookware', 182, 6985, '直径86×高さ110mm（本体収納サイズ）', 'マグ350：ステンレス / マグ400：チタン / マグリッド：樹脂、シリコン / ジョイント：樹脂、シリコン / リフター：アルミニウム、ステンレス / 収納ポーチ：ポリエステル', 'マグ350：350ml（満水容量400ml） / マグ400：400ml（満水容量500ml）', 'https://soto.shinfuji.co.jp/products/sod-520/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/S0D-520_01.jpg', 'https://soto.shinfuji.co.jp/products/sod-520/'),
+    ('SOD-521', 'サーモスタッククッカーコンボ', 'cookware', 310, 8965, '本体収納サイズ：直径105×高さ125mm', 'マグ350：ステンレス / マグ400：チタン / マグ750：アルミニウム / コジー：ターポリン、アルミ蒸着シート', 'マグ350：350ml（満水容量400ml） / マグ400：400ml（満水容量500ml） / マグ750：750ml（満水容量800ml）', 'https://soto.shinfuji.co.jp/products/sod-521/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/SOD-521_01-2.jpg', 'https://soto.shinfuji.co.jp/products/sod-521/'),
+    ('SOD-522', 'サーモライト', 'cookware', 154, 4455, '本体収納サイズ：直径105mm×高さ125mm', 'マグ750：アルミニウム / マグリッドL：樹脂、シリコン / コジー：ターポリン、アルミ蒸着シート / リフター：アルミニウム、ステンレス', 'マグ750：750ml（満水容量800ml）', 'https://soto.shinfuji.co.jp/products/sod-522/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/SOD-522_01-2.jpg', 'https://soto.shinfuji.co.jp/products/sod-522/'),
+    ('SOD-460', 'ウインドマスター専用4本ゴトク フォーフレックス', 'accessory', 27, 2090, '幅47×奥行77×高さ44mm（収納時）', 'ステンレス', null, 'https://soto.shinfuji.co.jp/products/sod-460/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/SOD-460_01-1.jpg', 'https://soto.shinfuji.co.jp/products/sod-460/'),
+    ('ST-770LU', 'ガス抜きツール ルミナス', 'accessory', 33, 2200, '幅15mm×高さ16mm×長さ100mm', 'ステンレス（本体、ガード、ピン）、樹脂（グリップ）、真鍮（グリップエンド）', null, 'https://soto.shinfuji.co.jp/products/st-770lu/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/ST-770LU_kikaku_01-2.jpg', 'https://soto.shinfuji.co.jp/products/st-770lu/'),
+    ('ST-770LUBL', 'ガス抜きツール ルミナスブルー', 'accessory', 33, 2200, '幅15mm×高さ16mm×長さ100mm', 'ステンレス（本体、ガード、ピン）、樹脂（グリップ）、真鍮（グリップエンド）', null, 'https://soto.shinfuji.co.jp/products/st-770lubl/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/ST-770LUBL_kikaku_01.jpg', 'https://soto.shinfuji.co.jp/products/st-770lubl/'),
+    ('ST-3105LU', 'レギュレーターストーブ専用アシストグリップ ルミナス', 'accessory', 8, 770, '直径8×長さ90mm（1本）', 'シリコンゴム', null, 'https://soto.shinfuji.co.jp/products/st-3105lu/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/ST-3105LU_kikaku_01.jpg', 'https://soto.shinfuji.co.jp/products/st-3105lu/'),
+    ('ST-3105LUBL', 'レギュレーターストーブ専用アシストグリップ ルミナスブルー', 'accessory', 8, 770, '直径8×長さ90mm（1本）', 'シリコンゴム', null, 'https://soto.shinfuji.co.jp/products/st-3105lubl/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/ST-3105LUBL_kikaku_01.jpg', 'https://soto.shinfuji.co.jp/products/st-3105lubl/'),
+    ('ST-526T', 'GRID テーブル', 'accessory', 315, 3795, '幅460×奥行125×高さ85mm（使用時） / 幅460×奥行125×高さ32mm（収納時）', '天板：アルミニウム / スタンド：ステンレス', null, 'https://soto.shinfuji.co.jp/products/st-526t/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/ST-526T_01-1.jpg', 'https://soto.shinfuji.co.jp/products/st-526t/'),
+    ('ST-4891KK', 'マイクロトーチ用ホルスター（カーキ）', 'accessory', 15, 1540, '幅45×奥行30×高さ70mm', 'ナイロン・ポリプロピレン・ポリエステル', null, 'https://soto.shinfuji.co.jp/products/st-4891kk/', 'https://soto.shinfuji.co.jp/wp-content/uploads/products/ST-4891KK_01.jpg', 'https://soto.shinfuji.co.jp/products/st-4891kk/')
 ) as v(model, name_ja, subcategory_en, official_weight_grams, msrp_jpy, size, material, capacity, official_url, image_url, msrp_source_url)
 join public.gear_categories c on c.name_en = 'cooking'
 join public.gear_subcategories s on s.category_id = c.id and s.name_en = v.subcategory_en

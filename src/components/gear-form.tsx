@@ -112,28 +112,13 @@ export function GearForm({
     }
 
     return products
-      .filter((product) =>
-        getProductSearchValues(product).some((value) =>
-          normalize(value).includes(normalizedQuery)
-        )
-      )
-      .slice(0, 12);
+      .filter((product) => matchesProductQuery(product, normalizedQuery));
   }, [products, query]);
 
   function handleProductQuery(value: string) {
     setQuery(value);
     setName(value);
-    const exactProduct = products.find((product) =>
-      getProductSearchValues(product).some(
-        (searchValue) => normalize(searchValue) === normalize(value)
-      )
-    );
-
-    if (exactProduct) {
-      applyProduct(exactProduct);
-    } else {
-      setProductId("");
-    }
+    setProductId("");
   }
 
   function applyProduct(product: GearProduct) {
@@ -198,7 +183,7 @@ export function GearForm({
                       {product.name_ja ?? product.model}
                     </span>
                     <span className="mt-1 block truncate text-xs text-stone-500">
-                      {product.brand}
+                      {[product.brand, product.model].filter(Boolean).join(" / ")}
                     </span>
                   </span>
                   <span className="text-right text-xs text-stone-500">
@@ -503,4 +488,16 @@ function getProductSearchValues(product: GearProduct) {
 
 function normalize(value: string) {
   return value.toLocaleLowerCase().replace(/\s+/g, "");
+}
+
+function matchesProductQuery(product: GearProduct, normalizedQuery: string) {
+  const values = getProductSearchValues(product);
+
+  if (/^[a-z0-9]+$/.test(normalizedQuery) && normalizedQuery.length <= 3) {
+    return [product.brand, product.model].some((value) =>
+      normalize(value).startsWith(normalizedQuery)
+    );
+  }
+
+  return values.some((value) => normalize(value).includes(normalizedQuery));
 }

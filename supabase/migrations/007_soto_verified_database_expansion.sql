@@ -100,3 +100,37 @@ set name_ja = excluded.name_ja,
     msrp_source_url = excluded.msrp_source_url,
     last_verified_at = excluded.last_verified_at,
     verification_status = excluded.verification_status;
+
+insert into public.gear_product_aliases (product_id, alias)
+select p.id, v.alias
+from (
+  values
+    ('ST-711', 'Gas Canister CB TOUGH 125'),
+    ('ST-711', 'CB Tough 125 Gas Canister'),
+    ('ST-712', 'Gas Canister CB TOUGH 220'),
+    ('ST-712', 'CB Tough 220 Gas Canister'),
+    ('SOD-710T', 'Power Gas 105 Triple Mix'),
+    ('SOD-710T', 'Gas Canister 105 Triple Mix'),
+    ('SOD-725T', 'Power Gas 250 Triple Mix'),
+    ('SOD-725T', 'Gas Canister 250 Triple Mix'),
+    ('SOD-750T', 'Power Gas 500 Triple Mix'),
+    ('SOD-750T', 'Gas Canister 500 Triple Mix'),
+    ('SOD-523', 'Steam Rice Cooker ITADAKI'),
+    ('ST-3108', 'Minimal Cooker Square'),
+    ('SOD-532', 'Titanium Mug 450'),
+    ('SOD-532', 'Titanium 450'),
+    ('SOD-533', 'Titanium Mug 600'),
+    ('SOD-533', 'Titanium 600'),
+    ('SOD-520', 'Thermostack'),
+    ('SOD-520', 'Titanium Cookware Thermostack'),
+    ('SOD-521', 'Thermostack Cooker Combo'),
+    ('SOD-521', 'Titanium Cookware Combo'),
+    ('SOD-522', 'ThermoLite'),
+    ('SOD-460', 'FourFlex'),
+    ('ST-770LU', 'Gas Venting Tool Luminous'),
+    ('ST-770LUBL', 'Gas Venting Tool Luminous Blue'),
+    ('ST-3105LU', 'Assist Grip Luminous'),
+    ('ST-3105LUBL', 'Assist Grip Luminous Blue')
+) as v(model, alias)
+join public.gear_products p on p.brand = 'SOTO' and p.model = v.model
+on conflict (alias) do nothing;

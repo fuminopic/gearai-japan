@@ -1,8 +1,10 @@
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 
+import { GearImageViewer } from "@/components/gear-image-viewer";
 import { getUserGearById } from "@/lib/data/gear";
 import { statusLabels, verificationStatusLabels } from "@/lib/i18n/labels";
+import { calculateSavingsJpy } from "@/lib/utils/asset";
 import { formatJpy, formatWeight } from "@/lib/utils/format";
 
 type GearDetailPageProps = {
@@ -19,10 +21,14 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
   const verification = verificationStatusLabels[verificationStatus];
   const officialUrl = gear.official_url ?? gear.gear_products?.official_url;
   const msrpSourceUrl = gear.gear_products?.msrp_source_url;
+  const savingsJpy = calculateSavingsJpy(
+    gear.msrp_jpy,
+    gear.purchase_price_jpy
+  );
 
   return (
     <div className="space-y-5">
-      <section className="flex items-end justify-between gap-4">
+      <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-forest-700">装備詳細</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">
@@ -40,66 +46,106 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
         </Link>
       </section>
 
+      <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="rounded-lg bg-white p-5 shadow-soft">
+          <span
+            className={`inline-flex rounded-lg border px-3 py-1 text-sm font-semibold ${verification.className}`}
+          >
+            {verification.marker} {verification.label}
+          </span>
+          <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+            <div>
+              <dt className="text-sm text-stone-500">verification_status</dt>
+              <dd className="mt-1 font-semibold text-ink">{verificationStatus}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-stone-500">last_verified_at</dt>
+              <dd className="mt-1 font-semibold text-ink">
+                {gear.gear_products?.last_verified_at ?? "-"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-stone-500">重量</dt>
+              <dd className="mt-1 font-semibold text-ink">
+                {formatWeight(
+                  Number(
+                    gear.measured_weight_grams ??
+                      gear.official_weight_grams ??
+                      gear.weight_grams
+                  )
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-stone-500">ステータス</dt>
+              <dd className="mt-1 font-semibold text-ink">
+                {statusLabels[gear.status]}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-stone-500">カテゴリー</dt>
+              <dd className="mt-1 font-semibold text-ink">
+                {[gear.gear_categories?.name_ja, gear.gear_subcategories?.name_ja]
+                  .filter(Boolean)
+                  .join(" / ") || "-"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-stone-500">容量・サイズ</dt>
+              <dd className="mt-1 font-semibold text-ink">
+                {[gear.volume, gear.capacity, gear.size].filter(Boolean).join(" / ") ||
+                  "-"}
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        {gear.image_url ? (
+          <div className="rounded-lg bg-white p-5 shadow-soft">
+            <h2 className="mb-3 text-lg font-semibold text-ink">製品画像</h2>
+            <GearImageViewer
+              src={gear.image_url}
+              alt={gear.name}
+              className="h-64 sm:h-80 lg:h-96"
+            />
+          </div>
+        ) : null}
+      </section>
+
       <section className="rounded-lg bg-white p-5 shadow-soft">
-        <span
-          className={`inline-flex rounded-lg border px-3 py-1 text-sm font-semibold ${verification.className}`}
-        >
-          {verification.marker} {verification.label}
-        </span>
-        <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <dt className="text-sm text-stone-500">verification_status</dt>
-            <dd className="mt-1 font-semibold text-ink">{verificationStatus}</dd>
+            <h2 className="text-lg font-semibold text-ink">資産サマリー</h2>
           </div>
-          <div>
-            <dt className="text-sm text-stone-500">last_verified_at</dt>
-            <dd className="mt-1 font-semibold text-ink">
-              {gear.gear_products?.last_verified_at ?? "-"}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm text-stone-500">重量</dt>
-            <dd className="mt-1 font-semibold text-ink">
-              {formatWeight(
-                Number(
-                  gear.measured_weight_grams ??
-                    gear.official_weight_grams ??
-                    gear.weight_grams
-                )
-              )}
-            </dd>
-          </div>
+          <span className="inline-flex w-fit rounded-lg bg-forest-50 px-3 py-1 text-sm font-semibold text-forest-700">
+            {statusLabels[gear.status]}
+          </span>
+        </div>
+        <dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <dt className="text-sm text-stone-500">MSRP</dt>
             <dd className="mt-1 font-semibold text-ink">
-              {formatJpy(Number(gear.msrp_jpy ?? 0))}
+              {gear.msrp_jpy === null ? "-" : formatJpy(gear.msrp_jpy)}
             </dd>
           </div>
           <div>
             <dt className="text-sm text-stone-500">購入価格</dt>
             <dd className="mt-1 font-semibold text-ink">
-              {formatJpy(Number(gear.purchase_price_jpy ?? 0))}
+              {gear.purchase_price_jpy === null
+                ? "-"
+                : formatJpy(gear.purchase_price_jpy)}
             </dd>
           </div>
           <div>
-            <dt className="text-sm text-stone-500">ステータス</dt>
+            <dt className="text-sm text-stone-500">節約額</dt>
             <dd className="mt-1 font-semibold text-ink">
-              {statusLabels[gear.status]}
+              {savingsJpy === null ? "-" : formatJpy(savingsJpy)}
             </dd>
           </div>
           <div>
-            <dt className="text-sm text-stone-500">カテゴリー</dt>
+            <dt className="text-sm text-stone-500">購入日</dt>
             <dd className="mt-1 font-semibold text-ink">
-              {[gear.gear_categories?.name_ja, gear.gear_subcategories?.name_ja]
-                .filter(Boolean)
-                .join(" / ") || "-"}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm text-stone-500">容量・サイズ</dt>
-            <dd className="mt-1 font-semibold text-ink">
-              {[gear.volume, gear.capacity, gear.size].filter(Boolean).join(" / ") ||
-                "-"}
+              {gear.purchase_date ?? "-"}
             </dd>
           </div>
         </dl>

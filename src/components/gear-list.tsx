@@ -5,6 +5,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { deleteGear } from "@/lib/actions/gear";
 import { statusLabels, weightTypeLabels } from "@/lib/i18n/labels";
 import type { GearCategory, GearFilters, UserGear } from "@/lib/types";
+import { calculateSavingsJpy } from "@/lib/utils/asset";
 import { formatJpy, formatWeight } from "@/lib/utils/format";
 
 type GearListProps = {
@@ -27,7 +28,7 @@ export function GearList({ gear, categories, filters }: GearListProps) {
           />
         </div>
 
-        <div className="mt-3 grid grid-cols-3 gap-2">
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
           <select
             name="status"
             defaultValue={filters.status ?? "all"}
@@ -82,75 +83,118 @@ export function GearList({ gear, categories, filters }: GearListProps) {
         </section>
       ) : (
         <div className="space-y-3">
-          {gear.map((item) => (
+          {gear.map((item) => {
+            const savingsJpy = calculateSavingsJpy(
+              item.msrp_jpy,
+              item.purchase_price_jpy
+            );
+
+            return (
             <article key={item.id} className="rounded-lg bg-white p-4 shadow-soft">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
+              <div
+                className={
+                  item.image_url
+                    ? "grid gap-4 sm:grid-cols-[6.5rem_minmax(0,1fr)]"
+                    : "grid gap-4"
+                }
+              >
+                {item.image_url ? (
                   <Link
                     href={`/gear/${item.id}`}
-                    className="block truncate text-lg font-semibold text-ink"
+                    className="flex h-32 w-full items-center justify-center rounded-lg border border-stone-100 bg-stone-50 p-2 sm:h-28"
                   >
-                    {item.name}
+                    <img
+                      src={item.image_url}
+                      alt={item.name}
+                      className="max-h-full max-w-full object-contain"
+                      loading="lazy"
+                    />
                   </Link>
-                  <p className="mt-1 text-sm text-stone-500">
-                    {[
-                      item.brand,
-                      item.model,
-                      item.gear_categories?.name_ja,
-                      item.gear_subcategories?.name_ja
-                    ]
-                      .filter(Boolean)
-                      .join(" / ")}
-                  </p>
-                </div>
-                <span className="rounded-lg bg-forest-50 px-3 py-1 text-xs font-semibold text-forest-700">
-                  {statusLabels[item.status]}
-                </span>
-              </div>
+                ) : null}
 
-              <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
-                <div>
-                  <p className="text-stone-400">重量</p>
-                  <p className="font-semibold text-ink">
-                    {formatWeight(
-                      Number(item.measured_weight_grams ?? item.official_weight_grams ?? item.weight_grams)
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-stone-400">価格</p>
-                  <p className="font-semibold text-ink">
-                    {formatJpy(
-                      Number(item.purchase_price_jpy ?? item.msrp_jpy ?? 0)
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-stone-400">タイプ</p>
-                  <p className="font-semibold text-ink">{weightTypeLabels[item.weight_type]}</p>
-                </div>
-              </div>
+                <div className="min-w-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <Link
+                        href={`/gear/${item.id}`}
+                        className="block truncate text-lg font-semibold text-ink"
+                      >
+                        {item.name}
+                      </Link>
+                      <p className="mt-1 text-sm text-stone-500">
+                        {[
+                          item.brand,
+                          item.model,
+                          item.gear_categories?.name_ja,
+                          item.gear_subcategories?.name_ja
+                        ]
+                          .filter(Boolean)
+                          .join(" / ")}
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-lg bg-forest-50 px-3 py-1 text-xs font-semibold text-forest-700">
+                      {statusLabels[item.status]}
+                    </span>
+                  </div>
 
-              <div className="mt-4 flex gap-2">
-                <Link
-                  href={`/gear/${item.id}/edit`}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-stone-200 px-4 py-2 text-sm font-semibold text-stone-700"
-                >
-                  <Edit3 className="h-4 w-4" />
-                  編集
-                </Link>
-                <form action={deleteGear.bind(null, item.id)} className="flex-1">
-                  <SubmitButton
-                    pendingLabel="削除中..."
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-60"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    削除
-                  </SubmitButton>
-                </form>
+                  <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-5">
+                    <div>
+                      <p className="text-stone-400">重量</p>
+                      <p className="font-semibold text-ink">
+                        {formatWeight(
+                          Number(item.measured_weight_grams ?? item.official_weight_grams ?? item.weight_grams)
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-stone-400">MSRP</p>
+                      <p className="font-semibold text-ink">
+                        {item.msrp_jpy === null ? "-" : formatJpy(item.msrp_jpy)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-stone-400">購入価格</p>
+                      <p className="font-semibold text-ink">
+                        {item.purchase_price_jpy === null
+                          ? "-"
+                          : formatJpy(item.purchase_price_jpy)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-stone-400">節約</p>
+                      <p className="font-semibold text-ink">
+                        {savingsJpy === null ? "-" : formatJpy(savingsJpy)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-stone-400">タイプ</p>
+                      <p className="font-semibold text-ink">{weightTypeLabels[item.weight_type]}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex gap-2">
+                    <Link
+                      href={`/gear/${item.id}/edit`}
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-stone-200 px-4 py-2 text-sm font-semibold text-stone-700"
+                    >
+                      <Edit3 className="h-4 w-4" />
+                      編集
+                    </Link>
+                    <form action={deleteGear.bind(null, item.id)} className="flex-1">
+                      <SubmitButton
+                        pendingLabel="削除中..."
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-60"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        削除
+                      </SubmitButton>
+                    </form>
+                  </div>
+                </div>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

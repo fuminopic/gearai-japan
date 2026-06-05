@@ -25,10 +25,10 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   }
 
   const totalWeightG = sumWeight(ownedGear);
-  const totalMsrpJpy = gear.reduce((total, item) => {
+  const totalMsrpJpy = ownedGear.reduce((total, item) => {
     return total + Number(item.msrp_jpy ?? 0);
   }, 0);
-  const totalPurchaseJpy = gear.reduce((total, item) => {
+  const totalPurchaseJpy = ownedGear.reduce((total, item) => {
     return total + Number(item.purchase_price_jpy ?? 0);
   }, 0);
   const savingsJpy = totalMsrpJpy - totalPurchaseJpy;

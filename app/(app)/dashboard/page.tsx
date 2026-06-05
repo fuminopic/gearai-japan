@@ -31,9 +31,9 @@ export default async function DashboardPage() {
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          label="装備数"
-          value={`${summary.totalCount.toLocaleString("ja-JP")} 点`}
-          detail={`所有 ${summary.ownedCount} / 欲しい ${summary.wishlistCount}`}
+          label="所有装備数"
+          value={`${summary.ownedCount.toLocaleString("ja-JP")} 点`}
+          detail={`登録 ${summary.totalCount} / 欲しい ${summary.wishlistCount}`}
           icon={<Backpack className="h-5 w-5" />}
         />
         <StatCard
@@ -45,13 +45,13 @@ export default async function DashboardPage() {
         <StatCard
           label="総装備価値"
           value={formatJpy(summary.totalMsrpJpy)}
-          detail="MSRP 合計"
+          detail="所有装備の MSRP 合計"
           icon={<CircleDollarSign className="h-5 w-5" />}
         />
         <StatCard
-          label="実際購入額"
+          label="総購入額"
           value={formatJpy(summary.totalPurchaseJpy)}
-          detail="購入価格の合計"
+          detail="所有装備の購入価格合計"
           icon={<Wallet className="h-5 w-5" />}
         />
       </section>
@@ -60,7 +60,7 @@ export default async function DashboardPage() {
         <StatCard
           label="節約額"
           value={formatJpy(summary.savingsJpy)}
-          detail="MSRP - 実際購入額"
+          detail="所有装備 MSRP - 購入価格"
           icon={<CircleDollarSign className="h-5 w-5" />}
         />
         <StatCard

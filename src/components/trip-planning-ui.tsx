@@ -1,5 +1,6 @@
-import { AlertTriangle, Check, ClipboardCheck, PackageCheck, PackageX, X } from "lucide-react";
+import { AlertTriangle, Check, PackageCheck, PackageX, X } from "lucide-react";
 
+import { TripPlanningForm } from "@/components/trip-planning-form";
 import {
   categoryLabels,
   gearMatchingConfidenceLabels,
@@ -20,20 +21,6 @@ import type {
   PackRequirementSlotPlan,
   RequirementSlot
 } from "@/lib/types";
-
-const SEASON_OPTIONS: readonly MountainFoundationSeason[] = [
-  "SPRING",
-  "SUMMER",
-  "AUTUMN",
-  "WINTER"
-];
-
-const STYLE_OPTIONS: readonly MountainFoundationStyle[] = [
-  "DAY_HIKE",
-  "OVERNIGHT_HUT",
-  "OVERNIGHT_TENT",
-  "MULTI_DAY_TREK"
-];
 
 type TripPlanningUIProps = {
   mountains: MountainFoundationProfile[];
@@ -77,92 +64,6 @@ export function TripPlanningUI({
         <TripPlanningResult plan={plan} compatibilityBySlot={compatibilityBySlot} />
       ) : null}
     </div>
-  );
-}
-
-function TripPlanningForm({
-  mountains,
-  selectedMountainSlug,
-  selectedSeason,
-  selectedStyle,
-  error
-}: {
-  mountains: MountainFoundationProfile[];
-  selectedMountainSlug: string;
-  selectedSeason: MountainFoundationSeason;
-  selectedStyle: MountainFoundationStyle;
-  error?: string;
-}) {
-  return (
-    <form action="/ai" className="rounded-lg bg-white p-5 shadow-soft">
-      {error ? (
-        <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-          {error}
-        </p>
-      ) : null}
-
-      <div className="grid gap-4 md:grid-cols-[1.3fr_1fr_1fr]">
-        <label className="block">
-          <span className="text-sm font-medium text-stone-700">山</span>
-          <select
-            name="mountain"
-            defaultValue={selectedMountainSlug}
-            required
-            className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-          >
-            {mountains.length === 0 ? (
-              <option value="">山データを読み込めません</option>
-            ) : (
-              mountains.map((mountain) => (
-                <option key={mountain.slug} value={mountain.slug}>
-                  {mountain.name_ja}
-                </option>
-              ))
-            )}
-          </select>
-        </label>
-
-        <label className="block">
-          <span className="text-sm font-medium text-stone-700">季節</span>
-          <select
-            name="season"
-            defaultValue={selectedSeason}
-            required
-            className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-          >
-            {SEASON_OPTIONS.map((season) => (
-              <option key={season} value={season}>
-                {mountainFoundationSeasonLabels[season]}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="block">
-          <span className="text-sm font-medium text-stone-700">スタイル</span>
-          <select
-            name="style"
-            defaultValue={selectedStyle}
-            required
-            className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-          >
-            {STYLE_OPTIONS.map((style) => (
-              <option key={style} value={style}>
-                {mountainFoundationStyleLabels[style]}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      <button
-        disabled={mountains.length === 0}
-        className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-forest-700 px-5 py-4 text-base font-semibold text-white transition hover:bg-forest-900 disabled:opacity-60"
-      >
-        <ClipboardCheck className="h-5 w-5" />
-        パック計画を作成
-      </button>
-    </form>
   );
 }
 

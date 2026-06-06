@@ -10,6 +10,10 @@ const tripPlanningUiSource = readFileSync(
   new URL("../src/components/trip-planning-ui.tsx", import.meta.url),
   "utf8"
 );
+const tripPlanningFormSource = readFileSync(
+  new URL("../src/components/trip-planning-form.tsx", import.meta.url),
+  "utf8"
+);
 const appNavSource = readFileSync(
   new URL("../src/components/app-nav.tsx", import.meta.url),
   "utf8"
@@ -45,7 +49,7 @@ test("trip planning UI emphasizes required systems, coverage, and missing gear",
     "計画メモ",
     "パック計画を作成"
   ]) {
-    assert.match(tripPlanningUiSource, new RegExp(copy));
+    assert.match(`${tripPlanningUiSource}\n${tripPlanningFormSource}`, new RegExp(copy));
   }
 
   assert.match(tripPlanningUiSource, /plan\.required_systems/);
@@ -57,10 +61,24 @@ test("trip planning UI emphasizes required systems, coverage, and missing gear",
 });
 
 test("trip planning UI avoids recommendation and shopping language", () => {
-  for (const source of [aiPageSource, tripPlanningUiSource]) {
+  for (const source of [aiPageSource, tripPlanningUiSource, tripPlanningFormSource]) {
     assert.doesNotMatch(source, /推薦|購入|予算|価格|買う|wishlist/i);
     assert.doesNotMatch(source, /\b(recommend|shopping|upgrade|best|price)\b/i);
   }
+});
+
+test("trip planning form filters seasons and styles by selected mountain", () => {
+  assert.match(tripPlanningFormSource, /"use client"/);
+  assert.match(tripPlanningFormSource, /useState/);
+  assert.match(tripPlanningFormSource, /supported_seasons/);
+  assert.match(tripPlanningFormSource, /supported_styles/);
+  assert.match(tripPlanningFormSource, /seasonOptions\.map/);
+  assert.match(tripPlanningFormSource, /styleOptions\.map/);
+  assert.doesNotMatch(tripPlanningFormSource, /SPRING",\s*"SUMMER",\s*"AUTUMN",\s*"WINTER/);
+  assert.doesNotMatch(
+    tripPlanningFormSource,
+    /DAY_HIKE",\s*"OVERNIGHT_HUT",\s*"OVERNIGHT_TENT",\s*"MULTI_DAY_TREK/
+  );
 });
 
 test("navigation and labels are Japanese-first planning copy", () => {

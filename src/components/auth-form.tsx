@@ -21,7 +21,7 @@ export function AuthForm({ mode, action, error }: AuthFormProps) {
             {isSignup ? "装備管理をはじめる" : "おかえりなさい"}
           </p>
           <p className="mt-3 text-base leading-7 text-stone-600">
-            登山前の装備確認を10秒で。
+            登山前の装備確認を10秒で。MVP
           </p>
         </div>
 

@@ -186,6 +186,18 @@ export type MountainFoundationProfile = {
   typical_required_systems: PlanningSystem[];
 };
 
+export type TripRequirementInput = {
+  mountain: MountainFoundationProfile;
+  season: MountainFoundationSeason;
+  style: MountainFoundationStyle;
+};
+
+export type TripRequirementLookupInput = {
+  mountainSlug: string;
+  season: MountainFoundationSeason;
+  style: MountainFoundationStyle;
+};
+
 export type RecommendationPriority = "high" | "medium" | "low";
 export type RecommendationCategory =
   | "sleep"

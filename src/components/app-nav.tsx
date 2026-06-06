@@ -1,4 +1,4 @@
-import { Backpack, Home, Sparkles, UserRound } from "lucide-react";
+import { Backpack, ClipboardCheck, Home, UserRound } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -7,7 +7,7 @@ import { signOut } from "@/lib/actions/auth";
 const navItems = [
   { href: "/dashboard", label: "ホーム", icon: Home },
   { href: "/gear", label: "装備", icon: Backpack },
-  { href: "/ai", label: "AI推薦", icon: Sparkles },
+  { href: "/ai", label: "計画", icon: ClipboardCheck },
   { href: "/profile", label: "自分", icon: UserRound }
 ] satisfies Array<{
   href: Route;

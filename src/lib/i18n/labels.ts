@@ -1,6 +1,11 @@
 import type {
   AccommodationStyle,
   GearStatus,
+  GearMatchingConfidence,
+  MountainFoundationSeason,
+  MountainFoundationStyle,
+  PlanningSystem,
+  RequirementSlot,
   Season,
   VerificationStatus,
   WeatherRisk,
@@ -77,4 +82,80 @@ export const categoryLabels: Record<string, string> = {
   first_aid: "応急処置",
   bear_safety: "熊対策",
   other: "その他"
+};
+
+export const mountainFoundationSeasonLabels: Record<
+  MountainFoundationSeason,
+  string
+> = {
+  SPRING: "春",
+  SUMMER: "夏",
+  AUTUMN: "秋",
+  WINTER: "冬"
+};
+
+export const mountainFoundationStyleLabels: Record<MountainFoundationStyle, string> = {
+  DAY_HIKE: "日帰り",
+  OVERNIGHT_HUT: "山小屋泊",
+  OVERNIGHT_TENT: "テント泊",
+  MULTI_DAY_TREK: "縦走"
+};
+
+export const planningSystemLabels: Record<PlanningSystem, string> = {
+  WATER_SYSTEM: "水分補給",
+  SHELTER_SYSTEM: "シェルター",
+  SLEEP_SYSTEM: "睡眠",
+  COOK_SYSTEM: "調理",
+  RAIN_SYSTEM: "雨対策",
+  COLD_WEATHER_LAYER: "防寒",
+  NAVIGATION_SYSTEM: "ナビゲーション",
+  EMERGENCY_SYSTEM: "緊急対応"
+};
+
+export const requirementSlotLabels: Record<RequirementSlot, string> = {
+  WATER_STORAGE: "水の携行",
+  WATER_TREATMENT: "浄水",
+  TENT: "テント",
+  SLEEP_INSULATION: "寝袋",
+  SLEEP_PAD: "スリーピングパッド",
+  STOVE: "ストーブ",
+  FUEL: "燃料",
+  COOK_POT: "クッカー",
+  TABLEWARE: "食器",
+  RAIN_JACKET: "レインジャケット",
+  RAIN_PANTS: "レインパンツ",
+  INSULATION_LAYER: "保温着",
+  BASE_LAYER: "ベースレイヤー",
+  GPS_DEVICE: "GPS デバイス",
+  POWER_BANK: "モバイルバッテリー",
+  FIRST_AID_KIT: "ファーストエイド",
+  HEADLAMP: "ヘッドランプ"
+};
+
+export const gearSubcategoryLabels: Record<string, string> = {
+  bottle: "ボトル",
+  water_filter: "浄水器",
+  tent: "テント",
+  sleeping_bag: "寝袋",
+  sleeping_pad: "スリーピングパッド",
+  stove: "ストーブ",
+  fuel: "燃料",
+  gas_canister: "ガスカートリッジ",
+  cookware: "クッカー",
+  tableware: "食器",
+  rain_jacket: "レインジャケット",
+  rain_pants: "レインパンツ",
+  insulation: "保温着",
+  down_jacket: "ダウンジャケット",
+  base_layer: "ベースレイヤー",
+  gps: "GPS",
+  power_bank: "モバイルバッテリー",
+  first_aid_kit: "ファーストエイドキット",
+  headlamp: "ヘッドランプ"
+};
+
+export const gearMatchingConfidenceLabels: Record<GearMatchingConfidence, string> = {
+  HIGH: "高",
+  MEDIUM: "中",
+  LOW: "低"
 };

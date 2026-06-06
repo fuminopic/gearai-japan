@@ -45,7 +45,7 @@ test("trip planning UI emphasizes required systems, coverage, and missing gear",
     "必要システム",
     "カバー状況",
     "不足装備",
-    "対応装備",
+    "照合結果",
     "計画メモ",
     "パック計画を作成"
   ]) {
@@ -58,6 +58,8 @@ test("trip planning UI emphasizes required systems, coverage, and missing gear",
   assert.match(tripPlanningUiSource, /matching_owned_gear/);
   assert.match(tripPlanningUiSource, /matching_database_gear/);
   assert.match(tripPlanningUiSource, /coveragePercent/);
+  assert.match(tripPlanningUiSource, /登録データ上の対応例/);
+  assert.doesNotMatch(tripPlanningUiSource, /対応装備/);
 });
 
 test("trip planning UI avoids recommendation and shopping language", () => {

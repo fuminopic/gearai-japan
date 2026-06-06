@@ -165,7 +165,7 @@ function TripPlanningResult({
 
       {compatibleSlots.length > 0 ? (
         <section className="rounded-lg bg-white p-5 shadow-soft">
-          <h2 className="text-lg font-semibold text-ink">対応装備</h2>
+          <h2 className="text-lg font-semibold text-ink">照合結果</h2>
           <div className="mt-4 divide-y divide-stone-100">
             {compatibleSlots.map((slotPlan) => {
               const match = compatibilityBySlot[slotPlan.slot];
@@ -301,8 +301,8 @@ function CompatibleGearSlot({
           formatter={formatOwnedGearName}
         />
         <GearMatchList
-          title="登録装備データ"
-          emptyLabel="一致するデータベース装備なし"
+          title="登録データ上の対応例"
+          emptyLabel="対応する登録データなし"
           items={match.matching_database_gear}
           formatter={formatDatabaseGearName}
         />

@@ -37,8 +37,9 @@ export default async function AIPage({ searchParams }: AIPageProps) {
   }
 
   const selectedMountainSlug = getSelectedMountainSlug(params.mountain, mountains);
-  const selectedSeason = parseSeason(params.season) ?? "SUMMER";
-  const selectedStyle = parseStyle(params.style) ?? "DAY_HIKE";
+  const selectedMountain = getSelectedMountain(selectedMountainSlug, mountains);
+  const selectedSeason = getSelectedSeason(params.season, selectedMountain);
+  const selectedStyle = getSelectedStyle(params.style, selectedMountain);
   const shouldGeneratePlan = Boolean(params.mountain || params.season || params.style);
   let plan;
   let compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>> = {};
@@ -102,6 +103,47 @@ function getSelectedMountainSlug(
   }
 
   return mountains[0]?.slug ?? "";
+}
+
+function getSelectedMountain(
+  slug: string,
+  mountains: readonly MountainFoundationProfile[]
+) {
+  return mountains.find((mountain) => mountain.slug === slug) ?? mountains[0] ?? null;
+}
+
+function getSelectedSeason(
+  value: string | undefined,
+  mountain: MountainFoundationProfile | null
+) {
+  const season = parseSeason(value);
+
+  if (season && mountain?.supported_seasons.includes(season)) {
+    return season;
+  }
+
+  if (mountain?.supported_seasons.includes("SUMMER")) {
+    return "SUMMER";
+  }
+
+  return mountain?.supported_seasons[0] ?? "SUMMER";
+}
+
+function getSelectedStyle(
+  value: string | undefined,
+  mountain: MountainFoundationProfile | null
+) {
+  const style = parseStyle(value);
+
+  if (style && mountain?.supported_styles.includes(style)) {
+    return style;
+  }
+
+  if (mountain?.supported_styles.includes("DAY_HIKE")) {
+    return "DAY_HIKE";
+  }
+
+  return mountain?.supported_styles[0] ?? "DAY_HIKE";
 }
 
 function parseSeason(value: string | undefined): MountainFoundationSeason | null {

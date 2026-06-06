@@ -81,6 +81,16 @@ test("trip planning form filters seasons and styles by selected mountain", () =>
   );
 });
 
+test("trip planning page normalizes direct URL parameters against the mountain", () => {
+  assert.match(aiPageSource, /getSelectedMountain\(selectedMountainSlug, mountains\)/);
+  assert.match(aiPageSource, /getSelectedSeason\(params\.season, selectedMountain\)/);
+  assert.match(aiPageSource, /getSelectedStyle\(params\.style, selectedMountain\)/);
+  assert.match(aiPageSource, /supported_seasons\.includes\(season\)/);
+  assert.match(aiPageSource, /supported_styles\.includes\(style\)/);
+  assert.doesNotMatch(aiPageSource, /parseSeason\(params\.season\) \?\? "SUMMER"/);
+  assert.doesNotMatch(aiPageSource, /parseStyle\(params\.style\) \?\? "DAY_HIKE"/);
+});
+
 test("navigation and labels are Japanese-first planning copy", () => {
   assert.match(appNavSource, /label: "計画"/);
   assert.doesNotMatch(appNavSource, /AI推薦/);

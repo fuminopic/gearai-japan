@@ -17,13 +17,33 @@ const migrationSource = readFileSync(
   "utf8"
 );
 const typesSource = readFileSync(new URL("../src/lib/types.ts", import.meta.url), "utf8");
+const gearMatchingSource = readFileSync(
+  new URL("../src/lib/gear-matching/engine.ts", import.meta.url),
+  "utf8"
+);
 
-const { outputText } = ts.transpileModule(engineSource, {
+const { outputText: gearMatchingOutputText } = ts.transpileModule(gearMatchingSource, {
   compilerOptions: {
     module: ts.ModuleKind.ES2022,
     target: ts.ScriptTarget.ES2022
   }
 });
+const gearMatchingDataUrl = `data:text/javascript;base64,${Buffer.from(
+  gearMatchingOutputText
+).toString("base64")}`;
+
+const { outputText } = ts.transpileModule(
+  engineSource.replace(
+    'from "@/lib/gear-matching/engine"',
+    `from "${gearMatchingDataUrl}"`
+  ),
+  {
+    compilerOptions: {
+      module: ts.ModuleKind.ES2022,
+      target: ts.ScriptTarget.ES2022
+    }
+  }
+);
 const engineModule = await import(
   `data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`
 );
@@ -191,6 +211,7 @@ test("pack requirement layer consumes trip requirements and owned gear only", ()
   assert.match(repositorySource, /getRequiredSystemsForTrip/);
   assert.match(repositorySource, /getUserGear\(\{ status: "owned" \}\)/);
   assert.match(repositorySource, /generatePackRequirementPlan/);
+  assert.match(engineSource, /matchGearForRequirementSlot/);
   assert.match(migrationSource, /'bottle'/);
   assert.match(typesSource, /PackRequirementPlan/);
   assert.match(typesSource, /RequirementSlot/);

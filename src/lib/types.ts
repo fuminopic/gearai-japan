@@ -45,6 +45,7 @@ export type RequirementSlot =
   | "FIRST_AID_KIT"
   | "HEADLAMP";
 export type RequirementSlotCoverageStatus = "COVERED" | "MISSING";
+export type GearMatchingConfidence = "HIGH" | "MEDIUM" | "LOW";
 export type MountainFoundationRegion =
   | "KANTO_TOKYO"
   | "KANTO_TOKYO_SAITAMA_YAMANASHI"
@@ -231,7 +232,19 @@ export type PackRequirementLookupInput = {
   style: MountainFoundationStyle;
 };
 
-export type PackRequirementOwnedGearMatch = Pick<
+export type GearCompatibilityTarget = {
+  category: string;
+  subcategory: string;
+};
+
+export type GearCompatibilityRule = {
+  slot: RequirementSlot;
+  compatible_targets: GearCompatibilityTarget[];
+  confidence: GearMatchingConfidence;
+  ambiguous_cases: string[];
+};
+
+export type GearMatchingOwnedGearMatch = Pick<
   UserGear,
   "id" | "name" | "brand" | "model" | "category_id" | "subcategory_id"
 > & {
@@ -239,10 +252,34 @@ export type PackRequirementOwnedGearMatch = Pick<
   gear_subcategories?: Pick<GearSubcategory, "id" | "name_ja" | "name_en"> | null;
 };
 
+export type GearMatchingDatabaseGearMatch = Pick<
+  GearProduct,
+  "id" | "brand" | "model" | "name_ja" | "category_id" | "subcategory_id"
+> & {
+  gear_categories?: Pick<GearCategory, "id" | "name_ja" | "name_en"> | null;
+  gear_subcategories?: Pick<GearSubcategory, "id" | "name_ja" | "name_en"> | null;
+};
+
+export type GearMatchingInput = {
+  slot: RequirementSlot;
+  ownedGear?: UserGear[];
+  databaseGear?: GearProduct[];
+};
+
+export type GearMatchingResult = {
+  slot: RequirementSlot;
+  compatible_categories: string[];
+  compatible_subcategories: string[];
+  matching_owned_gear: GearMatchingOwnedGearMatch[];
+  matching_database_gear: GearMatchingDatabaseGearMatch[];
+  confidence: GearMatchingConfidence;
+  ambiguous_cases: string[];
+};
+
 export type PackRequirementSlotPlan = {
   slot: RequirementSlot;
   coverage_status: RequirementSlotCoverageStatus;
-  matching_owned_gear: PackRequirementOwnedGearMatch[];
+  matching_owned_gear: GearMatchingOwnedGearMatch[];
 };
 
 export type PackRequirementPlan = {

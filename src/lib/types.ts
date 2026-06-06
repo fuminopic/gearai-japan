@@ -6,6 +6,31 @@ export type AccommodationStyle = "day_hike" | "hut" | "tent";
 export type WeatherRisk = "stable" | "rain" | "cold" | "wind" | "snow";
 export type Season = "spring" | "summer" | "autumn" | "winter";
 export type BearRiskLevel = "low" | "medium" | "high";
+export type MountainFoundationSeason = "SPRING" | "SUMMER" | "AUTUMN" | "WINTER";
+export type MountainFoundationStyle =
+  | "DAY_HIKE"
+  | "OVERNIGHT_HUT"
+  | "OVERNIGHT_TENT"
+  | "MULTI_DAY_TREK";
+export type MountainTripProfile =
+  | "FRONT_COUNTRY_DAY_HIKE"
+  | "BACKCOUNTRY_DAY_HIKE"
+  | "OVERNIGHT_BACKPACKING"
+  | "ALPINE_TREK";
+export type PlanningSystem =
+  | "WATER_SYSTEM"
+  | "SHELTER_SYSTEM"
+  | "SLEEP_SYSTEM"
+  | "COOK_SYSTEM"
+  | "RAIN_SYSTEM"
+  | "COLD_WEATHER_LAYER"
+  | "NAVIGATION_SYSTEM"
+  | "EMERGENCY_SYSTEM";
+export type MountainFoundationRegion =
+  | "KANTO_TOKYO"
+  | "KANTO_TOKYO_SAITAMA_YAMANASHI"
+  | "NORTHERN_ALPS_NAGANO"
+  | "NORTHERN_ALPS_NAGANO_GIFU";
 
 export type GearCategory = {
   id: string;
@@ -147,6 +172,18 @@ export type Mountain = {
   notes: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type MountainFoundationProfile = {
+  slug: string;
+  name_ja: string;
+  region: MountainFoundationRegion;
+  elevation_m: number;
+  is_hyakumeizan: boolean;
+  supported_seasons: MountainFoundationSeason[];
+  supported_styles: MountainFoundationStyle[];
+  trip_profile: MountainTripProfile;
+  typical_required_systems: PlanningSystem[];
 };
 
 export type RecommendationPriority = "high" | "medium" | "low";

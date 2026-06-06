@@ -41,11 +41,10 @@ test("trip planning page exposes the pack planning architecture", () => {
 
 test("trip planning UI emphasizes required systems, coverage, and missing gear", () => {
   for (const copy of [
-    "山行サマリー",
     "必要システム",
-    "カバー状況",
+    "装備完成度",
     "不足装備",
-    "照合結果",
+    "照合結果の詳細",
     "計画メモ",
     "パック計画を作成"
   ]) {
@@ -59,7 +58,55 @@ test("trip planning UI emphasizes required systems, coverage, and missing gear",
   assert.match(tripPlanningUiSource, /matching_database_gear/);
   assert.match(tripPlanningUiSource, /coveragePercent/);
   assert.match(tripPlanningUiSource, /登録データ上の対応例/);
+  assert.match(tripPlanningUiSource, /HeroReadinessCard/);
+  assert.match(tripPlanningUiSource, /MissingGearCard/);
+  assert.match(tripPlanningUiSource, /<details/);
+  assert.match(tripPlanningUiSource, /<summary/);
   assert.doesNotMatch(tripPlanningUiSource, /対応装備/);
+  assert.doesNotMatch(tripPlanningUiSource, /山行サマリー/);
+});
+
+test("pack planning UX V2 prioritizes readiness and missing gear before coverage details", () => {
+  const heroIndex = tripPlanningUiSource.indexOf("HeroReadinessCard");
+  const missingIndex = tripPlanningUiSource.indexOf("不足装備");
+  const coveredIndex = tripPlanningUiSource.indexOf("カバー済み装備");
+  const matchingIndex = tripPlanningUiSource.indexOf("照合結果の詳細");
+
+  assert.ok(heroIndex > -1);
+  assert.ok(missingIndex > heroIndex);
+  assert.ok(coveredIndex > missingIndex);
+  assert.ok(matchingIndex > coveredIndex);
+
+  for (const copy of [
+    "山行準備",
+    "カバー済み",
+    "不足",
+    "準備する",
+    "次に準備する装備"
+  ]) {
+    assert.match(tripPlanningUiSource, new RegExp(copy));
+  }
+
+  assert.match(tripPlanningUiSource, /sm:hidden/);
+  assert.match(tripPlanningUiSource, /missingCount\.toLocaleString\("ja-JP"\)/);
+});
+
+test("pack planning UX V2 uses deterministic system icons for planning systems", () => {
+  for (const icon of [
+    "Droplets",
+    "Tent",
+    "Bed",
+    "CookingPot",
+    "CloudRain",
+    "Shirt",
+    "Compass",
+    "Cross"
+  ]) {
+    assert.match(tripPlanningUiSource, new RegExp(icon));
+  }
+
+  assert.match(tripPlanningUiSource, /systemIcons: Record<PlanningSystem, LucideIcon>/);
+  assert.match(tripPlanningUiSource, /slotSystems: Record<RequirementSlot, PlanningSystem>/);
 });
 
 test("trip planning UI avoids recommendation and shopping language", () => {

@@ -1,4 +1,22 @@
-import { AlertTriangle, Check, PackageCheck, PackageX, X } from "lucide-react";
+import {
+  AlertTriangle,
+  Bed,
+  Check,
+  ChevronDown,
+  CircleAlert,
+  CloudRain,
+  Compass,
+  CookingPot,
+  Cross,
+  Droplets,
+  Mountain,
+  PackageCheck,
+  PackageX,
+  Shirt,
+  Tent,
+  X
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 import { TripPlanningForm } from "@/components/trip-planning-form";
 import {
@@ -19,6 +37,7 @@ import type {
   MountainFoundationStyle,
   PackRequirementPlan,
   PackRequirementSlotPlan,
+  PlanningSystem,
   RequirementSlot
 } from "@/lib/types";
 
@@ -32,6 +51,37 @@ type TripPlanningUIProps = {
   error?: string;
 };
 
+const systemIcons: Record<PlanningSystem, LucideIcon> = {
+  WATER_SYSTEM: Droplets,
+  SHELTER_SYSTEM: Tent,
+  SLEEP_SYSTEM: Bed,
+  COOK_SYSTEM: CookingPot,
+  RAIN_SYSTEM: CloudRain,
+  COLD_WEATHER_LAYER: Shirt,
+  NAVIGATION_SYSTEM: Compass,
+  EMERGENCY_SYSTEM: Cross
+};
+
+const slotSystems: Record<RequirementSlot, PlanningSystem> = {
+  WATER_STORAGE: "WATER_SYSTEM",
+  WATER_TREATMENT: "WATER_SYSTEM",
+  TENT: "SHELTER_SYSTEM",
+  SLEEP_INSULATION: "SLEEP_SYSTEM",
+  SLEEP_PAD: "SLEEP_SYSTEM",
+  STOVE: "COOK_SYSTEM",
+  FUEL: "COOK_SYSTEM",
+  COOK_POT: "COOK_SYSTEM",
+  TABLEWARE: "COOK_SYSTEM",
+  RAIN_JACKET: "RAIN_SYSTEM",
+  RAIN_PANTS: "RAIN_SYSTEM",
+  INSULATION_LAYER: "COLD_WEATHER_LAYER",
+  BASE_LAYER: "COLD_WEATHER_LAYER",
+  GPS_DEVICE: "NAVIGATION_SYSTEM",
+  POWER_BANK: "NAVIGATION_SYSTEM",
+  FIRST_AID_KIT: "EMERGENCY_SYSTEM",
+  HEADLAMP: "EMERGENCY_SYSTEM"
+};
+
 export function TripPlanningUI({
   mountains,
   selectedMountainSlug,
@@ -42,11 +92,11 @@ export function TripPlanningUI({
   error
 }: TripPlanningUIProps) {
   return (
-    <div className="space-y-6">
-      <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div className="space-y-5">
+      <section className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-sm font-semibold text-forest-700">山行計画</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">
+          <h1 className="mt-1 text-3xl font-semibold tracking-normal text-ink">
             パック計画
           </h1>
         </div>
@@ -76,6 +126,7 @@ function TripPlanningResult({
 }) {
   const totalSlots = plan.required_slots.length;
   const coveredCount = plan.covered_slots.length;
+  const missingCount = plan.missing_slots.length;
   const coveragePercent =
     totalSlots === 0 ? 0 : Math.round((coveredCount / totalSlots) * 100);
   const compatibleSlots = plan.required_slots.filter((slotPlan) => {
@@ -88,22 +139,21 @@ function TripPlanningResult({
   });
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-lg bg-white p-5 shadow-soft">
-        <h2 className="text-lg font-semibold text-ink">山行サマリー</h2>
-        <dl className="mt-4 grid gap-3 sm:grid-cols-3">
-          <SummaryItem label="山" value={plan.mountain.name_ja} />
-          <SummaryItem label="季節" value={mountainFoundationSeasonLabels[plan.season]} />
-          <SummaryItem label="スタイル" value={mountainFoundationStyleLabels[plan.style]} />
-        </dl>
-      </section>
+    <div className="space-y-5">
+      <HeroReadinessCard
+        plan={plan}
+        coveragePercent={coveragePercent}
+        coveredCount={coveredCount}
+        missingCount={missingCount}
+        totalSlots={totalSlots}
+      />
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
         <h2 className="text-lg font-semibold text-ink">必要システム</h2>
-        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {plan.required_systems.map((system) => (
             <div key={system} className="flex items-center gap-2 rounded-lg border border-forest-100 bg-forest-50 px-3 py-2 text-sm font-semibold text-forest-900">
-              <Check className="h-4 w-4 shrink-0" />
+              <SystemIcon system={system} className="h-4 w-4 shrink-0" />
               {planningSystemLabels[system]}
             </div>
           ))}
@@ -111,61 +161,61 @@ function TripPlanningResult({
       </section>
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-ink">カバー状況</h2>
-            <p className="mt-2 text-sm text-stone-500">
-              {coveredCount.toLocaleString("ja-JP")} / {totalSlots.toLocaleString("ja-JP")} スロットをカバー
-            </p>
-          </div>
-          <div className="shrink-0 rounded-lg border border-forest-100 bg-forest-50 px-4 py-3 text-right">
-            <p className="text-3xl font-semibold text-forest-900">{coveragePercent}%</p>
-            <p className="text-sm font-medium text-forest-700">カバー済み</p>
-          </div>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <h2 className="text-lg font-semibold text-ink">装備完成度</h2>
+          <p className="text-sm font-semibold text-forest-800">
+            {coveragePercent}% 完成
+          </p>
         </div>
-
-        <div className="mt-4 h-2 overflow-hidden rounded-lg bg-stone-100">
+        <div className="mt-4 h-2.5 overflow-hidden rounded-lg bg-stone-100">
           <div
-            className="h-full rounded-lg bg-forest-500"
+            className="h-full rounded-lg bg-forest-700"
             style={{ width: `${coveragePercent}%` }}
-          />
-        </div>
-
-        <div className="mt-5 grid gap-5 lg:grid-cols-2">
-          <SlotGroup
-            title="カバー済み"
-            emptyLabel="所有装備でカバーされたスロットはありません。"
-            icon="covered"
-            slots={plan.covered_slots}
-          />
-          <SlotGroup
-            title="不足"
-            emptyLabel="不足スロットはありません。"
-            icon="missing"
-            slots={plan.missing_slots}
           />
         </div>
       </section>
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
-        <h2 className="text-lg font-semibold text-ink">不足装備</h2>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-red-700">次に準備する装備</p>
+            <h2 className="mt-1 text-xl font-semibold text-ink">不足装備</h2>
+          </div>
+          <span className="rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-800">
+            {missingCount.toLocaleString("ja-JP")} 件
+          </span>
+        </div>
         {plan.missing_slots.length > 0 ? (
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {plan.missing_slots.map((slotPlan) => (
-              <div key={slotPlan.slot} className="flex items-center gap-2 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm font-semibold text-red-900">
-                <X className="h-4 w-4 shrink-0" />
-                {requirementSlotLabels[slotPlan.slot]}
-              </div>
+              <MissingGearCard key={slotPlan.slot} slotPlan={slotPlan} />
             ))}
           </div>
         ) : (
-          <p className="mt-3 text-sm text-stone-500">不足スロットはありません。</p>
+          <div className="mt-4 rounded-lg border border-forest-100 bg-forest-50 px-4 py-3 text-sm font-semibold text-forest-900">
+            必要な装備スロットはすべてカバーされています。
+          </div>
         )}
       </section>
 
+      <section className="rounded-lg bg-white p-5 shadow-soft">
+        <SlotGroup
+          title="カバー済み装備"
+          emptyLabel="所有装備でカバーされたスロットはありません。"
+          icon="covered"
+          slots={plan.covered_slots}
+        />
+      </section>
+
       {compatibleSlots.length > 0 ? (
-        <section className="rounded-lg bg-white p-5 shadow-soft">
-          <h2 className="text-lg font-semibold text-ink">照合結果</h2>
+        <details className="group rounded-lg bg-white p-5 shadow-soft">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-stone-500">分類と所有装備の確認</p>
+              <h2 className="mt-1 text-lg font-semibold text-ink">照合結果の詳細</h2>
+            </div>
+            <ChevronDown className="h-5 w-5 shrink-0 text-stone-500 transition group-open:rotate-180" />
+          </summary>
           <div className="mt-4 divide-y divide-stone-100">
             {compatibleSlots.map((slotPlan) => {
               const match = compatibilityBySlot[slotPlan.slot];
@@ -183,7 +233,7 @@ function TripPlanningResult({
               );
             })}
           </div>
-        </section>
+        </details>
       ) : null}
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
@@ -194,14 +244,136 @@ function TripPlanningResult({
   );
 }
 
-function SummaryItem({ label, value }: { label: string; value: string }) {
+function HeroReadinessCard({
+  plan,
+  coveragePercent,
+  coveredCount,
+  missingCount,
+  totalSlots
+}: {
+  plan: PackRequirementPlan;
+  coveragePercent: number;
+  coveredCount: number;
+  missingCount: number;
+  totalSlots: number;
+}) {
   return (
-    <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
-      <dt className="text-xs font-semibold uppercase tracking-normal text-stone-500">
-        {label}
-      </dt>
-      <dd className="mt-1 text-base font-semibold text-ink">{value}</dd>
+    <section className="overflow-hidden rounded-lg bg-ink text-white shadow-soft">
+      <div className="grid gap-0 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="p-5 sm:p-6">
+          <div className="flex items-center gap-2 text-sm font-semibold text-trail-300">
+            <Mountain className="h-4 w-4" />
+            山行準備
+          </div>
+          <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-3xl font-semibold tracking-normal">
+                {plan.mountain.name_ja}
+              </h2>
+              <p className="mt-2 text-sm font-medium text-stone-200">
+                {mountainFoundationSeasonLabels[plan.season]} / {mountainFoundationStyleLabels[plan.style]}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-stretch sm:text-right">
+              <div className="rounded-lg bg-white/10 px-4 py-3">
+                <p className="text-4xl font-semibold tracking-normal">
+                  {coveragePercent}%
+                </p>
+                <p className="text-sm font-semibold text-stone-200">装備完成度</p>
+              </div>
+              <div className="rounded-lg bg-white/10 px-4 py-3 sm:hidden">
+                <p className="text-4xl font-semibold tracking-normal text-red-200">
+                  {missingCount.toLocaleString("ja-JP")}
+                </p>
+                <p className="text-sm font-semibold text-stone-200">不足</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="hidden grid-cols-3 border-t border-white/10 bg-white/5 sm:grid lg:border-l lg:border-t-0">
+          <ReadinessMetric
+            label="カバー済み"
+            value={coveredCount}
+            suffix={`/${totalSlots}`}
+            tone="covered"
+          />
+          <ReadinessMetric
+            label="不足"
+            value={missingCount}
+            suffix="件"
+            tone="missing"
+          />
+          <ReadinessMetric
+            label="準備する"
+            value={missingCount}
+            suffix="件"
+            tone="neutral"
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ReadinessMetric({
+  label,
+  value,
+  suffix,
+  tone
+}: {
+  label: string;
+  value: number;
+  suffix: string;
+  tone: "covered" | "missing" | "neutral";
+}) {
+  const valueClass =
+    tone === "missing"
+      ? "text-red-200"
+      : tone === "covered"
+        ? "text-forest-100"
+        : "text-trail-100";
+
+  return (
+    <div className="border-r border-white/10 px-3 py-4 last:border-r-0 sm:px-5 sm:py-6">
+      <p className="text-xs font-semibold text-stone-300">{label}</p>
+      <p className={`mt-2 text-2xl font-semibold ${valueClass}`}>
+        {value.toLocaleString("ja-JP")}
+        <span className="ml-1 text-sm font-semibold text-stone-300">{suffix}</span>
+      </p>
     </div>
+  );
+}
+
+function SystemIcon({
+  system,
+  className
+}: {
+  system: PlanningSystem;
+  className?: string;
+}) {
+  const Icon = systemIcons[system];
+
+  return <Icon className={className} />;
+}
+
+function MissingGearCard({ slotPlan }: { slotPlan: PackRequirementSlotPlan }) {
+  const system = slotSystems[slotPlan.slot];
+
+  return (
+    <article className="flex min-h-24 gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-red-800">
+        <SystemIcon system={system} className="h-5 w-5" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold text-red-950">
+          {requirementSlotLabels[slotPlan.slot]}
+        </p>
+        <p className="mt-1 text-xs font-semibold text-red-700">
+          {planningSystemLabels[system]}
+        </p>
+      </div>
+    </article>
   );
 }
 
@@ -371,12 +543,14 @@ function PlanningNotes({
   return (
     <div className="mt-4 space-y-2">
       {plan.missing_slots.length > 0 ? (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-900">
-          不足: {plan.missing_slots.length.toLocaleString("ja-JP")} スロット
+        <p className="flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-900">
+          <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>不足装備を先に確認してください: {plan.missing_slots.length.toLocaleString("ja-JP")} 件</span>
         </p>
       ) : (
-        <p className="rounded-lg bg-forest-50 px-3 py-2 text-sm font-medium text-forest-900">
-          必要スロットはすべてカバーされています。
+        <p className="flex items-start gap-2 rounded-lg bg-forest-50 px-3 py-2 text-sm font-medium text-forest-900">
+          <Check className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>必要な装備スロットはすべてカバーされています。</span>
         </p>
       )}
       {ambiguousSlots.length > 0 ? (

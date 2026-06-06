@@ -69,7 +69,10 @@ export function AuthForm({ mode, action, error }: AuthFormProps) {
             />
           </label>
 
-          <SubmitButton className="w-full rounded-lg bg-forest-700 px-5 py-3 text-base font-semibold text-white transition hover:bg-forest-900 disabled:opacity-60">
+          <SubmitButton
+            pendingLabel={isSignup ? "作成中..." : "ログイン中..."}
+            className="w-full rounded-lg bg-forest-700 px-5 py-3 text-base font-semibold text-white transition hover:bg-forest-900 disabled:opacity-60"
+          >
             {isSignup ? "アカウント作成" : "ログイン"}
           </SubmitButton>
         </form>

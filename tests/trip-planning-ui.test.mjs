@@ -26,6 +26,14 @@ const authFormSource = readFileSync(
   new URL("../src/components/auth-form.tsx", import.meta.url),
   "utf8"
 );
+const rootLayoutSource = readFileSync(
+  new URL("../app/layout.tsx", import.meta.url),
+  "utf8"
+);
+const dashboardPageSource = readFileSync(
+  new URL("../app/(app)/dashboard/page.tsx", import.meta.url),
+  "utf8"
+);
 
 test("trip planning page exposes the pack planning architecture", () => {
   assert.match(aiPageSource, /TripPlanningUI/);
@@ -147,6 +155,25 @@ test("navigation and labels are Japanese-first planning copy", () => {
   assert.match(labelsSource, /WATER_SYSTEM: "水分補給"/);
   assert.match(labelsSource, /RAIN_SYSTEM: "雨対策"/);
   assert.match(labelsSource, /HEADLAMP: "ヘッドランプ"/);
+});
+
+test("user-facing branding uses YAMAJITAKU hierarchy", () => {
+  for (const source of [
+    rootLayoutSource,
+    appNavSource,
+    authFormSource,
+    dashboardPageSource
+  ]) {
+    assert.match(source, /山支度/);
+    assert.match(source, /YAMAJITAKU/);
+    assert.doesNotMatch(source, /GearAI/);
+  }
+
+  assert.match(rootLayoutSource, /登山前の装備確認を10秒で。/);
+  assert.match(rootLayoutSource, /openGraph/);
+  assert.match(rootLayoutSource, /siteName: "山支度"/);
+  assert.match(authFormSource, /登山前の装備確認を10秒で。/);
+  assert.match(dashboardPageSource, /登山前の装備確認を10秒で。/);
 });
 
 test("auth form shows submit progress for login and signup", () => {

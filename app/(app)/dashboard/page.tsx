@@ -13,12 +13,13 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm font-semibold text-forest-700">GearAI Japan</p>
+          <p className="text-sm font-semibold text-forest-700">YAMAJITAKU</p>
+          <p className="mt-1 text-xl font-semibold tracking-normal text-ink">山支度</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">
             マイギア
           </h1>
           <p className="mt-2 text-sm leading-6 text-stone-600">
-            装備の重量、価値、持っているものをひと目で確認できます。
+            登山前の装備確認を10秒で。
           </p>
         </div>
         <Link

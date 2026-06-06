@@ -15,12 +15,13 @@ export function AuthForm({ mode, action, error }: AuthFormProps) {
     <main className="min-h-screen bg-trail-50 px-5 py-8 text-ink">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-md flex-col justify-center">
         <div className="mb-8">
-          <p className="mb-3 text-sm font-medium text-forest-700">GearAI Japan</p>
-          <h1 className="text-4xl font-semibold tracking-normal">
+          <p className="mb-2 text-sm font-semibold text-forest-700">YAMAJITAKU</p>
+          <h1 className="text-4xl font-semibold tracking-normal text-ink">山支度</h1>
+          <p className="mt-4 text-xl font-semibold tracking-normal text-ink">
             {isSignup ? "装備管理をはじめる" : "おかえりなさい"}
-          </h1>
-          <p className="mt-4 text-base leading-7 text-stone-600">
-            登山とキャンプの装備を整理し、重量と予算をすぐに把握できます。
+          </p>
+          <p className="mt-3 text-base leading-7 text-stone-600">
+            登山前の装備確認を10秒で。
           </p>
         </div>
 

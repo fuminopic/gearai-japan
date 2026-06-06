@@ -3,8 +3,23 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GearAI Japan",
-  description: "日本の登山・キャンプ装備を管理し、重量と予算を把握するAIプラットフォーム。"
+  title: {
+    default: "山支度 | YAMAJITAKU",
+    template: "%s | 山支度"
+  },
+  description: "登山前の装備確認を10秒で。",
+  openGraph: {
+    title: "山支度 | YAMAJITAKU",
+    description: "登山前の装備確認を10秒で。",
+    siteName: "山支度",
+    locale: "ja_JP",
+    type: "website"
+  },
+  twitter: {
+    card: "summary",
+    title: "山支度 | YAMAJITAKU",
+    description: "登山前の装備確認を10秒で。"
+  }
 };
 
 export default function RootLayout({
@@ -18,4 +33,3 @@ export default function RootLayout({
     </html>
   );
 }
-

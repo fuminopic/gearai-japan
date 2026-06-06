@@ -26,6 +26,25 @@ export type PlanningSystem =
   | "COLD_WEATHER_LAYER"
   | "NAVIGATION_SYSTEM"
   | "EMERGENCY_SYSTEM";
+export type RequirementSlot =
+  | "WATER_STORAGE"
+  | "WATER_TREATMENT"
+  | "TENT"
+  | "SLEEP_INSULATION"
+  | "SLEEP_PAD"
+  | "STOVE"
+  | "FUEL"
+  | "COOK_POT"
+  | "TABLEWARE"
+  | "RAIN_JACKET"
+  | "RAIN_PANTS"
+  | "INSULATION_LAYER"
+  | "BASE_LAYER"
+  | "GPS_DEVICE"
+  | "POWER_BANK"
+  | "FIRST_AID_KIT"
+  | "HEADLAMP";
+export type RequirementSlotCoverageStatus = "COVERED" | "MISSING";
 export type MountainFoundationRegion =
   | "KANTO_TOKYO"
   | "KANTO_TOKYO_SAITAMA_YAMANASHI"
@@ -196,6 +215,44 @@ export type TripRequirementLookupInput = {
   mountainSlug: string;
   season: MountainFoundationSeason;
   style: MountainFoundationStyle;
+};
+
+export type PackRequirementInput = {
+  mountain: MountainFoundationProfile;
+  season: MountainFoundationSeason;
+  style: MountainFoundationStyle;
+  requiredSystems: PlanningSystem[];
+  ownedGear: UserGear[];
+};
+
+export type PackRequirementLookupInput = {
+  mountainSlug: string;
+  season: MountainFoundationSeason;
+  style: MountainFoundationStyle;
+};
+
+export type PackRequirementOwnedGearMatch = Pick<
+  UserGear,
+  "id" | "name" | "brand" | "model" | "category_id" | "subcategory_id"
+> & {
+  gear_categories?: Pick<GearCategory, "id" | "name_ja" | "name_en"> | null;
+  gear_subcategories?: Pick<GearSubcategory, "id" | "name_ja" | "name_en"> | null;
+};
+
+export type PackRequirementSlotPlan = {
+  slot: RequirementSlot;
+  coverage_status: RequirementSlotCoverageStatus;
+  matching_owned_gear: PackRequirementOwnedGearMatch[];
+};
+
+export type PackRequirementPlan = {
+  mountain: MountainFoundationProfile;
+  season: MountainFoundationSeason;
+  style: MountainFoundationStyle;
+  required_systems: PlanningSystem[];
+  required_slots: PackRequirementSlotPlan[];
+  covered_slots: PackRequirementSlotPlan[];
+  missing_slots: PackRequirementSlotPlan[];
 };
 
 export type RecommendationPriority = "high" | "medium" | "low";

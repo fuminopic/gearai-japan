@@ -18,7 +18,7 @@ const appBottomNavSource = readFileSync(
 test("home redesign keeps the required mobile-first section order", () => {
   const order = [
     "HomeHeader",
-    "NextTripCard",
+    "HeroCard",
     "GearSummaryCard",
     "RecentGearSection",
     "CategoryDistribution"
@@ -33,6 +33,13 @@ test("home redesign keeps the required mobile-first section order", () => {
     [...indexes].sort((a, b) => a - b),
     indexes
   );
+});
+
+test("home rebuild exposes a master state component for the four home states", () => {
+  assert.match(dashboardSource, /function HomePageContent/);
+  assert.match(dashboardSource, /hasTrip: boolean/);
+  assert.match(dashboardSource, /hasGear: boolean/);
+  assert.match(dashboardSource, /<HeroCard hasTrip={hasTrip} trip={trip}/);
 });
 
 test("home redesign v2 uses shared bottom navigation", () => {
@@ -50,7 +57,7 @@ test("home redesign uses the requested YAMAJITAKU header and trip states", () =>
   for (const copy of [
     "山支度",
     "YAMAJITAKU",
-    "次の山行",
+    "次回の山行",
     "装備チェックを続ける",
     "まだ計画はありません",
     "山行計画を作成"
@@ -67,6 +74,23 @@ test("home redesign v2 removes hero secondary actions and replaces bell with men
   assert.doesNotMatch(dashboardSource, /CalendarDays/);
   assert.doesNotMatch(dashboardSource, /formatTripDate/);
   assert.doesNotMatch(dashboardSource, /aria-label="計画を開く"/);
+});
+
+test("home rebuild uses the required layered hero structure", () => {
+  assert.match(dashboardSource, /relative h-\[320px\] w-full overflow-hidden rounded-\[28px\]/);
+  assert.match(dashboardSource, /absolute inset-0 h-full w-full object-cover/);
+  assert.match(dashboardSource, /absolute inset-0 bg-gradient-to-r from-white\/95 via-white\/80 to-transparent/);
+  assert.match(dashboardSource, /relative z-10 flex h-full w-full flex-col justify-between p-6/);
+  assert.match(dashboardSource, /w-\[200px\].*bg-\[#3B5B44\]/s);
+  assert.match(dashboardSource, /w-2\/3/);
+});
+
+test("home rebuild follows the requested recent gear image layout", () => {
+  assert.match(dashboardSource, /snap-x/);
+  assert.match(dashboardSource, /w-\[120px\] flex-shrink-0 snap-start/);
+  assert.match(dashboardSource, /h-\[120px\] w-\[120px\].*bg-gray-50 p-2/s);
+  assert.match(dashboardSource, /object-contain/);
+  assert.doesNotMatch(dashboardSource, /gearFallbackGradient/);
 });
 
 test("home redesign v2 restricts hero imagery to mountain images", () => {

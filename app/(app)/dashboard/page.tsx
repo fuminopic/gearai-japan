@@ -2,12 +2,9 @@ import {
   Backpack,
   ChevronRight,
   CircleDollarSign,
-  Lightbulb,
   Menu,
   Mountain,
   Package,
-  PieChart,
-  Plus,
   WalletCards,
   Weight
 } from "lucide-react";
@@ -43,14 +40,34 @@ export default async function DashboardPage() {
     getRecommendationHistory(1)
   ]);
   const nextTrip = recommendations[0] ?? null;
-  const hasGear = summary.ownedCount > 0;
 
   return (
-    <div className="home-redesign -mx-5 -mb-28 -mt-6 min-h-screen bg-[#fbfaf7] px-6 pb-28 pt-7 text-ink md:-ml-24 md:-mt-8 md:px-6 md:pt-7">
+    <HomePageContent
+      hasTrip={Boolean(nextTrip)}
+      hasGear={summary.ownedCount > 0}
+      trip={nextTrip}
+      summary={summary}
+    />
+  );
+}
+
+function HomePageContent({
+  hasTrip,
+  hasGear,
+  trip,
+  summary
+}: {
+  hasTrip: boolean;
+  hasGear: boolean;
+  trip: AIRecommendationRecord | null;
+  summary: DashboardSummary;
+}) {
+  return (
+    <div className="home-redesign -mx-5 -mb-28 -mt-6 min-h-screen bg-[#f8f7f4] p-6 pb-28 text-ink md:-ml-24 md:-mt-8">
       <HomeShellCss />
-      <div className="mx-auto max-w-[390px] space-y-6">
+      <div className="mx-auto flex max-w-[390px] flex-col gap-6">
         <HomeHeader />
-        <NextTripCard trip={nextTrip} />
+        <HeroCard hasTrip={hasTrip} trip={trip} />
         <GearSummaryCard summary={summary} />
         <RecentGearSection gear={summary.recentGear} hasGear={hasGear} />
         <CategoryDistribution summary={summary} hasGear={hasGear} />
@@ -80,21 +97,21 @@ function HomeShellCss() {
 
 function HomeHeader() {
   return (
-    <section className="flex items-start justify-between">
-      <div>
-        <h1 className="text-[40px] font-bold leading-none tracking-normal">山支度</h1>
-        <p className="mt-2 text-base font-medium leading-none text-black/60">
+    <section className="flex items-center justify-between">
+      <div className="flex flex-col">
+        <h1 className="text-2xl font-bold leading-none tracking-normal">山支度</h1>
+        <p className="mt-2 text-xs font-medium leading-none text-gray-500">
           YAMAJITAKU
         </p>
       </div>
-      <details className="group relative mt-3">
+      <details className="group relative">
         <summary
           aria-label="メニュー"
-          className="flex h-11 w-11 list-none items-center justify-center rounded-full bg-transparent text-ink marker:hidden [&::-webkit-details-marker]:hidden"
+          className="flex h-10 w-10 list-none items-center justify-center rounded-full bg-transparent text-ink marker:hidden [&::-webkit-details-marker]:hidden"
         >
-          <Menu className="h-8 w-8 stroke-[1.8]" />
+          <Menu className="h-7 w-7 stroke-[1.8]" />
         </summary>
-        <div className="absolute right-0 top-12 z-20 w-40 rounded-2xl bg-white px-4 py-3 text-sm font-bold text-ink shadow-[0_18px_48px_rgba(23,26,23,0.12)]">
+        <div className="absolute right-0 top-11 z-20 w-40 rounded-2xl bg-white px-4 py-3 text-sm font-bold text-ink shadow-sm">
           メニュー
         </div>
       </details>
@@ -102,45 +119,56 @@ function HomeHeader() {
   );
 }
 
-function NextTripCard({ trip }: { trip: AIRecommendationRecord | null }) {
-  if (!trip) {
-    return <EmptyTripCard />;
+function HeroCard({
+  hasTrip,
+  trip
+}: {
+  hasTrip: boolean;
+  trip: AIRecommendationRecord | null;
+}) {
+  if (!hasTrip || !trip) {
+    return <EmptyTripHero />;
   }
 
   const coveragePercent = calculateCoveragePercent(trip);
 
   return (
-    <section className="relative min-h-[320px] overflow-hidden rounded-[28px] bg-white p-6 shadow-[0_18px_48px_rgba(23,26,23,0.08)]">
-      <HeroMountainPhoto mountainName={trip.input.mountain_region} />
-      <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 via-58% to-white/10" />
-      <div className="relative z-10 flex min-h-[272px] max-w-[70%] flex-col">
-        <SectionTitle icon={<Mountain className="h-5 w-5 fill-forest-700 text-forest-700" />}>
-          次の山行
-        </SectionTitle>
-        <h2 className="mt-7 text-[42px] font-bold leading-none tracking-normal">
-          {trip.input.mountain_region || "山行"}
-        </h2>
-        <div className="mt-5 flex flex-wrap gap-3">
-          <TripTag tone="season">{seasonLabel(trip.input.season)}</TripTag>
-          <TripTag tone="style">{styleLabel(trip.input.accommodation_style)}</TripTag>
+    <section className="relative h-[320px] w-full overflow-hidden rounded-[28px] shadow-sm">
+      <img
+        src={getMountainHeroImage(trip.input.mountain_region)}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent" />
+      <div className="relative z-10 flex h-full w-full flex-col justify-between p-6">
+        <HeroTitle />
+
+        <div>
+          <h2 className="text-4xl font-bold leading-none tracking-normal">
+            {trip.input.mountain_region || "山行"}
+          </h2>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <TripTag>{seasonLabel(trip.input.season)}</TripTag>
+            <TripTag>{styleLabel(trip.input.accommodation_style)}</TripTag>
+          </div>
         </div>
-        <div className="mt-auto max-w-[205px]">
-          <p className="text-base font-bold">装備チェックの進捗</p>
-          <div className="mt-4 flex items-center gap-4">
-            <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-stone-200">
+
+        <div>
+          <p className="text-sm font-bold">装備チェックの進捗</p>
+          <div className="mt-3 flex items-center gap-3">
+            <div className="h-2 w-2/3 overflow-hidden rounded-full bg-gray-200">
               <div
-                className="h-full rounded-full bg-forest-700"
+                className="h-full rounded-full bg-[#3B5B44]"
                 style={{ width: `${coveragePercent}%` }}
               />
             </div>
-            <span className="text-base font-medium">{coveragePercent}%</span>
+            <span className="text-sm font-medium">{coveragePercent}%</span>
           </div>
           <Link
             href="/ai"
-            className="mt-8 inline-flex w-full items-center justify-center gap-3 whitespace-nowrap rounded-2xl bg-forest-700 px-5 py-5 text-base font-bold text-white shadow-[0_12px_28px_rgba(55,96,62,0.22)]"
+            className="mt-6 inline-flex w-[200px] items-center justify-center rounded-xl bg-[#3B5B44] py-3 text-sm font-bold text-white shadow-sm"
           >
             装備チェックを続ける
-            <ChevronRight className="h-6 w-6" />
           </Link>
         </div>
       </div>
@@ -148,62 +176,70 @@ function NextTripCard({ trip }: { trip: AIRecommendationRecord | null }) {
   );
 }
 
-function EmptyTripCard() {
+function EmptyTripHero() {
   return (
-    <section className="relative min-h-[320px] overflow-hidden rounded-[28px] bg-white p-6 shadow-[0_18px_48px_rgba(23,26,23,0.08)]">
+    <section className="relative h-[320px] w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-white to-[#EAF2ED] shadow-sm">
       <IllustratedMountains />
-      <div className="relative z-10 flex min-h-[272px] max-w-[62%] flex-col">
-        <SectionTitle icon={<Mountain className="h-5 w-5 fill-forest-700 text-forest-700" />}>
-          次の山行
-        </SectionTitle>
-        <div className="mt-14">
-          <h2 className="text-[32px] font-bold leading-tight tracking-normal">
+      <div className="relative z-10 flex h-full w-full flex-col justify-between p-6">
+        <HeroTitle />
+
+        <div>
+          <h2 className="text-[30px] font-bold leading-tight tracking-normal">
             まだ計画はありません
           </h2>
-          <p className="mt-7 text-lg font-medium leading-9">
+          <p className="mt-5 text-base font-medium leading-8">
             次の登山に向けて
             <br />
             装備チェックを始めましょう
           </p>
         </div>
+
         <Link
           href="/ai"
-          className="mt-auto inline-flex w-full items-center justify-center gap-8 rounded-2xl bg-forest-700 px-6 py-5 text-lg font-bold text-white shadow-[0_12px_28px_rgba(55,96,62,0.22)]"
+          className="inline-flex w-[200px] items-center justify-center rounded-xl bg-[#3B5B44] py-3 text-sm font-bold text-white shadow-sm"
         >
           山行計画を作成
-          <ChevronRight className="h-6 w-6" />
         </Link>
       </div>
     </section>
   );
 }
 
+function HeroTitle() {
+  return (
+    <div className="flex items-center gap-3">
+      <Mountain className="h-5 w-5 fill-[#3B5B44] text-[#3B5B44]" />
+      <span className="text-lg font-bold">次回の山行</span>
+    </div>
+  );
+}
+
 function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
   return (
-    <section className="rounded-[24px] bg-white p-6 shadow-[0_18px_48px_rgba(23,26,23,0.07)]">
+    <section className="flex flex-col gap-4 rounded-[24px] bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between">
-        <SectionTitle icon={<Backpack className="h-6 w-6 text-forest-700" />}>
-          私の装備
-        </SectionTitle>
+        <h2 className="text-lg font-bold">私の装備</h2>
         <Link
           href="/gear/new"
-          className="inline-flex items-center gap-2 text-base font-bold text-forest-700"
+          className="inline-flex items-center gap-1 text-sm font-bold text-[#3B5B44]"
         >
-          <Plus className="h-5 w-5" />
+          <PlusText />
           装備を追加
         </Link>
       </div>
 
-      <div className="mt-8 grid grid-cols-3 divide-x divide-stone-200">
+      <div className="flex flex-row items-center justify-between">
         <SummaryMetric
           icon={WalletCards}
           value={`${summary.ownedCount.toLocaleString("ja-JP")} 件`}
           label="所有装備数"
+          divided
         />
         <SummaryMetric
           icon={Weight}
           value={formatKg(summary.totalWeightG)}
           label="総重量"
+          divided
         />
         <SummaryMetric
           icon={CircleDollarSign}
@@ -223,36 +259,34 @@ function RecentGearSection({
   hasGear: boolean;
 }) {
   return (
-    <section className="rounded-[24px] bg-white p-6 shadow-[0_18px_48px_rgba(23,26,23,0.07)]">
+    <section className="rounded-[24px] bg-white p-6 shadow-sm">
       <SectionHeader title="最近追加した装備" href="/gear" />
       {hasGear ? (
-        <div className="mt-6 flex gap-4 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {gear.slice(0, 8).map((item, index) => (
-            <article key={item.id} className="w-[122px] shrink-0">
-              <GearImage item={item} index={index} />
-              <h3 className="mt-3 line-clamp-1 text-base font-semibold">{item.name}</h3>
-              <p className="mt-2 text-base font-medium">{Number(item.weight_grams)} g</p>
-              <p className="mt-3 text-sm text-stone-500">{relativeAddedDate(item.created_at)}</p>
+        <div className="mt-5 flex snap-x gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {gear.slice(0, 8).map((item) => (
+            <article key={item.id} className="w-[120px] flex-shrink-0 snap-start">
+              <GearImage item={item} />
+              <h3 className="mt-3 truncate text-sm font-bold">{item.name}</h3>
+              <p className="mt-1 text-xs text-gray-500">{Number(item.weight_grams)} g</p>
+              <p className="mt-2 text-xs text-gray-500">{relativeAddedDate(item.created_at)}</p>
             </article>
           ))}
         </div>
       ) : (
-        <div className="flex min-h-[250px] items-center justify-center gap-7 py-5">
+        <div className="flex flex-col items-center justify-center py-6 text-center">
           <BackpackIllustration />
-          <div className="max-w-[190px]">
-            <h3 className="text-xl font-bold">まだ装備がありません</h3>
-            <p className="mt-4 text-base font-medium leading-8">
-              最初の装備を追加して、
-              <br />
-              快適な山行の準備を始めましょう。
-            </p>
-            <Link
-              href="/gear/new"
-              className="mt-6 inline-flex w-full items-center justify-center rounded-xl border-2 border-forest-700 px-6 py-3 text-base font-bold text-forest-700"
-            >
-              装備を追加する
-            </Link>
-          </div>
+          <h3 className="mt-4 text-lg font-bold">まだ装備がありません</h3>
+          <p className="mt-3 text-sm leading-7 text-gray-600">
+            最初の装備を追加して、
+            <br />
+            快適な山行の準備を始めましょう。
+          </p>
+          <Link
+            href="/gear/new"
+            className="mt-5 rounded-full border border-[#3B5B44] px-6 py-2 text-sm font-bold text-[#3B5B44]"
+          >
+            装備を追加する
+          </Link>
         </div>
       )}
     </section>
@@ -266,32 +300,27 @@ function CategoryDistribution({
   summary: DashboardSummary;
   hasGear: boolean;
 }) {
-  const distribution = buildDistribution(summary);
+  const distribution = buildDistribution(summary, hasGear);
 
   return (
-    <section className="rounded-[24px] bg-white p-6 shadow-[0_18px_48px_rgba(23,26,23,0.07)]">
-      <SectionHeader
-        title="カテゴリー分布"
-        href="/gear"
-        icon={<PieChart className="h-6 w-6 fill-forest-700 text-forest-700" />}
-      />
-      <div className="mt-7 grid grid-cols-[108px_1fr] items-center gap-5">
+    <section className="flex flex-col gap-6 rounded-[24px] bg-white p-6 shadow-sm">
+      <SectionHeader title="カテゴリー分布" href="/gear" />
+      <div className="flex flex-row items-center justify-between gap-4">
         <DonutChart distribution={distribution} hasGear={hasGear} />
-        <div className="grid grid-cols-2 gap-x-3 gap-y-4">
-          {distribution.map((item, index) => (
-            <div key={item.label} className="grid grid-cols-[12px_1fr] gap-x-2 gap-y-1">
+        <div className="grid flex-1 grid-cols-2 gap-x-2 gap-y-3 text-xs">
+          {distribution.map((item) => (
+            <div key={item.label} className="grid grid-cols-[10px_1fr_auto] items-center gap-2">
               <span
-                className="mt-1 h-3 w-3 rounded-full"
+                className="h-2.5 w-2.5 rounded-full"
                 style={{ backgroundColor: item.color }}
               />
-              <span className="min-w-0 text-[13px] font-medium leading-snug">{item.label}</span>
-              <span className="col-start-2 text-[13px] font-bold">{item.percent}%</span>
+              <span className="min-w-0 truncate font-medium">{item.label}</span>
+              <span className="font-bold">{item.percent}%</span>
             </div>
           ))}
         </div>
       </div>
-      <div className="mt-7 flex items-center justify-center gap-3 rounded-xl bg-forest-50/80 px-4 py-3 text-sm font-medium text-forest-700">
-        <Lightbulb className="h-6 w-6 shrink-0 stroke-[1.8]" />
+      <div className="rounded-xl bg-[#F0F5F2] p-3 text-center text-sm font-medium text-[#3B5B44]">
         {hasGear
           ? "バランスの良い構成です！"
           : "装備を追加すると、分布とバランスを確認できます"}
@@ -300,59 +329,24 @@ function CategoryDistribution({
   );
 }
 
-function SectionTitle({
-  icon,
-  children
-}: {
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}) {
+function SectionHeader({ title, href }: { title: string; href: Route }) {
   return (
-    <div className="flex items-center gap-3 text-2xl font-bold">
-      {icon}
-      <span>{children}</span>
-    </div>
-  );
-}
-
-function SectionHeader({
-  title,
-  href,
-  icon
-}: {
-  title: string;
-  href: Route;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
-        {icon}
-        <h2 className="whitespace-nowrap text-[22px] font-bold tracking-normal">{title}</h2>
-      </div>
-      <Link href={href} className="inline-flex shrink-0 items-center gap-1 text-sm font-bold text-forest-700">
+    <div className="flex items-center justify-between">
+      <h2 className="text-lg font-bold tracking-normal">{title}</h2>
+      <Link
+        href={href}
+        className="inline-flex items-center gap-1 text-sm font-bold text-[#3B5B44]"
+      >
         すべて見る
-        <ChevronRight className="h-5 w-5" />
+        <ChevronRight className="h-4 w-4" />
       </Link>
     </div>
   );
 }
 
-function TripTag({
-  tone,
-  children
-}: {
-  tone: "season" | "style";
-  children: React.ReactNode;
-}) {
+function TripTag({ children }: { children: React.ReactNode }) {
   return (
-    <span
-      className={
-        tone === "season"
-          ? "rounded-lg bg-forest-100 px-4 py-2 text-base font-bold text-forest-800"
-          : "rounded-lg bg-[#f2dfbb] px-4 py-2 text-base font-bold text-[#5a4520]"
-      }
-    >
+    <span className="rounded-lg bg-[#E8F1E8] px-3 py-1.5 text-sm font-bold text-[#3B5B44]">
       {children}
     </span>
   );
@@ -361,48 +355,46 @@ function TripTag({
 function SummaryMetric({
   icon: Icon,
   value,
-  label
+  label,
+  divided = false
 }: {
   icon: typeof WalletCards;
   value: string;
   label: string;
+  divided?: boolean;
 }) {
   return (
-    <div className="flex flex-col items-center px-2 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-forest-100 text-forest-700">
-        <Icon className="h-7 w-7 stroke-[1.8]" />
+    <div
+      className={`flex flex-1 flex-col items-center gap-1 text-center ${
+        divided ? "border-r border-gray-100" : ""
+      }`}
+    >
+      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E8F1E8] text-[#3B5B44]">
+        <Icon className="h-5 w-5 stroke-[1.8]" />
       </div>
-      <p className="mt-4 text-[23px] font-bold leading-tight tracking-normal">{value}</p>
-      <p className="mt-2 text-sm font-medium">{label}</p>
+      <p className="text-xl font-bold leading-tight tracking-normal">{value}</p>
+      <p className="text-xs font-medium text-gray-400">{label}</p>
     </div>
   );
 }
 
-function HeroMountainPhoto({ mountainName }: { mountainName: string }) {
-  return (
-    <div
-      className="absolute inset-y-0 right-0 w-[45%] bg-cover bg-center"
-      style={{
-        backgroundImage: `linear-gradient(135deg, rgba(47,128,77,0.08), rgba(255,255,255,0.05)), url('${getMountainHeroImage(mountainName)}')`
-      }}
-    />
-  );
+function PlusText() {
+  return <span className="text-lg leading-none">＋</span>;
 }
 
 function IllustratedMountains() {
   return (
     <div className="absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-white/5" />
       <svg
         aria-hidden
-        className="absolute bottom-0 right-0 h-full w-[64%]"
-        viewBox="0 0 260 320"
+        className="absolute bottom-0 right-0 h-full w-[72%]"
+        viewBox="0 0 280 320"
         preserveAspectRatio="none"
       >
-        <path d="M0 230 C45 175 72 185 108 145 C137 112 158 146 180 124 C210 92 230 115 260 86 L260 320 L0 320 Z" fill="#dfe8dc" />
-        <path d="M0 265 C40 220 78 235 112 195 C145 156 177 185 208 148 C228 126 244 132 260 116 L260 320 L0 320 Z" fill="#cfdccc" />
-        <path d="M0 304 C42 275 80 288 120 250 C156 216 190 244 226 204 C242 187 252 184 260 178 L260 320 L0 320 Z" fill="#b9cdb8" />
-        <path d="M210 238 C224 258 232 280 236 320" fill="none" stroke="#efe7dc" strokeWidth="10" strokeLinecap="round" />
+        <path d="M0 230 C45 175 72 185 108 145 C137 112 158 146 180 124 C210 92 238 115 280 86 L280 320 L0 320 Z" fill="#e7efe7" />
+        <path d="M0 265 C40 220 78 235 112 195 C145 156 177 185 208 148 C230 126 254 132 280 116 L280 320 L0 320 Z" fill="#d5e2d5" />
+        <path d="M0 304 C42 275 80 288 120 250 C156 216 190 244 226 204 C246 187 264 184 280 178 L280 320 L0 320 Z" fill="#bed2be" />
+        <path d="M222 238 C238 258 246 282 250 320" fill="none" stroke="#efe7dc" strokeWidth="10" strokeLinecap="round" />
       </svg>
     </div>
   );
@@ -410,35 +402,24 @@ function IllustratedMountains() {
 
 function BackpackIllustration() {
   return (
-    <div className="relative h-28 w-28 shrink-0 opacity-35">
-      <div className="absolute inset-x-8 top-1 h-8 rounded-t-2xl border-8 border-stone-300 border-b-0" />
-      <div className="absolute inset-x-5 bottom-0 top-8 rounded-3xl bg-stone-300" />
-      <div className="absolute left-1 top-16 h-10 w-5 rounded-full bg-stone-200" />
-      <div className="absolute right-1 top-16 h-10 w-5 rounded-full bg-stone-200" />
-      <div className="absolute inset-x-9 top-16 h-3 rounded-full bg-stone-400" />
+    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-50 text-gray-300">
+      <Backpack className="h-10 w-10 stroke-[1.6]" />
     </div>
   );
 }
 
-function GearImage({ item, index }: { item: UserGear; index: number }) {
-  if (item.image_url) {
-    return (
-      <img
-        src={item.image_url}
-        alt=""
-        className="aspect-square w-full rounded-xl object-cover"
-      />
-    );
-  }
-
+function GearImage({ item }: { item: UserGear }) {
   return (
-    <div
-      className="flex aspect-square w-full items-center justify-center rounded-xl bg-cover bg-center"
-      style={{
-        backgroundImage: `linear-gradient(135deg, rgba(255,255,255,0.12), rgba(23,26,23,0.08)), ${gearFallbackGradient(index)}`
-      }}
-    >
-      <Package className="h-12 w-12 text-white/90" />
+    <div className="flex h-[120px] w-[120px] items-center justify-center rounded-2xl bg-gray-50 p-2">
+      {item.image_url ? (
+        <img
+          src={item.image_url}
+          alt=""
+          className="h-full w-full object-contain"
+        />
+      ) : (
+        <Package className="h-10 w-10 text-gray-300" />
+      )}
     </div>
   );
 }
@@ -460,24 +441,24 @@ function DonutChart({
           return `${item.color} ${start}% ${end}%`;
         })
         .join(", ")})`
-    : "conic-gradient(#e7e7e7 0% 100%)";
+    : "conic-gradient(#e5e7eb 0% 100%)";
 
   return (
     <div
-      className="relative h-[108px] w-[108px] rounded-full"
+      className="relative h-[112px] w-[112px] shrink-0 rounded-full"
       style={{ background }}
     >
-      <div className="absolute inset-8 rounded-full bg-white" />
+      <div className="absolute inset-9 rounded-full bg-white" />
     </div>
   );
 }
 
-function buildDistribution(summary: DashboardSummary) {
-  if (summary.totalWeightG <= 0 || summary.categoryWeights.length === 0) {
+function buildDistribution(summary: DashboardSummary, hasGear: boolean) {
+  if (!hasGear || summary.totalWeightG <= 0 || summary.categoryWeights.length === 0) {
     return categoryLabels.map((label, index) => ({
       label,
       percent: 0,
-      color: index === categoryLabels.length - 1 ? "#d9d9d9" : categoryColors[index]
+      color: index === categoryLabels.length - 1 ? "#d1d5db" : categoryColors[index]
     }));
   }
 
@@ -548,17 +529,6 @@ function relativeAddedDate(createdAt: string) {
 
 function formatKg(weightG: number) {
   return `${(weightG / 1000).toFixed(2)} kg`;
-}
-
-function gearFallbackGradient(index: number) {
-  const gradients = [
-    "linear-gradient(135deg, #7ea582, #2b4e33)",
-    "linear-gradient(135deg, #c9b78f, #7d6942)",
-    "linear-gradient(135deg, #d8d2c6, #7f766a)",
-    "linear-gradient(135deg, #b7c9d6, #263a45)"
-  ];
-
-  return gradients[index % gradients.length];
 }
 
 function getMountainHeroImage(mountainName: string) {

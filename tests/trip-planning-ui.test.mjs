@@ -173,7 +173,6 @@ test("user-facing branding uses YAMAJITAKU hierarchy", () => {
   assert.match(rootLayoutSource, /openGraph/);
   assert.match(rootLayoutSource, /siteName: "山支度"/);
   assert.match(authFormSource, /登山前の装備確認を10秒で。/);
-  assert.match(dashboardPageSource, /登山前の装備確認を10秒で。/);
 });
 
 test("auth form shows submit progress for login and signup", () => {

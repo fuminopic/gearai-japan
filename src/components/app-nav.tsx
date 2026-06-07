@@ -2,6 +2,7 @@ import { Backpack, ClipboardCheck, Home, UserRound } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 
+import { AppBottomNav } from "@/components/app-bottom-nav";
 import { signOut } from "@/lib/actions/auth";
 
 const navItems = [
@@ -34,23 +35,7 @@ export function AppNav() {
         </div>
       </header>
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-stone-200 bg-white/95 px-4 py-2 backdrop-blur md:hidden">
-        <div className="mx-auto grid max-w-md grid-cols-4">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex flex-col items-center gap-1 rounded-lg px-2 py-2 text-xs font-medium text-stone-600"
-              >
-                <Icon aria-hidden className="h-5 w-5" />
-                {item.label}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      <AppBottomNav />
 
       <aside className="fixed left-0 top-0 hidden h-screen w-24 border-r border-stone-200 bg-white px-3 py-5 md:block">
         <Link href="/dashboard" className="mb-8 block text-center leading-none text-forest-700">

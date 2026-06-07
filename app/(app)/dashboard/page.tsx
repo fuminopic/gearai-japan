@@ -1,17 +1,13 @@
 import {
   Backpack,
-  Bell,
-  CalendarDays,
   ChevronRight,
-  ClipboardCheck,
   CircleDollarSign,
-  Home,
   Lightbulb,
+  Menu,
   Mountain,
   Package,
   PieChart,
   Plus,
-  UserRound,
   WalletCards,
   Weight
 } from "lucide-react";
@@ -41,13 +37,6 @@ const categoryLabels = [
   "その他"
 ];
 
-const bottomNavItems = [
-  { href: "/dashboard", label: "ホーム", icon: Home, active: true },
-  { href: "/gear", label: "装備", icon: Backpack, active: false },
-  { href: "/ai", label: "計画", icon: ClipboardCheck, active: false },
-  { href: "/profile", label: "自分", icon: UserRound, active: false }
-] as const;
-
 export default async function DashboardPage() {
   const [summary, recommendations] = await Promise.all([
     getDashboardSummary(),
@@ -66,7 +55,6 @@ export default async function DashboardPage() {
         <RecentGearSection gear={summary.recentGear} hasGear={hasGear} />
         <CategoryDistribution summary={summary} hasGear={hasGear} />
       </div>
-      <BottomNavigation />
     </div>
   );
 }
@@ -75,8 +63,7 @@ function HomeShellCss() {
   return (
     <style>{`
       header:has(a[href="/dashboard"]),
-      aside:has(a[href="/dashboard"]),
-      body > div > nav:has(a[href="/dashboard"]) {
+      aside:has(a[href="/dashboard"]) {
         display: none;
       }
       main {
@@ -100,12 +87,17 @@ function HomeHeader() {
           YAMAJITAKU
         </p>
       </div>
-      <button
-        aria-label="通知"
-        className="mt-3 flex h-11 w-11 items-center justify-center rounded-full bg-transparent text-ink"
-      >
-        <Bell className="h-7 w-7 stroke-[1.8]" />
-      </button>
+      <details className="group relative mt-3">
+        <summary
+          aria-label="メニュー"
+          className="flex h-11 w-11 list-none items-center justify-center rounded-full bg-transparent text-ink marker:hidden [&::-webkit-details-marker]:hidden"
+        >
+          <Menu className="h-8 w-8 stroke-[1.8]" />
+        </summary>
+        <div className="absolute right-0 top-12 z-20 w-40 rounded-2xl bg-white px-4 py-3 text-sm font-bold text-ink shadow-[0_18px_48px_rgba(23,26,23,0.12)]">
+          メニュー
+        </div>
+      </details>
     </section>
   );
 }
@@ -119,25 +111,18 @@ function NextTripCard({ trip }: { trip: AIRecommendationRecord | null }) {
 
   return (
     <section className="relative min-h-[320px] overflow-hidden rounded-[28px] bg-white p-6 shadow-[0_18px_48px_rgba(23,26,23,0.08)]">
-      <HeroMountainPhoto />
+      <HeroMountainPhoto mountainName={trip.input.mountain_region} />
       <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 via-58% to-white/10" />
       <div className="relative z-10 flex min-h-[272px] max-w-[70%] flex-col">
         <SectionTitle icon={<Mountain className="h-5 w-5 fill-forest-700 text-forest-700" />}>
           次の山行
         </SectionTitle>
-        <Link href="/ai" aria-label="計画を開く" className="absolute right-0 top-0">
-          <ChevronRight className="h-7 w-7 stroke-[1.8]" />
-        </Link>
         <h2 className="mt-7 text-[42px] font-bold leading-none tracking-normal">
           {trip.input.mountain_region || "山行"}
         </h2>
         <div className="mt-5 flex flex-wrap gap-3">
           <TripTag tone="season">{seasonLabel(trip.input.season)}</TripTag>
           <TripTag tone="style">{styleLabel(trip.input.accommodation_style)}</TripTag>
-        </div>
-        <div className="mt-7 flex items-center gap-3 text-base font-medium">
-          <CalendarDays className="h-5 w-5" />
-          <span>{formatTripDate(trip.created_at, trip.input.days)}</span>
         </div>
         <div className="mt-auto max-w-[205px]">
           <p className="text-base font-bold">装備チェックの進捗</p>
@@ -393,37 +378,12 @@ function SummaryMetric({
   );
 }
 
-function BottomNavigation() {
-  return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-stone-100 bg-white/95 px-8 pb-6 pt-4 shadow-[0_-8px_28px_rgba(23,26,23,0.06)] backdrop-blur md:hidden">
-      <div className="mx-auto grid max-w-[390px] grid-cols-4">
-        {bottomNavItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center gap-2 text-base font-bold ${
-                item.active ? "text-forest-700" : "text-ink"
-              }`}
-            >
-              <Icon className={`h-7 w-7 ${item.active ? "fill-forest-700" : ""}`} />
-              {item.label}
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
-  );
-}
-
-function HeroMountainPhoto() {
+function HeroMountainPhoto({ mountainName }: { mountainName: string }) {
   return (
     <div
       className="absolute inset-y-0 right-0 w-[45%] bg-cover bg-center"
       style={{
-        backgroundImage:
-          "linear-gradient(135deg, rgba(47,128,77,0.08), rgba(255,255,255,0.05)), url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=85')"
+        backgroundImage: `linear-gradient(135deg, rgba(47,128,77,0.08), rgba(255,255,255,0.05)), url('${getMountainHeroImage(mountainName)}')`
       }}
     />
   );
@@ -579,23 +539,6 @@ function styleLabel(style: string) {
   return labels[style] ?? "山行";
 }
 
-function formatTripDate(createdAt: string, days: number) {
-  const start = new Date(createdAt);
-  const end = new Date(start);
-  end.setDate(start.getDate() + Math.max(1, days) - 1);
-  const formatter = new Intl.DateTimeFormat("ja-JP", {
-    month: "long",
-    day: "numeric",
-    weekday: "short"
-  });
-
-  if (days <= 1) {
-    return formatter.format(start);
-  }
-
-  return `${formatter.format(start)} 〜${formatter.format(end)}`;
-}
-
 function relativeAddedDate(createdAt: string) {
   const created = new Date(createdAt).getTime();
   const diffDays = Math.max(1, Math.round((Date.now() - created) / 86_400_000));
@@ -616,4 +559,31 @@ function gearFallbackGradient(index: number) {
   ];
 
   return gradients[index % gradients.length];
+}
+
+function getMountainHeroImage(mountainName: string) {
+  const normalized = mountainName.trim();
+  const images: Record<string, string> = {
+    燕岳:
+      "https://images.unsplash.com/photo-1605540436563-5bca919ae766?auto=format&fit=crop&w=900&q=85",
+    谷川岳:
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=85",
+    高尾山:
+      "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=900&q=85",
+    雲取山:
+      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=85",
+    槍ヶ岳:
+      "https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?auto=format&fit=crop&w=900&q=85",
+    奥穂高岳:
+      "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=900&q=85",
+    常念岳:
+      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=900&q=85",
+    "蝶ヶ岳":
+      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=900&q=85"
+  };
+
+  return (
+    images[normalized] ??
+    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=85"
+  );
 }

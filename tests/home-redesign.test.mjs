@@ -6,6 +6,14 @@ const dashboardSource = readFileSync(
   new URL("../app/(app)/dashboard/page.tsx", import.meta.url),
   "utf8"
 );
+const appNavSource = readFileSync(
+  new URL("../src/components/app-nav.tsx", import.meta.url),
+  "utf8"
+);
+const appBottomNavSource = readFileSync(
+  new URL("../src/components/app-bottom-nav.tsx", import.meta.url),
+  "utf8"
+);
 
 test("home redesign keeps the required mobile-first section order", () => {
   const order = [
@@ -13,8 +21,7 @@ test("home redesign keeps the required mobile-first section order", () => {
     "NextTripCard",
     "GearSummaryCard",
     "RecentGearSection",
-    "CategoryDistribution",
-    "BottomNavigation"
+    "CategoryDistribution"
   ];
   const indexes = order.map((name) => dashboardSource.indexOf(`<${name}`));
 
@@ -28,6 +35,17 @@ test("home redesign keeps the required mobile-first section order", () => {
   );
 });
 
+test("home redesign v2 uses shared bottom navigation", () => {
+  assert.match(appNavSource, /AppBottomNav/);
+  assert.match(appBottomNavSource, /usePathname/);
+  assert.match(appNavSource, /ホーム/);
+  assert.match(appNavSource, /装備/);
+  assert.match(appNavSource, /計画/);
+  assert.match(appNavSource, /自分/);
+  assert.doesNotMatch(dashboardSource, /function BottomNavigation/);
+  assert.doesNotMatch(dashboardSource, /bottomNavItems/);
+});
+
 test("home redesign uses the requested YAMAJITAKU header and trip states", () => {
   for (const copy of [
     "山支度",
@@ -39,6 +57,23 @@ test("home redesign uses the requested YAMAJITAKU header and trip states", () =>
   ]) {
     assert.match(dashboardSource, new RegExp(copy));
   }
+});
+
+test("home redesign v2 removes hero secondary actions and replaces bell with menu", () => {
+  assert.match(dashboardSource, /Menu/);
+  assert.match(dashboardSource, /aria-label="メニュー"/);
+  assert.match(dashboardSource, /<details/);
+  assert.doesNotMatch(dashboardSource, /Bell/);
+  assert.doesNotMatch(dashboardSource, /CalendarDays/);
+  assert.doesNotMatch(dashboardSource, /formatTripDate/);
+  assert.doesNotMatch(dashboardSource, /aria-label="計画を開く"/);
+});
+
+test("home redesign v2 restricts hero imagery to mountain images", () => {
+  assert.match(dashboardSource, /getMountainHeroImage/);
+  assert.match(dashboardSource, /谷川岳/);
+  assert.match(dashboardSource, /燕岳/);
+  assert.doesNotMatch(dashboardSource, /highway/i);
 });
 
 test("home redesign exposes only allowed gear summary metrics", () => {

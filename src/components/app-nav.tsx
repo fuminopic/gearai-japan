@@ -8,7 +8,7 @@ import { signOut } from "@/lib/actions/auth";
 const navItems = [
   { href: "/dashboard", label: "ホーム", icon: Home },
   { href: "/gear", label: "装備", icon: Backpack },
-  { href: "/ai", label: "計画", icon: ClipboardCheck },
+  { href: "/plan" as Route, label: "計画", icon: ClipboardCheck },
   { href: "/profile", label: "自分", icon: UserRound }
 ] satisfies Array<{
   href: Route;

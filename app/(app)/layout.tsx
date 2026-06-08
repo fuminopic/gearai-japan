@@ -9,12 +9,11 @@ export default async function AppLayout({
   await requireUser();
 
   return (
-    <div className="min-h-screen bg-trail-50 text-ink">
+    <div className="min-h-screen bg-trail-50 pb-32 text-ink">
       <AppNav />
-      <main className="mx-auto max-w-5xl px-5 pb-28 pt-6 md:ml-24 md:pb-10 md:pt-8">
+      <main className="mx-auto max-w-5xl px-5 pb-32 pt-6 md:ml-24 md:pb-10 md:pt-8">
         {children}
       </main>
     </div>
   );
 }
-

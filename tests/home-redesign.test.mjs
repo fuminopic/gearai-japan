@@ -45,12 +45,15 @@ test("home rebuild exposes a master state component for the four home states", (
 test("home redesign v2 uses shared bottom navigation", () => {
   assert.match(appNavSource, /AppBottomNav/);
   assert.match(appBottomNavSource, /usePathname/);
-  assert.match(appBottomNavSource, /fixed inset-x-6 bottom-8 z-50/);
-  assert.match(appBottomNavSource, /bg-white\/85/);
-  assert.match(appBottomNavSource, /backdrop-blur-md/);
+  assert.match(
+    appBottomNavSource,
+    /fixed inset-x-6 bottom-8 z-50 bg-white\/25 backdrop-blur-\[24px\] border border-white\/50 shadow-\[0_20px_40px_rgba\(0,0,0,0\.1\)\] rounded-full px-6 py-2\.5 flex justify-between items-center/
+  );
   assert.match(appBottomNavSource, /rounded-full/);
   assert.match(appBottomNavSource, /px-6/);
   assert.match(appBottomNavSource, /py-2\.5/);
+  assert.match(appBottomNavSource, /transition-all duration-300 ease-out/);
+  assert.match(appBottomNavSource, /scale-110 text-\[#3A5A40\]/);
   assert.match(appBottomNavSource, /text-\[#3A5A40\]/);
   assert.match(appBottomNavSource, /text-gray-400/);
   assert.match(appBottomNavSource, /h-5 w-5/);
@@ -87,19 +90,23 @@ test("home redesign v2 removes hero secondary actions and replaces bell with men
 });
 
 test("home hero is compact and binds to trip mountain image data", () => {
-  assert.match(dashboardSource, /relative h-\[180px\] w-full overflow-hidden rounded-\[28px\]/);
-  assert.match(dashboardSource, /absolute inset-0 h-full w-full object-cover/);
-  assert.match(dashboardSource, /absolute inset-0 bg-gradient-to-r from-white\/95 via-white\/80 to-transparent/);
-  assert.match(dashboardSource, /relative z-10 flex h-full w-full flex-col justify-between p-5/);
+  assert.match(dashboardSource, /relative h-48 w-full overflow-hidden rounded-\[28px\]/);
+  assert.match(dashboardSource, /absolute inset-0 z-0/);
+  assert.match(dashboardSource, /object-cover w-full h-full/);
+  assert.match(dashboardSource, /absolute inset-0 z-10 bg-gradient-to-r from-white via-white\/85 to-transparent/);
+  assert.match(dashboardSource, /relative z-20 flex flex-col justify-between p-5 h-full/);
+  assert.match(dashboardSource, /mt-3/);
   assert.match(dashboardSource, /w-\[200px\].*bg-\[#3B5B44\]/s);
   assert.match(dashboardSource, /w-2\/3/);
   assert.match(dashboardSource, /getTripMountainImageUrl\(trip\)/);
   assert.match(dashboardSource, /mountain_image_url/);
-  assert.match(dashboardSource, /mountain\?: \{ image_url\?: string \| null \}/);
+  assert.match(dashboardSource, /mountain\?: \{[\s\S]*name_ja\?: string \| null;[\s\S]*image_url\?: string \| null;/);
   assert.doesNotMatch(dashboardSource, /getMountainHeroImage/);
 });
 
 test("home rebuild follows the requested recent gear image layout", () => {
+  assert.match(dashboardSource, /px-4 py-6 pb-32/);
+  assert.match(dashboardSource, /-mx-4 mt-5 flex snap-x gap-4 overflow-x-auto px-4/);
   assert.match(dashboardSource, /snap-x/);
   assert.match(dashboardSource, /w-\[120px\] flex-shrink-0 snap-start/);
   assert.match(dashboardSource, /h-\[120px\] w-\[120px\].*bg-gray-50 p-2/s);
@@ -144,9 +151,13 @@ test("home redesign includes gear empty and category empty states", () => {
   }
 });
 
-test("home redesign does not modify dashboard data sources", () => {
+test("home redesign syncs latest plan from Supabase history", () => {
   assert.match(dashboardSource, /getDashboardSummary/);
-  assert.match(dashboardSource, /getRecommendationHistory\(1\)/);
-  assert.doesNotMatch(dashboardSource, /from\(/);
-  assert.doesNotMatch(dashboardSource, /insert|update|delete/);
+  assert.match(dashboardSource, /async function fetchLatestPlan/);
+  assert.match(dashboardSource, /\.from\("ai_recommendations"\)/);
+  assert.match(dashboardSource, /\.order\("created_at", \{ ascending: false \}\)/);
+  assert.match(dashboardSource, /\.limit\(1\)/);
+  assert.match(dashboardSource, /console\.log\("Latest Plan:", data\)/);
+  assert.doesNotMatch(dashboardSource, /getRecommendationHistory\(1\)/);
+  assert.doesNotMatch(dashboardSource, /谷川岳/);
 });

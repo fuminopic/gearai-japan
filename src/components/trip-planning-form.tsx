@@ -43,7 +43,7 @@ export function TripPlanningForm({
     : styleOptions[0];
 
   return (
-    <form action="/ai" className="rounded-lg bg-white p-4 shadow-soft sm:p-5">
+    <form action="/plan" className="rounded-lg bg-white p-4 shadow-soft sm:p-5">
       {error ? (
         <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
           {error}

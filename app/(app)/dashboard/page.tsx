@@ -12,7 +12,7 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { getDashboardSummary } from "@/lib/data/dashboard";
-import { getRecommendationHistory } from "@/lib/data/recommendations";
+import { requireUser } from "@/lib/data/gear";
 import type { AIRecommendationRecord, DashboardSummary, UserGear } from "@/lib/types";
 import { formatJpy } from "@/lib/utils/format";
 
@@ -33,13 +33,13 @@ const categoryLabels = [
   "電子機器",
   "その他"
 ];
+const planRoute = "/plan" as Route;
 
 export default async function DashboardPage() {
-  const [summary, recommendations] = await Promise.all([
+  const [summary, nextTrip] = await Promise.all([
     getDashboardSummary(),
-    getRecommendationHistory(1)
+    fetchLatestPlan()
   ]);
-  const nextTrip = recommendations[0] ?? null;
 
   return (
     <HomePageContent
@@ -51,6 +51,37 @@ export default async function DashboardPage() {
   );
 }
 
+async function fetchLatestPlan() {
+  const { supabase, user } = await requireUser();
+  const { data, error } = await supabase
+    .from("ai_recommendations")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  console.log("Latest Plan:", data);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data?.[0] ?? null) as LatestPlanRecord | null;
+}
+
+type LatestPlanRecord = AIRecommendationRecord & {
+  mountain?: {
+    name_ja?: string | null;
+    image_url?: string | null;
+  } | null;
+  mountains?: {
+    name_ja?: string | null;
+    image_url?: string | null;
+  } | null;
+  mountain_image_url?: string | null;
+  image_url?: string | null;
+};
+
 function HomePageContent({
   hasTrip,
   hasGear,
@@ -59,11 +90,11 @@ function HomePageContent({
 }: {
   hasTrip: boolean;
   hasGear: boolean;
-  trip: AIRecommendationRecord | null;
+  trip: LatestPlanRecord | null;
   summary: DashboardSummary;
 }) {
   return (
-    <div className="home-redesign -mx-5 -mb-28 -mt-6 min-h-screen bg-[#f8f7f4] p-6 pb-28 text-ink md:-ml-24 md:-mt-8">
+    <div className="home-redesign -mx-5 -mb-32 -mt-6 min-h-screen bg-[#f8f7f4] px-4 py-6 pb-32 text-ink md:-ml-24 md:-mt-8">
       <HomeShellCss />
       <div className="mx-auto flex max-w-[390px] flex-col gap-6">
         <HomeHeader />
@@ -124,31 +155,37 @@ function HeroCard({
   trip
 }: {
   hasTrip: boolean;
-  trip: AIRecommendationRecord | null;
+  trip: LatestPlanRecord | null;
 }) {
   if (!hasTrip || !trip) {
     return <EmptyTripHero />;
   }
 
   const coveragePercent = calculateCoveragePercent(trip);
+  const imageUrl = getTripMountainImageUrl(trip);
 
   return (
-    <section className="relative h-[180px] w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7] shadow-sm">
-      {getTripMountainImageUrl(trip) ? (
-        <img
-          src={getTripMountainImageUrl(trip) ?? ""}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      ) : null}
-      <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent" />
-      <div className="relative z-10 flex h-full w-full flex-col justify-between p-5">
-        <HeroTitle />
-
+    <section className="relative h-48 w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7] shadow-sm">
+      <div className="absolute inset-0 z-0">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt=""
+            className="object-cover w-full h-full"
+          />
+        ) : (
+          <div className="h-full w-full bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7]" />
+        )}
+      </div>
+      <div className="absolute inset-0 z-10 bg-gradient-to-r from-white via-white/85 to-transparent" />
+      <div className="relative z-20 flex flex-col justify-between p-5 h-full">
         <div>
-          <h2 className="text-2xl font-bold leading-none tracking-normal">
-            {trip.input.mountain_region || "山行"}
-          </h2>
+          <HeroTitle />
+          <div className="mt-3">
+            <h2 className="text-2xl font-bold leading-none tracking-normal">
+              {getTripMountainName(trip)}
+            </h2>
+          </div>
           <div className="mt-2 flex flex-wrap gap-2">
             <TripTag>{seasonLabel(trip.input.season)}</TripTag>
             <TripTag>{styleLabel(trip.input.accommodation_style)}</TripTag>
@@ -166,7 +203,7 @@ function HeroCard({
             <span className="text-xs font-medium">{coveragePercent}%</span>
           </div>
           <Link
-            href="/ai"
+            href={planRoute}
             className="mt-3 inline-flex w-[200px] items-center justify-center rounded-xl bg-[#3B5B44] py-3 text-xs font-bold text-white shadow-sm"
           >
             装備チェックを続ける
@@ -179,16 +216,18 @@ function HeroCard({
 
 function EmptyTripHero() {
   return (
-    <section className="relative h-[180px] w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-white to-[#EAF2ED] shadow-sm">
-      <IllustratedMountains />
-      <div className="relative z-10 flex h-full w-full flex-col justify-between p-5">
-        <HeroTitle />
-
+    <section className="relative h-48 w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-white to-[#EAF2ED] shadow-sm">
+      <div className="absolute inset-0 z-0">
+        <IllustratedMountains />
+      </div>
+      <div className="absolute inset-0 z-10 bg-gradient-to-r from-white via-white/85 to-transparent" />
+      <div className="relative z-20 flex flex-col justify-between p-5 h-full">
         <div>
-          <h2 className="text-2xl font-bold leading-tight tracking-normal">
+          <HeroTitle />
+          <h2 className="mt-3 text-2xl font-bold leading-tight tracking-normal">
             まだ計画はありません
           </h2>
-          <p className="mt-3 text-xs font-medium leading-6">
+          <p className="mt-2 text-xs font-medium leading-6">
             次の登山に向けて
             <br />
             装備チェックを始めましょう
@@ -196,7 +235,7 @@ function EmptyTripHero() {
         </div>
 
         <Link
-          href="/ai"
+          href={planRoute}
           className="inline-flex w-[200px] items-center justify-center rounded-xl bg-[#3B5B44] py-3 text-xs font-bold text-white shadow-sm"
         >
           山行計画を作成
@@ -217,7 +256,7 @@ function HeroTitle() {
 
 function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
   return (
-    <section className="flex flex-col gap-4 rounded-[24px] bg-white p-6 shadow-sm">
+    <section className="flex flex-col gap-4 rounded-[24px] bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-bold">私の装備</h2>
         <Link
@@ -260,10 +299,12 @@ function RecentGearSection({
   hasGear: boolean;
 }) {
   return (
-    <section className="rounded-[24px] bg-white p-6 shadow-sm">
-      <SectionHeader title="最近追加した装備" href="/gear" />
+    <section className="rounded-[24px] bg-white py-5 shadow-sm">
+      <div className="px-5">
+        <SectionHeader title="最近追加した装備" href="/gear" />
+      </div>
       {hasGear ? (
-        <div className="mt-5 flex snap-x gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="-mx-4 mt-5 flex snap-x gap-4 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {gear.slice(0, 8).map((item) => (
             <article key={item.id} className="w-[120px] flex-shrink-0 snap-start">
               <GearImage item={item} />
@@ -274,7 +315,7 @@ function RecentGearSection({
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-6 text-center">
+        <div className="flex flex-col items-center justify-center px-5 py-6 text-center">
           <BackpackIllustration />
           <h3 className="mt-4 text-base font-bold">まだ装備がありません</h3>
           <p className="mt-3 text-xs leading-6 text-gray-600">
@@ -304,7 +345,7 @@ function CategoryDistribution({
   const distribution = buildDistribution(summary, hasGear);
 
   return (
-    <section className="flex flex-col gap-6 rounded-[24px] bg-white p-6 shadow-sm">
+    <section className="flex flex-col gap-5 rounded-[24px] bg-white p-5 shadow-sm">
       <SectionHeader title="カテゴリー分布" href="/gear" />
       <div className="flex flex-row items-center justify-between gap-4">
         <DonutChart distribution={distribution} hasGear={hasGear} />
@@ -502,6 +543,10 @@ function calculateCoveragePercent(trip: AIRecommendationRecord) {
 
 function seasonLabel(season: string) {
   const labels: Record<string, string> = {
+    SPRING: "春山",
+    SUMMER: "夏山",
+    AUTUMN: "秋山",
+    WINTER: "冬山",
     spring: "春山",
     summer: "夏山",
     autumn: "秋山",
@@ -513,6 +558,10 @@ function seasonLabel(season: string) {
 
 function styleLabel(style: string) {
   const labels: Record<string, string> = {
+    DAY_HIKE: "日帰り",
+    OVERNIGHT_HUT: "小屋泊",
+    OVERNIGHT_TENT: "テント泊",
+    MULTI_DAY_TREK: "縦走",
     day_hike: "日帰り",
     hut: "小屋泊",
     tent: "テント泊"
@@ -532,17 +581,21 @@ function formatKg(weightG: number) {
   return `${(weightG / 1000).toFixed(2)} kg`;
 }
 
-function getTripMountainImageUrl(trip: AIRecommendationRecord) {
-  const record = trip as AIRecommendationRecord & {
-    mountain?: { image_url?: string | null } | null;
-    mountains?: { image_url?: string | null } | null;
-    mountain_image_url?: string | null;
-  };
-
+function getTripMountainName(trip: LatestPlanRecord) {
   return (
-    record.mountain_image_url ??
-    record.mountain?.image_url ??
-    record.mountains?.image_url ??
+    trip.mountain?.name_ja ??
+    trip.mountains?.name_ja ??
+    trip.input.mountain_region ??
+    "山行"
+  );
+}
+
+function getTripMountainImageUrl(trip: LatestPlanRecord) {
+  return (
+    trip.mountain_image_url ??
+    trip.image_url ??
+    trip.mountain?.image_url ??
+    trip.mountains?.image_url ??
     null
   );
 }

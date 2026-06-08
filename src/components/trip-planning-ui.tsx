@@ -17,8 +17,10 @@ import {
   X
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
 
 import { TripPlanningForm } from "@/components/trip-planning-form";
+import { clearPlans, deletePlan } from "@/lib/actions/plans";
 import {
   categoryLabels,
   gearMatchingConfidenceLabels,
@@ -32,6 +34,7 @@ import type {
   GearMatchingDatabaseGearMatch,
   GearMatchingOwnedGearMatch,
   GearMatchingResult,
+  AIRecommendationRecord,
   MountainFoundationProfile,
   MountainFoundationSeason,
   MountainFoundationStyle,
@@ -48,6 +51,7 @@ type TripPlanningUIProps = {
   selectedStyle: MountainFoundationStyle;
   plan?: PackRequirementPlan;
   compatibilityBySlot?: Partial<Record<RequirementSlot, GearMatchingResult>>;
+  planHistory?: AIRecommendationRecord[];
   error?: string;
 };
 
@@ -89,6 +93,7 @@ export function TripPlanningUI({
   selectedStyle,
   plan,
   compatibilityBySlot = {},
+  planHistory = [],
   error
 }: TripPlanningUIProps) {
   return (
@@ -113,8 +118,96 @@ export function TripPlanningUI({
       {plan ? (
         <TripPlanningResult plan={plan} compatibilityBySlot={compatibilityBySlot} />
       ) : null}
+
+      <PlanHistorySection plans={planHistory} />
     </div>
   );
+}
+
+function PlanHistorySection({ plans }: { plans: AIRecommendationRecord[] }) {
+  return (
+    <section className="rounded-lg bg-white p-5 shadow-soft">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold text-forest-700">保存済みプラン</p>
+          <h2 className="mt-1 text-lg font-semibold text-ink">計画履歴</h2>
+        </div>
+        {plans.length > 0 ? (
+          <form action={clearPlans}>
+            <button
+              type="submit"
+              className="rounded-full border border-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+            >
+              一键删除
+            </button>
+          </form>
+        ) : null}
+      </div>
+
+      {plans.length > 0 ? (
+        <div className="mt-4 space-y-3">
+          {plans.map((record) => (
+            <article
+              key={record.id}
+              className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="truncate text-sm font-semibold text-ink">
+                    {record.input.mountain_region || "山行"}
+                  </h3>
+                  <p className="mt-1 text-xs font-medium text-stone-500">
+                    {formatPlanMeta(record)}
+                  </p>
+                </div>
+                <form action={deletePlan}>
+                  <input type="hidden" name="id" value={record.id} />
+                  <button
+                    type="submit"
+                    className="rounded-full border border-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                  >
+                    Delete
+                  </button>
+                </form>
+              </div>
+              <Link
+                href={`/ai/recommendations/${record.id}`}
+                className="mt-3 inline-flex text-xs font-semibold text-forest-700"
+              >
+                詳細を見る
+              </Link>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-4 rounded-lg bg-stone-50 px-4 py-3 text-sm font-medium text-stone-500">
+          まだ保存された計画はありません。
+        </p>
+      )}
+    </section>
+  );
+}
+
+function formatPlanMeta(record: AIRecommendationRecord) {
+  const parts = [
+    mountainFoundationSeasonLabels[
+      record.input.season.toUpperCase() as MountainFoundationSeason
+    ] ?? record.input.season,
+    legacyStyleLabel(record.input.accommodation_style),
+    new Date(record.created_at).toLocaleDateString("ja-JP")
+  ];
+
+  return parts.join(" / ");
+}
+
+function legacyStyleLabel(style: string) {
+  const labels: Record<string, string> = {
+    day_hike: "日帰り",
+    hut: "小屋泊",
+    tent: "テント泊"
+  };
+
+  return labels[style] ?? style;
 }
 
 function TripPlanningResult({

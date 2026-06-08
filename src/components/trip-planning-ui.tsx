@@ -19,15 +19,17 @@ import {
   X
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useRef, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { TripPlanningForm } from "@/components/trip-planning-form";
 import {
   clearTripPlans,
   deleteTripPlan,
-  saveTripPlan
+  saveTripPlan,
+  updateTripPlan
 } from "@/lib/actions/trip-plans";
 import {
   categoryLabels,
@@ -38,6 +40,7 @@ import {
   planningSystemLabels,
   requirementSlotLabels
 } from "@/lib/i18n/labels";
+import { createClient } from "@/lib/supabase/client";
 import type {
   GearMatchingDatabaseGearMatch,
   GearMatchingOwnedGearMatch,
@@ -62,7 +65,8 @@ type TripPlanningUIProps = {
   compatibilityBySlot?: Partial<Record<RequirementSlot, GearMatchingResult>>;
   planHistory?: AIRecommendationRecord[];
   savedPlans?: SavedTripPlan[];
-  selectedMountainImageUrl?: string | null;
+  selectedPlanId?: string | null;
+  selectedSavedPlan?: SavedTripPlan | null;
   error?: string;
 };
 
@@ -106,11 +110,92 @@ export function TripPlanningUI({
   compatibilityBySlot = {},
   planHistory = [],
   savedPlans = [],
-  selectedMountainImageUrl,
+  selectedPlanId,
+  selectedSavedPlan,
   error
 }: TripPlanningUIProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const planId = searchParams.get("id") ?? selectedPlanId ?? null;
+  const initialSavedPlan =
+    selectedSavedPlan ?? savedPlans.find((record) => record.id === planId) ?? null;
+  const [hydratedPlan, setHydratedPlan] = useState<SavedTripPlan | null>(
+    initialSavedPlan
+  );
+  const effectiveMountainSlug = hydratedPlan?.mountain_slug ?? selectedMountainSlug;
+  const effectiveSeason = hydratedPlan?.season ?? selectedSeason;
+  const effectiveStyle = hydratedPlan?.style ?? selectedStyle;
   const selectedMountain =
-    mountains.find((mountain) => mountain.slug === selectedMountainSlug) ?? null;
+    mountains.find((mountain) => mountain.slug === effectiveMountainSlug) ?? null;
+  const currentProgressValue = plan
+    ? calculatePlanProgress(plan)
+    : hydratedPlan?.progress ?? 0;
+
+  useEffect(() => {
+    if (!planId) {
+      setHydratedPlan(null);
+      return;
+    }
+
+    let isActive = true;
+    const localPlan = savedPlans.find((record) => record.id === planId) ?? null;
+
+    if (localPlan) {
+      setHydratedPlan(localPlan);
+    }
+
+    async function hydratePlanFromId() {
+      const supabase = createClient();
+      const { data, error: hydrateError } = await supabase
+        .from("trip_plans")
+        .select("*")
+        .eq("id", planId)
+        .single();
+
+      if (!isActive) {
+        return;
+      }
+
+      if (hydrateError) {
+        console.error("Plan hydration failed:", hydrateError.message);
+        return;
+      }
+
+      const nextPlan = data as SavedTripPlan;
+      setHydratedPlan(nextPlan);
+
+      if (!nextPlan.mountain_slug) {
+        return;
+      }
+
+      if (
+        nextPlan.mountain_slug !== selectedMountainSlug ||
+        nextPlan.season !== selectedSeason ||
+        nextPlan.style !== selectedStyle
+      ) {
+        const nextParams = new URLSearchParams(searchParams.toString());
+        nextParams.set("id", nextPlan.id);
+        nextParams.set("mountain", nextPlan.mountain_slug);
+        nextParams.set("season", nextPlan.season);
+        nextParams.set("style", nextPlan.style);
+        router.replace(`/plan?${nextParams.toString()}`);
+      }
+    }
+
+    hydratePlanFromId();
+
+    return () => {
+      isActive = false;
+    };
+  }, [
+    planId,
+    router,
+    savedPlans,
+    searchParams,
+    selectedMountainSlug,
+    selectedSeason,
+    selectedStyle
+  ]);
 
   return (
     <div className="space-y-5 pb-24">
@@ -125,9 +210,10 @@ export function TripPlanningUI({
 
       <TripPlanningForm
         mountains={mountains}
-        selectedMountainSlug={selectedMountainSlug}
-        selectedSeason={selectedSeason}
-        selectedStyle={selectedStyle}
+        selectedMountainSlug={effectiveMountainSlug}
+        selectedSeason={effectiveSeason}
+        selectedStyle={effectiveStyle}
+        planId={planId}
         error={error}
       />
 
@@ -138,9 +224,10 @@ export function TripPlanningUI({
             <SavePlanButton
               mountainSlug={selectedMountain.slug}
               mountainName={selectedMountain.name_ja}
-              season={selectedSeason}
-              style={selectedStyle}
-              imageUrl={selectedMountainImageUrl}
+              season={effectiveSeason}
+              style={effectiveStyle}
+              progress={currentProgressValue}
+              planId={planId}
             />
           ) : null}
         </>
@@ -152,23 +239,26 @@ export function TripPlanningUI({
 }
 
 function SavePlanButton({
+  planId,
   mountainSlug,
   mountainName,
   season,
   style,
-  imageUrl
+  progress
 }: {
+  planId: string | null;
   mountainSlug: string;
   mountainName: string;
   season: MountainFoundationSeason;
   style: MountainFoundationStyle;
-  imageUrl: string | null | undefined;
+  progress: number;
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
+  const formAction = planId ? updateTripPlan : saveTripPlan;
 
-  function handleSave() {
+  function handleSavePlan() {
     const form = formRef.current;
 
     if (!form) {
@@ -177,25 +267,30 @@ function SavePlanButton({
 
     const formData = new FormData(form);
     startTransition(async () => {
-      await saveTripPlan(formData);
+      if (planId) {
+        await updateTripPlan(formData);
+      } else {
+        await saveTripPlan(formData);
+      }
       router.push("/dashboard");
     });
   }
 
   return (
-    <form ref={formRef} action={saveTripPlan}>
+    <form ref={formRef} action={formAction}>
+      {planId ? <input type="hidden" name="id" value={planId} /> : null}
       <input type="hidden" name="mountain_slug" value={mountainSlug} />
       <input type="hidden" name="mountain_name" value={mountainName} />
       <input type="hidden" name="season" value={season} />
       <input type="hidden" name="style" value={style} />
-      <input type="hidden" name="image_url" value={imageUrl ?? ""} />
+      <input type="hidden" name="progress" value={progress} />
       <button
         type="button"
         disabled={isPending}
-        onClick={handleSave}
+        onClick={handleSavePlan}
         className="fixed bottom-24 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl bg-[#C62828] py-3.5 font-bold text-white shadow-xl transition disabled:opacity-70"
       >
-        {isPending ? "保存中..." : "計画を保存！"}
+        {isPending ? "保存中..." : planId ? "変更を更新！" : "計画を保存！"}
       </button>
     </form>
   );
@@ -235,14 +330,17 @@ function PlanHistorySection({
               className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
+                <Link
+                  href={`/plan?id=${record.id}` as Route}
+                  className="min-w-0 flex-1"
+                >
                   <h3 className="truncate text-sm font-semibold text-ink">
                     {record.mountain_name || "山行"}
                   </h3>
                   <p className="mt-1 text-xs font-medium text-stone-500">
                     {formatSavedPlanMeta(record)}
                   </p>
-                </div>
+                </Link>
                 <form action={deleteTripPlan}>
                   <input type="hidden" name="id" value={record.id} />
                   <button
@@ -290,8 +388,7 @@ function TripPlanningResult({
   const totalSlots = plan.required_slots.length;
   const coveredCount = plan.covered_slots.length;
   const missingCount = plan.missing_slots.length;
-  const coveragePercent =
-    totalSlots === 0 ? 0 : Math.round((coveredCount / totalSlots) * 100);
+  const coveragePercent = calculatePlanProgress(plan);
   const compatibleSlots = plan.required_slots.filter((slotPlan) => {
     const match = compatibilityBySlot[slotPlan.slot];
     return (
@@ -405,6 +502,16 @@ function TripPlanningResult({
       </section>
     </div>
   );
+}
+
+function calculatePlanProgress(plan: PackRequirementPlan) {
+  const totalSlots = plan.required_slots.length;
+
+  if (totalSlots === 0) {
+    return 0;
+  }
+
+  return Math.round((plan.covered_slots.length / totalSlots) * 100);
 }
 
 function HeroReadinessCard({

@@ -9,11 +9,11 @@ import {
   Weight
 } from "lucide-react";
 import type { Route } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 import { getDashboardSummary } from "@/lib/data/dashboard";
 import { getLatestTripPlan } from "@/lib/data/trip-plans";
-import { getMountainImageUrl } from "@/lib/mountains/images";
 import type { DashboardSummary, SavedTripPlan, UserGear } from "@/lib/types";
 import { formatJpy } from "@/lib/utils/format";
 
@@ -136,22 +136,20 @@ function HeroCard({
   }
 
   const coveragePercent = calculateCoveragePercent(trip);
-  const imageUrl = getTripMountainImageUrl(trip);
+  const planHref = `/plan?id=${trip.id}` as Route;
 
   return (
     <section className="relative h-48 w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7] shadow-sm">
       <div className="absolute inset-0 z-0">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt=""
-            className="object-cover w-full h-full"
-          />
-        ) : (
-          <div className="h-full w-full bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7]" />
-        )}
+        <Image
+          src="/generic-hills.jpg"
+          fill
+          className="object-cover object-bottom opacity-80"
+          alt="background"
+          priority
+        />
       </div>
-      <div className="absolute inset-0 z-10 bg-gradient-to-r from-white via-white/85 to-transparent" />
+      <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#E8F0E8]/40 via-white/90 to-white" />
       <div className="relative z-20 flex flex-col justify-between p-5 h-full">
         <div>
           <HeroTitle />
@@ -177,7 +175,7 @@ function HeroCard({
             <span className="text-xs font-medium">{coveragePercent}%</span>
           </div>
           <Link
-            href={planRoute}
+            href={planHref}
             className="mt-3 inline-flex w-[200px] items-center justify-center rounded-xl bg-[#3B5B44] py-3 text-xs font-bold text-white shadow-sm"
           >
             装備チェックを続ける
@@ -192,9 +190,14 @@ function EmptyTripHero() {
   return (
     <section className="relative h-48 w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-white to-[#EAF2ED] shadow-sm">
       <div className="absolute inset-0 z-0">
-        <IllustratedMountains />
+        <Image
+          src="/generic-hills.jpg"
+          fill
+          className="object-cover object-bottom opacity-80"
+          alt="background"
+        />
       </div>
-      <div className="absolute inset-0 z-10 bg-gradient-to-r from-white via-white/85 to-transparent" />
+      <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#E8F0E8]/40 via-white/90 to-white" />
       <div className="relative z-20 flex flex-col justify-between p-5 h-full">
         <div>
           <HeroTitle />
@@ -398,24 +401,6 @@ function PlusText() {
   return <span className="text-lg leading-none">＋</span>;
 }
 
-function IllustratedMountains() {
-  return (
-    <div className="absolute inset-0 overflow-hidden">
-      <svg
-        aria-hidden
-        className="absolute bottom-0 right-0 h-full w-[72%]"
-        viewBox="0 0 280 320"
-        preserveAspectRatio="none"
-      >
-        <path d="M0 230 C45 175 72 185 108 145 C137 112 158 146 180 124 C210 92 238 115 280 86 L280 320 L0 320 Z" fill="#e7efe7" />
-        <path d="M0 265 C40 220 78 235 112 195 C145 156 177 185 208 148 C230 126 254 132 280 116 L280 320 L0 320 Z" fill="#d5e2d5" />
-        <path d="M0 304 C42 275 80 288 120 250 C156 216 190 244 226 204 C246 187 264 184 280 178 L280 320 L0 320 Z" fill="#bed2be" />
-        <path d="M222 238 C238 258 246 282 250 320" fill="none" stroke="#efe7dc" strokeWidth="10" strokeLinecap="round" />
-      </svg>
-    </div>
-  );
-}
-
 function BackpackIllustration() {
   return (
     <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-50 text-gray-300">
@@ -500,8 +485,18 @@ function buildDistribution(summary: DashboardSummary, hasGear: boolean) {
   return mapped;
 }
 
-function calculateCoveragePercent(_trip: SavedTripPlan) {
-  return 0;
+function calculateCoveragePercent(trip: SavedTripPlan) {
+  return clampProgress(trip.progress);
+}
+
+function clampProgress(progress: number | null | undefined) {
+  const value = Number(progress ?? 0);
+
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  return Math.min(100, Math.max(0, Math.round(value)));
 }
 
 function seasonLabel(season: string) {
@@ -542,8 +537,4 @@ function relativeAddedDate(createdAt: string) {
 
 function formatKg(weightG: number) {
   return `${(weightG / 1000).toFixed(2)} kg`;
-}
-
-function getTripMountainImageUrl(trip: SavedTripPlan) {
-  return trip.image_url ?? (trip.mountain_slug ? getMountainImageUrl(trip.mountain_slug) : null);
 }

@@ -93,18 +93,21 @@ test("home redesign v2 removes hero secondary actions and replaces bell with men
   assert.doesNotMatch(dashboardSource, /aria-label="計画を開く"/);
 });
 
-test("home hero is compact and binds to trip mountain image data", () => {
+test("home hero is compact and uses the static premium hills background", () => {
   assert.match(dashboardSource, /relative h-48 w-full overflow-hidden rounded-\[28px\]/);
   assert.match(dashboardSource, /absolute inset-0 z-0/);
-  assert.match(dashboardSource, /object-cover w-full h-full/);
-  assert.match(dashboardSource, /absolute inset-0 z-10 bg-gradient-to-r from-white via-white\/85 to-transparent/);
+  assert.match(dashboardSource, /src="\/generic-hills\.jpg"/);
+  assert.match(dashboardSource, /object-cover object-bottom opacity-80/);
+  assert.match(dashboardSource, /absolute inset-0 z-10 bg-gradient-to-t from-\[#E8F0E8\]\/40 via-white\/90 to-white/);
   assert.match(dashboardSource, /relative z-20 flex flex-col justify-between p-5 h-full/);
   assert.match(dashboardSource, /mt-3/);
   assert.match(dashboardSource, /w-\[200px\].*bg-\[#3B5B44\]/s);
   assert.match(dashboardSource, /w-2\/3/);
-  assert.match(dashboardSource, /getTripMountainImageUrl\(trip\)/);
-  assert.match(dashboardSource, /trip\.image_url/);
+  assert.match(dashboardSource, /`\/plan\?id=\$\{trip\.id\}`/);
+  assert.match(dashboardSource, /trip\.progress/);
   assert.match(dashboardSource, /trip\.mountain_name/);
+  assert.doesNotMatch(dashboardSource, /getTripMountainImageUrl/);
+  assert.doesNotMatch(dashboardSource, /getMountainImageUrl/);
   assert.doesNotMatch(dashboardSource, /getMountainHeroImage/);
 });
 

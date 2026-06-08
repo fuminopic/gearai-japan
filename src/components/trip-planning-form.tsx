@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ClipboardCheck } from "lucide-react";
 
 import {
@@ -18,6 +18,7 @@ type TripPlanningFormProps = {
   selectedMountainSlug: string;
   selectedSeason: MountainFoundationSeason;
   selectedStyle: MountainFoundationStyle;
+  planId?: string | null;
   error?: string;
 };
 
@@ -26,6 +27,7 @@ export function TripPlanningForm({
   selectedMountainSlug,
   selectedSeason,
   selectedStyle,
+  planId,
   error
 }: TripPlanningFormProps) {
   const initialMountainSlug = getAvailableMountainSlug(selectedMountainSlug, mountains);
@@ -42,8 +44,14 @@ export function TripPlanningForm({
     ? selectedStyle
     : styleOptions[0];
 
+  useEffect(() => {
+    setMountainSlug(getAvailableMountainSlug(selectedMountainSlug, mountains));
+  }, [selectedMountainSlug, mountains]);
+
   return (
     <form action="/plan" className="rounded-lg bg-white p-4 shadow-soft sm:p-5">
+      {planId ? <input type="hidden" name="id" value={planId} /> : null}
+
       {error ? (
         <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
           {error}

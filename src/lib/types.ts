@@ -214,6 +214,7 @@ export type SavedTripPlan = {
   season: MountainFoundationSeason;
   style: MountainFoundationStyle;
   image_url: string | null;
+  progress: number;
   created_at: string;
 };
 

@@ -38,6 +38,10 @@ const tripPlansMigrationSource = readFileSync(
   new URL("../supabase/migrations/011_trip_plans_saved_flow.sql", import.meta.url),
   "utf8"
 );
+const tripPlansProgressMigrationSource = readFileSync(
+  new URL("../supabase/migrations/012_trip_plans_progress.sql", import.meta.url),
+  "utf8"
+);
 const planPageSource = readFileSync(
   new URL("../app/(app)/plan/page.tsx", import.meta.url),
   "utf8"
@@ -68,12 +72,12 @@ test("trip planning page exposes the pack planning architecture", () => {
   assert.match(planPageContentSource, /getGearProducts/);
   assert.match(planPageContentSource, /getRecommendationHistory/);
   assert.match(planPageContentSource, /getTripPlans/);
-  assert.match(planPageContentSource, /getMountainImageUrl/);
   assert.match(planPageContentSource, /requireUser/);
   assert.match(planPageSource, /PlanPageContent/);
 
   assert.doesNotMatch(`${aiPageSource}\n${planPageContentSource}`, /AIRecommendationForm/);
   assert.doesNotMatch(`${aiPageSource}\n${planPageContentSource}`, /createRecommendation/);
+  assert.doesNotMatch(planPageContentSource, /getMountainImageUrl/);
 });
 
 test("trip planning UI emphasizes required systems, coverage, and missing gear", () => {
@@ -159,7 +163,9 @@ test("trip planning UI avoids recommendation and shopping language", () => {
 test("trip planning form filters seasons and styles by selected mountain", () => {
   assert.match(tripPlanningFormSource, /"use client"/);
   assert.match(tripPlanningFormSource, /useState/);
+  assert.match(tripPlanningFormSource, /useEffect/);
   assert.match(tripPlanningFormSource, /action="\/plan"/);
+  assert.match(tripPlanningFormSource, /name="id" value=\{planId\}/);
   assert.match(tripPlanningFormSource, /supported_seasons/);
   assert.match(tripPlanningFormSource, /supported_styles/);
   assert.match(tripPlanningFormSource, /seasonOptions\.map/);
@@ -173,8 +179,8 @@ test("trip planning form filters seasons and styles by selected mountain", () =>
 
 test("trip planning page normalizes direct URL parameters against the mountain", () => {
   assert.match(planPageContentSource, /getSelectedMountain\(selectedMountainSlug, mountains\)/);
-  assert.match(planPageContentSource, /getSelectedSeason\(params\.season, selectedMountain\)/);
-  assert.match(planPageContentSource, /getSelectedStyle\(params\.style, selectedMountain\)/);
+  assert.match(planPageContentSource, /getSelectedSeason\(hydratedSeasonParam, selectedMountain\)/);
+  assert.match(planPageContentSource, /getSelectedStyle\(hydratedStyleParam, selectedMountain\)/);
   assert.match(planPageContentSource, /supported_seasons\.includes\(season\)/);
   assert.match(planPageContentSource, /supported_styles\.includes\(style\)/);
   assert.doesNotMatch(planPageContentSource, /parseSeason\(params\.season\) \?\? "SUMMER"/);
@@ -205,24 +211,46 @@ test("plan history supports Supabase-backed delete and clear all actions", () =>
   assert.match(planActionsSource, /revalidatePath\("\/dashboard"\)/);
 });
 
-test("saving a plan writes mountain image payload and redirects home", () => {
-  assert.match(tripPlanningUiSource, /function handleSave/);
+test("saving and updating a plan writes progress payload and redirects home", () => {
+  assert.match(tripPlanningUiSource, /function handleSavePlan/);
   assert.match(tripPlanningUiSource, /new FormData\(form\)/);
   assert.match(tripPlanningUiSource, /await saveTripPlan\(formData\)/);
+  assert.match(tripPlanningUiSource, /await updateTripPlan\(formData\)/);
   assert.match(tripPlanningUiSource, /router\.push\("\/dashboard"\)/);
   assert.match(tripPlanningUiSource, /計画を保存！/);
+  assert.match(tripPlanningUiSource, /変更を更新！/);
   assert.match(
     tripPlanningUiSource,
     /fixed bottom-24 left-1\/2 z-50 w-\[calc\(100%-2rem\)\] max-w-sm -translate-x-1\/2 rounded-2xl bg-\[#C62828\] py-3\.5/
   );
-  assert.match(tripPlanningUiSource, /name="image_url" value=\{imageUrl \?\? ""\}/);
+  assert.match(tripPlanningUiSource, /name="progress" value=\{progress\}/);
   assert.match(planActionsSource, /mountain_name: mountainName/);
   assert.match(planActionsSource, /season,/);
   assert.match(planActionsSource, /style,/);
-  assert.match(planActionsSource, /image_url: imageUrl/);
+  assert.match(planActionsSource, /progress/);
+  assert.match(planActionsSource, /export async function updateTripPlan/);
+  assert.match(planActionsSource, /\.update\(\{/);
   assert.match(tripPlansDataSource, /from\("trip_plans"\)/);
   assert.match(tripPlansMigrationSource, /create table if not exists public\.trip_plans/);
   assert.match(tripPlansMigrationSource, /image_url text/);
+  assert.match(tripPlansMigrationSource, /progress integer not null default 0/);
+  assert.match(tripPlansProgressMigrationSource, /add column if not exists progress integer not null default 0/);
+  assert.match(tripPlansProgressMigrationSource, /trip_plans_update_own/);
+});
+
+test("plan id hydration links home and history to the exact saved plan", () => {
+  assert.match(planPageContentSource, /id\?: string/);
+  assert.match(planPageContentSource, /selectedSavedPlan/);
+  assert.match(planPageContentSource, /params\.id/);
+  assert.match(tripPlanningUiSource, /useSearchParams/);
+  assert.match(tripPlanningUiSource, /useEffect/);
+  assert.match(tripPlanningUiSource, /createClient/);
+  assert.match(tripPlanningUiSource, /\.from\("trip_plans"\)/);
+  assert.match(tripPlanningUiSource, /\.eq\("id", planId\)/);
+  assert.match(tripPlanningUiSource, /\.single\(\)/);
+  assert.match(tripPlanningUiSource, /router\.replace\(`\/plan\?\$\{nextParams\.toString\(\)\}`\)/);
+  assert.match(tripPlanningUiSource, /href=\{`\/plan\?id=\$\{record\.id\}` as Route\}/);
+  assert.match(dashboardPageSource, /`\/plan\?id=\$\{trip\.id\}`/);
 });
 
 test("user-facing branding uses YAMAJITAKU hierarchy", () => {

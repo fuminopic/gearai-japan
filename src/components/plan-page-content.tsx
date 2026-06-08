@@ -5,7 +5,6 @@ import { getPackRequirementPlan } from "@/lib/data/pack-requirements";
 import { getRecommendationHistory } from "@/lib/data/recommendations";
 import { getTripPlans } from "@/lib/data/trip-plans";
 import { matchGearForRequirementSlot } from "@/lib/gear-matching/engine";
-import { getMountainImageUrl } from "@/lib/mountains/images";
 import type {
   GearMatchingResult,
   MountainFoundationProfile,
@@ -16,6 +15,7 @@ import type {
 
 export type PlanPageContentProps = {
   searchParams: Promise<{
+    id?: string;
     mountain?: string;
     season?: string;
     style?: string;
@@ -39,14 +39,26 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
         : "Mountain Foundation Dataset を読み込めませんでした。";
   }
 
-  const selectedMountainSlug = getSelectedMountainSlug(params.mountain, mountains);
-  const selectedMountain = getSelectedMountain(selectedMountainSlug, mountains);
-  const selectedSeason = getSelectedSeason(params.season, selectedMountain);
-  const selectedStyle = getSelectedStyle(params.style, selectedMountain);
-  const shouldGeneratePlan = Boolean(params.mountain || params.season || params.style);
-  let plan;
   const planHistory = await getRecommendationHistory();
   const savedPlans = await getTripPlans();
+  const selectedSavedPlan =
+    params.id && savedPlans.length > 0
+      ? savedPlans.find((record) => record.id === params.id) ?? null
+      : null;
+  const hydratedMountainParam = params.mountain ?? selectedSavedPlan?.mountain_slug ?? undefined;
+  const hydratedSeasonParam = params.season ?? selectedSavedPlan?.season;
+  const hydratedStyleParam = params.style ?? selectedSavedPlan?.style;
+  const selectedMountainSlug = getSelectedMountainSlug(hydratedMountainParam, mountains);
+  const selectedMountain = getSelectedMountain(selectedMountainSlug, mountains);
+  const selectedSeason = getSelectedSeason(hydratedSeasonParam, selectedMountain);
+  const selectedStyle = getSelectedStyle(hydratedStyleParam, selectedMountain);
+  const shouldGeneratePlan = Boolean(
+    params.mountain ||
+      params.season ||
+      params.style ||
+      selectedSavedPlan
+  );
+  let plan;
   let compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>> = {};
 
   if (shouldGeneratePlan && mountains.length > 0) {
@@ -92,7 +104,8 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
       compatibilityBySlot={compatibilityBySlot}
       planHistory={planHistory}
       savedPlans={savedPlans}
-      selectedMountainImageUrl={getMountainImageUrl(selectedMountainSlug)}
+      selectedPlanId={params.id ?? null}
+      selectedSavedPlan={selectedSavedPlan}
       error={error}
     />
   );

@@ -15,6 +15,8 @@ create table if not exists public.trip_plans (
       )
     ),
   image_url text,
+  progress integer not null default 0
+    check (progress >= 0 and progress <= 100),
   created_at timestamptz not null default now()
 );
 
@@ -31,6 +33,12 @@ using (auth.uid() = user_id);
 drop policy if exists "trip_plans_insert_own" on public.trip_plans;
 create policy "trip_plans_insert_own"
 on public.trip_plans for insert
+with check (auth.uid() = user_id);
+
+drop policy if exists "trip_plans_update_own" on public.trip_plans;
+create policy "trip_plans_update_own"
+on public.trip_plans for update
+using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 
 drop policy if exists "trip_plans_delete_own" on public.trip_plans;

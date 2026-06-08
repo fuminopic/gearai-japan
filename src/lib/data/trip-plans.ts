@@ -63,6 +63,7 @@ function legacyRecommendationToTripPlan(record: AIRecommendationRecord): SavedTr
     season: legacySeason(record.input.season),
     style: legacyStyle(record.input.accommodation_style),
     image_url: null,
+    progress: 0,
     created_at: record.created_at
   };
 }

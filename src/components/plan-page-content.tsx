@@ -3,7 +3,9 @@ import { getGearProducts, requireUser } from "@/lib/data/gear";
 import { getMountainFoundationProfiles } from "@/lib/data/mountain-foundation";
 import { getPackRequirementPlan } from "@/lib/data/pack-requirements";
 import { getRecommendationHistory } from "@/lib/data/recommendations";
+import { getTripPlans } from "@/lib/data/trip-plans";
 import { matchGearForRequirementSlot } from "@/lib/gear-matching/engine";
+import { getMountainImageUrl } from "@/lib/mountains/images";
 import type {
   GearMatchingResult,
   MountainFoundationProfile,
@@ -44,6 +46,7 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   const shouldGeneratePlan = Boolean(params.mountain || params.season || params.style);
   let plan;
   const planHistory = await getRecommendationHistory();
+  const savedPlans = await getTripPlans();
   let compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>> = {};
 
   if (shouldGeneratePlan && mountains.length > 0) {
@@ -88,6 +91,8 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
       plan={plan}
       compatibilityBySlot={compatibilityBySlot}
       planHistory={planHistory}
+      savedPlans={savedPlans}
+      selectedMountainImageUrl={getMountainImageUrl(selectedMountainSlug)}
       error={error}
     />
   );

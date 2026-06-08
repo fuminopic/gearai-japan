@@ -27,7 +27,15 @@ const appBottomNavSource = readFileSync(
   "utf8"
 );
 const planActionsSource = readFileSync(
-  new URL("../src/lib/actions/plans.ts", import.meta.url),
+  new URL("../src/lib/actions/trip-plans.ts", import.meta.url),
+  "utf8"
+);
+const tripPlansDataSource = readFileSync(
+  new URL("../src/lib/data/trip-plans.ts", import.meta.url),
+  "utf8"
+);
+const tripPlansMigrationSource = readFileSync(
+  new URL("../supabase/migrations/011_trip_plans_saved_flow.sql", import.meta.url),
   "utf8"
 );
 const planPageSource = readFileSync(
@@ -59,6 +67,8 @@ test("trip planning page exposes the pack planning architecture", () => {
   assert.match(planPageContentSource, /matchGearForRequirementSlot/);
   assert.match(planPageContentSource, /getGearProducts/);
   assert.match(planPageContentSource, /getRecommendationHistory/);
+  assert.match(planPageContentSource, /getTripPlans/);
+  assert.match(planPageContentSource, /getMountainImageUrl/);
   assert.match(planPageContentSource, /requireUser/);
   assert.match(planPageSource, /PlanPageContent/);
 
@@ -89,6 +99,7 @@ test("trip planning UI emphasizes required systems, coverage, and missing gear",
   assert.match(tripPlanningUiSource, /HeroReadinessCard/);
   assert.match(tripPlanningUiSource, /MissingGearCard/);
   assert.match(tripPlanningUiSource, /PlanHistorySection/);
+  assert.match(tripPlanningUiSource, /SavePlanButton/);
   assert.match(tripPlanningUiSource, /<details/);
   assert.match(tripPlanningUiSource, /<summary/);
   assert.doesNotMatch(tripPlanningUiSource, /対応装備/);
@@ -186,12 +197,32 @@ test("plan history supports Supabase-backed delete and clear all actions", () =>
   assert.match(tripPlanningUiSource, /保存済みプラン/);
   assert.match(tripPlanningUiSource, /Delete/);
   assert.match(tripPlanningUiSource, /一键删除/);
-  assert.match(tripPlanningUiSource, /action=\{deletePlan\}/);
-  assert.match(tripPlanningUiSource, /action=\{clearPlans\}/);
-  assert.match(planActionsSource, /from\("ai_recommendations"\)/);
+  assert.match(tripPlanningUiSource, /action=\{deleteTripPlan\}/);
+  assert.match(tripPlanningUiSource, /action=\{clearTripPlans\}/);
+  assert.match(planActionsSource, /from\("trip_plans"\)/);
   assert.match(planActionsSource, /\.delete\(\)/);
   assert.match(planActionsSource, /revalidatePath\("\/plan"\)/);
   assert.match(planActionsSource, /revalidatePath\("\/dashboard"\)/);
+});
+
+test("saving a plan writes mountain image payload and redirects home", () => {
+  assert.match(tripPlanningUiSource, /function handleSave/);
+  assert.match(tripPlanningUiSource, /new FormData\(form\)/);
+  assert.match(tripPlanningUiSource, /await saveTripPlan\(formData\)/);
+  assert.match(tripPlanningUiSource, /router\.push\("\/dashboard"\)/);
+  assert.match(tripPlanningUiSource, /計画を保存！/);
+  assert.match(
+    tripPlanningUiSource,
+    /fixed bottom-24 left-1\/2 z-50 w-\[calc\(100%-2rem\)\] max-w-sm -translate-x-1\/2 rounded-2xl bg-\[#C62828\] py-3\.5/
+  );
+  assert.match(tripPlanningUiSource, /name="image_url" value=\{imageUrl \?\? ""\}/);
+  assert.match(planActionsSource, /mountain_name: mountainName/);
+  assert.match(planActionsSource, /season,/);
+  assert.match(planActionsSource, /style,/);
+  assert.match(planActionsSource, /image_url: imageUrl/);
+  assert.match(tripPlansDataSource, /from\("trip_plans"\)/);
+  assert.match(tripPlansMigrationSource, /create table if not exists public\.trip_plans/);
+  assert.match(tripPlansMigrationSource, /image_url text/);
 });
 
 test("user-facing branding uses YAMAJITAKU hierarchy", () => {

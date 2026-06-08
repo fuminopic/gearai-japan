@@ -12,8 +12,9 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { getDashboardSummary } from "@/lib/data/dashboard";
-import { requireUser } from "@/lib/data/gear";
-import type { AIRecommendationRecord, DashboardSummary, UserGear } from "@/lib/types";
+import { getLatestTripPlan } from "@/lib/data/trip-plans";
+import { getMountainImageUrl } from "@/lib/mountains/images";
+import type { DashboardSummary, SavedTripPlan, UserGear } from "@/lib/types";
 import { formatJpy } from "@/lib/utils/format";
 
 const categoryColors = [
@@ -52,35 +53,8 @@ export default async function DashboardPage() {
 }
 
 async function fetchLatestPlan() {
-  const { supabase, user } = await requireUser();
-  const { data, error } = await supabase
-    .from("ai_recommendations")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(1);
-
-  console.log("Latest Plan:", data);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return (data?.[0] ?? null) as LatestPlanRecord | null;
+  return getLatestTripPlan();
 }
-
-type LatestPlanRecord = AIRecommendationRecord & {
-  mountain?: {
-    name_ja?: string | null;
-    image_url?: string | null;
-  } | null;
-  mountains?: {
-    name_ja?: string | null;
-    image_url?: string | null;
-  } | null;
-  mountain_image_url?: string | null;
-  image_url?: string | null;
-};
 
 function HomePageContent({
   hasTrip,
@@ -90,7 +64,7 @@ function HomePageContent({
 }: {
   hasTrip: boolean;
   hasGear: boolean;
-  trip: LatestPlanRecord | null;
+  trip: SavedTripPlan | null;
   summary: DashboardSummary;
 }) {
   return (
@@ -155,7 +129,7 @@ function HeroCard({
   trip
 }: {
   hasTrip: boolean;
-  trip: LatestPlanRecord | null;
+  trip: SavedTripPlan | null;
 }) {
   if (!hasTrip || !trip) {
     return <EmptyTripHero />;
@@ -183,12 +157,12 @@ function HeroCard({
           <HeroTitle />
           <div className="mt-3">
             <h2 className="text-2xl font-bold leading-none tracking-normal">
-              {getTripMountainName(trip)}
+              {trip.mountain_name}
             </h2>
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
-            <TripTag>{seasonLabel(trip.input.season)}</TripTag>
-            <TripTag>{styleLabel(trip.input.accommodation_style)}</TripTag>
+            <TripTag>{seasonLabel(trip.season)}</TripTag>
+            <TripTag>{styleLabel(trip.style)}</TripTag>
           </div>
         </div>
 
@@ -526,19 +500,8 @@ function buildDistribution(summary: DashboardSummary, hasGear: boolean) {
   return mapped;
 }
 
-function calculateCoveragePercent(trip: AIRecommendationRecord) {
-  const owned = trip.owned_analysis?.owned_items.length ?? 0;
-  const missing =
-    (trip.missing_analysis?.missing_required_items.length ?? 0) +
-    (trip.missing_analysis?.missing_recommended_items.length ?? 0) +
-    (trip.missing_analysis?.missing_optional_items.length ?? 0);
-  const total = owned + missing;
-
-  if (total === 0) {
-    return 0;
-  }
-
-  return Math.round((owned / total) * 100);
+function calculateCoveragePercent(_trip: SavedTripPlan) {
+  return 0;
 }
 
 function seasonLabel(season: string) {
@@ -581,21 +544,6 @@ function formatKg(weightG: number) {
   return `${(weightG / 1000).toFixed(2)} kg`;
 }
 
-function getTripMountainName(trip: LatestPlanRecord) {
-  return (
-    trip.mountain?.name_ja ??
-    trip.mountains?.name_ja ??
-    trip.input.mountain_region ??
-    "山行"
-  );
-}
-
-function getTripMountainImageUrl(trip: LatestPlanRecord) {
-  return (
-    trip.mountain_image_url ??
-    trip.image_url ??
-    trip.mountain?.image_url ??
-    trip.mountains?.image_url ??
-    null
-  );
+function getTripMountainImageUrl(trip: SavedTripPlan) {
+  return trip.image_url ?? (trip.mountain_slug ? getMountainImageUrl(trip.mountain_slug) : null);
 }

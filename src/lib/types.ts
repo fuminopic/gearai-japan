@@ -206,6 +206,17 @@ export type MountainFoundationProfile = {
   typical_required_systems: PlanningSystem[];
 };
 
+export type SavedTripPlan = {
+  id: string;
+  user_id: string;
+  mountain_slug: string | null;
+  mountain_name: string;
+  season: MountainFoundationSeason;
+  style: MountainFoundationStyle;
+  image_url: string | null;
+  created_at: string;
+};
+
 export type TripRequirementInput = {
   mountain: MountainFoundationProfile;
   season: MountainFoundationSeason;

@@ -1,3 +1,5 @@
+"use client";
+
 import {
   AlertTriangle,
   Bed,
@@ -18,9 +20,15 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useRef, useTransition } from "react";
 
 import { TripPlanningForm } from "@/components/trip-planning-form";
-import { clearPlans, deletePlan } from "@/lib/actions/plans";
+import {
+  clearTripPlans,
+  deleteTripPlan,
+  saveTripPlan
+} from "@/lib/actions/trip-plans";
 import {
   categoryLabels,
   gearMatchingConfidenceLabels,
@@ -41,7 +49,8 @@ import type {
   PackRequirementPlan,
   PackRequirementSlotPlan,
   PlanningSystem,
-  RequirementSlot
+  RequirementSlot,
+  SavedTripPlan
 } from "@/lib/types";
 
 type TripPlanningUIProps = {
@@ -52,6 +61,8 @@ type TripPlanningUIProps = {
   plan?: PackRequirementPlan;
   compatibilityBySlot?: Partial<Record<RequirementSlot, GearMatchingResult>>;
   planHistory?: AIRecommendationRecord[];
+  savedPlans?: SavedTripPlan[];
+  selectedMountainImageUrl?: string | null;
   error?: string;
 };
 
@@ -94,10 +105,15 @@ export function TripPlanningUI({
   plan,
   compatibilityBySlot = {},
   planHistory = [],
+  savedPlans = [],
+  selectedMountainImageUrl,
   error
 }: TripPlanningUIProps) {
+  const selectedMountain =
+    mountains.find((mountain) => mountain.slug === selectedMountainSlug) ?? null;
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pb-24">
       <section className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-sm font-semibold text-forest-700">山行計画</p>
@@ -116,15 +132,82 @@ export function TripPlanningUI({
       />
 
       {plan ? (
-        <TripPlanningResult plan={plan} compatibilityBySlot={compatibilityBySlot} />
+        <>
+          <TripPlanningResult plan={plan} compatibilityBySlot={compatibilityBySlot} />
+          {selectedMountain ? (
+            <SavePlanButton
+              mountainSlug={selectedMountain.slug}
+              mountainName={selectedMountain.name_ja}
+              season={selectedSeason}
+              style={selectedStyle}
+              imageUrl={selectedMountainImageUrl}
+            />
+          ) : null}
+        </>
       ) : null}
 
-      <PlanHistorySection plans={planHistory} />
+      <PlanHistorySection plans={savedPlans} legacyPlans={planHistory} />
     </div>
   );
 }
 
-function PlanHistorySection({ plans }: { plans: AIRecommendationRecord[] }) {
+function SavePlanButton({
+  mountainSlug,
+  mountainName,
+  season,
+  style,
+  imageUrl
+}: {
+  mountainSlug: string;
+  mountainName: string;
+  season: MountainFoundationSeason;
+  style: MountainFoundationStyle;
+  imageUrl: string | null | undefined;
+}) {
+  const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function handleSave() {
+    const form = formRef.current;
+
+    if (!form) {
+      return;
+    }
+
+    const formData = new FormData(form);
+    startTransition(async () => {
+      await saveTripPlan(formData);
+      router.push("/dashboard");
+    });
+  }
+
+  return (
+    <form ref={formRef} action={saveTripPlan}>
+      <input type="hidden" name="mountain_slug" value={mountainSlug} />
+      <input type="hidden" name="mountain_name" value={mountainName} />
+      <input type="hidden" name="season" value={season} />
+      <input type="hidden" name="style" value={style} />
+      <input type="hidden" name="image_url" value={imageUrl ?? ""} />
+      <button
+        type="button"
+        disabled={isPending}
+        onClick={handleSave}
+        className="fixed bottom-24 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl bg-[#C62828] py-3.5 font-bold text-white shadow-xl transition disabled:opacity-70"
+      >
+        {isPending ? "保存中..." : "計画を保存！"}
+      </button>
+    </form>
+  );
+}
+
+function PlanHistorySection({
+  plans,
+  legacyPlans
+}: {
+  plans: SavedTripPlan[];
+  legacyPlans: AIRecommendationRecord[];
+}) {
   return (
     <section className="rounded-lg bg-white p-5 shadow-soft">
       <div className="flex items-center justify-between gap-3">
@@ -133,7 +216,7 @@ function PlanHistorySection({ plans }: { plans: AIRecommendationRecord[] }) {
           <h2 className="mt-1 text-lg font-semibold text-ink">計画履歴</h2>
         </div>
         {plans.length > 0 ? (
-          <form action={clearPlans}>
+          <form action={clearTripPlans}>
             <button
               type="submit"
               className="rounded-full border border-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
@@ -154,13 +237,13 @@ function PlanHistorySection({ plans }: { plans: AIRecommendationRecord[] }) {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h3 className="truncate text-sm font-semibold text-ink">
-                    {record.input.mountain_region || "山行"}
+                    {record.mountain_name || "山行"}
                   </h3>
                   <p className="mt-1 text-xs font-medium text-stone-500">
-                    {formatPlanMeta(record)}
+                    {formatSavedPlanMeta(record)}
                   </p>
                 </div>
-                <form action={deletePlan}>
+                <form action={deleteTripPlan}>
                   <input type="hidden" name="id" value={record.id} />
                   <button
                     type="submit"
@@ -170,44 +253,31 @@ function PlanHistorySection({ plans }: { plans: AIRecommendationRecord[] }) {
                   </button>
                 </form>
               </div>
-              <Link
-                href={`/ai/recommendations/${record.id}`}
-                className="mt-3 inline-flex text-xs font-semibold text-forest-700"
-              >
-                詳細を見る
-              </Link>
             </article>
           ))}
         </div>
       ) : (
-        <p className="mt-4 rounded-lg bg-stone-50 px-4 py-3 text-sm font-medium text-stone-500">
-          まだ保存された計画はありません。
-        </p>
+        <div className="mt-4 rounded-lg bg-stone-50 px-4 py-3 text-sm font-medium text-stone-500">
+          <p>まだ保存された計画はありません。</p>
+          {legacyPlans.length > 0 ? (
+            <p className="mt-2 text-xs">
+              旧履歴は {legacyPlans.length.toLocaleString("ja-JP")} 件あります。
+            </p>
+          ) : null}
+        </div>
       )}
     </section>
   );
 }
 
-function formatPlanMeta(record: AIRecommendationRecord) {
+function formatSavedPlanMeta(record: SavedTripPlan) {
   const parts = [
-    mountainFoundationSeasonLabels[
-      record.input.season.toUpperCase() as MountainFoundationSeason
-    ] ?? record.input.season,
-    legacyStyleLabel(record.input.accommodation_style),
+    mountainFoundationSeasonLabels[record.season],
+    mountainFoundationStyleLabels[record.style],
     new Date(record.created_at).toLocaleDateString("ja-JP")
   ];
 
   return parts.join(" / ");
-}
-
-function legacyStyleLabel(style: string) {
-  const labels: Record<string, string> = {
-    day_hike: "日帰り",
-    hut: "小屋泊",
-    tent: "テント泊"
-  };
-
-  return labels[style] ?? style;
 }
 
 function TripPlanningResult({

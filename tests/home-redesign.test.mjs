@@ -14,6 +14,10 @@ const appBottomNavSource = readFileSync(
   new URL("../src/components/app-bottom-nav.tsx", import.meta.url),
   "utf8"
 );
+const tripPlansDataSource = readFileSync(
+  new URL("../src/lib/data/trip-plans.ts", import.meta.url),
+  "utf8"
+);
 
 test("home redesign keeps the required mobile-first section order", () => {
   const order = [
@@ -99,8 +103,8 @@ test("home hero is compact and binds to trip mountain image data", () => {
   assert.match(dashboardSource, /w-\[200px\].*bg-\[#3B5B44\]/s);
   assert.match(dashboardSource, /w-2\/3/);
   assert.match(dashboardSource, /getTripMountainImageUrl\(trip\)/);
-  assert.match(dashboardSource, /mountain_image_url/);
-  assert.match(dashboardSource, /mountain\?: \{[\s\S]*name_ja\?: string \| null;[\s\S]*image_url\?: string \| null;/);
+  assert.match(dashboardSource, /trip\.image_url/);
+  assert.match(dashboardSource, /trip\.mountain_name/);
   assert.doesNotMatch(dashboardSource, /getMountainHeroImage/);
 });
 
@@ -151,13 +155,14 @@ test("home redesign includes gear empty and category empty states", () => {
   }
 });
 
-test("home redesign syncs latest plan from Supabase history", () => {
+test("home redesign syncs latest saved trip plan from Supabase", () => {
   assert.match(dashboardSource, /getDashboardSummary/);
   assert.match(dashboardSource, /async function fetchLatestPlan/);
-  assert.match(dashboardSource, /\.from\("ai_recommendations"\)/);
-  assert.match(dashboardSource, /\.order\("created_at", \{ ascending: false \}\)/);
-  assert.match(dashboardSource, /\.limit\(1\)/);
-  assert.match(dashboardSource, /console\.log\("Latest Plan:", data\)/);
+  assert.match(dashboardSource, /getLatestTripPlan/);
+  assert.match(tripPlansDataSource, /\.from\("trip_plans"\)/);
+  assert.match(tripPlansDataSource, /\.order\("created_at", \{ ascending: false \}\)/);
+  assert.match(tripPlansDataSource, /\.limit\(1\)/);
+  assert.match(tripPlansDataSource, /console\.log\("Latest Plan:", data\)/);
   assert.doesNotMatch(dashboardSource, /getRecommendationHistory\(1\)/);
   assert.doesNotMatch(dashboardSource, /谷川岳/);
 });

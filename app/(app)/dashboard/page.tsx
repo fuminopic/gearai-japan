@@ -133,40 +133,41 @@ function HeroCard({
   const coveragePercent = calculateCoveragePercent(trip);
 
   return (
-    <section className="relative h-[320px] w-full overflow-hidden rounded-[28px] shadow-sm">
-      <img
-        src={getMountainHeroImage(trip.input.mountain_region)}
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover"
-      />
+    <section className="relative h-[180px] w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7] shadow-sm">
+      {getTripMountainImageUrl(trip) ? (
+        <img
+          src={getTripMountainImageUrl(trip) ?? ""}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : null}
       <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent" />
-      <div className="relative z-10 flex h-full w-full flex-col justify-between p-6">
+      <div className="relative z-10 flex h-full w-full flex-col justify-between p-5">
         <HeroTitle />
 
         <div>
-          <h2 className="text-4xl font-bold leading-none tracking-normal">
+          <h2 className="text-2xl font-bold leading-none tracking-normal">
             {trip.input.mountain_region || "山行"}
           </h2>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-2 flex flex-wrap gap-2">
             <TripTag>{seasonLabel(trip.input.season)}</TripTag>
             <TripTag>{styleLabel(trip.input.accommodation_style)}</TripTag>
           </div>
         </div>
 
         <div>
-          <p className="text-sm font-bold">装備チェックの進捗</p>
-          <div className="mt-3 flex items-center gap-3">
-            <div className="h-2 w-2/3 overflow-hidden rounded-full bg-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="h-1.5 w-2/3 overflow-hidden rounded-full bg-gray-200">
               <div
                 className="h-full rounded-full bg-[#3B5B44]"
                 style={{ width: `${coveragePercent}%` }}
               />
             </div>
-            <span className="text-sm font-medium">{coveragePercent}%</span>
+            <span className="text-xs font-medium">{coveragePercent}%</span>
           </div>
           <Link
             href="/ai"
-            className="mt-6 inline-flex w-[200px] items-center justify-center rounded-xl bg-[#3B5B44] py-3 text-sm font-bold text-white shadow-sm"
+            className="mt-3 inline-flex w-[200px] items-center justify-center rounded-xl bg-[#3B5B44] py-3 text-xs font-bold text-white shadow-sm"
           >
             装備チェックを続ける
           </Link>
@@ -178,16 +179,16 @@ function HeroCard({
 
 function EmptyTripHero() {
   return (
-    <section className="relative h-[320px] w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-white to-[#EAF2ED] shadow-sm">
+    <section className="relative h-[180px] w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-white to-[#EAF2ED] shadow-sm">
       <IllustratedMountains />
-      <div className="relative z-10 flex h-full w-full flex-col justify-between p-6">
+      <div className="relative z-10 flex h-full w-full flex-col justify-between p-5">
         <HeroTitle />
 
         <div>
-          <h2 className="text-[30px] font-bold leading-tight tracking-normal">
+          <h2 className="text-2xl font-bold leading-tight tracking-normal">
             まだ計画はありません
           </h2>
-          <p className="mt-5 text-base font-medium leading-8">
+          <p className="mt-3 text-xs font-medium leading-6">
             次の登山に向けて
             <br />
             装備チェックを始めましょう
@@ -196,7 +197,7 @@ function EmptyTripHero() {
 
         <Link
           href="/ai"
-          className="inline-flex w-[200px] items-center justify-center rounded-xl bg-[#3B5B44] py-3 text-sm font-bold text-white shadow-sm"
+          className="inline-flex w-[200px] items-center justify-center rounded-xl bg-[#3B5B44] py-3 text-xs font-bold text-white shadow-sm"
         >
           山行計画を作成
         </Link>
@@ -208,8 +209,8 @@ function EmptyTripHero() {
 function HeroTitle() {
   return (
     <div className="flex items-center gap-3">
-      <Mountain className="h-5 w-5 fill-[#3B5B44] text-[#3B5B44]" />
-      <span className="text-lg font-bold">次回の山行</span>
+      <Mountain className="h-4 w-4 fill-[#3B5B44] text-[#3B5B44]" />
+      <span className="text-sm font-bold">次回の山行</span>
     </div>
   );
 }
@@ -218,10 +219,10 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
   return (
     <section className="flex flex-col gap-4 rounded-[24px] bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold">私の装備</h2>
+        <h2 className="text-base font-bold">私の装備</h2>
         <Link
           href="/gear/new"
-          className="inline-flex items-center gap-1 text-sm font-bold text-[#3B5B44]"
+          className="inline-flex items-center gap-1 text-xs font-bold text-[#3B5B44]"
         >
           <PlusText />
           装備を追加
@@ -275,15 +276,15 @@ function RecentGearSection({
       ) : (
         <div className="flex flex-col items-center justify-center py-6 text-center">
           <BackpackIllustration />
-          <h3 className="mt-4 text-lg font-bold">まだ装備がありません</h3>
-          <p className="mt-3 text-sm leading-7 text-gray-600">
+          <h3 className="mt-4 text-base font-bold">まだ装備がありません</h3>
+          <p className="mt-3 text-xs leading-6 text-gray-600">
             最初の装備を追加して、
             <br />
             快適な山行の準備を始めましょう。
           </p>
           <Link
             href="/gear/new"
-            className="mt-5 rounded-full border border-[#3B5B44] px-6 py-2 text-sm font-bold text-[#3B5B44]"
+            className="mt-5 rounded-full border border-[#3B5B44] px-6 py-2 text-xs font-bold text-[#3B5B44]"
           >
             装備を追加する
           </Link>
@@ -307,20 +308,20 @@ function CategoryDistribution({
       <SectionHeader title="カテゴリー分布" href="/gear" />
       <div className="flex flex-row items-center justify-between gap-4">
         <DonutChart distribution={distribution} hasGear={hasGear} />
-        <div className="grid flex-1 grid-cols-2 gap-x-2 gap-y-3 text-xs">
+        <div className="grid flex-1 grid-cols-2 gap-x-2 gap-y-3 text-[10px]">
           {distribution.map((item) => (
-            <div key={item.label} className="grid grid-cols-[10px_1fr_auto] items-center gap-2">
+            <div key={item.label} className="grid grid-cols-[10px_1fr_auto] items-center gap-1.5">
               <span
                 className="h-2.5 w-2.5 rounded-full"
                 style={{ backgroundColor: item.color }}
               />
-              <span className="min-w-0 truncate font-medium">{item.label}</span>
+              <span className="w-16 max-w-[70px] truncate font-medium">{item.label}</span>
               <span className="font-bold">{item.percent}%</span>
             </div>
           ))}
         </div>
       </div>
-      <div className="rounded-xl bg-[#F0F5F2] p-3 text-center text-sm font-medium text-[#3B5B44]">
+      <div className="rounded-xl bg-[#F0F5F2] p-3 text-center text-xs font-medium text-[#3B5B44]">
         {hasGear
           ? "バランスの良い構成です！"
           : "装備を追加すると、分布とバランスを確認できます"}
@@ -332,10 +333,10 @@ function CategoryDistribution({
 function SectionHeader({ title, href }: { title: string; href: Route }) {
   return (
     <div className="flex items-center justify-between">
-      <h2 className="text-lg font-bold tracking-normal">{title}</h2>
+      <h2 className="text-base font-bold tracking-normal">{title}</h2>
       <Link
         href={href}
-        className="inline-flex items-center gap-1 text-sm font-bold text-[#3B5B44]"
+        className="inline-flex items-center gap-1 text-xs font-bold text-[#3B5B44]"
       >
         すべて見る
         <ChevronRight className="h-4 w-4" />
@@ -346,7 +347,7 @@ function SectionHeader({ title, href }: { title: string; href: Route }) {
 
 function TripTag({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded-lg bg-[#E8F1E8] px-3 py-1.5 text-sm font-bold text-[#3B5B44]">
+    <span className="rounded-lg bg-[#E8F1E8] px-2.5 py-1 text-[11px] font-bold text-[#3B5B44]">
       {children}
     </span>
   );
@@ -372,8 +373,8 @@ function SummaryMetric({
       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E8F1E8] text-[#3B5B44]">
         <Icon className="h-5 w-5 stroke-[1.8]" />
       </div>
-      <p className="text-xl font-bold leading-tight tracking-normal">{value}</p>
-      <p className="text-xs font-medium text-gray-400">{label}</p>
+      <p className="text-lg font-bold leading-tight tracking-normal">{value}</p>
+      <p className="text-[10px] font-medium text-gray-400">{label}</p>
     </div>
   );
 }
@@ -445,10 +446,10 @@ function DonutChart({
 
   return (
     <div
-      className="relative h-[112px] w-[112px] shrink-0 rounded-full"
+      className="relative h-20 w-20 shrink-0 rounded-full"
       style={{ background }}
     >
-      <div className="absolute inset-9 rounded-full bg-white" />
+      <div className="absolute inset-6 rounded-full bg-white" />
     </div>
   );
 }
@@ -531,29 +532,17 @@ function formatKg(weightG: number) {
   return `${(weightG / 1000).toFixed(2)} kg`;
 }
 
-function getMountainHeroImage(mountainName: string) {
-  const normalized = mountainName.trim();
-  const images: Record<string, string> = {
-    燕岳:
-      "https://images.unsplash.com/photo-1605540436563-5bca919ae766?auto=format&fit=crop&w=900&q=85",
-    谷川岳:
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=85",
-    高尾山:
-      "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=900&q=85",
-    雲取山:
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=85",
-    槍ヶ岳:
-      "https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?auto=format&fit=crop&w=900&q=85",
-    奥穂高岳:
-      "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=900&q=85",
-    常念岳:
-      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=900&q=85",
-    "蝶ヶ岳":
-      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=900&q=85"
+function getTripMountainImageUrl(trip: AIRecommendationRecord) {
+  const record = trip as AIRecommendationRecord & {
+    mountain?: { image_url?: string | null } | null;
+    mountains?: { image_url?: string | null } | null;
+    mountain_image_url?: string | null;
   };
 
   return (
-    images[normalized] ??
-    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=85"
+    record.mountain_image_url ??
+    record.mountain?.image_url ??
+    record.mountains?.image_url ??
+    null
   );
 }

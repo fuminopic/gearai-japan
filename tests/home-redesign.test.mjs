@@ -45,6 +45,16 @@ test("home rebuild exposes a master state component for the four home states", (
 test("home redesign v2 uses shared bottom navigation", () => {
   assert.match(appNavSource, /AppBottomNav/);
   assert.match(appBottomNavSource, /usePathname/);
+  assert.match(appBottomNavSource, /fixed inset-x-6 bottom-8 z-50/);
+  assert.match(appBottomNavSource, /bg-white\/85/);
+  assert.match(appBottomNavSource, /backdrop-blur-md/);
+  assert.match(appBottomNavSource, /rounded-full/);
+  assert.match(appBottomNavSource, /px-6/);
+  assert.match(appBottomNavSource, /py-2\.5/);
+  assert.match(appBottomNavSource, /text-\[#3A5A40\]/);
+  assert.match(appBottomNavSource, /text-gray-400/);
+  assert.match(appBottomNavSource, /h-5 w-5/);
+  assert.match(appBottomNavSource, /text-\[10px\]/);
   assert.match(appNavSource, /ホーム/);
   assert.match(appNavSource, /装備/);
   assert.match(appNavSource, /計画/);
@@ -76,13 +86,17 @@ test("home redesign v2 removes hero secondary actions and replaces bell with men
   assert.doesNotMatch(dashboardSource, /aria-label="計画を開く"/);
 });
 
-test("home rebuild uses the required layered hero structure", () => {
-  assert.match(dashboardSource, /relative h-\[320px\] w-full overflow-hidden rounded-\[28px\]/);
+test("home hero is compact and binds to trip mountain image data", () => {
+  assert.match(dashboardSource, /relative h-\[180px\] w-full overflow-hidden rounded-\[28px\]/);
   assert.match(dashboardSource, /absolute inset-0 h-full w-full object-cover/);
   assert.match(dashboardSource, /absolute inset-0 bg-gradient-to-r from-white\/95 via-white\/80 to-transparent/);
-  assert.match(dashboardSource, /relative z-10 flex h-full w-full flex-col justify-between p-6/);
+  assert.match(dashboardSource, /relative z-10 flex h-full w-full flex-col justify-between p-5/);
   assert.match(dashboardSource, /w-\[200px\].*bg-\[#3B5B44\]/s);
   assert.match(dashboardSource, /w-2\/3/);
+  assert.match(dashboardSource, /getTripMountainImageUrl\(trip\)/);
+  assert.match(dashboardSource, /mountain_image_url/);
+  assert.match(dashboardSource, /mountain\?: \{ image_url\?: string \| null \}/);
+  assert.doesNotMatch(dashboardSource, /getMountainHeroImage/);
 });
 
 test("home rebuild follows the requested recent gear image layout", () => {
@@ -93,10 +107,12 @@ test("home rebuild follows the requested recent gear image layout", () => {
   assert.doesNotMatch(dashboardSource, /gearFallbackGradient/);
 });
 
-test("home redesign v2 restricts hero imagery to mountain images", () => {
-  assert.match(dashboardSource, /getMountainHeroImage/);
-  assert.match(dashboardSource, /谷川岳/);
-  assert.match(dashboardSource, /燕岳/);
+test("home category distribution prevents legend overflow", () => {
+  assert.match(dashboardSource, /h-20 w-20/);
+  assert.match(dashboardSource, /text-\[10px\]/);
+  assert.match(dashboardSource, /w-16 max-w-\[70px\] truncate/);
+  assert.match(dashboardSource, /grid-cols-\[10px_1fr_auto\]/);
+  assert.doesNotMatch(dashboardSource, /text-xs">\s*\{distribution\.map/s);
   assert.doesNotMatch(dashboardSource, /highway/i);
 });
 

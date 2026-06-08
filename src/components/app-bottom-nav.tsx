@@ -20,8 +20,8 @@ export function AppBottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-stone-100 bg-white/95 px-8 pb-6 pt-4 shadow-[0_-8px_28px_rgba(23,26,23,0.06)] backdrop-blur md:hidden">
-      <div className="mx-auto grid max-w-[390px] grid-cols-4">
+    <nav className="fixed inset-x-6 bottom-8 z-50 rounded-full border border-white/40 bg-white/85 px-6 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] backdrop-blur-md md:hidden">
+      <div className="mx-auto flex max-w-[390px] items-center justify-between">
         {bottomNavItems.map((item) => {
           const Icon = item.icon;
           const active = isActivePath(pathname, item.href);
@@ -30,15 +30,17 @@ export function AppBottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-2 text-base font-bold ${
-                active ? "text-forest-700" : "text-ink"
+              className={`flex flex-col items-center ${
+                active ? "text-[#3A5A40]" : "text-gray-400"
               }`}
             >
               <Icon
                 aria-hidden
-                className={`h-7 w-7 stroke-[1.8] ${active ? "fill-forest-700" : ""}`}
+                className={`h-5 w-5 stroke-[1.8] ${active ? "fill-[#3A5A40]" : ""}`}
               />
-              {item.label}
+              <span className="mt-1 text-[10px] font-medium leading-none">
+                {item.label}
+              </span>
             </Link>
           );
         })}

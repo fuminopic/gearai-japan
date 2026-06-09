@@ -130,6 +130,14 @@ export function matchGearForRequirementSlot({
   databaseGear = []
 }: GearMatchingInput): GearMatchingResult {
   const rule = getGearCompatibilityRule(slot);
+  const matchingOwnedGear = applySlotTextFilters(
+    ownedGear.filter((item) => matchesRule(item, rule)),
+    slot
+  );
+  const matchingDatabaseGear = applySlotTextFilters(
+    databaseGear.filter((item) => matchesRule(item, rule)),
+    slot
+  );
 
   return {
     slot,
@@ -137,15 +145,22 @@ export function matchGearForRequirementSlot({
     compatible_subcategories: unique(
       rule.compatible_targets.map((target) => target.subcategory)
     ),
-    matching_owned_gear: ownedGear
-      .filter((item) => matchesRule(item, rule))
-      .map(toOwnedGearMatch),
-    matching_database_gear: databaseGear
-      .filter((item) => matchesRule(item, rule))
-      .map(toDatabaseGearMatch),
+    matching_owned_gear: matchingOwnedGear.map(toOwnedGearMatch),
+    matching_database_gear: matchingDatabaseGear.map(toDatabaseGearMatch),
     confidence: rule.confidence,
     ambiguous_cases: rule.ambiguous_cases
   };
+}
+
+function applySlotTextFilters<T extends UserGear | GearProduct>(
+  items: T[],
+  slot: RequirementSlot
+) {
+  if (slot !== "TENT") {
+    return items;
+  }
+
+  return items.filter((item) => !isTentAccessory(item));
 }
 
 function matchesRule(item: UserGear | GearProduct, rule: GearCompatibilityRule) {
@@ -155,6 +170,36 @@ function matchesRule(item: UserGear | GearProduct, rule: GearCompatibilityRule) 
   return rule.compatible_targets.some((target) => {
     return target.category === category && target.subcategory === subcategory;
   });
+}
+
+function isTentAccessory(item: UserGear | GearProduct) {
+  const text = getGearSearchText(item);
+
+  return /foot\s*print/i.test(text) || /地布/.test(text) || /フットプリント/i.test(text);
+}
+
+function getGearSearchText(item: UserGear | GearProduct) {
+  const commonFields = [item.brand, item.model];
+
+  if ("name" in item) {
+    return [
+      ...commonFields,
+      item.name,
+      item.gear_products?.brand,
+      item.gear_products?.model,
+      item.gear_products?.name_ja
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  return [
+    ...commonFields,
+    item.name_ja,
+    ...(item.gear_product_aliases?.map((alias) => alias.alias) ?? [])
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
 function toOwnedGearMatch(item: UserGear): GearMatchingOwnedGearMatch {

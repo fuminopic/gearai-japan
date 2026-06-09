@@ -113,8 +113,8 @@ export const planningSystemLabels: Record<PlanningSystem, string> = {
 };
 
 export const requirementSlotLabels: Record<RequirementSlot, string> = {
-  WATER_STORAGE: "水の携行",
-  WATER_TREATMENT: "浄水",
+  WATER_STORAGE: "水（飲料水・容器・浄水）",
+  WATER_TREATMENT: "水（飲料水・容器・浄水）",
   TENT: "テント",
   SLEEP_INSULATION: "寝袋",
   SLEEP_PAD: "スリーピングパッド",
@@ -122,8 +122,8 @@ export const requirementSlotLabels: Record<RequirementSlot, string> = {
   FUEL: "燃料",
   COOK_POT: "クッカー",
   TABLEWARE: "食器",
-  RAIN_JACKET: "レインジャケット",
-  RAIN_PANTS: "レインパンツ",
+  RAIN_JACKET: "雨具（レインギア）",
+  RAIN_PANTS: "雨具（レインギア）",
   INSULATION_LAYER: "保温着",
   BASE_LAYER: "ベースレイヤー",
   GPS_DEVICE: "GPS デバイス",

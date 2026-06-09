@@ -94,8 +94,8 @@ test("trip planning UI emphasizes required systems, coverage, and missing gear",
   }
 
   assert.match(tripPlanningUiSource, /plan\.required_systems/);
-  assert.match(tripPlanningUiSource, /plan\.covered_slots/);
-  assert.match(tripPlanningUiSource, /plan\.missing_slots/);
+  assert.match(tripPlanningUiSource, /coveredDisplaySlots/);
+  assert.match(tripPlanningUiSource, /missingDisplaySlots/);
   assert.match(tripPlanningUiSource, /matching_owned_gear/);
   assert.match(tripPlanningUiSource, /matching_database_gear/);
   assert.match(tripPlanningUiSource, /coveragePercent/);
@@ -151,6 +151,23 @@ test("pack planning UX V2 uses deterministic system icons for planning systems",
 
   assert.match(tripPlanningUiSource, /systemIcons: Record<PlanningSystem, LucideIcon>/);
   assert.match(tripPlanningUiSource, /slotSystems: Record<RequirementSlot, PlanningSystem>/);
+});
+
+test("pack planning UI deduplicates merged slot labels and supports checklist progress", () => {
+  assert.match(labelsSource, /WATER_STORAGE: "水（飲料水・容器・浄水）"/);
+  assert.match(labelsSource, /WATER_TREATMENT: "水（飲料水・容器・浄水）"/);
+  assert.match(labelsSource, /RAIN_JACKET: "雨具（レインギア）"/);
+  assert.match(labelsSource, /RAIN_PANTS: "雨具（レインギア）"/);
+
+  assert.match(tripPlanningUiSource, /function dedupeDisplaySlots/);
+  assert.match(tripPlanningUiSource, /getRequirementSlotDisplayKey/);
+  assert.match(tripPlanningUiSource, /"WATER"/);
+  assert.match(tripPlanningUiSource, /"RAIN_GEAR"/);
+  assert.match(tripPlanningUiSource, /const \[checkedSlots, setCheckedSlots\]/);
+  assert.match(tripPlanningUiSource, /type="checkbox"/);
+  assert.match(tripPlanningUiSource, /handleToggleMissingSlot/);
+  assert.match(tripPlanningUiSource, /onProgressChange/);
+  assert.match(tripPlanningUiSource, /isDisplaySlotCovered/);
 });
 
 test("trip planning UI avoids recommendation and shopping language", () => {

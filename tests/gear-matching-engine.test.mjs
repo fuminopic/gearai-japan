@@ -198,6 +198,57 @@ test("gear matching returns exact database gear matches without ranking", () => 
   assert.equal(result.matching_database_gear[0].model, "Down Jacket");
 });
 
+test("gear matching excludes tent footprint accessories from tent coverage", () => {
+  const result = matchGearForRequirementSlot({
+    slot: "TENT",
+    ownedGear: [
+      ownedGear({
+        id: "tent-footprint",
+        name: "Stella Ridge Tent Footprint",
+        categoryName: "shelter",
+        subcategoryName: "tent"
+      }),
+      ownedGear({
+        id: "real-tent",
+        name: "Stella Ridge Tent",
+        categoryName: "shelter",
+        subcategoryName: "tent"
+      }),
+      ownedGear({
+        id: "jp-footprint",
+        name: "テント フットプリント",
+        categoryName: "shelter",
+        subcategoryName: "tent"
+      }),
+      ownedGear({
+        id: "ground-sheet",
+        name: "テント 地布",
+        categoryName: "shelter",
+        subcategoryName: "tent"
+      })
+    ],
+    databaseGear: [
+      databaseGear({
+        id: "db-footprint",
+        brand: "Brand",
+        model: "テント フットプリント",
+        categoryName: "shelter",
+        subcategoryName: "tent"
+      }),
+      databaseGear({
+        id: "db-tent",
+        brand: "Brand",
+        model: "Mountain Tent",
+        categoryName: "shelter",
+        subcategoryName: "tent"
+      })
+    ]
+  });
+
+  assert.deepEqual(result.matching_owned_gear.map((item) => item.id), ["real-tent"]);
+  assert.deepEqual(result.matching_database_gear.map((item) => item.id), ["db-tent"]);
+});
+
 test("gear matching does not fuzzy-match names or legacy broad categories", () => {
   const result = matchGearForRequirementSlot({
     slot: "RAIN_JACKET",

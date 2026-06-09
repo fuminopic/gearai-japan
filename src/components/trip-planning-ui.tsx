@@ -11,6 +11,7 @@ import {
   CookingPot,
   Cross,
   Droplets,
+  Square,
   Mountain,
   PackageCheck,
   PackageX,
@@ -70,6 +71,16 @@ type TripPlanningUIProps = {
   error?: string;
 };
 
+type DisplayRequirementSlotPlan = PackRequirementSlotPlan & {
+  displayKey: string;
+  slots: RequirementSlot[];
+  missingSlots: RequirementSlot[];
+};
+
+type DisplayGearMatchingResult = Omit<GearMatchingResult, "slot"> & {
+  slot: RequirementSlot;
+};
+
 const systemIcons: Record<PlanningSystem, LucideIcon> = {
   WATER_SYSTEM: Droplets,
   SHELTER_SYSTEM: Tent,
@@ -122,13 +133,14 @@ export function TripPlanningUI({
   const [hydratedPlan, setHydratedPlan] = useState<SavedTripPlan | null>(
     initialSavedPlan
   );
+  const [interactiveProgress, setInteractiveProgress] = useState<number | null>(null);
   const effectiveMountainSlug = hydratedPlan?.mountain_slug ?? selectedMountainSlug;
   const effectiveSeason = hydratedPlan?.season ?? selectedSeason;
   const effectiveStyle = hydratedPlan?.style ?? selectedStyle;
   const selectedMountain =
     mountains.find((mountain) => mountain.slug === effectiveMountainSlug) ?? null;
   const currentProgressValue = plan
-    ? calculatePlanProgress(plan)
+    ? interactiveProgress ?? calculatePlanProgress(plan)
     : hydratedPlan?.progress ?? 0;
 
   useEffect(() => {
@@ -219,7 +231,11 @@ export function TripPlanningUI({
 
       {plan ? (
         <>
-          <TripPlanningResult plan={plan} compatibilityBySlot={compatibilityBySlot} />
+          <TripPlanningResult
+            plan={plan}
+            compatibilityBySlot={compatibilityBySlot}
+            onProgressChange={setInteractiveProgress}
+          />
           {selectedMountain ? (
             <SavePlanButton
               mountainSlug={selectedMountain.slug}
@@ -380,23 +396,61 @@ function formatSavedPlanMeta(record: SavedTripPlan) {
 
 function TripPlanningResult({
   plan,
-  compatibilityBySlot
+  compatibilityBySlot,
+  onProgressChange
 }: {
   plan: PackRequirementPlan;
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
+  onProgressChange?: (progress: number) => void;
 }) {
-  const totalSlots = plan.required_slots.length;
-  const coveredCount = plan.covered_slots.length;
-  const missingCount = plan.missing_slots.length;
-  const coveragePercent = calculatePlanProgress(plan);
-  const compatibleSlots = plan.required_slots.filter((slotPlan) => {
-    const match = compatibilityBySlot[slotPlan.slot];
-    return (
-      match &&
-      (match.matching_owned_gear.length > 0 ||
-        match.matching_database_gear.length > 0)
-    );
+  const [checkedSlots, setCheckedSlots] = useState<RequirementSlot[]>([]);
+  const displaySlots = dedupeDisplaySlots(plan.required_slots);
+  const coveredDisplaySlots = displaySlots.filter((slotPlan) => {
+    return isDisplaySlotCovered(slotPlan, checkedSlots);
   });
+  const missingDisplaySlots = displaySlots.filter((slotPlan) => {
+    return !isDisplaySlotCovered(slotPlan, checkedSlots);
+  });
+  const totalSlots = displaySlots.length;
+  const coveredCount = coveredDisplaySlots.length;
+  const missingCount = missingDisplaySlots.length;
+  const coveragePercent = calculateProgressFromCounts(coveredCount, totalSlots);
+  const compatibleSlots = displaySlots
+    .map((slotPlan) => ({
+      slotPlan,
+      match: mergeCompatibilityMatches(slotPlan, compatibilityBySlot)
+    }))
+    .filter(({ match }) => {
+      return (
+        match.matching_owned_gear.length > 0 ||
+        match.matching_database_gear.length > 0
+      );
+    });
+
+  useEffect(() => {
+    setCheckedSlots([]);
+  }, [plan]);
+
+  useEffect(() => {
+    onProgressChange?.(coveragePercent);
+  }, [coveragePercent, onProgressChange]);
+
+  function handleToggleMissingSlot(slots: RequirementSlot[]) {
+    setCheckedSlots((currentSlots) => {
+      const nextSlots = new Set(currentSlots);
+      const shouldUncheck = slots.every((slot) => nextSlots.has(slot));
+
+      for (const slot of slots) {
+        if (shouldUncheck) {
+          nextSlots.delete(slot);
+        } else {
+          nextSlots.add(slot);
+        }
+      }
+
+      return Array.from(nextSlots);
+    });
+  }
 
   return (
     <div className="space-y-5">
@@ -445,10 +499,14 @@ function TripPlanningResult({
             {missingCount.toLocaleString("ja-JP")} 件
           </span>
         </div>
-        {plan.missing_slots.length > 0 ? (
+        {missingDisplaySlots.length > 0 ? (
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {plan.missing_slots.map((slotPlan) => (
-              <MissingGearCard key={slotPlan.slot} slotPlan={slotPlan} />
+            {missingDisplaySlots.map((slotPlan) => (
+              <MissingGearCard
+                key={slotPlan.displayKey}
+                slotPlan={slotPlan}
+                onToggle={handleToggleMissingSlot}
+              />
             ))}
           </div>
         ) : (
@@ -463,7 +521,9 @@ function TripPlanningResult({
           title="カバー済み装備"
           emptyLabel="所有装備でカバーされたスロットはありません。"
           icon="covered"
-          slots={plan.covered_slots}
+          slots={coveredDisplaySlots}
+          checkedSlots={checkedSlots}
+          onToggle={handleToggleMissingSlot}
         />
       </section>
 
@@ -477,16 +537,10 @@ function TripPlanningResult({
             <ChevronDown className="h-5 w-5 shrink-0 text-stone-500 transition group-open:rotate-180" />
           </summary>
           <div className="mt-4 divide-y divide-stone-100">
-            {compatibleSlots.map((slotPlan) => {
-              const match = compatibilityBySlot[slotPlan.slot];
-
-              if (!match) {
-                return null;
-              }
-
+            {compatibleSlots.map(({ slotPlan, match }) => {
               return (
                 <CompatibleGearSlot
-                  key={slotPlan.slot}
+                  key={slotPlan.displayKey}
                   slotPlan={slotPlan}
                   match={match}
                 />
@@ -498,20 +552,156 @@ function TripPlanningResult({
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
         <h2 className="text-lg font-semibold text-ink">計画メモ</h2>
-        <PlanningNotes plan={plan} compatibilityBySlot={compatibilityBySlot} />
+        <PlanningNotes
+          missingCount={missingCount}
+          displaySlots={displaySlots}
+          compatibilityBySlot={compatibilityBySlot}
+        />
       </section>
     </div>
   );
 }
 
 function calculatePlanProgress(plan: PackRequirementPlan) {
-  const totalSlots = plan.required_slots.length;
+  const displaySlots = dedupeDisplaySlots(plan.required_slots);
+  const coveredSlots = displaySlots.filter((slotPlan) => {
+    return isDisplaySlotCovered(slotPlan, []);
+  });
 
+  return calculateProgressFromCounts(coveredSlots.length, displaySlots.length);
+}
+
+function calculateProgressFromCounts(coveredCount: number, totalSlots: number) {
   if (totalSlots === 0) {
     return 0;
   }
 
-  return Math.round((plan.covered_slots.length / totalSlots) * 100);
+  return Math.round((coveredCount / totalSlots) * 100);
+}
+
+function dedupeDisplaySlots(
+  slots: readonly PackRequirementSlotPlan[]
+): DisplayRequirementSlotPlan[] {
+  const displaySlots = new Map<string, DisplayRequirementSlotPlan>();
+
+  for (const slotPlan of slots) {
+    const displayKey = getRequirementSlotDisplayKey(slotPlan.slot);
+    const existingSlot = displaySlots.get(displayKey);
+
+    if (existingSlot) {
+      existingSlot.slots.push(slotPlan.slot);
+
+      if (slotPlan.coverage_status === "MISSING") {
+        existingSlot.missingSlots.push(slotPlan.slot);
+      }
+
+      existingSlot.coverage_status =
+        existingSlot.coverage_status === "COVERED" &&
+        slotPlan.coverage_status === "COVERED"
+          ? "COVERED"
+          : "MISSING";
+      existingSlot.matching_owned_gear = uniqueGearMatches([
+        ...existingSlot.matching_owned_gear,
+        ...slotPlan.matching_owned_gear
+      ]);
+      continue;
+    }
+
+    displaySlots.set(displayKey, {
+      ...slotPlan,
+      displayKey,
+      slots: [slotPlan.slot],
+      missingSlots: slotPlan.coverage_status === "MISSING" ? [slotPlan.slot] : []
+    });
+  }
+
+  return Array.from(displaySlots.values());
+}
+
+function isDisplaySlotCovered(
+  slotPlan: DisplayRequirementSlotPlan,
+  checkedSlots: readonly RequirementSlot[]
+) {
+  const checkedSlotSet = new Set(checkedSlots);
+
+  return slotPlan.slots.every((slot) => {
+    return !slotPlan.missingSlots.includes(slot) || checkedSlotSet.has(slot);
+  });
+}
+
+function getRequirementSlotDisplayKey(slot: RequirementSlot) {
+  if (slot === "WATER_STORAGE" || slot === "WATER_TREATMENT") {
+    return "WATER";
+  }
+
+  if (slot === "RAIN_JACKET" || slot === "RAIN_PANTS") {
+    return "RAIN_GEAR";
+  }
+
+  return slot;
+}
+
+function uniqueGearMatches(matches: GearMatchingOwnedGearMatch[]) {
+  const gearById = new Map<string, GearMatchingOwnedGearMatch>();
+
+  for (const match of matches) {
+    gearById.set(match.id, match);
+  }
+
+  return Array.from(gearById.values());
+}
+
+function mergeCompatibilityMatches(
+  slotPlan: DisplayRequirementSlotPlan,
+  compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>
+): DisplayGearMatchingResult {
+  const matches = slotPlan.slots
+    .map((slot) => compatibilityBySlot[slot])
+    .filter((match): match is GearMatchingResult => Boolean(match));
+
+  return {
+    slot: slotPlan.slot,
+    compatible_categories: uniqueStrings(
+      matches.flatMap((match) => match.compatible_categories)
+    ),
+    compatible_subcategories: uniqueStrings(
+      matches.flatMap((match) => match.compatible_subcategories)
+    ),
+    matching_owned_gear: uniqueGearMatches(
+      matches.flatMap((match) => match.matching_owned_gear)
+    ),
+    matching_database_gear: uniqueDatabaseGearMatches(
+      matches.flatMap((match) => match.matching_database_gear)
+    ),
+    confidence: mergeGearMatchingConfidence(matches),
+    ambiguous_cases: uniqueStrings(matches.flatMap((match) => match.ambiguous_cases))
+  };
+}
+
+function uniqueDatabaseGearMatches(matches: GearMatchingDatabaseGearMatch[]) {
+  const gearById = new Map<string, GearMatchingDatabaseGearMatch>();
+
+  for (const match of matches) {
+    gearById.set(match.id, match);
+  }
+
+  return Array.from(gearById.values());
+}
+
+function uniqueStrings(values: string[]) {
+  return Array.from(new Set(values));
+}
+
+function mergeGearMatchingConfidence(matches: GearMatchingResult[]) {
+  if (matches.some((match) => match.confidence === "LOW")) {
+    return "LOW";
+  }
+
+  if (matches.some((match) => match.confidence === "MEDIUM")) {
+    return "MEDIUM";
+  }
+
+  return "HIGH";
 }
 
 function HeroReadinessCard({
@@ -627,23 +817,38 @@ function SystemIcon({
   return <Icon className={className} />;
 }
 
-function MissingGearCard({ slotPlan }: { slotPlan: PackRequirementSlotPlan }) {
+function MissingGearCard({
+  slotPlan,
+  onToggle
+}: {
+  slotPlan: DisplayRequirementSlotPlan;
+  onToggle: (slots: RequirementSlot[]) => void;
+}) {
   const system = slotSystems[slotPlan.slot];
 
   return (
-    <article className="flex min-h-24 gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3">
+    <label className="flex min-h-24 cursor-pointer gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 transition hover:border-red-200 hover:bg-red-100/70">
+      <input
+        type="checkbox"
+        className="sr-only"
+        checked={false}
+        onChange={() => onToggle(slotPlan.missingSlots)}
+      />
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-red-800">
-        <SystemIcon system={system} className="h-5 w-5" />
+        <Square className="h-5 w-5" />
       </div>
       <div className="min-w-0">
-        <p className="text-sm font-semibold text-red-950">
-          {requirementSlotLabels[slotPlan.slot]}
-        </p>
+        <div className="flex items-center gap-2">
+          <SystemIcon system={system} className="h-4 w-4 shrink-0 text-red-800" />
+          <p className="text-sm font-semibold text-red-950">
+            {requirementSlotLabels[slotPlan.slot]}
+          </p>
+        </div>
         <p className="mt-1 text-xs font-semibold text-red-700">
           {planningSystemLabels[system]}
         </p>
       </div>
-    </article>
+    </label>
   );
 }
 
@@ -651,12 +856,16 @@ function SlotGroup({
   title,
   emptyLabel,
   icon,
-  slots
+  slots,
+  checkedSlots = [],
+  onToggle
 }: {
   title: string;
   emptyLabel: string;
   icon: "covered" | "missing";
-  slots: PackRequirementSlotPlan[];
+  slots: DisplayRequirementSlotPlan[];
+  checkedSlots?: RequirementSlot[];
+  onToggle?: (slots: RequirementSlot[]) => void;
 }) {
   const isCovered = icon === "covered";
 
@@ -675,33 +884,77 @@ function SlotGroup({
           <p className="text-sm text-stone-500">{emptyLabel}</p>
         ) : (
           slots.map((slotPlan) => (
-            <div
-              key={slotPlan.slot}
-              className="rounded-lg border border-stone-100 bg-stone-50 px-3 py-2"
-            >
-              <div className="flex items-center gap-2">
-                {isCovered ? (
-                  <Check className="h-4 w-4 shrink-0 text-forest-700" />
-                ) : (
-                  <X className="h-4 w-4 shrink-0 text-red-700" />
-                )}
-                <p className="text-sm font-semibold text-ink">
-                  {requirementSlotLabels[slotPlan.slot]}
-                </p>
-              </div>
-              {slotPlan.matching_owned_gear.length > 0 ? (
-                <div className="mt-2 space-y-1 pl-6">
-                  {slotPlan.matching_owned_gear.map((gear) => (
-                    <p key={gear.id} className="text-xs text-stone-600">
-                      {formatOwnedGearName(gear)}
-                    </p>
-                  ))}
-                </div>
-              ) : null}
-            </div>
+            <CoveredSlotRow
+              key={slotPlan.displayKey}
+              slotPlan={slotPlan}
+              isCovered={isCovered}
+              checkedSlots={checkedSlots}
+              onToggle={onToggle}
+            />
           ))
         )}
       </div>
+    </div>
+  );
+}
+
+function CoveredSlotRow({
+  slotPlan,
+  isCovered,
+  checkedSlots,
+  onToggle
+}: {
+  slotPlan: DisplayRequirementSlotPlan;
+  isCovered: boolean;
+  checkedSlots: RequirementSlot[];
+  onToggle?: (slots: RequirementSlot[]) => void;
+}) {
+  const checkedSlotSet = new Set(checkedSlots);
+  const isUserChecked =
+    slotPlan.missingSlots.length > 0 &&
+    slotPlan.missingSlots.every((slot) => checkedSlotSet.has(slot));
+  const canToggle = isCovered && isUserChecked && onToggle;
+  const content = (
+    <>
+      <div className="flex items-center gap-2">
+        {isCovered ? (
+          <Check className="h-4 w-4 shrink-0 text-forest-700" />
+        ) : (
+          <X className="h-4 w-4 shrink-0 text-red-700" />
+        )}
+        <p className="text-sm font-semibold text-ink">
+          {requirementSlotLabels[slotPlan.slot]}
+        </p>
+      </div>
+      {slotPlan.matching_owned_gear.length > 0 ? (
+        <div className="mt-2 space-y-1 pl-6">
+          {slotPlan.matching_owned_gear.map((gear) => (
+            <p key={gear.id} className="text-xs text-stone-600">
+              {formatOwnedGearName(gear)}
+            </p>
+          ))}
+        </div>
+      ) : null}
+    </>
+  );
+
+  if (canToggle) {
+    return (
+      <label className="block cursor-pointer rounded-lg border border-forest-100 bg-forest-50 px-3 py-2 transition hover:border-forest-200">
+        <input
+          type="checkbox"
+          className="sr-only"
+          checked
+          onChange={() => onToggle(slotPlan.missingSlots)}
+        />
+        {content}
+      </label>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-stone-100 bg-stone-50 px-3 py-2">
+      {content}
     </div>
   );
 }
@@ -710,8 +963,8 @@ function CompatibleGearSlot({
   slotPlan,
   match
 }: {
-  slotPlan: PackRequirementSlotPlan;
-  match: GearMatchingResult;
+  slotPlan: DisplayRequirementSlotPlan;
+  match: DisplayGearMatchingResult;
 }) {
   return (
     <article className="py-4 first:pt-0 last:pb-0">
@@ -800,22 +1053,26 @@ function GearMatchList<T>({
 }
 
 function PlanningNotes({
-  plan,
+  missingCount,
+  displaySlots,
   compatibilityBySlot
 }: {
-  plan: PackRequirementPlan;
+  missingCount: number;
+  displaySlots: DisplayRequirementSlotPlan[];
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
 }) {
-  const ambiguousSlots = plan.required_slots.filter((slotPlan) => {
-    return (compatibilityBySlot[slotPlan.slot]?.ambiguous_cases.length ?? 0) > 0;
+  const ambiguousSlots = displaySlots.filter((slotPlan) => {
+    return slotPlan.slots.some((slot) => {
+      return (compatibilityBySlot[slot]?.ambiguous_cases.length ?? 0) > 0;
+    });
   });
 
   return (
     <div className="mt-4 space-y-2">
-      {plan.missing_slots.length > 0 ? (
+      {missingCount > 0 ? (
         <p className="flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-900">
           <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>不足装備を先に確認してください: {plan.missing_slots.length.toLocaleString("ja-JP")} 件</span>
+          <span>不足装備を先に確認してください: {missingCount.toLocaleString("ja-JP")} 件</span>
         </p>
       ) : (
         <p className="flex items-start gap-2 rounded-lg bg-forest-50 px-3 py-2 text-sm font-medium text-forest-900">

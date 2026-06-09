@@ -68,7 +68,7 @@ function HomePageContent({
   summary: DashboardSummary;
 }) {
   return (
-    <div className="home-redesign -mx-5 -mb-32 -mt-6 min-h-screen bg-[#f8f7f4] px-4 py-6 pb-32 text-ink md:-ml-24 md:-mt-8">
+    <div className="home-redesign -mx-5 -mb-32 min-h-screen bg-[#f8f7f4] px-4 pb-32 pt-[calc(env(safe-area-inset-top)+5rem)] text-ink md:-ml-24 md:pt-8">
       <HomeShellCss />
       <div className="mx-auto flex max-w-[390px] flex-col gap-6">
         <HomeHeader />
@@ -281,13 +281,14 @@ function RecentGearSection({
         <SectionHeader title="最近追加した装備" href="/gear" />
       </div>
       {hasGear ? (
-        <div className="-mx-4 mt-5 flex snap-x gap-4 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="-mx-6 mt-5 flex snap-x gap-3 overflow-x-auto px-6 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {gear.slice(0, 8).map((item) => (
-            <article key={item.id} className="w-[120px] flex-shrink-0 snap-start">
+            <article key={item.id} className="w-[100px] flex-shrink-0 snap-start">
               <GearImage item={item} />
-              <h3 className="mt-3 truncate text-sm font-bold">{item.name}</h3>
-              <p className="mt-1 text-xs text-gray-500">{Number(item.weight_grams)} g</p>
-              <p className="mt-2 text-xs text-gray-500">{relativeAddedDate(item.created_at)}</p>
+              <h3 className="mt-2 truncate text-xs font-bold">{item.name}</h3>
+              <p className="mt-1 text-[10px] text-gray-500">
+                {Number(item.weight_grams)} g
+              </p>
             </article>
           ))}
         </div>
@@ -411,7 +412,7 @@ function BackpackIllustration() {
 
 function GearImage({ item }: { item: UserGear }) {
   return (
-    <div className="flex h-[120px] w-[120px] items-center justify-center rounded-2xl bg-gray-50 p-2">
+    <div className="flex h-[100px] w-[100px] items-center justify-center rounded-2xl bg-gray-50 p-2">
       {item.image_url ? (
         <img
           src={item.image_url}
@@ -526,13 +527,6 @@ function styleLabel(style: string) {
   };
 
   return labels[style] ?? "山行";
-}
-
-function relativeAddedDate(createdAt: string) {
-  const created = new Date(createdAt).getTime();
-  const diffDays = Math.max(1, Math.round((Date.now() - created) / 86_400_000));
-
-  return `${diffDays.toLocaleString("ja-JP")}日前`;
 }
 
 function formatKg(weightG: number) {

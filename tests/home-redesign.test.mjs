@@ -112,12 +112,16 @@ test("home hero is compact and uses the static premium hills background", () => 
 });
 
 test("home rebuild follows the requested recent gear image layout", () => {
-  assert.match(dashboardSource, /px-4 py-6 pb-32/);
-  assert.match(dashboardSource, /-mx-4 mt-5 flex snap-x gap-4 overflow-x-auto px-4/);
+  assert.match(dashboardSource, /px-4 pb-32 pt-\[calc\(env\(safe-area-inset-top\)\+5rem\)\]/);
+  assert.match(dashboardSource, /-mx-6 mt-5 flex snap-x gap-3 overflow-x-auto px-6/);
   assert.match(dashboardSource, /snap-x/);
-  assert.match(dashboardSource, /w-\[120px\] flex-shrink-0 snap-start/);
-  assert.match(dashboardSource, /h-\[120px\] w-\[120px\].*bg-gray-50 p-2/s);
+  assert.match(dashboardSource, /w-\[100px\] flex-shrink-0 snap-start/);
+  assert.match(dashboardSource, /h-\[100px\] w-\[100px\].*bg-gray-50 p-2/s);
+  assert.match(dashboardSource, /truncate text-xs font-bold/);
+  assert.match(dashboardSource, /text-\[10px\] text-gray-500/);
   assert.match(dashboardSource, /object-contain/);
+  assert.doesNotMatch(dashboardSource, /relativeAddedDate/);
+  assert.doesNotMatch(dashboardSource, /日前/);
   assert.doesNotMatch(dashboardSource, /gearFallbackGradient/);
 });
 

@@ -2,7 +2,6 @@ import {
   Backpack,
   ChevronRight,
   CircleDollarSign,
-  Menu,
   Mountain,
   Package,
   WalletCards,
@@ -68,16 +67,55 @@ function HomePageContent({
   summary: DashboardSummary;
 }) {
   return (
-    <div className="home-redesign -mx-5 -mb-32 min-h-screen bg-[#f8f7f4] px-4 pb-32 pt-[calc(env(safe-area-inset-top)+5rem)] text-ink md:-ml-24 md:pt-8">
+    <main className="home-redesign min-h-screen bg-[#FAFAFA] pb-32 text-ink">
       <HomeShellCss />
-      <div className="mx-auto flex max-w-[390px] flex-col gap-6">
-        <HomeHeader />
-        <HeroCard hasTrip={hasTrip} trip={trip} />
-        <GearSummaryCard summary={summary} />
+
+      <header className="sticky top-0 z-50 flex w-full items-end justify-between border-b border-gray-100/50 bg-[#FAFAFA]/90 px-4 pb-3 pt-[max(env(safe-area-inset-top),20px)] backdrop-blur-md">
+        <div className="flex flex-col">
+          <h1 className="text-[28px] font-bold leading-none tracking-tight text-gray-900">
+            山支度
+          </h1>
+          <span className="mt-1 text-[10px] font-medium tracking-widest text-gray-400">
+            YAMAJITAKU
+          </span>
+        </div>
+        <button
+          type="button"
+          aria-label="メニュー"
+          className="-mr-2 p-2 text-gray-700 transition-transform active:scale-95"
+        >
+          <svg
+            className="h-6 w-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+      </header>
+
+      <div className="mt-6 space-y-6 px-4">
+        <section>
+          <HeroCard hasTrip={hasTrip} trip={trip} />
+        </section>
+
+        <section>
+          <GearSummaryCard summary={summary} />
+        </section>
+
         <RecentGearSection gear={summary.recentGear} hasGear={hasGear} />
-        <CategoryDistribution summary={summary} hasGear={hasGear} />
+
+        <section>
+          <CategoryDistribution summary={summary} hasGear={hasGear} />
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -88,39 +126,20 @@ function HomeShellCss() {
       aside:has(a[href="/dashboard"]) {
         display: none;
       }
-      main {
+      main:has(> main.home-redesign) {
+        margin: 0 !important;
         max-width: none !important;
+        padding: 0 !important;
+        width: 100% !important;
       }
-      @media (min-width: 768px) {
-        main {
-          margin-left: 0 !important;
-        }
+      .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
       }
     `}</style>
-  );
-}
-
-function HomeHeader() {
-  return (
-    <section className="flex items-center justify-between">
-      <div className="flex flex-col">
-        <h1 className="text-2xl font-bold leading-none tracking-normal">山支度</h1>
-        <p className="mt-2 text-xs font-medium leading-none text-gray-500">
-          YAMAJITAKU
-        </p>
-      </div>
-      <details className="group relative">
-        <summary
-          aria-label="メニュー"
-          className="flex h-10 w-10 list-none items-center justify-center rounded-full bg-transparent text-ink marker:hidden [&::-webkit-details-marker]:hidden"
-        >
-          <Menu className="h-7 w-7 stroke-[1.8]" />
-        </summary>
-        <div className="absolute right-0 top-11 z-20 w-40 rounded-2xl bg-white px-4 py-3 text-sm font-bold text-ink shadow-sm">
-          メニュー
-        </div>
-      </details>
-    </section>
   );
 }
 
@@ -276,24 +295,36 @@ function RecentGearSection({
   hasGear: boolean;
 }) {
   return (
-    <section className="rounded-[24px] bg-white py-5 shadow-sm">
-      <div className="px-5">
-        <SectionHeader title="最近追加した装備" href="/gear" />
+    <section>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-base font-bold text-gray-900">最近追加した装備</h2>
+        <Link href="/gear" className="text-xs font-medium text-[#3A5A40]">
+          すべて見る &gt;
+        </Link>
       </div>
       {hasGear ? (
-        <div className="-mx-6 mt-5 flex snap-x gap-3 overflow-x-auto px-6 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {gear.slice(0, 8).map((item) => (
-            <article key={item.id} className="w-[100px] flex-shrink-0 snap-start">
-              <GearImage item={item} />
-              <h3 className="mt-2 truncate text-xs font-bold">{item.name}</h3>
-              <p className="mt-1 text-[10px] text-gray-500">
-                {Number(item.weight_grams)} g
-              </p>
-            </article>
-          ))}
+        <div className="-mx-4">
+          <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4">
+            {gear.slice(0, 8).map((item) => (
+              <div
+                key={item.id}
+                className="flex w-[100px] flex-none snap-start flex-col"
+              >
+                <div className="mb-2 flex aspect-square w-full items-center justify-center rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+                  <GearImage item={item} />
+                </div>
+                <p className="truncate text-xs font-bold text-gray-800">
+                  {item.name}
+                </p>
+                <p className="mt-0.5 text-[10px] font-medium text-gray-400">
+                  {Number(item.weight_grams)} g
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center px-5 py-6 text-center">
+        <div className="flex flex-col items-center justify-center rounded-[24px] bg-white px-5 py-6 text-center shadow-sm">
           <BackpackIllustration />
           <h3 className="mt-4 text-base font-bold">まだ装備がありません</h3>
           <p className="mt-3 text-xs leading-6 text-gray-600">
@@ -412,7 +443,7 @@ function BackpackIllustration() {
 
 function GearImage({ item }: { item: UserGear }) {
   return (
-    <div className="flex h-[100px] w-[100px] items-center justify-center rounded-2xl bg-gray-50 p-2">
+    <>
       {item.image_url ? (
         <img
           src={item.image_url}
@@ -422,7 +453,7 @@ function GearImage({ item }: { item: UserGear }) {
       ) : (
         <Package className="h-10 w-10 text-gray-300" />
       )}
-    </div>
+    </>
   );
 }
 

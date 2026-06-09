@@ -21,7 +21,6 @@ const tripPlansDataSource = readFileSync(
 
 test("home redesign keeps the required mobile-first section order", () => {
   const order = [
-    "HomeHeader",
     "HeroCard",
     "GearSummaryCard",
     "RecentGearSection",
@@ -44,6 +43,8 @@ test("home rebuild exposes a master state component for the four home states", (
   assert.match(dashboardSource, /hasTrip: boolean/);
   assert.match(dashboardSource, /hasGear: boolean/);
   assert.match(dashboardSource, /<HeroCard hasTrip={hasTrip} trip={trip}/);
+  assert.match(dashboardSource, /<main className="home-redesign min-h-screen bg-\[#FAFAFA\] pb-32/);
+  assert.match(dashboardSource, /<div className="mt-6 space-y-6 px-4">/);
 });
 
 test("home redesign v2 uses shared bottom navigation", () => {
@@ -84,10 +85,12 @@ test("home redesign uses the requested YAMAJITAKU header and trip states", () =>
 });
 
 test("home redesign v2 removes hero secondary actions and replaces bell with menu", () => {
-  assert.match(dashboardSource, /Menu/);
+  assert.match(dashboardSource, /sticky top-0 z-50/);
+  assert.match(dashboardSource, /pt-\[max\(env\(safe-area-inset-top\),20px\)\]/);
   assert.match(dashboardSource, /aria-label="メニュー"/);
-  assert.match(dashboardSource, /<details/);
+  assert.match(dashboardSource, /M4 6h16M4 12h16M4 18h16/);
   assert.doesNotMatch(dashboardSource, /Bell/);
+  assert.doesNotMatch(dashboardSource, /<details/);
   assert.doesNotMatch(dashboardSource, /CalendarDays/);
   assert.doesNotMatch(dashboardSource, /formatTripDate/);
   assert.doesNotMatch(dashboardSource, /aria-label="計画を開く"/);
@@ -112,13 +115,13 @@ test("home hero is compact and uses the static premium hills background", () => 
 });
 
 test("home rebuild follows the requested recent gear image layout", () => {
-  assert.match(dashboardSource, /px-4 pb-32 pt-\[calc\(env\(safe-area-inset-top\)\+5rem\)\]/);
-  assert.match(dashboardSource, /-mx-6 mt-5 flex snap-x gap-3 overflow-x-auto px-6/);
-  assert.match(dashboardSource, /snap-x/);
-  assert.match(dashboardSource, /w-\[100px\] flex-shrink-0 snap-start/);
-  assert.match(dashboardSource, /h-\[100px\] w-\[100px\].*bg-gray-50 p-2/s);
-  assert.match(dashboardSource, /truncate text-xs font-bold/);
-  assert.match(dashboardSource, /text-\[10px\] text-gray-500/);
+  assert.match(dashboardSource, /<section>\s*<div className="mb-4 flex items-center justify-between">/);
+  assert.match(dashboardSource, /<div className="-mx-4">/);
+  assert.match(dashboardSource, /hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4/);
+  assert.match(dashboardSource, /w-\[100px\] flex-none snap-start flex-col/);
+  assert.match(dashboardSource, /aspect-square w-full.*rounded-2xl.*border border-gray-100 bg-white p-3 shadow-sm/s);
+  assert.match(dashboardSource, /truncate text-xs font-bold text-gray-800/);
+  assert.match(dashboardSource, /text-\[10px\] font-medium text-gray-400/);
   assert.match(dashboardSource, /object-contain/);
   assert.doesNotMatch(dashboardSource, /relativeAddedDate/);
   assert.doesNotMatch(dashboardSource, /日前/);

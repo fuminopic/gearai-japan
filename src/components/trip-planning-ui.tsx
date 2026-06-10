@@ -81,6 +81,9 @@ type DisplayGearMatchingResult = Omit<GearMatchingResult, "slot"> & {
   slot: RequirementSlot;
 };
 
+const CHECKED_SLOTS_STORAGE_PREFIX = "yamajitaku:trip-plan:checked-slots:";
+const emptyCheckedSlots: RequirementSlot[] = [];
+
 const systemIcons: Record<PlanningSystem, LucideIcon> = {
   WATER_SYSTEM: Droplets,
   SHELTER_SYSTEM: Tent,
@@ -134,14 +137,30 @@ export function TripPlanningUI({
     initialSavedPlan
   );
   const [interactiveProgress, setInteractiveProgress] = useState<number | null>(null);
+  const [interactiveCheckedSlots, setInteractiveCheckedSlots] = useState<
+    RequirementSlot[] | null
+  >(null);
+  const [storedCheckedSlots, setStoredCheckedSlots] = useState<RequirementSlot[]>([]);
   const effectiveMountainSlug = hydratedPlan?.mountain_slug ?? selectedMountainSlug;
   const effectiveSeason = hydratedPlan?.season ?? selectedSeason;
   const effectiveStyle = hydratedPlan?.style ?? selectedStyle;
   const selectedMountain =
     mountains.find((mountain) => mountain.slug === effectiveMountainSlug) ?? null;
+  const savedCheckedSlots = getSavedPlanCheckedSlots(hydratedPlan);
+  const restoredCheckedSlots = savedCheckedSlots ?? storedCheckedSlots;
+  const rawCurrentCheckedSlots = interactiveCheckedSlots ?? restoredCheckedSlots;
+  const currentCheckedSlots = plan
+    ? filterCheckedSlotsForPlan(rawCurrentCheckedSlots, plan)
+    : rawCurrentCheckedSlots;
   const currentProgressValue = plan
-    ? interactiveProgress ?? calculatePlanProgress(plan)
+    ? interactiveProgress ?? calculatePlanProgress(plan, currentCheckedSlots)
     : hydratedPlan?.progress ?? 0;
+
+  useEffect(() => {
+    setInteractiveProgress(null);
+    setInteractiveCheckedSlots(null);
+    setStoredCheckedSlots(planId ? readStoredCheckedSlots(planId) : []);
+  }, [planId]);
 
   useEffect(() => {
     if (!planId) {
@@ -234,7 +253,9 @@ export function TripPlanningUI({
           <TripPlanningResult
             plan={plan}
             compatibilityBySlot={compatibilityBySlot}
+            initialCheckedSlots={currentCheckedSlots}
             onProgressChange={setInteractiveProgress}
+            onCheckedSlotsChange={setInteractiveCheckedSlots}
           />
           {selectedMountain ? (
             <SavePlanButton
@@ -243,6 +264,7 @@ export function TripPlanningUI({
               season={effectiveSeason}
               style={effectiveStyle}
               progress={currentProgressValue}
+              checkedSlots={currentCheckedSlots}
               planId={planId}
             />
           ) : null}
@@ -260,7 +282,8 @@ function SavePlanButton({
   mountainName,
   season,
   style,
-  progress
+  progress,
+  checkedSlots
 }: {
   planId: string | null;
   mountainSlug: string;
@@ -268,11 +291,11 @@ function SavePlanButton({
   season: MountainFoundationSeason;
   style: MountainFoundationStyle;
   progress: number;
+  checkedSlots: RequirementSlot[];
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
-  const formAction = planId ? updateTripPlan : saveTripPlan;
 
   function handleSavePlan() {
     const form = formRef.current;
@@ -283,23 +306,37 @@ function SavePlanButton({
 
     const formData = new FormData(form);
     startTransition(async () => {
+      let result: { id?: string } | undefined;
+
       if (planId) {
-        await updateTripPlan(formData);
+        result = await updateTripPlan(formData);
       } else {
-        await saveTripPlan(formData);
+        result = await saveTripPlan(formData);
       }
+
+      const savedPlanId = result?.id ?? planId;
+
+      if (savedPlanId) {
+        writeStoredCheckedSlots(savedPlanId, checkedSlots);
+      }
+
       router.push("/dashboard");
     });
   }
 
   return (
-    <form ref={formRef} action={formAction}>
+    <form ref={formRef}>
       {planId ? <input type="hidden" name="id" value={planId} /> : null}
       <input type="hidden" name="mountain_slug" value={mountainSlug} />
       <input type="hidden" name="mountain_name" value={mountainName} />
       <input type="hidden" name="season" value={season} />
       <input type="hidden" name="style" value={style} />
       <input type="hidden" name="progress" value={progress} />
+      <input
+        type="hidden"
+        name="checked_slots"
+        value={JSON.stringify(checkedSlots)}
+      />
       <button
         type="button"
         disabled={isPending}
@@ -394,16 +431,74 @@ function formatSavedPlanMeta(record: SavedTripPlan) {
   return parts.join(" / ");
 }
 
+function getSavedPlanCheckedSlots(plan: SavedTripPlan | null) {
+  if (!plan || !Array.isArray(plan.checked_slots)) {
+    return null;
+  }
+
+  return uniqueRequirementSlots(plan.checked_slots);
+}
+
+function readStoredCheckedSlots(planId: string) {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const storedValue = window.localStorage.getItem(getCheckedSlotsStorageKey(planId));
+
+    if (!storedValue) {
+      return [];
+    }
+
+    const parsed = JSON.parse(storedValue);
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return uniqueRequirementSlots(parsed);
+  } catch {
+    return [];
+  }
+}
+
+function writeStoredCheckedSlots(planId: string, checkedSlots: RequirementSlot[]) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const storageKey = getCheckedSlotsStorageKey(planId);
+
+  if (checkedSlots.length === 0) {
+    window.localStorage.removeItem(storageKey);
+    return;
+  }
+
+  window.localStorage.setItem(storageKey, JSON.stringify(checkedSlots));
+}
+
+function getCheckedSlotsStorageKey(planId: string) {
+  return `${CHECKED_SLOTS_STORAGE_PREFIX}${planId}`;
+}
+
 function TripPlanningResult({
   plan,
   compatibilityBySlot,
-  onProgressChange
+  initialCheckedSlots = emptyCheckedSlots,
+  onProgressChange,
+  onCheckedSlotsChange
 }: {
   plan: PackRequirementPlan;
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
+  initialCheckedSlots?: RequirementSlot[];
   onProgressChange?: (progress: number) => void;
+  onCheckedSlotsChange?: (checkedSlots: RequirementSlot[]) => void;
 }) {
-  const [checkedSlots, setCheckedSlots] = useState<RequirementSlot[]>([]);
+  const [checkedSlots, setCheckedSlots] = useState<RequirementSlot[]>(() => {
+    return filterCheckedSlotsForPlan(initialCheckedSlots, plan);
+  });
+  const initialCheckedSlotsKey = initialCheckedSlots.join("|");
   const displaySlots = dedupeDisplaySlots(plan.required_slots);
   const coveredDisplaySlots = displaySlots.filter((slotPlan) => {
     return isDisplaySlotCovered(slotPlan, checkedSlots);
@@ -428,8 +523,10 @@ function TripPlanningResult({
     });
 
   useEffect(() => {
-    setCheckedSlots([]);
-  }, [plan]);
+    const nextCheckedSlots = filterCheckedSlotsForPlan(initialCheckedSlots, plan);
+
+    setCheckedSlots(nextCheckedSlots);
+  }, [initialCheckedSlotsKey, plan]);
 
   useEffect(() => {
     onProgressChange?.(coveragePercent);
@@ -448,7 +545,11 @@ function TripPlanningResult({
         }
       }
 
-      return Array.from(nextSlots);
+      const nextCheckedSlots = filterCheckedSlotsForPlan(Array.from(nextSlots), plan);
+
+      onCheckedSlotsChange?.(nextCheckedSlots);
+
+      return nextCheckedSlots;
     });
   }
 
@@ -562,13 +663,45 @@ function TripPlanningResult({
   );
 }
 
-function calculatePlanProgress(plan: PackRequirementPlan) {
+function calculatePlanProgress(
+  plan: PackRequirementPlan,
+  checkedSlots: readonly RequirementSlot[] = []
+) {
   const displaySlots = dedupeDisplaySlots(plan.required_slots);
   const coveredSlots = displaySlots.filter((slotPlan) => {
-    return isDisplaySlotCovered(slotPlan, []);
+    return isDisplaySlotCovered(slotPlan, checkedSlots);
   });
 
   return calculateProgressFromCounts(coveredSlots.length, displaySlots.length);
+}
+
+function filterCheckedSlotsForPlan(
+  checkedSlots: readonly RequirementSlot[],
+  plan: PackRequirementPlan
+) {
+  const missingSlots = new Set(
+    plan.required_slots
+      .filter((slotPlan) => slotPlan.coverage_status === "MISSING")
+      .map((slotPlan) => slotPlan.slot)
+  );
+
+  return uniqueRequirementSlots(checkedSlots).filter((slot) => missingSlots.has(slot));
+}
+
+function uniqueRequirementSlots(values: readonly unknown[]) {
+  const slots: RequirementSlot[] = [];
+
+  for (const value of values) {
+    if (
+      typeof value === "string" &&
+      value in slotSystems &&
+      !slots.includes(value as RequirementSlot)
+    ) {
+      slots.push(value as RequirementSlot);
+    }
+  }
+
+  return slots;
 }
 
 function calculateProgressFromCounts(coveredCount: number, totalSlots: number) {

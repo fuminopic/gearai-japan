@@ -46,6 +46,10 @@ const tripPlansProgressMigrationSource = readFileSync(
   new URL("../supabase/migrations/012_trip_plans_progress.sql", import.meta.url),
   "utf8"
 );
+const tripPlansCheckedSlotsMigrationSource = readFileSync(
+  new URL("../supabase/migrations/013_trip_plans_checked_slots.sql", import.meta.url),
+  "utf8"
+);
 const planPageSource = readFileSync(
   new URL("../app/(app)/plan/page.tsx", import.meta.url),
   "utf8"
@@ -255,18 +259,28 @@ test("saving and updating a plan writes progress payload and redirects home", ()
     /fixed bottom-24 left-1\/2 z-50 w-\[calc\(100%-2rem\)\] max-w-sm -translate-x-1\/2 rounded-2xl bg-\[#C62828\] py-3\.5/
   );
   assert.match(tripPlanningUiSource, /name="progress" value=\{progress\}/);
+  assert.match(tripPlanningUiSource, /name="checked_slots"/);
+  assert.match(tripPlanningUiSource, /JSON\.stringify\(checkedSlots\)/);
+  assert.match(tripPlanningUiSource, /writeStoredCheckedSlots/);
+  assert.match(tripPlanningUiSource, /readStoredCheckedSlots/);
+  assert.match(tripPlanningUiSource, /initialCheckedSlots/);
   assert.match(planActionsSource, /mountain_name: mountainName/);
   assert.match(planActionsSource, /season,/);
   assert.match(planActionsSource, /style,/);
   assert.match(planActionsSource, /progress/);
+  assert.match(planActionsSource, /checked_slots: checkedSlots/);
+  assert.match(planActionsSource, /parseCheckedSlots/);
+  assert.match(planActionsSource, /withoutCheckedSlots/);
   assert.match(planActionsSource, /export async function updateTripPlan/);
-  assert.match(planActionsSource, /\.update\(\{/);
+  assert.match(planActionsSource, /\.update\(payload\)/);
   assert.match(tripPlansDataSource, /from\("trip_plans"\)/);
   assert.match(tripPlansMigrationSource, /create table if not exists public\.trip_plans/);
   assert.match(tripPlansMigrationSource, /image_url text/);
   assert.match(tripPlansMigrationSource, /progress integer not null default 0/);
   assert.match(tripPlansProgressMigrationSource, /add column if not exists progress integer not null default 0/);
   assert.match(tripPlansProgressMigrationSource, /trip_plans_update_own/);
+  assert.match(tripPlansCheckedSlotsMigrationSource, /add column if not exists checked_slots text\[\]/);
+  assert.match(tripPlansCheckedSlotsMigrationSource, /SLEEP_INSULATION/);
 });
 
 test("plan id hydration links home and history to the exact saved plan", () => {

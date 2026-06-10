@@ -64,6 +64,7 @@ function legacyRecommendationToTripPlan(record: AIRecommendationRecord): SavedTr
     style: legacyStyle(record.input.accommodation_style),
     image_url: null,
     progress: 0,
+    checked_slots: [],
     created_at: record.created_at
   };
 }

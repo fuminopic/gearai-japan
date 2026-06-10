@@ -220,6 +220,7 @@ export type SavedTripPlan = {
   style: MountainFoundationStyle;
   image_url: string | null;
   progress: number;
+  checked_slots: RequirementSlot[];
   created_at: string;
 };
 

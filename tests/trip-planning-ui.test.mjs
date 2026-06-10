@@ -22,8 +22,24 @@ const appNavSource = readFileSync(
   new URL("../src/components/app-nav.tsx", import.meta.url),
   "utf8"
 );
+const navigationFeedbackSource = readFileSync(
+  new URL("../src/components/navigation-feedback.tsx", import.meta.url),
+  "utf8"
+);
 const appBottomNavSource = readFileSync(
   new URL("../src/components/app-bottom-nav.tsx", import.meta.url),
+  "utf8"
+);
+const appLayoutSource = readFileSync(
+  new URL("../app/(app)/layout.tsx", import.meta.url),
+  "utf8"
+);
+const appLoadingSource = readFileSync(
+  new URL("../app/(app)/loading.tsx", import.meta.url),
+  "utf8"
+);
+const rootLoadingSource = readFileSync(
+  new URL("../app/loading.tsx", import.meta.url),
   "utf8"
 );
 const planActionsSource = readFileSync(
@@ -92,10 +108,27 @@ test("trip planning page always refreshes gear-derived pack coverage", () => {
   assert.match(planPageSource, /dynamic = "force-dynamic"/);
   assert.match(planPageSource, /revalidate = 0/);
   assert.match(gearActionsSource, /revalidatePath\("\/plan"\)/);
-  assert.match(planPageContentSource, /const planHistory = await getRecommendationHistory\(\)/);
-  assert.match(planPageContentSource, /const savedPlans = await getTripPlans\(\)/);
-  assert.match(planPageContentSource, /plan = await getPackRequirementPlan/);
+  assert.match(planPageContentSource, /const \[mountainResult, planHistory, savedPlans\] = await Promise\.all/);
+  assert.match(planPageContentSource, /getRecommendationHistory\(\)/);
+  assert.match(planPageContentSource, /getTripPlans\(\)/);
+  assert.match(planPageContentSource, /getPackRequirementPlan\(\{/);
+  assert.match(planPageContentSource, /plan = generatedPlan/);
   assert.match(planPageContentSource, /matchGearForRequirementSlot/);
+});
+
+test("app navigation responds immediately during dynamic route loading", () => {
+  assert.match(appLayoutSource, /<Suspense fallback=\{<AppLoadingFallback \/>/);
+  assert.match(appLayoutSource, /function AppLayout/);
+  assert.match(appLayoutSource, /async function AuthGate/);
+  assert.match(appLoadingSource, /animate-pulse/);
+  assert.match(rootLoadingSource, /animate-pulse/);
+  assert.match(appNavSource, /NavigationFeedback/);
+  assert.match(navigationFeedbackSource, /document\.addEventListener\("click"/);
+  assert.match(navigationFeedbackSource, /usePathname/);
+  assert.match(navigationFeedbackSource, /useSearchParams/);
+  assert.match(navigationFeedbackSource, /link\.href === window\.location\.href/);
+  assert.match(planPageContentSource, /Promise\.all/);
+  assert.match(planPageContentSource, /generatedPlan/);
 });
 
 test("trip planning UI emphasizes required systems, coverage, and missing gear", () => {

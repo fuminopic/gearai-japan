@@ -29,18 +29,23 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
 
   let error = params.error;
   let mountains: MountainFoundationProfile[] = [];
+  const [mountainResult, planHistory, savedPlans] = await Promise.all([
+    getMountainFoundationProfiles()
+      .then((data) => ({ data, error: null }))
+      .catch((caught: unknown) => ({ data: [], error: caught })),
+    getRecommendationHistory(),
+    getTripPlans()
+  ]);
 
-  try {
-    mountains = await getMountainFoundationProfiles();
-  } catch (caught) {
+  if (mountainResult.error) {
     error =
-      caught instanceof Error
-        ? caught.message
+      mountainResult.error instanceof Error
+        ? mountainResult.error.message
         : "Mountain Foundation Dataset を読み込めませんでした。";
+  } else {
+    mountains = mountainResult.data;
   }
 
-  const planHistory = await getRecommendationHistory();
-  const savedPlans = await getTripPlans();
   const selectedSavedPlan =
     params.id && savedPlans.length > 0
       ? savedPlans.find((record) => record.id === params.id) ?? null
@@ -63,13 +68,16 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
 
   if (shouldGeneratePlan && mountains.length > 0) {
     try {
-      plan = await getPackRequirementPlan({
-        mountainSlug: selectedMountainSlug,
-        season: selectedSeason,
-        style: selectedStyle
-      });
+      const [generatedPlan, databaseGear] = await Promise.all([
+        getPackRequirementPlan({
+          mountainSlug: selectedMountainSlug,
+          season: selectedSeason,
+          style: selectedStyle
+        }),
+        getGearProducts()
+      ]);
 
-      const databaseGear = await getGearProducts();
+      plan = generatedPlan;
       compatibilityBySlot = Object.fromEntries(
         plan.required_slots.map((slotPlan) => {
           const match = matchGearForRequirementSlot({

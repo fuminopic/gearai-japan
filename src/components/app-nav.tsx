@@ -3,6 +3,7 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { AppBottomNav } from "@/components/app-bottom-nav";
+import { NavigationFeedback } from "@/components/navigation-feedback";
 import { signOut } from "@/lib/actions/auth";
 
 const navItems = [
@@ -19,6 +20,8 @@ const navItems = [
 export function AppNav() {
   return (
     <>
+      <NavigationFeedback />
+
       <header className="sticky top-0 z-20 border-b border-stone-200/70 bg-trail-50/90 px-5 py-4 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <Link href="/dashboard" className="leading-none text-ink">

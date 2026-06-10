@@ -24,6 +24,8 @@ const PRODUCT_CATEGORY_KEYS = [
 
 const USER_GEAR_SELECT =
   "*, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_products:product_id(id, brand, model, name_ja, category_id, subcategory_id, official_url, msrp_source_url, last_verified_at, verification_status, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en))";
+const USER_GEAR_MATCHING_SELECT =
+  "id, user_id, product_id, category_id, subcategory_id, name, brand, model, status, weight_grams, weight_type, created_at, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_products:product_id(id, brand, model, name_ja, category_id, subcategory_id, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en))";
 
 export const requireUser = cache(async function requireUser() {
   const supabase = await createClient();
@@ -126,7 +128,23 @@ export async function getUserGear(filters: GearFilters = {}) {
     throw new Error(error.message);
   }
 
-  return data as UserGear[];
+  return data as unknown as UserGear[];
+}
+
+export async function getOwnedGearForPlanning() {
+  const { supabase, user } = await requireUser();
+  const { data, error } = await supabase
+    .from("user_gear")
+    .select(USER_GEAR_MATCHING_SELECT)
+    .eq("user_id", user.id)
+    .eq("status", "owned")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as unknown as UserGear[];
 }
 
 export async function getUserGearById(id: string) {

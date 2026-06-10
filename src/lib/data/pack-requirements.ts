@@ -1,5 +1,5 @@
 import { getMountainFoundationProfileBySlug } from "@/lib/data/mountain-foundation";
-import { getUserGear } from "@/lib/data/gear";
+import { getOwnedGearForPlanning } from "@/lib/data/gear";
 import { generatePackRequirementPlan } from "@/lib/pack-requirements/engine";
 import { getRequiredSystemsForTrip } from "@/lib/trip-requirements/engine";
 import type { PackRequirementLookupInput } from "@/lib/types";
@@ -20,7 +20,7 @@ export async function getPackRequirementPlan({
     season,
     style
   });
-  const ownedGear = await getUserGear({ status: "owned" });
+  const ownedGear = await getOwnedGearForPlanning();
 
   return generatePackRequirementPlan({
     mountain,

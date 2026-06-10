@@ -13,7 +13,7 @@ import Link from "next/link";
 
 import { getDashboardSummary } from "@/lib/data/dashboard";
 import { getLatestTripPlan } from "@/lib/data/trip-plans";
-import type { DashboardSummary, SavedTripPlan, UserGear } from "@/lib/types";
+import type { DashboardRecentGear, DashboardSummary, SavedTripPlan } from "@/lib/types";
 import { formatJpy } from "@/lib/utils/format";
 
 const categoryColors = [
@@ -291,7 +291,7 @@ function RecentGearSection({
   gear,
   hasGear
 }: {
-  gear: UserGear[];
+  gear: DashboardRecentGear[];
   hasGear: boolean;
 }) {
   return (
@@ -441,7 +441,7 @@ function BackpackIllustration() {
   );
 }
 
-function GearImage({ item }: { item: UserGear }) {
+function GearImage({ item }: { item: DashboardRecentGear }) {
   return (
     <>
       {item.image_url ? (

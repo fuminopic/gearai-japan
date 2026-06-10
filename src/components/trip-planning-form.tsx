@@ -47,10 +47,41 @@ export function TripPlanningForm({
   const effectiveStyle = styleOptions.includes(selectedStyle)
     ? selectedStyle
     : styleOptions[0];
+  const prefetchedPlanHref = useMemo(() => {
+    if (!mountainSlug || !effectiveSeason || !effectiveStyle) {
+      return null;
+    }
+
+    const params = new URLSearchParams();
+
+    if (planId) {
+      params.set("id", planId);
+    }
+
+    params.set("mountain", mountainSlug);
+    params.set("season", effectiveSeason);
+    params.set("style", effectiveStyle);
+
+    return `/plan?${params.toString()}` as Route;
+  }, [effectiveSeason, effectiveStyle, mountainSlug, planId]);
 
   useEffect(() => {
     setMountainSlug(getAvailableMountainSlug(selectedMountainSlug, mountains));
   }, [selectedMountainSlug, mountains]);
+
+  useEffect(() => {
+    if (!prefetchedPlanHref) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      router.prefetch(prefetchedPlanHref);
+    }, 150);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [prefetchedPlanHref, router]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -153,6 +153,11 @@ export type GearFilters = {
   sort?: "newest" | "weight" | "price";
 };
 
+export type DashboardRecentGear = Pick<
+  UserGear,
+  "id" | "name" | "image_url" | "weight_grams"
+>;
+
 export type DashboardSummary = {
   totalCount: number;
   ownedCount: number;
@@ -172,7 +177,7 @@ export type DashboardSummary = {
     weightG: number;
     count: number;
   }>;
-  recentGear: UserGear[];
+  recentGear: DashboardRecentGear[];
 };
 
 export type DataQualitySummary = {

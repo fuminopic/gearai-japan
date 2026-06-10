@@ -18,6 +18,14 @@ const tripPlansDataSource = readFileSync(
   new URL("../src/lib/data/trip-plans.ts", import.meta.url),
   "utf8"
 );
+const dashboardDataSource = readFileSync(
+  new URL("../src/lib/data/dashboard.ts", import.meta.url),
+  "utf8"
+);
+const supabaseMiddlewareSource = readFileSync(
+  new URL("../src/lib/supabase/middleware.ts", import.meta.url),
+  "utf8"
+);
 
 test("home redesign keeps the required mobile-first section order", () => {
   const order = [
@@ -71,6 +79,12 @@ test("home redesign v2 uses shared bottom navigation", () => {
   assert.match(appNavSource, /自分/);
   assert.doesNotMatch(dashboardSource, /function BottomNavigation/);
   assert.doesNotMatch(dashboardSource, /bottomNavItems/);
+});
+
+test("app middleware keeps navigation lightweight", () => {
+  assert.match(supabaseMiddlewareSource, /auth\.getSession\(\)/);
+  assert.doesNotMatch(supabaseMiddlewareSource, /auth\.getUser\(\)/);
+  assert.match(supabaseMiddlewareSource, /data loaders still verify users/);
 });
 
 test("home redesign uses the requested YAMAJITAKU header and trip states", () => {
@@ -169,6 +183,8 @@ test("home redesign includes gear empty and category empty states", () => {
 
 test("home redesign syncs latest saved trip plan from Supabase", () => {
   assert.match(dashboardSource, /getDashboardSummary/);
+  assert.match(dashboardDataSource, /DASHBOARD_GEAR_SELECT/);
+  assert.doesNotMatch(dashboardDataSource, /getUserGear\(/);
   assert.match(dashboardSource, /async function fetchLatestPlan/);
   assert.match(dashboardSource, /getLatestTripPlan/);
   assert.match(tripPlansDataSource, /\.from\("trip_plans"\)/);

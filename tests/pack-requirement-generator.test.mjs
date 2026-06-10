@@ -253,7 +253,8 @@ test("pack requirement generator covers category-only tent and sleeping bag reco
 
 test("pack requirement layer consumes trip requirements and owned gear only", () => {
   assert.match(repositorySource, /getRequiredSystemsForTrip/);
-  assert.match(repositorySource, /getUserGear\(\{ status: "owned" \}\)/);
+  assert.match(repositorySource, /getOwnedGearForPlanning\(\)/);
+  assert.doesNotMatch(repositorySource, /getUserGear\(\{ status: "owned" \}\)/);
   assert.match(repositorySource, /generatePackRequirementPlan/);
   assert.match(engineSource, /matchGearForRequirementSlot/);
   assert.match(migrationSource, /'bottle'/);

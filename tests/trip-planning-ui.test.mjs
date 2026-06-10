@@ -137,7 +137,10 @@ test("app navigation responds immediately during dynamic route loading", () => {
   assert.match(appNavSource, /NavigationFeedback/);
   assert.match(appNavSource, /AppRoutePrefetcher/);
   assert.match(appRoutePrefetcherSource, /router\.prefetch/);
+  assert.match(appRoutePrefetcherSource, /primaryPrefetchRoutes/);
   assert.match(appRoutePrefetcherSource, /"\/dashboard", "\/plan", "\/gear", "\/profile"/);
+  assert.match(appRoutePrefetcherSource, /secondaryPrefetchRoutes/);
+  assert.match(appRoutePrefetcherSource, /"\/gear\/new", "\/ai", "\/ai\/history"/);
   assert.match(appBottomNavSource, /touch-manipulation/);
   assert.match(appBottomNavSource, /active:scale-95/);
   assert.match(navigationFeedbackSource, /document\.addEventListener\("click"/);
@@ -146,6 +149,8 @@ test("app navigation responds immediately during dynamic route loading", () => {
   assert.match(navigationFeedbackSource, /link\.href === window\.location\.href/);
   assert.match(tripPlanningFormSource, /onSubmit=\{handleSubmit\}/);
   assert.match(tripPlanningFormSource, /router\.push\(`\/plan\?\$\{params\.toString\(\)\}` as Route\)/);
+  assert.match(tripPlanningFormSource, /prefetchedPlanHref/);
+  assert.match(tripPlanningFormSource, /router\.prefetch\(prefetchedPlanHref\)/);
   assert.match(tripPlanningFormSource, /作成中\.\.\./);
   assert.doesNotMatch(tripPlanningFormSource, /form action="\/plan"/);
   assert.match(planPageContentSource, /Promise\.all/);

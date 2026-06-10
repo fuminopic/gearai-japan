@@ -31,7 +31,8 @@ export async function updateSession(request: NextRequest) {
     }
   });
 
-  await supabase.auth.getUser();
+  // Middleware only keeps auth cookies fresh; data loaders still verify users.
+  await supabase.auth.getSession();
 
   return response;
 }

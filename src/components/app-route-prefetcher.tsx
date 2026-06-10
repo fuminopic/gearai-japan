@@ -4,20 +4,27 @@ import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-const prefetchRoutes = ["/dashboard", "/plan", "/gear", "/profile"] satisfies Route[];
+const primaryPrefetchRoutes = ["/dashboard", "/plan", "/gear", "/profile"] satisfies Route[];
+const secondaryPrefetchRoutes = ["/gear/new", "/ai", "/ai/history"] satisfies Route[];
 
 export function AppRoutePrefetcher() {
   const router = useRouter();
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      for (const route of prefetchRoutes) {
+    const primaryTimeoutId = window.setTimeout(() => {
+      for (const route of primaryPrefetchRoutes) {
         router.prefetch(route);
       }
-    }, 300);
+    }, 150);
+    const secondaryTimeoutId = window.setTimeout(() => {
+      for (const route of secondaryPrefetchRoutes) {
+        router.prefetch(route);
+      }
+    }, 1200);
 
     return () => {
-      window.clearTimeout(timeoutId);
+      window.clearTimeout(primaryTimeoutId);
+      window.clearTimeout(secondaryTimeoutId);
     };
   }, [router]);
 

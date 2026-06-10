@@ -390,7 +390,8 @@ test("gear matching does not fuzzy-match names or legacy broad categories", () =
 });
 
 test("gear matching repository and pack generator use the compatibility engine boundary", () => {
-  assert.match(repositorySource, /getUserGear\(\{ status: "owned" \}\)/);
+  assert.match(repositorySource, /getOwnedGearForPlanning\(\)/);
+  assert.doesNotMatch(repositorySource, /getUserGear\(\{ status: "owned" \}\)/);
   assert.match(repositorySource, /getGearProducts/);
   assert.match(repositorySource, /matchGearForRequirementSlot/);
   assert.match(packEngineSource, /matchGearForRequirementSlot/);

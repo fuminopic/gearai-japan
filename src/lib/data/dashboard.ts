@@ -1,5 +1,13 @@
-import type { DashboardSummary, UserGear } from "@/lib/types";
-import { getUserGear } from "@/lib/data/gear";
+import { requireUser } from "@/lib/data/gear";
+import type { DashboardRecentGear, DashboardSummary, UserGear } from "@/lib/types";
+
+const DASHBOARD_GEAR_SELECT =
+  "id,name,image_url,status,weight_grams,weight_type,msrp_jpy,purchase_price_jpy,created_at,gear_categories:category_id(id,name_ja,name_en)";
+
+type DashboardGear = DashboardRecentGear &
+  Pick<UserGear, "status" | "weight_type" | "msrp_jpy" | "purchase_price_jpy"> & {
+    gear_categories?: UserGear["gear_categories"];
+  };
 
 const CATEGORY_ARCHITECTURE = {
   backpack: { categoryId: "backpack", nameJa: "背負システム", sortOrder: 10 },
@@ -21,7 +29,7 @@ const CATEGORY_ARCHITECTURE = {
 } as const;
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
-  const gear = await getUserGear();
+  const gear = await getDashboardGear();
   const ownedGear = gear.filter((item) => item.status === "owned");
 
   const categoryWeights = new Map<
@@ -82,15 +90,39 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     categoryWeights: Array.from(categoryWeights.values())
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map(({ sortOrder, ...category }) => category),
-    recentGear: gear.slice(0, 5)
+    recentGear: gear.slice(0, 8).map(toDashboardRecentGear)
   };
 }
 
-function sumWeight(items: UserGear[]) {
+async function getDashboardGear() {
+  const { supabase, user } = await requireUser();
+  const { data, error } = await supabase
+    .from("user_gear")
+    .select(DASHBOARD_GEAR_SELECT)
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as unknown as DashboardGear[];
+}
+
+function toDashboardRecentGear(item: DashboardGear): DashboardRecentGear {
+  return {
+    id: item.id,
+    name: item.name,
+    image_url: item.image_url,
+    weight_grams: item.weight_grams
+  };
+}
+
+function sumWeight(items: DashboardGear[]) {
   return items.reduce((total, item) => total + Number(item.weight_grams ?? 0), 0);
 }
 
-function getCategoryArchitecture(item: UserGear) {
+function getCategoryArchitecture(item: DashboardGear) {
   const key = item.gear_categories?.name_en ?? "other";
 
   return (

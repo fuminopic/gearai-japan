@@ -30,6 +30,10 @@ const planActionsSource = readFileSync(
   new URL("../src/lib/actions/trip-plans.ts", import.meta.url),
   "utf8"
 );
+const gearActionsSource = readFileSync(
+  new URL("../src/lib/actions/gear.ts", import.meta.url),
+  "utf8"
+);
 const tripPlansDataSource = readFileSync(
   new URL("../src/lib/data/trip-plans.ts", import.meta.url),
   "utf8"
@@ -78,6 +82,16 @@ test("trip planning page exposes the pack planning architecture", () => {
   assert.doesNotMatch(`${aiPageSource}\n${planPageContentSource}`, /AIRecommendationForm/);
   assert.doesNotMatch(`${aiPageSource}\n${planPageContentSource}`, /createRecommendation/);
   assert.doesNotMatch(planPageContentSource, /getMountainImageUrl/);
+});
+
+test("trip planning page always refreshes gear-derived pack coverage", () => {
+  assert.match(planPageSource, /dynamic = "force-dynamic"/);
+  assert.match(planPageSource, /revalidate = 0/);
+  assert.match(gearActionsSource, /revalidatePath\("\/plan"\)/);
+  assert.match(planPageContentSource, /const planHistory = await getRecommendationHistory\(\)/);
+  assert.match(planPageContentSource, /const savedPlans = await getTripPlans\(\)/);
+  assert.match(planPageContentSource, /plan = await getPackRequirementPlan/);
+  assert.match(planPageContentSource, /matchGearForRequirementSlot/);
 });
 
 test("trip planning UI emphasizes required systems, coverage, and missing gear", () => {

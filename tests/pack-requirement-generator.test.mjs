@@ -73,18 +73,20 @@ const mountain = {
 function gear({
   id,
   name,
+  brand = null,
+  model = null,
   category,
-  subcategory
+  subcategory = null
 }) {
   return {
     id,
     user_id: "user-1",
     product_id: null,
     category_id: `${category}-id`,
-    subcategory_id: `${subcategory}-id`,
+    subcategory_id: subcategory ? `${subcategory}-id` : null,
     name,
-    brand: null,
-    model: null,
+    brand,
+    model,
     weight_grams: 1,
     official_weight_grams: null,
     measured_weight_grams: null,
@@ -108,11 +110,13 @@ function gear({
       name_ja: category,
       name_en: category
     },
-    gear_subcategories: {
-      id: `${subcategory}-id`,
-      name_ja: subcategory,
-      name_en: subcategory
-    }
+    gear_subcategories: subcategory
+      ? {
+          id: `${subcategory}-id`,
+          name_ja: subcategory,
+          name_en: subcategory
+        }
+      : null
   };
 }
 
@@ -205,6 +209,46 @@ test("pack requirement generator reports covered and missing slots from owned ge
   assert.equal(plan.covered_slots[0].matching_owned_gear[0].name, "Owned Tent");
   assert.equal(plan.missing_slots[0].coverage_status, "MISSING");
   assert.deepEqual(plan.missing_slots[0].matching_owned_gear, []);
+});
+
+test("pack requirement generator covers category-only tent and sleeping bag records", () => {
+  const plan = generatePackRequirementPlan({
+    mountain,
+    season: "SUMMER",
+    style: "OVERNIGHT_TENT",
+    requiredSystems: [
+      "WATER_SYSTEM",
+      "SHELTER_SYSTEM",
+      "SLEEP_SYSTEM",
+      "COOK_SYSTEM",
+      "RAIN_SYSTEM",
+      "NAVIGATION_SYSTEM",
+      "EMERGENCY_SYSTEM"
+    ],
+    ownedGear: [
+      gear({
+        id: "tent-category-only",
+        name: "Mountain Shot 2",
+        brand: "finetrack",
+        model: "Mountain Shot 2",
+        category: "shelter"
+      }),
+      gear({
+        id: "sleep-category-only",
+        name: "Seamless Down Hugger 800 #2",
+        brand: "mont-bell",
+        model: "Seamless Down Hugger 800 #2",
+        category: "sleep"
+      })
+    ]
+  });
+
+  assert.deepEqual(
+    plan.covered_slots.map((slot) => slot.slot),
+    ["TENT", "SLEEP_INSULATION"]
+  );
+  assert.ok(!plan.missing_slots.some((slot) => slot.slot === "TENT"));
+  assert.ok(!plan.missing_slots.some((slot) => slot.slot === "SLEEP_INSULATION"));
 });
 
 test("pack requirement layer consumes trip requirements and owned gear only", () => {

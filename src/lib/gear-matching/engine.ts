@@ -9,6 +9,12 @@ import type {
   UserGear
 } from "@/lib/types";
 
+type NormalizedGearClassification = {
+  category: string | null;
+  subcategory: string | null;
+  source: "gear" | "product";
+};
+
 const GEAR_COMPATIBILITY_RULES: Record<RequirementSlot, GearCompatibilityRule> = {
   WATER_STORAGE: {
     slot: "WATER_STORAGE",
@@ -120,6 +126,47 @@ const GEAR_COMPATIBILITY_RULES: Record<RequirementSlot, GearCompatibilityRule> =
   }
 };
 
+const SLOT_TEXT_HINTS: Partial<Record<RequirementSlot, readonly RegExp[]>> = {
+  WATER_STORAGE: [
+    /\b(nalgene|bottle|water bottle|wide mouth|hydration bladder|reservoir)\b/i,
+    /ナルゲン|ボトル|水筒|ハイドレーション/
+  ],
+  WATER_TREATMENT: [
+    /\b(filter|purifier|sawyer|katadyn|quickdraw)\b/i,
+    /浄水|フィルター/
+  ],
+  TENT: [
+    /\b(tent|mountain shot|stella ridge|x-mid)\b/i,
+    /テント|マウンテンショット|ステラリッジ/
+  ],
+  SLEEP_INSULATION: [
+    /\b(sleeping bag|sleepingbag|down hugger|seamless down hugger|quilt)\b/i,
+    /寝袋|シュラフ|スリーピングバッグ|ダウンハガー/
+  ],
+  SLEEP_PAD: [
+    /\b(sleeping pad|sleeping mat|tensor|z lite|foam pad)\b/i,
+    /スリーピングパッド|マット/
+  ],
+  STOVE: [/\b(stove|burner|windmaster)\b/i, /ストーブ|バーナー|ウインドマスター/],
+  FUEL: [/\b(fuel|gas canister|gas cartridge|cartridge)\b/i, /燃料|ガス缶|カートリッジ/],
+  COOK_POT: [/\b(cook pot|cookware|pot|kettle|mug|cup)\b/i, /クッカー|コッヘル|鍋|カップ/],
+  TABLEWARE: [/\b(spoon|fork|spork|chopsticks|bowl|plate)\b/i, /食器|箸|スプーン|フォーク|皿|ボウル/],
+  RAIN_JACKET: [/\b(rain jacket|storm cruiser jacket|hard shell jacket)\b/i, /レインジャケット|ストームクルーザー.*ジャケット/],
+  RAIN_PANTS: [/\b(rain pants|storm cruiser pants|hard shell pants)\b/i, /レインパンツ|ストームクルーザー.*パンツ/],
+  INSULATION_LAYER: [/\b(down jacket|down parka|fleece|insulation layer)\b/i, /ダウン|保温着|フリース|パーカ/],
+  BASE_LAYER: [/\b(base layer|baselayer|merino)\b/i, /ベースレイヤー|メリノ/],
+  GPS_DEVICE: [/\b(gps|garmin|etrex|inreach|gpsmap)\b/i, /GPS/],
+  POWER_BANK: [/\b(power bank|battery pack|portable battery)\b/i, /モバイルバッテリー/],
+  FIRST_AID_KIT: [/\b(first aid|medical kit)\b/i, /ファーストエイド|救急/],
+  HEADLAMP: [/\b(headlamp|head lamp|spot 400)\b/i, /ヘッドランプ|ヘッデン/]
+};
+
+const BROAD_FALLBACK_SUBCATEGORIES = new Set([
+  "accessory",
+  "other",
+  "rainwear"
+]);
+
 export function getGearCompatibilityRule(slot: RequirementSlot): GearCompatibilityRule {
   return GEAR_COMPATIBILITY_RULES[slot];
 }
@@ -131,11 +178,11 @@ export function matchGearForRequirementSlot({
 }: GearMatchingInput): GearMatchingResult {
   const rule = getGearCompatibilityRule(slot);
   const matchingOwnedGear = applySlotTextFilters(
-    ownedGear.filter((item) => matchesRule(item, rule)),
+    ownedGear.filter((item) => matchesRule(item, rule, slot)),
     slot
   );
   const matchingDatabaseGear = applySlotTextFilters(
-    databaseGear.filter((item) => matchesRule(item, rule)),
+    databaseGear.filter((item) => matchesRule(item, rule, slot)),
     slot
   );
 
@@ -163,19 +210,297 @@ function applySlotTextFilters<T extends UserGear | GearProduct>(
   return items.filter((item) => !isTentAccessory(item));
 }
 
-function matchesRule(item: UserGear | GearProduct, rule: GearCompatibilityRule) {
-  const category = item.gear_categories?.name_en;
-  const subcategory = item.gear_subcategories?.name_en;
+function matchesRule(
+  item: UserGear | GearProduct,
+  rule: GearCompatibilityRule,
+  slot: RequirementSlot
+) {
+  const classifications = getNormalizedClassifications(item);
+  const gearClassification =
+    classifications.find((classification) => classification.source === "gear") ?? null;
+
+  if (matchesClassification(gearClassification, rule)) {
+    return true;
+  }
+
+  if (
+    canUseFallbackClassification(gearClassification, rule) &&
+    classifications.some((classification) => {
+      return classification.source === "product" && matchesClassification(classification, rule);
+    })
+  ) {
+    return true;
+  }
+
+  return (
+    canUseFallbackClassification(gearClassification, rule) &&
+    matchesSlotTextHint(item, slot)
+  );
+}
+
+function getNormalizedClassifications(
+  item: UserGear | GearProduct
+): NormalizedGearClassification[] {
+  const classifications: NormalizedGearClassification[] = [
+    {
+      source: "gear",
+      category: normalizeCategory(
+        item.gear_categories?.name_en,
+        item.gear_categories?.name_ja
+      ),
+      subcategory: normalizeSubcategory(
+        item.gear_subcategories?.name_en,
+        item.gear_subcategories?.name_ja
+      )
+    }
+  ];
+
+  if ("gear_products" in item && item.gear_products) {
+    classifications.push({
+      source: "product",
+      category: normalizeCategory(
+        item.gear_products.gear_categories?.name_en,
+        item.gear_products.gear_categories?.name_ja
+      ),
+      subcategory: normalizeSubcategory(
+        item.gear_products.gear_subcategories?.name_en,
+        item.gear_products.gear_subcategories?.name_ja
+      )
+    });
+  }
+
+  return classifications;
+}
+
+function matchesClassification(
+  classification: NormalizedGearClassification | null,
+  rule: GearCompatibilityRule
+) {
+  if (!classification?.category || !classification.subcategory) {
+    return false;
+  }
 
   return rule.compatible_targets.some((target) => {
-    return target.category === category && target.subcategory === subcategory;
+    return (
+      target.category === classification.category &&
+      target.subcategory === classification.subcategory
+    );
   });
+}
+
+function canUseFallbackClassification(
+  classification: NormalizedGearClassification | null,
+  rule: GearCompatibilityRule
+) {
+  if (!classification?.category || classification.category === "other") {
+    return true;
+  }
+
+  const categoryMatchesRule = rule.compatible_targets.some((target) => {
+    return target.category === classification.category;
+  });
+
+  if (!categoryMatchesRule) {
+    return false;
+  }
+
+  return (
+    !classification.subcategory ||
+    BROAD_FALLBACK_SUBCATEGORIES.has(classification.subcategory)
+  );
+}
+
+function matchesSlotTextHint(item: UserGear | GearProduct, slot: RequirementSlot) {
+  const patterns = SLOT_TEXT_HINTS[slot];
+
+  if (!patterns) {
+    return false;
+  }
+
+  if (slot === "TENT" && isTentAccessory(item)) {
+    return false;
+  }
+
+  const text = getPrimaryGearSearchText(item);
+
+  return patterns.some((pattern) => pattern.test(text));
 }
 
 function isTentAccessory(item: UserGear | GearProduct) {
   const text = getGearSearchText(item);
 
   return /foot\s*print/i.test(text) || /地布/.test(text) || /フットプリント/i.test(text);
+}
+
+function normalizeCategory(...values: Array<string | null | undefined>) {
+  for (const value of values) {
+    const token = normalizeToken(value);
+
+    if (!token) {
+      continue;
+    }
+
+    if (["backpack", "backpacking", "carry"].includes(token)) {
+      return "backpack";
+    }
+
+    if (token.includes("shelter") || token.includes("tent") || token.includes("シェルター")) {
+      return "shelter";
+    }
+
+    if (token === "sleeping" || token.includes("sleep") || token.includes("寝具")) {
+      return "sleep";
+    }
+
+    if (token === "rainwear" || token.includes("clothing") || token.includes("ウェア")) {
+      return "clothing";
+    }
+
+    if (token.includes("cooking") || token.includes("クッキング")) {
+      return "cooking";
+    }
+
+    if (token === "navigation" || token.includes("electronics") || token.includes("電子")) {
+      return "electronics";
+    }
+
+    if (token === "safety" || token.includes("first_aid") || token.includes("応急")) {
+      return "first_aid";
+    }
+
+    if (token.includes("bear_safety") || token.includes("熊")) {
+      return "bear_safety";
+    }
+
+    if (token === "hydration" || token.includes("other") || token.includes("その他")) {
+      return "other";
+    }
+
+    return token;
+  }
+
+  return null;
+}
+
+function normalizeSubcategory(...values: Array<string | null | undefined>) {
+  for (const value of values) {
+    const token = normalizeToken(value);
+
+    if (!token) {
+      continue;
+    }
+
+    if (token === "tent" || token.includes("テント")) {
+      return "tent";
+    }
+
+    if (token === "bottle" || token.includes("ボトル") || token.includes("水筒")) {
+      return "bottle";
+    }
+
+    if (token.includes("water_filter") || token.includes("浄水")) {
+      return "water_filter";
+    }
+
+    if (token.includes("sleeping_bag") || token.includes("寝袋")) {
+      return "sleeping_bag";
+    }
+
+    if (token.includes("sleeping_pad") || token.includes("マット")) {
+      return "sleeping_pad";
+    }
+
+    if (token.includes("rain_jacket") || token.includes("レインジャケット")) {
+      return "rain_jacket";
+    }
+
+    if (token.includes("rain_pants") || token.includes("レインパンツ")) {
+      return "rain_pants";
+    }
+
+    if (token === "stove" || token.includes("ストーブ") || token.includes("バーナー")) {
+      return "stove";
+    }
+
+    if (token === "fuel" || token.includes("燃料")) {
+      return "fuel";
+    }
+
+    if (token.includes("gas_canister") || token.includes("ガス缶")) {
+      return "gas_canister";
+    }
+
+    if (token === "cookware" || token.includes("クッカー")) {
+      return "cookware";
+    }
+
+    if (token === "tableware" || token.includes("食器")) {
+      return "tableware";
+    }
+
+    if (token === "rainwear" || token.includes("レインウェア")) {
+      return "rainwear";
+    }
+
+    if (token === "insulation" || token.includes("保温")) {
+      return "insulation";
+    }
+
+    if (token.includes("down_jacket") || token.includes("ダウンジャケット")) {
+      return "down_jacket";
+    }
+
+    if (token.includes("base_layer") || token.includes("ベースレイヤー")) {
+      return "base_layer";
+    }
+
+    if (token === "gps") {
+      return "gps";
+    }
+
+    if (token.includes("power_bank") || token.includes("モバイルバッテリー")) {
+      return "power_bank";
+    }
+
+    if (token.includes("first_aid")) {
+      return "first_aid_kit";
+    }
+
+    if (token === "headlamp" || token.includes("ヘッドランプ")) {
+      return "headlamp";
+    }
+
+    return token;
+  }
+
+  return null;
+}
+
+function normalizeToken(value: string | null | undefined) {
+  return value
+    ?.normalize("NFKC")
+    .toLowerCase()
+    .replace(/[()（）]/g, " ")
+    .replace(/[／/・-]/g, " ")
+    .trim()
+    .replace(/\s+/g, "_")
+    .replace(/_+/g, "_") ?? null;
+}
+
+function getPrimaryGearSearchText(item: UserGear | GearProduct) {
+  const commonFields = [item.brand, item.model];
+
+  if ("name" in item) {
+    return [...commonFields, item.name].filter(Boolean).join(" ");
+  }
+
+  return [
+    ...commonFields,
+    item.name_ja,
+    ...(item.gear_product_aliases?.map((alias) => alias.alias) ?? [])
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
 function getGearSearchText(item: UserGear | GearProduct) {

@@ -22,7 +22,7 @@ const PRODUCT_CATEGORY_KEYS = [
 ];
 
 const USER_GEAR_SELECT =
-  "*, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_products:product_id(id, brand, model, name_ja, official_url, msrp_source_url, last_verified_at, verification_status)";
+  "*, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_products:product_id(id, brand, model, name_ja, category_id, subcategory_id, official_url, msrp_source_url, last_verified_at, verification_status, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en))";
 
 export async function requireUser() {
   const supabase = await createClient();

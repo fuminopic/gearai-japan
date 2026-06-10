@@ -48,18 +48,22 @@ function subcategory(name_en) {
 function ownedGear({
   id,
   name,
+  brand = null,
+  model = null,
   categoryName,
-  subcategoryName
+  subcategoryName = null,
+  productCategoryName = null,
+  productSubcategoryName = null
 }) {
   return {
     id,
     user_id: "user-1",
-    product_id: null,
+    product_id: productCategoryName ? `${id}-product` : null,
     category_id: `${categoryName}-category`,
-    subcategory_id: `${subcategoryName}-subcategory`,
+    subcategory_id: subcategoryName ? `${subcategoryName}-subcategory` : null,
     name,
-    brand: null,
-    model: null,
+    brand,
+    model,
     weight_grams: 1,
     official_weight_grams: null,
     measured_weight_grams: null,
@@ -79,7 +83,27 @@ function ownedGear({
     created_at: "2026-06-06T00:00:00.000Z",
     updated_at: "2026-06-06T00:00:00.000Z",
     gear_categories: category(categoryName),
-    gear_subcategories: subcategory(subcategoryName)
+    gear_subcategories: subcategoryName ? subcategory(subcategoryName) : null,
+    gear_products: productCategoryName
+      ? {
+          id: `${id}-product`,
+          brand,
+          model,
+          name_ja: name,
+          category_id: `${productCategoryName}-category`,
+          subcategory_id: productSubcategoryName
+            ? `${productSubcategoryName}-subcategory`
+            : null,
+          official_url: null,
+          msrp_source_url: null,
+          last_verified_at: null,
+          verification_status: "verified",
+          gear_categories: category(productCategoryName),
+          gear_subcategories: productSubcategoryName
+            ? subcategory(productSubcategoryName)
+            : null
+        }
+      : null
   };
 }
 
@@ -247,6 +271,99 @@ test("gear matching excludes tent footprint accessories from tent coverage", () 
 
   assert.deepEqual(result.matching_owned_gear.map((item) => item.id), ["real-tent"]);
   assert.deepEqual(result.matching_database_gear.map((item) => item.id), ["db-tent"]);
+});
+
+test("gear matching resolves category-only user gear with stable slot hints", () => {
+  const ownedGearItems = [
+    ownedGear({
+      id: "tent-category-only",
+      name: "Mountain Shot 2",
+      brand: "finetrack",
+      model: "Mountain Shot 2",
+      categoryName: "shelter"
+    }),
+    ownedGear({
+      id: "sleep-category-only",
+      name: "Seamless Down Hugger 800 #2",
+      brand: "mont-bell",
+      model: "Seamless Down Hugger 800 #2",
+      categoryName: "sleep"
+    }),
+    ownedGear({
+      id: "headlamp-category-only",
+      name: "Spot 400",
+      brand: "Black Diamond",
+      model: "Spot 400",
+      categoryName: "electronics"
+    })
+  ];
+
+  assert.deepEqual(
+    matchGearForRequirementSlot({
+      slot: "TENT",
+      ownedGear: ownedGearItems
+    }).matching_owned_gear.map((item) => item.id),
+    ["tent-category-only"]
+  );
+  assert.deepEqual(
+    matchGearForRequirementSlot({
+      slot: "SLEEP_INSULATION",
+      ownedGear: ownedGearItems
+    }).matching_owned_gear.map((item) => item.id),
+    ["sleep-category-only"]
+  );
+  assert.deepEqual(
+    matchGearForRequirementSlot({
+      slot: "HEADLAMP",
+      ownedGear: ownedGearItems
+    }).matching_owned_gear.map((item) => item.id),
+    ["headlamp-category-only"]
+  );
+});
+
+test("gear matching falls back to linked product classification when user subcategory is missing", () => {
+  const result = matchGearForRequirementSlot({
+    slot: "TENT",
+    ownedGear: [
+      ownedGear({
+        id: "linked-product-tent",
+        name: "My alpine shelter",
+        categoryName: "shelter",
+        productCategoryName: "shelter",
+        productSubcategoryName: "tent"
+      })
+    ]
+  });
+
+  assert.deepEqual(result.matching_owned_gear.map((item) => item.id), [
+    "linked-product-tent"
+  ]);
+});
+
+test("gear matching normalizes display labels but does not override explicit incompatible subcategories", () => {
+  const result = matchGearForRequirementSlot({
+    slot: "TENT",
+    ownedGear: [
+      ownedGear({
+        id: "display-label-tent",
+        name: "Mountain Shot 2",
+        categoryName: "Tent / Shelter",
+        subcategoryName: "テント"
+      }),
+      ownedGear({
+        id: "explicit-groundsheet",
+        name: "Mountain Shot 2",
+        categoryName: "shelter",
+        subcategoryName: "groundsheet",
+        productCategoryName: "shelter",
+        productSubcategoryName: "tent"
+      })
+    ]
+  });
+
+  assert.deepEqual(result.matching_owned_gear.map((item) => item.id), [
+    "display-label-tent"
+  ]);
 });
 
 test("gear matching does not fuzzy-match names or legacy broad categories", () => {

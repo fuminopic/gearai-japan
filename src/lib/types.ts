@@ -134,11 +134,16 @@ export type UserGear = {
     | "brand"
     | "model"
     | "name_ja"
+    | "category_id"
+    | "subcategory_id"
     | "official_url"
     | "msrp_source_url"
     | "last_verified_at"
     | "verification_status"
-  > | null;
+  > & {
+    gear_categories?: Pick<GearCategory, "id" | "name_ja" | "name_en"> | null;
+    gear_subcategories?: Pick<GearSubcategory, "id" | "name_ja" | "name_en"> | null;
+  } | null;
 };
 
 export type GearFilters = {

@@ -29,7 +29,8 @@ export function AppBottomNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={`flex flex-col items-center transition-all duration-300 ease-out ${
+            prefetch
+            className={`flex touch-manipulation flex-col items-center transition-all duration-150 ease-out active:scale-95 ${
               active ? "scale-110 text-[#3A5A40]" : "text-gray-400"
             }`}
           >

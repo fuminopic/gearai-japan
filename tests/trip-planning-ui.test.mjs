@@ -26,6 +26,10 @@ const navigationFeedbackSource = readFileSync(
   new URL("../src/components/navigation-feedback.tsx", import.meta.url),
   "utf8"
 );
+const appRoutePrefetcherSource = readFileSync(
+  new URL("../src/components/app-route-prefetcher.tsx", import.meta.url),
+  "utf8"
+);
 const appBottomNavSource = readFileSync(
   new URL("../src/components/app-bottom-nav.tsx", import.meta.url),
   "utf8"
@@ -86,6 +90,14 @@ const dashboardPageSource = readFileSync(
   new URL("../app/(app)/dashboard/page.tsx", import.meta.url),
   "utf8"
 );
+const gearDataSource = readFileSync(
+  new URL("../src/lib/data/gear.ts", import.meta.url),
+  "utf8"
+);
+const mountainFoundationSource = readFileSync(
+  new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
+  "utf8"
+);
 
 test("trip planning page exposes the pack planning architecture", () => {
   assert.match(aiPageSource, /PlanPageContent/);
@@ -123,6 +135,11 @@ test("app navigation responds immediately during dynamic route loading", () => {
   assert.match(appLoadingSource, /animate-pulse/);
   assert.match(rootLoadingSource, /animate-pulse/);
   assert.match(appNavSource, /NavigationFeedback/);
+  assert.match(appNavSource, /AppRoutePrefetcher/);
+  assert.match(appRoutePrefetcherSource, /router\.prefetch/);
+  assert.match(appRoutePrefetcherSource, /"\/dashboard", "\/plan", "\/gear", "\/profile"/);
+  assert.match(appBottomNavSource, /touch-manipulation/);
+  assert.match(appBottomNavSource, /active:scale-95/);
   assert.match(navigationFeedbackSource, /document\.addEventListener\("click"/);
   assert.match(navigationFeedbackSource, /usePathname/);
   assert.match(navigationFeedbackSource, /useSearchParams/);
@@ -133,6 +150,9 @@ test("app navigation responds immediately during dynamic route loading", () => {
   assert.doesNotMatch(tripPlanningFormSource, /form action="\/plan"/);
   assert.match(planPageContentSource, /Promise\.all/);
   assert.match(planPageContentSource, /generatedPlan/);
+  assert.match(gearDataSource, /cache\(async function requireUser/);
+  assert.match(gearDataSource, /cache\(async function getGearProducts/);
+  assert.match(mountainFoundationSource, /cache\(\s*async function getMountainFoundationProfiles/);
 });
 
 test("trip planning UI emphasizes required systems, coverage, and missing gear", () => {

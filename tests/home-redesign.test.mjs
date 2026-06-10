@@ -57,7 +57,9 @@ test("home redesign v2 uses shared bottom navigation", () => {
   assert.match(appBottomNavSource, /rounded-full/);
   assert.match(appBottomNavSource, /px-6/);
   assert.match(appBottomNavSource, /py-2\.5/);
-  assert.match(appBottomNavSource, /transition-all duration-300 ease-out/);
+  assert.match(appBottomNavSource, /transition-all duration-150 ease-out/);
+  assert.match(appBottomNavSource, /touch-manipulation/);
+  assert.match(appBottomNavSource, /prefetch/);
   assert.match(appBottomNavSource, /scale-110 text-\[#3A5A40\]/);
   assert.match(appBottomNavSource, /text-\[#3A5A40\]/);
   assert.match(appBottomNavSource, /text-gray-400/);
@@ -172,7 +174,7 @@ test("home redesign syncs latest saved trip plan from Supabase", () => {
   assert.match(tripPlansDataSource, /\.from\("trip_plans"\)/);
   assert.match(tripPlansDataSource, /\.order\("created_at", \{ ascending: false \}\)/);
   assert.match(tripPlansDataSource, /\.limit\(1\)/);
-  assert.match(tripPlansDataSource, /console\.log\("Latest Plan:", data\)/);
+  assert.doesNotMatch(tripPlansDataSource, /console\.log\("Latest Plan:/);
   assert.doesNotMatch(dashboardSource, /getRecommendationHistory\(1\)/);
   assert.doesNotMatch(dashboardSource, /谷川岳/);
 });

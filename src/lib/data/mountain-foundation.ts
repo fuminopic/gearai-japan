@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { createClient } from "@/lib/supabase/server";
 import type { MountainFoundationProfile } from "@/lib/types";
 
@@ -13,33 +15,37 @@ const MOUNTAIN_FOUNDATION_SELECT = [
   "typical_required_systems"
 ].join(",");
 
-export async function getMountainFoundationProfiles() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("mountain_foundation_profiles")
-    .select(MOUNTAIN_FOUNDATION_SELECT)
-    .returns<MountainFoundationProfile[]>()
-    .order("name_ja", { ascending: true });
+export const getMountainFoundationProfiles = cache(
+  async function getMountainFoundationProfiles() {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("mountain_foundation_profiles")
+      .select(MOUNTAIN_FOUNDATION_SELECT)
+      .returns<MountainFoundationProfile[]>()
+      .order("name_ja", { ascending: true });
 
-  if (error) {
-    throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data as MountainFoundationProfile[];
   }
+);
 
-  return data as MountainFoundationProfile[];
-}
+export const getMountainFoundationProfileBySlug = cache(
+  async function getMountainFoundationProfileBySlug(slug: string) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("mountain_foundation_profiles")
+      .select(MOUNTAIN_FOUNDATION_SELECT)
+      .eq("slug", slug)
+      .returns<MountainFoundationProfile>()
+      .maybeSingle();
 
-export async function getMountainFoundationProfileBySlug(slug: string) {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("mountain_foundation_profiles")
-    .select(MOUNTAIN_FOUNDATION_SELECT)
-    .eq("slug", slug)
-    .returns<MountainFoundationProfile>()
-    .maybeSingle();
+    if (error) {
+      throw new Error(error.message);
+    }
 
-  if (error) {
-    throw new Error(error.message);
+    return data as MountainFoundationProfile | null;
   }
-
-  return data as MountainFoundationProfile | null;
-}
+);

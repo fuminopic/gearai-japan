@@ -3,6 +3,7 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { AppBottomNav } from "@/components/app-bottom-nav";
+import { AppRoutePrefetcher } from "@/components/app-route-prefetcher";
 import { NavigationFeedback } from "@/components/navigation-feedback";
 import { signOut } from "@/lib/actions/auth";
 
@@ -21,6 +22,7 @@ export function AppNav() {
   return (
     <>
       <NavigationFeedback />
+      <AppRoutePrefetcher />
 
       <header className="sticky top-0 z-20 border-b border-stone-200/70 bg-trail-50/90 px-5 py-4 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
@@ -52,6 +54,7 @@ export function AppNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch
                 className="flex flex-col items-center gap-2 rounded-lg px-2 py-3 text-xs font-medium text-stone-600 transition hover:bg-forest-50 hover:text-forest-700"
               >
                 <Icon aria-hidden className="h-5 w-5" />

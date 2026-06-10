@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 import { createClient } from "@/lib/supabase/server";
 import type {
@@ -24,7 +25,7 @@ const PRODUCT_CATEGORY_KEYS = [
 const USER_GEAR_SELECT =
   "*, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_products:product_id(id, brand, model, name_ja, category_id, subcategory_id, official_url, msrp_source_url, last_verified_at, verification_status, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en))";
 
-export async function requireUser() {
+export const requireUser = cache(async function requireUser() {
   const supabase = await createClient();
   const {
     data: { user }
@@ -35,9 +36,9 @@ export async function requireUser() {
   }
 
   return { supabase, user };
-}
+});
 
-export async function getGearCategories() {
+export const getGearCategories = cache(async function getGearCategories() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("gear_categories")
@@ -50,9 +51,9 @@ export async function getGearCategories() {
   }
 
   return data as GearCategory[];
-}
+});
 
-export async function getGearSubcategories() {
+export const getGearSubcategories = cache(async function getGearSubcategories() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("gear_subcategories")
@@ -64,9 +65,9 @@ export async function getGearSubcategories() {
   }
 
   return data as GearSubcategory[];
-}
+});
 
-export async function getGearProducts() {
+export const getGearProducts = cache(async function getGearProducts() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("gear_products")
@@ -82,7 +83,7 @@ export async function getGearProducts() {
   }
 
   return data as GearProduct[];
-}
+});
 
 export async function getUserGear(filters: GearFilters = {}) {
   const { supabase, user } = await requireUser();

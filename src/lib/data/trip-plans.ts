@@ -10,11 +10,8 @@ export async function getLatestTripPlan() {
     .order("created_at", { ascending: false })
     .limit(1);
 
-  console.log("Latest Plan:", data);
-
   if (error) {
     const fallback = await getLatestLegacyRecommendationPlan(supabase, user.id);
-    console.log("Latest Plan:", fallback ? [fallback] : []);
     return fallback;
   }
 

@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import type { Route } from "next";
+import { useRouter } from "next/navigation";
+import { type FormEvent, useEffect, useMemo, useState, useTransition } from "react";
 import { ClipboardCheck } from "lucide-react";
 
 import {
@@ -30,6 +32,8 @@ export function TripPlanningForm({
   planId,
   error
 }: TripPlanningFormProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const initialMountainSlug = getAvailableMountainSlug(selectedMountainSlug, mountains);
   const [mountainSlug, setMountainSlug] = useState(initialMountainSlug);
   const selectedMountain = useMemo(() => {
@@ -48,8 +52,34 @@ export function TripPlanningForm({
     setMountainSlug(getAvailableMountainSlug(selectedMountainSlug, mountains));
   }, [selectedMountainSlug, mountains]);
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (mountains.length === 0) {
+      return;
+    }
+
+    const formData = new FormData(event.currentTarget);
+    const params = new URLSearchParams();
+
+    for (const key of ["id", "mountain", "season", "style"]) {
+      const value = formData.get(key);
+
+      if (typeof value === "string" && value.length > 0) {
+        params.set(key, value);
+      }
+    }
+
+    startTransition(() => {
+      router.push(`/plan?${params.toString()}` as Route);
+    });
+  }
+
   return (
-    <form action="/plan" className="rounded-lg bg-white p-4 shadow-soft sm:p-5">
+    <form
+      onSubmit={handleSubmit}
+      className="rounded-lg bg-white p-4 shadow-soft sm:p-5"
+    >
       {planId ? <input type="hidden" name="id" value={planId} /> : null}
 
       {error ? (
@@ -118,11 +148,11 @@ export function TripPlanningForm({
       </div>
 
       <button
-        disabled={mountains.length === 0}
+        disabled={mountains.length === 0 || isPending}
         className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-forest-700 px-5 py-3 text-base font-semibold text-white transition hover:bg-forest-900 disabled:opacity-60 sm:mt-4 sm:py-4"
       >
         <ClipboardCheck className="h-5 w-5" />
-        パック計画を作成
+        {isPending ? "作成中..." : "パック計画を作成"}
       </button>
     </form>
   );

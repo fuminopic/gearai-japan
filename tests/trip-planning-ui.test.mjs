@@ -127,6 +127,10 @@ test("app navigation responds immediately during dynamic route loading", () => {
   assert.match(navigationFeedbackSource, /usePathname/);
   assert.match(navigationFeedbackSource, /useSearchParams/);
   assert.match(navigationFeedbackSource, /link\.href === window\.location\.href/);
+  assert.match(tripPlanningFormSource, /onSubmit=\{handleSubmit\}/);
+  assert.match(tripPlanningFormSource, /router\.push\(`\/plan\?\$\{params\.toString\(\)\}` as Route\)/);
+  assert.match(tripPlanningFormSource, /作成中\.\.\./);
+  assert.doesNotMatch(tripPlanningFormSource, /form action="\/plan"/);
   assert.match(planPageContentSource, /Promise\.all/);
   assert.match(planPageContentSource, /generatedPlan/);
 });
@@ -232,7 +236,10 @@ test("trip planning form filters seasons and styles by selected mountain", () =>
   assert.match(tripPlanningFormSource, /"use client"/);
   assert.match(tripPlanningFormSource, /useState/);
   assert.match(tripPlanningFormSource, /useEffect/);
-  assert.match(tripPlanningFormSource, /action="\/plan"/);
+  assert.match(tripPlanningFormSource, /useTransition/);
+  assert.match(tripPlanningFormSource, /onSubmit=\{handleSubmit\}/);
+  assert.match(tripPlanningFormSource, /router\.push/);
+  assert.doesNotMatch(tripPlanningFormSource, /action="\/plan"/);
   assert.match(tripPlanningFormSource, /name="id" value=\{planId\}/);
   assert.match(tripPlanningFormSource, /supported_seasons/);
   assert.match(tripPlanningFormSource, /supported_styles/);

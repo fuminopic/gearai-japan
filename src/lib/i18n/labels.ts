@@ -109,6 +109,7 @@ export const planningSystemLabels: Record<PlanningSystem, string> = {
   RAIN_SYSTEM: "雨対策",
   COLD_WEATHER_LAYER: "防寒",
   NAVIGATION_SYSTEM: "ナビゲーション",
+  TECHNICAL_SAFETY_SYSTEM: "技術安全",
   EMERGENCY_SYSTEM: "緊急対応"
 };
 
@@ -126,6 +127,8 @@ export const requirementSlotLabels: Record<RequirementSlot, string> = {
   RAIN_PANTS: "雨具（レインギア）",
   INSULATION_LAYER: "保温着",
   BASE_LAYER: "ベースレイヤー",
+  HELMET: "ヘルメット",
+  TRACTION_DEVICE: "軽アイゼン・チェーンスパイク",
   GPS_DEVICE: "GPS デバイス",
   POWER_BANK: "モバイルバッテリー",
   FIRST_AID_KIT: "ファーストエイド",
@@ -148,6 +151,8 @@ export const gearSubcategoryLabels: Record<string, string> = {
   insulation: "保温着",
   down_jacket: "ダウンジャケット",
   base_layer: "ベースレイヤー",
+  helmet: "ヘルメット",
+  traction_device: "軽アイゼン・チェーンスパイク",
   gps: "GPS",
   power_bank: "モバイルバッテリー",
   first_aid_kit: "ファーストエイドキット",

@@ -17,6 +17,58 @@ export type MountainTripProfile =
   | "BACKCOUNTRY_DAY_HIKE"
   | "OVERNIGHT_BACKPACKING"
   | "ALPINE_TREK";
+export type MountainRouteSeriousness = "LOW" | "MODERATE" | "HIGH" | "EXTREME";
+export type MountainTechnicalTerrain =
+  | "MAINTAINED_TRAIL"
+  | "STEEP_ROCKY"
+  | "CHAIN_LADDER"
+  | "EXPOSED_SCRAMBLE";
+export type MountainHelmetGuidance = "NOT_NEEDED" | "RECOMMENDED" | "REQUIRED";
+export type MountainWaterAvailability =
+  | "TREATED_RELIABLE"
+  | "HUT_OR_SHOP_RELIABLE"
+  | "NATURAL_RELIABLE"
+  | "LIMITED_OR_SEASONAL"
+  | "UNRELIABLE";
+export type MountainHutSupport =
+  | "NONE"
+  | "EMERGENCY_ONLY"
+  | "BASIC_NO_BEDDING"
+  | "BEDDING_ONLY"
+  | "FULL_SERVICE";
+export type MountainTentSiteAvailability =
+  | "NONE"
+  | "DESIGNATED"
+  | "LIMITED"
+  | "WILD_PERMITTED"
+  | "UNKNOWN";
+export type MountainAlpineEnvironment =
+  | "LOWLAND_FOREST"
+  | "SUBALPINE_FOREST"
+  | "ABOVE_TREELINE"
+  | "HIGH_ALPINE_EXPOSED";
+export type MountainSnowOrIceRisk =
+  | "NONE"
+  | "LOW"
+  | "SEASONAL_PATCHES"
+  | "LIKELY"
+  | "WINTER_ALPINE";
+export type MountainRouteDurationBand =
+  | "SHORT"
+  | "HALF_DAY"
+  | "FULL_DAY"
+  | "LONG_DAY"
+  | "MULTI_DAY";
+export type MountainEscapeOptions = "EASY" | "MODERATE" | "LIMITED" | "REMOTE";
+export type MountainCellSignalReliability = "RELIABLE" | "PARTIAL" | "POOR" | "NONE";
+export type MountainWildlifeRisk = "LOW" | "MODERATE" | "HIGH";
+export type MountainVolcanicRisk = "NONE" | "ACTIVE_MONITORED" | "ACTIVE_RESTRICTED";
+export type MountainSeasonOpeningWindow =
+  | "YEAR_ROUND"
+  | "SNOW_FREE"
+  | "SUMMER_AUTUMN"
+  | "HUT_SEASON"
+  | "WINTER_EXPERT_ONLY";
 export type PlanningSystem =
   | "WATER_SYSTEM"
   | "SHELTER_SYSTEM"
@@ -25,6 +77,7 @@ export type PlanningSystem =
   | "RAIN_SYSTEM"
   | "COLD_WEATHER_LAYER"
   | "NAVIGATION_SYSTEM"
+  | "TECHNICAL_SAFETY_SYSTEM"
   | "EMERGENCY_SYSTEM";
 export type RequirementSlot =
   | "WATER_STORAGE"
@@ -40,6 +93,8 @@ export type RequirementSlot =
   | "RAIN_PANTS"
   | "INSULATION_LAYER"
   | "BASE_LAYER"
+  | "HELMET"
+  | "TRACTION_DEVICE"
   | "GPS_DEVICE"
   | "POWER_BANK"
   | "FIRST_AID_KIT"
@@ -214,6 +269,20 @@ export type MountainFoundationProfile = {
   supported_styles: MountainFoundationStyle[];
   trip_profile: MountainTripProfile;
   typical_required_systems: PlanningSystem[];
+  route_seriousness: MountainRouteSeriousness;
+  technical_terrain: MountainTechnicalTerrain;
+  helmet_guidance: MountainHelmetGuidance;
+  water_availability: MountainWaterAvailability;
+  hut_support: MountainHutSupport;
+  tent_site_availability: MountainTentSiteAvailability;
+  alpine_environment: MountainAlpineEnvironment;
+  snow_or_ice_risk: MountainSnowOrIceRisk;
+  route_duration_band: MountainRouteDurationBand;
+  escape_options: MountainEscapeOptions;
+  cell_signal_reliability: MountainCellSignalReliability;
+  bear_or_wildlife_risk: MountainWildlifeRisk;
+  volcanic_risk: MountainVolcanicRisk;
+  season_opening_window: MountainSeasonOpeningWindow;
 };
 
 export type SavedTripPlan = {

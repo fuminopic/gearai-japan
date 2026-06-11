@@ -100,6 +100,18 @@ const GEAR_COMPATIBILITY_RULES: Record<RequirementSlot, GearCompatibilityRule> =
     confidence: "HIGH",
     ambiguous_cases: []
   },
+  HELMET: {
+    slot: "HELMET",
+    compatible_targets: [{ category: "other", subcategory: "helmet" }],
+    confidence: "HIGH",
+    ambiguous_cases: ["Climbing and alpine helmets are grouped together for now."]
+  },
+  TRACTION_DEVICE: {
+    slot: "TRACTION_DEVICE",
+    compatible_targets: [{ category: "other", subcategory: "traction_device" }],
+    confidence: "MEDIUM",
+    ambiguous_cases: ["Crampons, microspikes, and chain spikes are grouped for V2."]
+  },
   GPS_DEVICE: {
     slot: "GPS_DEVICE",
     compatible_targets: [{ category: "electronics", subcategory: "gps" }],
@@ -155,6 +167,11 @@ const SLOT_TEXT_HINTS: Partial<Record<RequirementSlot, readonly RegExp[]>> = {
   RAIN_PANTS: [/\b(rain pants|storm cruiser pants|hard shell pants)\b/i, /レインパンツ|ストームクルーザー.*パンツ/],
   INSULATION_LAYER: [/\b(down jacket|down parka|fleece|insulation layer)\b/i, /ダウン|保温着|フリース|パーカ/],
   BASE_LAYER: [/\b(base layer|baselayer|merino)\b/i, /ベースレイヤー|メリノ/],
+  HELMET: [/\b(helmet|climbing helmet|alpine helmet)\b/i, /ヘルメット/],
+  TRACTION_DEVICE: [
+    /\b(microspikes|chain spikes|crampons|light crampons|traction)\b/i,
+    /軽アイゼン|チェーンスパイク|アイゼン|スパイク/
+  ],
   GPS_DEVICE: [/\b(gps|garmin|etrex|inreach|gpsmap)\b/i, /GPS/],
   POWER_BANK: [/\b(power bank|battery pack|portable battery)\b/i, /モバイルバッテリー/],
   FIRST_AID_KIT: [/\b(first aid|medical kit)\b/i, /ファーストエイド|救急/],
@@ -452,6 +469,22 @@ function normalizeSubcategory(...values: Array<string | null | undefined>) {
 
     if (token.includes("base_layer") || token.includes("ベースレイヤー")) {
       return "base_layer";
+    }
+
+    if (token === "helmet" || token.includes("ヘルメット")) {
+      return "helmet";
+    }
+
+    if (
+      token.includes("traction_device") ||
+      token.includes("microspikes") ||
+      token.includes("chain_spikes") ||
+      token.includes("crampons") ||
+      token.includes("軽アイゼン") ||
+      token.includes("チェーンスパイク") ||
+      token.includes("アイゼン")
+    ) {
+      return "traction_device";
     }
 
     if (token === "gps") {

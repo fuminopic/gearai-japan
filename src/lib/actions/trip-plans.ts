@@ -212,6 +212,8 @@ const requirementSlots = new Set<RequirementSlot>([
   "RAIN_PANTS",
   "INSULATION_LAYER",
   "BASE_LAYER",
+  "HELMET",
+  "TRACTION_DEVICE",
   "GPS_DEVICE",
   "POWER_BANK",
   "FIRST_AID_KIT",

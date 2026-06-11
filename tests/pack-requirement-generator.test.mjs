@@ -16,6 +16,10 @@ const migrationSource = readFileSync(
   new URL("../supabase/migrations/010_pack_requirement_slots_v1.sql", import.meta.url),
   "utf8"
 );
+const v2MigrationSource = readFileSync(
+  new URL("../supabase/migrations/014_mountain_foundation_dataset_v2.sql", import.meta.url),
+  "utf8"
+);
 const typesSource = readFileSync(new URL("../src/lib/types.ts", import.meta.url), "utf8");
 const gearMatchingSource = readFileSync(
   new URL("../src/lib/gear-matching/engine.ts", import.meta.url),
@@ -68,6 +72,28 @@ const mountain = {
     "NAVIGATION_SYSTEM",
     "EMERGENCY_SYSTEM"
   ]
+};
+
+const alpineV2Mountain = {
+  ...mountain,
+  typical_required_systems: [
+    ...mountain.typical_required_systems,
+    "TECHNICAL_SAFETY_SYSTEM"
+  ],
+  route_seriousness: "EXTREME",
+  technical_terrain: "EXPOSED_SCRAMBLE",
+  helmet_guidance: "RECOMMENDED",
+  water_availability: "HUT_OR_SHOP_RELIABLE",
+  hut_support: "FULL_SERVICE",
+  tent_site_availability: "DESIGNATED",
+  alpine_environment: "HIGH_ALPINE_EXPOSED",
+  snow_or_ice_risk: "SEASONAL_PATCHES",
+  route_duration_band: "MULTI_DAY",
+  escape_options: "LIMITED",
+  cell_signal_reliability: "POOR",
+  bear_or_wildlife_risk: "MODERATE",
+  volcanic_risk: "NONE",
+  season_opening_window: "SUMMER_AUTUMN"
 };
 
 function gear({
@@ -251,6 +277,80 @@ test("pack requirement generator covers category-only tent and sleeping bag reco
   assert.ok(!plan.missing_slots.some((slot) => slot.slot === "SLEEP_INSULATION"));
 });
 
+test("pack requirement generator applies V2 mountain attributes to concrete slots", () => {
+  assert.deepEqual(
+    getRequirementSlotsForTrip(
+      [
+        "WATER_SYSTEM",
+        "SHELTER_SYSTEM",
+        "RAIN_SYSTEM",
+        "COLD_WEATHER_LAYER",
+        "NAVIGATION_SYSTEM",
+        "TECHNICAL_SAFETY_SYSTEM",
+        "EMERGENCY_SYSTEM"
+      ],
+      "OVERNIGHT_HUT",
+      {
+        mountain: alpineV2Mountain,
+        season: "SUMMER"
+      }
+    ),
+    [
+      "WATER_STORAGE",
+      "RAIN_JACKET",
+      "RAIN_PANTS",
+      "INSULATION_LAYER",
+      "BASE_LAYER",
+      "HELMET",
+      "GPS_DEVICE",
+      "POWER_BANK",
+      "FIRST_AID_KIT",
+      "HEADLAMP"
+    ]
+  );
+
+  assert.deepEqual(
+    getRequirementSlotsForTrip(
+      [
+        "WATER_SYSTEM",
+        "SHELTER_SYSTEM",
+        "SLEEP_SYSTEM",
+        "COOK_SYSTEM",
+        "RAIN_SYSTEM",
+        "COLD_WEATHER_LAYER",
+        "NAVIGATION_SYSTEM",
+        "TECHNICAL_SAFETY_SYSTEM",
+        "EMERGENCY_SYSTEM"
+      ],
+      "OVERNIGHT_TENT",
+      {
+        mountain: alpineV2Mountain,
+        season: "AUTUMN"
+      }
+    ),
+    [
+      "WATER_STORAGE",
+      "TENT",
+      "SLEEP_INSULATION",
+      "SLEEP_PAD",
+      "STOVE",
+      "FUEL",
+      "COOK_POT",
+      "TABLEWARE",
+      "RAIN_JACKET",
+      "RAIN_PANTS",
+      "INSULATION_LAYER",
+      "BASE_LAYER",
+      "HELMET",
+      "TRACTION_DEVICE",
+      "GPS_DEVICE",
+      "POWER_BANK",
+      "FIRST_AID_KIT",
+      "HEADLAMP"
+    ]
+  );
+});
+
 test("pack requirement layer consumes trip requirements and owned gear only", () => {
   assert.match(repositorySource, /getRequiredSystemsForTrip/);
   assert.match(repositorySource, /getOwnedGearForPlanning\(\)/);
@@ -258,11 +358,13 @@ test("pack requirement layer consumes trip requirements and owned gear only", ()
   assert.match(repositorySource, /generatePackRequirementPlan/);
   assert.match(engineSource, /matchGearForRequirementSlot/);
   assert.match(migrationSource, /'bottle'/);
+  assert.match(v2MigrationSource, /'helmet'/);
+  assert.match(v2MigrationSource, /'traction_device'/);
   assert.match(typesSource, /PackRequirementPlan/);
   assert.match(typesSource, /RequirementSlot/);
 
   for (const source of [engineSource, repositorySource]) {
-    assert.doesNotMatch(source, /\b(openai|ai recommendation|weather|route|risk)\b/i);
+    assert.doesNotMatch(source, /\b(openai|ai recommendation|weather)\b/i);
     assert.doesNotMatch(source, /\b(recommend|shopping|wishlist|upgrade|best gear)\b/i);
     assert.doesNotMatch(source, /\b(score|rank|priority)\b/i);
   }

@@ -63,6 +63,28 @@ const dayHikeProfile = {
   ]
 };
 
+const alpineV2Profile = {
+  ...alpineProfile,
+  typical_required_systems: [
+    ...alpineProfile.typical_required_systems,
+    "TECHNICAL_SAFETY_SYSTEM"
+  ],
+  route_seriousness: "EXTREME",
+  technical_terrain: "EXPOSED_SCRAMBLE",
+  helmet_guidance: "RECOMMENDED",
+  water_availability: "HUT_OR_SHOP_RELIABLE",
+  hut_support: "FULL_SERVICE",
+  tent_site_availability: "DESIGNATED",
+  alpine_environment: "HIGH_ALPINE_EXPOSED",
+  snow_or_ice_risk: "SEASONAL_PATCHES",
+  route_duration_band: "MULTI_DAY",
+  escape_options: "LIMITED",
+  cell_signal_reliability: "POOR",
+  bear_or_wildlife_risk: "MODERATE",
+  volcanic_risk: "NONE",
+  season_opening_window: "SUMMER_AUTUMN"
+};
+
 test("trip requirement engine returns normalized systems for the requested trip context", () => {
   assert.deepEqual(
     getRequiredSystemsForTrip({
@@ -111,6 +133,44 @@ test("trip requirement engine applies generic season and style rules only within
   );
 });
 
+test("trip requirement engine uses V2 attributes for equipment-relevant systems", () => {
+  assert.deepEqual(
+    getRequiredSystemsForTrip({
+      mountain: alpineV2Profile,
+      season: "SUMMER",
+      style: "OVERNIGHT_HUT"
+    }),
+    [
+      "WATER_SYSTEM",
+      "SHELTER_SYSTEM",
+      "RAIN_SYSTEM",
+      "COLD_WEATHER_LAYER",
+      "NAVIGATION_SYSTEM",
+      "TECHNICAL_SAFETY_SYSTEM",
+      "EMERGENCY_SYSTEM"
+    ]
+  );
+
+  assert.deepEqual(
+    getRequiredSystemsForTrip({
+      mountain: alpineV2Profile,
+      season: "AUTUMN",
+      style: "OVERNIGHT_TENT"
+    }),
+    [
+      "WATER_SYSTEM",
+      "SHELTER_SYSTEM",
+      "SLEEP_SYSTEM",
+      "COOK_SYSTEM",
+      "RAIN_SYSTEM",
+      "COLD_WEATHER_LAYER",
+      "NAVIGATION_SYSTEM",
+      "TECHNICAL_SAFETY_SYSTEM",
+      "EMERGENCY_SYSTEM"
+    ]
+  );
+});
+
 test("trip requirement engine rejects unsupported mountain foundation context", () => {
   assert.throws(
     () =>
@@ -141,6 +201,8 @@ test("trip requirement layer consumes foundation data and stays out of later pla
   assert.match(repositorySource, /getRequiredSystemsForTrip/);
   assert.match(typesSource, /TripRequirementInput/);
   assert.match(typesSource, /TripRequirementLookupInput/);
+  assert.match(typesSource, /MountainRouteSeriousness/);
+  assert.match(typesSource, /MountainHelmetGuidance/);
 
   for (const source of [engineSource, repositorySource]) {
     assert.doesNotMatch(source, /\b(UserGear|user_gear|gear_products|gear_categories)\b/);

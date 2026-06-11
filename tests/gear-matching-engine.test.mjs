@@ -155,11 +155,47 @@ test("gear matching exposes deterministic compatibility rules for each slot", ()
     { category: "clothing", subcategory: "down_jacket" }
   ]);
 
+  assert.deepEqual(getGearCompatibilityRule("HELMET").compatible_targets, [
+    { category: "other", subcategory: "helmet" }
+  ]);
+  assert.deepEqual(getGearCompatibilityRule("TRACTION_DEVICE").compatible_targets, [
+    { category: "other", subcategory: "traction_device" }
+  ]);
+
   assert.equal(getGearCompatibilityRule("WATER_STORAGE").confidence, "MEDIUM");
   assert.match(
     getGearCompatibilityRule("WATER_STORAGE").ambiguous_cases.join(" "),
     /Hydration bladder/
   );
+});
+
+test("gear matching covers V2 technical safety equipment", () => {
+  const result = matchGearForRequirementSlot({
+    slot: "HELMET",
+    ownedGear: [
+      ownedGear({
+        id: "helmet-1",
+        name: "Climbing Helmet",
+        categoryName: "other",
+        subcategoryName: "helmet"
+      })
+    ]
+  });
+  const tractionResult = matchGearForRequirementSlot({
+    slot: "TRACTION_DEVICE",
+    ownedGear: [
+      ownedGear({
+        id: "spikes-1",
+        name: "チェーンスパイク",
+        categoryName: "other"
+      })
+    ]
+  });
+
+  assert.deepEqual(result.matching_owned_gear.map((item) => item.id), ["helmet-1"]);
+  assert.deepEqual(tractionResult.matching_owned_gear.map((item) => item.id), [
+    "spikes-1"
+  ]);
 });
 
 test("gear matching returns compatible categories and exact owned gear matches", () => {
@@ -399,7 +435,7 @@ test("gear matching repository and pack generator use the compatibility engine b
   assert.match(typesSource, /GearCompatibilityRule/);
 
   for (const source of [engineSource, repositorySource, packEngineSource]) {
-    assert.doesNotMatch(source, /\b(openai|ai recommendation|weather|route|risk)\b/i);
+    assert.doesNotMatch(source, /\b(openai|ai recommendation|weather)\b/i);
     assert.doesNotMatch(source, /\b(recommend|shopping|wishlist|upgrade|best gear)\b/i);
     assert.doesNotMatch(source, /\b(score|rank|priority|fuzzy|similarity)\b/i);
   }

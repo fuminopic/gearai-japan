@@ -6,6 +6,10 @@ const migration = readFileSync(
   new URL("../supabase/migrations/009_mountain_foundation_dataset_v1.sql", import.meta.url),
   "utf8"
 );
+const v2Migration = readFileSync(
+  new URL("../supabase/migrations/014_mountain_foundation_dataset_v2.sql", import.meta.url),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -33,6 +37,7 @@ const expectedSystems = [
   "RAIN_SYSTEM",
   "COLD_WEATHER_LAYER",
   "NAVIGATION_SYSTEM",
+  "TECHNICAL_SAFETY_SYSTEM",
   "EMERGENCY_SYSTEM"
 ];
 
@@ -61,9 +66,49 @@ test("mountain foundation classifications are normalized enum-style values", () 
     "ALPINE_TREK",
     ...expectedSystems
   ]) {
-    assert.match(migration, new RegExp(`'${value}'`));
+    assert.match(`${migration}\n${v2Migration}`, new RegExp(`'${value}'`));
     assert.match(types, new RegExp(`"${value}"`));
   }
+});
+
+test("mountain foundation V2 adds schema attributes without adding more mountains", () => {
+  for (const attribute of [
+    "route_seriousness",
+    "technical_terrain",
+    "helmet_guidance",
+    "water_availability",
+    "hut_support",
+    "tent_site_availability",
+    "alpine_environment",
+    "snow_or_ice_risk",
+    "route_duration_band",
+    "escape_options",
+    "cell_signal_reliability",
+    "bear_or_wildlife_risk",
+    "volcanic_risk",
+    "season_opening_window"
+  ]) {
+    assert.match(v2Migration, new RegExp(`add column if not exists ${attribute}`));
+    assert.match(repository, new RegExp(attribute));
+  }
+
+  assert.match(repository, /MOUNTAIN_FOUNDATION_V2_DEFAULTS/);
+  assert.match(repository, /isMissingMountainFoundationV2ColumnError/);
+  assert.match(repository, /MOUNTAIN_FOUNDATION_BASE_SELECT/);
+
+  for (const slug of [
+    "takao-san",
+    "kumotori-yama",
+    "tsubakuro-dake",
+    "yarigatake",
+    "okuhotakadake"
+  ]) {
+    assert.match(v2Migration, new RegExp(`where slug = '${slug}'`));
+  }
+
+  assert.doesNotMatch(v2Migration, /insert into public\.mountain_foundation_profiles/i);
+  assert.match(v2Migration, /'helmet'/);
+  assert.match(v2Migration, /'traction_device'/);
 });
 
 test("mountain foundation layer exposes planning profile and systems without pack-list logic", () => {
@@ -73,6 +118,6 @@ test("mountain foundation layer exposes planning profile and systems without pac
   assert.doesNotMatch(repository, /pack\s*list/i);
   assert.doesNotMatch(
     migration,
-    /\b(description|route|weather_integration|weather_source|hut_system|water_source|regulation|risk_assessment)\b/i
+    /\b(description|weather_integration|weather_source|hut_system|water_source|regulation|risk_assessment)\b/i
   );
 });

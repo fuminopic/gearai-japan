@@ -21,6 +21,13 @@ const v3GeographyMigration = readFileSync(
   ),
   "utf8"
 );
+const v4ExpansionMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/017_mountain_foundation_corrections_and_100_profiles.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -80,6 +87,9 @@ test("mountain foundation classifications are normalized enum-style values", () 
     "TOHOKU",
     "HOKUSHINETSU",
     "KANTO",
+    "HOKURIKU",
+    "TOKAI",
+    "KINKI",
     "FUJI",
     "YATSUGATAKE",
     "CENTRAL_ALPS",
@@ -91,11 +101,52 @@ test("mountain foundation classifications are normalized enum-style values", () 
     "JOSHU"
   ]) {
     assert.match(
-      `${migration}\n${v2Migration}\n${v21Migration}\n${v3GeographyMigration}`,
+      `${migration}\n${v2Migration}\n${v21Migration}\n${v3GeographyMigration}\n${v4ExpansionMigration}`,
       new RegExp(`'${value}'`)
     );
     assert.match(types, new RegExp(`"${value}"`));
   }
+});
+
+test("mountain foundation V4 corrects confirmed profiles and expands to 100 mountains", () => {
+  const expandedRows = v4ExpansionMigration.match(/\n  \('[a-z0-9-]+',/g) ?? [];
+
+  assert.equal(expandedRows.length, 50);
+  assert.match(v4ExpansionMigration, /where slug = 'tsubakuro-dake'/);
+  assert.match(
+    v4ExpansionMigration,
+    /supported_styles = array\['DAY_HIKE', 'OVERNIGHT_HUT', 'OVERNIGHT_TENT', 'MULTI_DAY_TREK'\]::text\[\]/
+  );
+  assert.match(v4ExpansionMigration, /where slug = 'jonen-dake'/);
+  assert.match(v4ExpansionMigration, /where slug = 'cho-gatake'/);
+  assert.match(v4ExpansionMigration, /hut_support = 'FULL_SERVICE'/);
+  assert.match(v4ExpansionMigration, /tent_site_availability = 'DESIGNATED'/);
+  assert.match(v4ExpansionMigration, /alpine_environment = 'HIGH_ALPINE_EXPOSED'/);
+  assert.match(v4ExpansionMigration, /where slug = 'shirouma-dake'/);
+  assert.match(v4ExpansionMigration, /snow_or_ice_risk = 'SEASONAL_PATCHES'/);
+
+  for (const slug of [
+    "tomuraushi-yama",
+    "poroshiri-dake",
+    "hakusan",
+    "ontake-san",
+    "goryu-dake",
+    "aino-dake",
+    "omine-san",
+    "kusatsu-shirane-san"
+  ]) {
+    assert.match(v4ExpansionMigration, new RegExp(`'${slug}'`));
+  }
+
+  for (const region of ["HOKURIKU", "TOKAI", "KINKI"]) {
+    assert.match(v4ExpansionMigration, new RegExp(`'${region}'`));
+    assert.match(types, new RegExp(`"${region}"`));
+  }
+
+  assert.doesNotMatch(v4ExpansionMigration, /\bcreate table\b/i);
+  assert.doesNotMatch(v4ExpansionMigration, /\btruth\b/i);
+  assert.doesNotMatch(v4ExpansionMigration, /\bevidence\b/i);
+  assert.doesNotMatch(v4ExpansionMigration, /\baudit\b/i);
 });
 
 test("mountain foundation V2 adds schema attributes without adding more mountains", () => {

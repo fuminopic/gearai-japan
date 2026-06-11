@@ -14,6 +14,13 @@ const v21Migration = readFileSync(
   new URL("../supabase/migrations/015_mountain_foundation_region_model_v21.sql", import.meta.url),
   "utf8"
 );
+const v3GeographyMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/016_mountain_foundation_geography_expansion_v3.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -69,6 +76,10 @@ test("mountain foundation classifications are normalized enum-style values", () 
     "OVERNIGHT_BACKPACKING",
     "ALPINE_TREK",
     ...expectedSystems,
+    "HOKKAIDO",
+    "TOHOKU",
+    "HOKUSHINETSU",
+    "KANTO",
     "FUJI",
     "YATSUGATAKE",
     "CENTRAL_ALPS",
@@ -79,7 +90,10 @@ test("mountain foundation classifications are normalized enum-style values", () 
     "NIKKO",
     "JOSHU"
   ]) {
-    assert.match(`${migration}\n${v2Migration}\n${v21Migration}`, new RegExp(`'${value}'`));
+    assert.match(
+      `${migration}\n${v2Migration}\n${v21Migration}\n${v3GeographyMigration}`,
+      new RegExp(`'${value}'`)
+    );
     assert.match(types, new RegExp(`"${value}"`));
   }
 });
@@ -160,6 +174,49 @@ test("mountain foundation V2.1 expands geography without adding more mountains",
   assert.doesNotMatch(v21Migration, /\bdrop column\b/i);
   assert.doesNotMatch(v21Migration, /\bdelete\b/i);
   assert.doesNotMatch(v21Migration, /\btruncate\b/i);
+});
+
+test("mountain foundation V3 geography expands to national regions without adding mountains", () => {
+  for (const region of [
+    "HOKKAIDO",
+    "TOHOKU",
+    "HOKUSHINETSU",
+    "KANTO",
+    "FUJI",
+    "OKUCHICHIBU",
+    "TANZAWA",
+    "NIKKO",
+    "YATSUGATAKE",
+    "NORTHERN_ALPS",
+    "CENTRAL_ALPS",
+    "SOUTHERN_ALPS",
+    "CHUGOKU",
+    "SHIKOKU",
+    "KYUSHU",
+    "YAKUSHIMA"
+  ]) {
+    assert.match(v3GeographyMigration, new RegExp(`'${region}'`));
+    assert.match(types, new RegExp(`"${region}"`));
+  }
+
+  for (const legacyRegion of [
+    "KANTO_TOKYO",
+    "KANTO_TOKYO_SAITAMA_YAMANASHI",
+    "NORTHERN_ALPS_NAGANO",
+    "NORTHERN_ALPS_NAGANO_GIFU",
+    "JOSHU"
+  ]) {
+    assert.match(v3GeographyMigration, new RegExp(`'${legacyRegion}'`));
+  }
+
+  assert.match(v3GeographyMigration, /drop constraint if exists mountain_foundation_profiles_region_check/);
+  assert.match(v3GeographyMigration, /drop constraint if exists mountain_foundation_profiles_primary_region_check/);
+  assert.match(v3GeographyMigration, /update public\.mountain_foundation_profiles/);
+  assert.doesNotMatch(v3GeographyMigration, /insert into public\.mountain_foundation_profiles/i);
+  assert.doesNotMatch(v3GeographyMigration, /\bdrop table\b/i);
+  assert.doesNotMatch(v3GeographyMigration, /\bdrop column\b/i);
+  assert.doesNotMatch(v3GeographyMigration, /\bdelete\b/i);
+  assert.doesNotMatch(v3GeographyMigration, /\btruncate\b/i);
 });
 
 test("mountain foundation layer exposes planning profile and systems without pack-list logic", () => {

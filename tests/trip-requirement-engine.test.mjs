@@ -63,6 +63,20 @@ const dayHikeProfile = {
   ]
 };
 
+const broadDefaultDayHikeProfile = {
+  ...dayHikeProfile,
+  typical_required_systems: [
+    "WATER_SYSTEM",
+    "SHELTER_SYSTEM",
+    "SLEEP_SYSTEM",
+    "COOK_SYSTEM",
+    "RAIN_SYSTEM",
+    "COLD_WEATHER_LAYER",
+    "NAVIGATION_SYSTEM",
+    "EMERGENCY_SYSTEM"
+  ]
+};
+
 const alpineV2Profile = {
   ...alpineProfile,
   typical_required_systems: [
@@ -83,6 +97,36 @@ const alpineV2Profile = {
   bear_or_wildlife_risk: "MODERATE",
   volcanic_risk: "NONE",
   season_opening_window: "SUMMER_AUTUMN"
+};
+
+const alpineV2WithoutTechnicalDefault = {
+  ...alpineV2Profile,
+  typical_required_systems: alpineV2Profile.typical_required_systems.filter(
+    (system) => system !== "TECHNICAL_SAFETY_SYSTEM"
+  )
+};
+
+const tsubakuroV2Profile = {
+  ...alpineV2Profile,
+  slug: "tsubakuro-dake",
+  name_ja: "燕岳",
+  route_seriousness: "HIGH",
+  technical_terrain: "STEEP_ROCKY",
+  helmet_guidance: "NOT_NEEDED",
+  escape_options: "MODERATE",
+  cell_signal_reliability: "PARTIAL"
+};
+
+const yarigatakeV2Profile = {
+  ...alpineV2Profile,
+  slug: "yarigatake",
+  name_ja: "槍ヶ岳"
+};
+
+const okuhotakadakeV2Profile = {
+  ...alpineV2Profile,
+  slug: "okuhotakadake",
+  name_ja: "奥穂高岳"
 };
 
 test("trip requirement engine returns normalized systems for the requested trip context", () => {
@@ -129,7 +173,99 @@ test("trip requirement engine applies generic season and style rules only within
       season: "WINTER",
       style: "DAY_HIKE"
     }),
+    [
+      "WATER_SYSTEM",
+      "RAIN_SYSTEM",
+      "COLD_WEATHER_LAYER",
+      "NAVIGATION_SYSTEM",
+      "EMERGENCY_SYSTEM"
+    ]
+  );
+});
+
+test("trip requirement engine treats safety rules as additive over mountain defaults", () => {
+  assert.deepEqual(
+    getRequiredSystemsForTrip({
+      mountain: dayHikeProfile,
+      season: "WINTER",
+      style: "DAY_HIKE"
+    }),
+    [
+      "WATER_SYSTEM",
+      "RAIN_SYSTEM",
+      "COLD_WEATHER_LAYER",
+      "NAVIGATION_SYSTEM",
+      "EMERGENCY_SYSTEM"
+    ]
+  );
+
+  assert.deepEqual(
+    getRequiredSystemsForTrip({
+      mountain: alpineV2WithoutTechnicalDefault,
+      season: "SUMMER",
+      style: "OVERNIGHT_HUT"
+    }),
+    [
+      "WATER_SYSTEM",
+      "SHELTER_SYSTEM",
+      "RAIN_SYSTEM",
+      "COLD_WEATHER_LAYER",
+      "NAVIGATION_SYSTEM",
+      "TECHNICAL_SAFETY_SYSTEM",
+      "EMERGENCY_SYSTEM"
+    ]
+  );
+
+  assert.deepEqual(
+    getRequiredSystemsForTrip({
+      mountain: {
+        ...alpineV2WithoutTechnicalDefault,
+        helmet_guidance: "NOT_NEEDED",
+        technical_terrain: "STEEP_ROCKY",
+        snow_or_ice_risk: "SEASONAL_PATCHES"
+      },
+      season: "AUTUMN",
+      style: "OVERNIGHT_TENT"
+    }),
+    [
+      "WATER_SYSTEM",
+      "SHELTER_SYSTEM",
+      "SLEEP_SYSTEM",
+      "COOK_SYSTEM",
+      "RAIN_SYSTEM",
+      "COLD_WEATHER_LAYER",
+      "NAVIGATION_SYSTEM",
+      "TECHNICAL_SAFETY_SYSTEM",
+      "EMERGENCY_SYSTEM"
+    ]
+  );
+});
+
+test("trip requirement engine keeps mountain defaults from expanding incompatible styles", () => {
+  assert.deepEqual(
+    getRequiredSystemsForTrip({
+      mountain: broadDefaultDayHikeProfile,
+      season: "SUMMER",
+      style: "DAY_HIKE"
+    }),
     ["WATER_SYSTEM", "RAIN_SYSTEM", "NAVIGATION_SYSTEM", "EMERGENCY_SYSTEM"]
+  );
+
+  assert.deepEqual(
+    getRequiredSystemsForTrip({
+      mountain: alpineV2Profile,
+      season: "SUMMER",
+      style: "OVERNIGHT_HUT"
+    }),
+    [
+      "WATER_SYSTEM",
+      "SHELTER_SYSTEM",
+      "RAIN_SYSTEM",
+      "COLD_WEATHER_LAYER",
+      "NAVIGATION_SYSTEM",
+      "TECHNICAL_SAFETY_SYSTEM",
+      "EMERGENCY_SYSTEM"
+    ]
   );
 });
 
@@ -169,6 +305,43 @@ test("trip requirement engine uses V2 attributes for equipment-relevant systems"
       "EMERGENCY_SYSTEM"
     ]
   );
+});
+
+test("trip requirement engine preserves reasonable V2 output for alpine examples", () => {
+  assert.deepEqual(
+    getRequiredSystemsForTrip({
+      mountain: tsubakuroV2Profile,
+      season: "SUMMER",
+      style: "OVERNIGHT_HUT"
+    }),
+    [
+      "WATER_SYSTEM",
+      "SHELTER_SYSTEM",
+      "RAIN_SYSTEM",
+      "COLD_WEATHER_LAYER",
+      "NAVIGATION_SYSTEM",
+      "EMERGENCY_SYSTEM"
+    ]
+  );
+
+  for (const mountain of [yarigatakeV2Profile, okuhotakadakeV2Profile]) {
+    assert.deepEqual(
+      getRequiredSystemsForTrip({
+        mountain,
+        season: "SUMMER",
+        style: "OVERNIGHT_HUT"
+      }),
+      [
+        "WATER_SYSTEM",
+        "SHELTER_SYSTEM",
+        "RAIN_SYSTEM",
+        "COLD_WEATHER_LAYER",
+        "NAVIGATION_SYSTEM",
+        "TECHNICAL_SAFETY_SYSTEM",
+        "EMERGENCY_SYSTEM"
+      ]
+    );
+  }
 });
 
 test("trip requirement engine rejects unsupported mountain foundation context", () => {

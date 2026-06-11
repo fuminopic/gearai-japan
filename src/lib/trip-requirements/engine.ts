@@ -51,16 +51,49 @@ export function getRequiredSystemsForTrip({
     supportedStyles: mountain.supported_styles
   });
 
-  const mountainSystems = new Set(mountain.typical_required_systems);
-  const contextSystems = new Set<PlanningSystem>([
-    ...ALWAYS_REQUIRED_SYSTEMS,
-    ...getStyleRequiredSystems(mountain, style),
+  const styleSystems = getStyleRequiredSystems(mountain, style);
+  const safetySystems = [
     ...SEASON_REQUIRED_SYSTEMS[season],
     ...getAttributeRequiredSystems(mountain, season)
+  ];
+  const contextSystems = new Set<PlanningSystem>([
+    ...ALWAYS_REQUIRED_SYSTEMS,
+    ...styleSystems,
+    ...safetySystems,
+    ...getApplicableMountainDefaultSystems(mountain, {
+      styleSystems,
+      safetySystems
+    })
   ]);
 
   return TRIP_REQUIREMENT_SYSTEM_ORDER.filter((system) => {
-    return mountainSystems.has(system) && contextSystems.has(system);
+    return contextSystems.has(system);
+  });
+}
+
+function getApplicableMountainDefaultSystems(
+  mountain: TripRequirementInput["mountain"],
+  {
+    styleSystems,
+    safetySystems
+  }: {
+    styleSystems: readonly PlanningSystem[];
+    safetySystems: readonly PlanningSystem[];
+  }
+) {
+  const styleSystemSet = new Set(styleSystems);
+  const safetySystemSet = new Set(safetySystems);
+
+  return mountain.typical_required_systems.filter((system) => {
+    if (system === "SHELTER_SYSTEM" || system === "SLEEP_SYSTEM" || system === "COOK_SYSTEM") {
+      return styleSystemSet.has(system);
+    }
+
+    if (system === "COLD_WEATHER_LAYER" || system === "TECHNICAL_SAFETY_SYSTEM") {
+      return safetySystemSet.has(system);
+    }
+
+    return true;
   });
 }
 

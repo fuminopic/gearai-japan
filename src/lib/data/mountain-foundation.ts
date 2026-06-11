@@ -15,6 +15,12 @@ const MOUNTAIN_FOUNDATION_BASE_COLUMNS = [
   "typical_required_systems"
 ];
 
+const MOUNTAIN_FOUNDATION_V21_COLUMNS = [
+  "primary_region",
+  "mountain_range",
+  "prefectures"
+] as const;
+
 const MOUNTAIN_FOUNDATION_V2_COLUMNS = [
   "route_seriousness",
   "technical_terrain",
@@ -33,10 +39,21 @@ const MOUNTAIN_FOUNDATION_V2_COLUMNS = [
 ] as const;
 
 const MOUNTAIN_FOUNDATION_BASE_SELECT = MOUNTAIN_FOUNDATION_BASE_COLUMNS.join(",");
-const MOUNTAIN_FOUNDATION_SELECT = [
+const MOUNTAIN_FOUNDATION_V2_SELECT = [
   ...MOUNTAIN_FOUNDATION_BASE_COLUMNS,
   ...MOUNTAIN_FOUNDATION_V2_COLUMNS
 ].join(",");
+const MOUNTAIN_FOUNDATION_SELECT = [
+  ...MOUNTAIN_FOUNDATION_BASE_COLUMNS,
+  ...MOUNTAIN_FOUNDATION_V21_COLUMNS,
+  ...MOUNTAIN_FOUNDATION_V2_COLUMNS
+].join(",");
+
+const MOUNTAIN_FOUNDATION_V21_DEFAULTS = {
+  primary_region: "KANTO_TOKYO",
+  mountain_range: "UNKNOWN",
+  prefectures: ["UNKNOWN"]
+} satisfies Pick<MountainFoundationProfile, (typeof MOUNTAIN_FOUNDATION_V21_COLUMNS)[number]>;
 
 const MOUNTAIN_FOUNDATION_V2_DEFAULTS = {
   route_seriousness: "MODERATE",
@@ -64,6 +81,34 @@ export const getMountainFoundationProfiles = cache(
       .returns<MountainFoundationProfile[]>()
       .order("name_ja", { ascending: true });
 
+    if (error && isMissingMountainFoundationV21ColumnError(error)) {
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from("mountain_foundation_profiles")
+        .select(MOUNTAIN_FOUNDATION_V2_SELECT)
+        .order("name_ja", { ascending: true });
+
+      if (fallbackError && isMissingMountainFoundationV2ColumnError(fallbackError)) {
+        const { data: baseFallbackData, error: baseFallbackError } = await supabase
+          .from("mountain_foundation_profiles")
+          .select(MOUNTAIN_FOUNDATION_BASE_SELECT)
+          .order("name_ja", { ascending: true });
+
+        if (baseFallbackError) {
+          throw new Error(baseFallbackError.message);
+        }
+
+        return ((baseFallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
+          .map(withMountainFoundationDefaults);
+      }
+
+      if (fallbackError) {
+        throw new Error(fallbackError.message);
+      }
+
+      return ((fallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
+        .map(withMountainFoundationDefaults);
+    }
+
     if (error && isMissingMountainFoundationV2ColumnError(error)) {
       const { data: fallbackData, error: fallbackError } = await supabase
         .from("mountain_foundation_profiles")
@@ -75,14 +120,14 @@ export const getMountainFoundationProfiles = cache(
       }
 
       return ((fallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
-        .map(withMountainFoundationV2Defaults);
+        .map(withMountainFoundationDefaults);
     }
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return (data ?? []).map(withMountainFoundationV2Defaults);
+    return (data ?? []).map(withMountainFoundationDefaults);
   }
 );
 
@@ -96,6 +141,42 @@ export const getMountainFoundationProfileBySlug = cache(
       .returns<MountainFoundationProfile>()
       .maybeSingle();
 
+    if (error && isMissingMountainFoundationV21ColumnError(error)) {
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from("mountain_foundation_profiles")
+        .select(MOUNTAIN_FOUNDATION_V2_SELECT)
+        .eq("slug", slug)
+        .maybeSingle();
+
+      if (fallbackError && isMissingMountainFoundationV2ColumnError(fallbackError)) {
+        const { data: baseFallbackData, error: baseFallbackError } = await supabase
+          .from("mountain_foundation_profiles")
+          .select(MOUNTAIN_FOUNDATION_BASE_SELECT)
+          .eq("slug", slug)
+          .maybeSingle();
+
+        if (baseFallbackError) {
+          throw new Error(baseFallbackError.message);
+        }
+
+        return baseFallbackData
+          ? withMountainFoundationDefaults(
+              baseFallbackData as unknown as Partial<MountainFoundationProfile>
+            )
+          : null;
+      }
+
+      if (fallbackError) {
+        throw new Error(fallbackError.message);
+      }
+
+      return fallbackData
+        ? withMountainFoundationDefaults(
+            fallbackData as unknown as Partial<MountainFoundationProfile>
+          )
+        : null;
+    }
+
     if (error && isMissingMountainFoundationV2ColumnError(error)) {
       const { data: fallbackData, error: fallbackError } = await supabase
         .from("mountain_foundation_profiles")
@@ -108,7 +189,7 @@ export const getMountainFoundationProfileBySlug = cache(
       }
 
       return fallbackData
-        ? withMountainFoundationV2Defaults(
+        ? withMountainFoundationDefaults(
             fallbackData as unknown as Partial<MountainFoundationProfile>
           )
         : null;
@@ -118,17 +199,30 @@ export const getMountainFoundationProfileBySlug = cache(
       throw new Error(error.message);
     }
 
-    return data ? withMountainFoundationV2Defaults(data) : null;
+    return data ? withMountainFoundationDefaults(data) : null;
   }
 );
 
-function withMountainFoundationV2Defaults(
+function withMountainFoundationDefaults(
   profile: Partial<MountainFoundationProfile>
 ) {
   return {
+    ...MOUNTAIN_FOUNDATION_V21_DEFAULTS,
     ...MOUNTAIN_FOUNDATION_V2_DEFAULTS,
     ...profile
   } as MountainFoundationProfile;
+}
+
+function isMissingMountainFoundationV21ColumnError(error: { code?: string; message?: string }) {
+  if (error.code === "42703") {
+    return MOUNTAIN_FOUNDATION_V21_COLUMNS.some((column) => {
+      return error.message?.includes(column);
+    });
+  }
+
+  return MOUNTAIN_FOUNDATION_V21_COLUMNS.some((column) => {
+    return error.message?.includes(column);
+  });
 }
 
 function isMissingMountainFoundationV2ColumnError(error: { code?: string; message?: string }) {

@@ -364,6 +364,10 @@ test("pack requirement layer consumes trip requirements and owned gear only", ()
   assert.match(typesSource, /RequirementSlot/);
 
   for (const source of [engineSource, repositorySource]) {
+    assert.doesNotMatch(source, /\.region\b/);
+    assert.doesNotMatch(source, /\.primary_region\b/);
+    assert.doesNotMatch(source, /\.mountain_range\b/);
+    assert.doesNotMatch(source, /\.prefectures\b/);
     assert.doesNotMatch(source, /\b(openai|ai recommendation|weather)\b/i);
     assert.doesNotMatch(source, /\b(recommend|shopping|wishlist|upgrade|best gear)\b/i);
     assert.doesNotMatch(source, /\b(score|rank|priority)\b/i);

@@ -344,6 +344,34 @@ test("trip requirement engine preserves reasonable V2 output for alpine examples
   }
 });
 
+test("trip requirement engine does not use region for pack planning decisions", () => {
+  const highAlpineTrip = {
+    mountain: {
+      ...alpineV2Profile,
+      region: "FUJI",
+      primary_region: "FUJI",
+      mountain_range: "富士山",
+      prefectures: ["山梨県", "静岡県"]
+    },
+    season: "SUMMER",
+    style: "OVERNIGHT_HUT"
+  };
+
+  assert.deepEqual(
+    getRequiredSystemsForTrip(highAlpineTrip),
+    getRequiredSystemsForTrip({
+      ...highAlpineTrip,
+      mountain: {
+        ...highAlpineTrip.mountain,
+        region: "YATSUGATAKE",
+        primary_region: "YATSUGATAKE",
+        mountain_range: "八ヶ岳",
+        prefectures: ["長野県", "山梨県"]
+      }
+    })
+  );
+});
+
 test("trip requirement engine rejects unsupported mountain foundation context", () => {
   assert.throws(
     () =>
@@ -370,6 +398,10 @@ test("trip requirement layer consumes foundation data and stays out of later pla
   assert.match(engineSource, /typical_required_systems/);
   assert.match(engineSource, /supported_seasons/);
   assert.match(engineSource, /supported_styles/);
+  assert.doesNotMatch(engineSource, /\.region\b/);
+  assert.doesNotMatch(engineSource, /\.primary_region\b/);
+  assert.doesNotMatch(engineSource, /\.mountain_range\b/);
+  assert.doesNotMatch(engineSource, /\.prefectures\b/);
   assert.match(repositorySource, /getMountainFoundationProfileBySlug/);
   assert.match(repositorySource, /getRequiredSystemsForTrip/);
   assert.match(typesSource, /TripRequirementInput/);

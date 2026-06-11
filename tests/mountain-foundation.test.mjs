@@ -10,6 +10,10 @@ const v2Migration = readFileSync(
   new URL("../supabase/migrations/014_mountain_foundation_dataset_v2.sql", import.meta.url),
   "utf8"
 );
+const v21Migration = readFileSync(
+  new URL("../supabase/migrations/015_mountain_foundation_region_model_v21.sql", import.meta.url),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -64,9 +68,18 @@ test("mountain foundation classifications are normalized enum-style values", () 
     "BACKCOUNTRY_DAY_HIKE",
     "OVERNIGHT_BACKPACKING",
     "ALPINE_TREK",
-    ...expectedSystems
+    ...expectedSystems,
+    "FUJI",
+    "YATSUGATAKE",
+    "CENTRAL_ALPS",
+    "SOUTHERN_ALPS",
+    "NORTHERN_ALPS",
+    "OKUCHICHIBU",
+    "TANZAWA",
+    "NIKKO",
+    "JOSHU"
   ]) {
-    assert.match(`${migration}\n${v2Migration}`, new RegExp(`'${value}'`));
+    assert.match(`${migration}\n${v2Migration}\n${v21Migration}`, new RegExp(`'${value}'`));
     assert.match(types, new RegExp(`"${value}"`));
   }
 });
@@ -109,6 +122,44 @@ test("mountain foundation V2 adds schema attributes without adding more mountain
   assert.doesNotMatch(v2Migration, /insert into public\.mountain_foundation_profiles/i);
   assert.match(v2Migration, /'helmet'/);
   assert.match(v2Migration, /'traction_device'/);
+});
+
+test("mountain foundation V2.1 expands geography without adding more mountains", () => {
+  for (const attribute of [
+    "primary_region",
+    "mountain_range",
+    "prefectures"
+  ]) {
+    assert.match(v21Migration, new RegExp(`add column if not exists ${attribute}`));
+    assert.match(repository, new RegExp(attribute));
+  }
+
+  for (const region of [
+    "FUJI",
+    "YATSUGATAKE",
+    "CENTRAL_ALPS",
+    "SOUTHERN_ALPS",
+    "NORTHERN_ALPS",
+    "OKUCHICHIBU",
+    "TANZAWA",
+    "NIKKO",
+    "JOSHU"
+  ]) {
+    assert.match(v21Migration, new RegExp(`'${region}'`));
+    assert.match(types, new RegExp(`"${region}"`));
+  }
+
+  assert.match(v21Migration, /drop constraint if exists mountain_foundation_profiles_region_check/);
+  assert.match(v21Migration, /add constraint mountain_foundation_profiles_region_check/);
+  assert.match(v21Migration, /update public\.mountain_foundation_profiles/);
+  for (const slug of expectedSlugs) {
+    assert.match(v21Migration, new RegExp(`when '${slug}'`));
+  }
+  assert.doesNotMatch(v21Migration, /insert into public\.mountain_foundation_profiles/i);
+  assert.doesNotMatch(v21Migration, /\bdrop table\b/i);
+  assert.doesNotMatch(v21Migration, /\bdrop column\b/i);
+  assert.doesNotMatch(v21Migration, /\bdelete\b/i);
+  assert.doesNotMatch(v21Migration, /\btruncate\b/i);
 });
 
 test("mountain foundation layer exposes planning profile and systems without pack-list logic", () => {

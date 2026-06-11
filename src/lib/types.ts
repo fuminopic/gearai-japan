@@ -105,7 +105,28 @@ export type MountainFoundationRegion =
   | "KANTO_TOKYO"
   | "KANTO_TOKYO_SAITAMA_YAMANASHI"
   | "NORTHERN_ALPS_NAGANO"
-  | "NORTHERN_ALPS_NAGANO_GIFU";
+  | "NORTHERN_ALPS_NAGANO_GIFU"
+  | "FUJI"
+  | "YATSUGATAKE"
+  | "CENTRAL_ALPS"
+  | "SOUTHERN_ALPS"
+  | "NORTHERN_ALPS"
+  | "OKUCHICHIBU"
+  | "TANZAWA"
+  | "NIKKO"
+  | "JOSHU";
+
+export type MountainFoundationPrimaryRegion =
+  | "KANTO_TOKYO"
+  | "FUJI"
+  | "YATSUGATAKE"
+  | "CENTRAL_ALPS"
+  | "SOUTHERN_ALPS"
+  | "NORTHERN_ALPS"
+  | "OKUCHICHIBU"
+  | "TANZAWA"
+  | "NIKKO"
+  | "JOSHU";
 
 export type GearCategory = {
   id: string;
@@ -263,6 +284,9 @@ export type MountainFoundationProfile = {
   slug: string;
   name_ja: string;
   region: MountainFoundationRegion;
+  primary_region: MountainFoundationPrimaryRegion;
+  mountain_range: string;
+  prefectures: string[];
   elevation_m: number;
   is_hyakumeizan: boolean;
   supported_seasons: MountainFoundationSeason[];

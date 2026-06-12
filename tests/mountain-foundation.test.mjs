@@ -35,12 +35,31 @@ const representativeSampleFixMigration = readFileSync(
   ),
   "utf8"
 );
+const supplementaryMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/019_mountain_foundation_supplementary_fields.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
 );
 const types = readFileSync(
   new URL("../src/lib/types.ts", import.meta.url),
+  "utf8"
+);
+const tripRequirementEngine = readFileSync(
+  new URL("../src/lib/trip-requirements/engine.ts", import.meta.url),
+  "utf8"
+);
+const packRequirementEngine = readFileSync(
+  new URL("../src/lib/pack-requirements/engine.ts", import.meta.url),
+  "utf8"
+);
+const gearMatchingEngine = readFileSync(
+  new URL("../src/lib/gear-matching/engine.ts", import.meta.url),
   "utf8"
 );
 
@@ -179,6 +198,68 @@ test("mountain foundation representative sample fixes only obvious data issues",
   assert.doesNotMatch(representativeSampleFixMigration, /\btruth\b/i);
   assert.doesNotMatch(representativeSampleFixMigration, /\bevidence\b/i);
   assert.doesNotMatch(representativeSampleFixMigration, /\baudit\b/i);
+});
+
+test("mountain foundation supplementary fields import 100 static rows without new systems", () => {
+  for (const attribute of [
+    "active_volcano_status",
+    "jma_volcano_name",
+    "jma_alert_url",
+    "jma_constant_monitoring",
+    "restriction_status_note",
+    "snow_free_month_guide",
+    "mandatory_gear_note",
+    "supplementary_notes"
+  ]) {
+    assert.match(supplementaryMigration, new RegExp(`add column if not exists ${attribute}`));
+    assert.match(repository, new RegExp(attribute));
+    assert.match(types, new RegExp(attribute));
+  }
+
+  const importedRows = supplementaryMigration.match(/\n  \('[a-z0-9-]+',/g) ?? [];
+  assert.equal(importedRows.length, 100);
+  assert.match(supplementaryMigration, /where profile\.slug = source\.slug/);
+  assert.match(supplementaryMigration, /'tomuraushi-yama', 'NONE'/);
+  assert.match(supplementaryMigration, /'aso-san', 'ACTIVE', '阿蘇山'/);
+  assert.match(supplementaryMigration, /'hiuchi-yama', 'ADJACENT'/);
+  assert.match(supplementaryMigration, /'tsukuba-san', 'NONE'/);
+
+  for (const value of ["NONE", "ACTIVE", "ADJACENT"]) {
+    assert.match(supplementaryMigration, new RegExp(`'${value}'`));
+    assert.match(types, new RegExp(`"${value}"`));
+  }
+
+  assert.match(repository, /MOUNTAIN_FOUNDATION_SUPPLEMENTARY_COLUMNS/);
+  assert.match(repository, /MOUNTAIN_FOUNDATION_SUPPLEMENTARY_DEFAULTS/);
+  assert.match(repository, /isMissingMountainFoundationSupplementaryColumnError/);
+
+  assert.doesNotMatch(supplementaryMigration, /\bcreate table\b/i);
+  assert.doesNotMatch(supplementaryMigration, /\binsert into\b/i);
+  assert.doesNotMatch(supplementaryMigration, /\btruth\b/i);
+  assert.doesNotMatch(supplementaryMigration, /\bevidence\b/i);
+  assert.doesNotMatch(supplementaryMigration, /\baudit\b/i);
+  assert.doesNotMatch(supplementaryMigration, /\blayer\b/i);
+});
+
+test("mountain foundation supplementary fields stay out of recommendation engines", () => {
+  for (const source of [
+    tripRequirementEngine,
+    packRequirementEngine,
+    gearMatchingEngine
+  ]) {
+    for (const attribute of [
+      "active_volcano_status",
+      "jma_volcano_name",
+      "jma_alert_url",
+      "jma_constant_monitoring",
+      "restriction_status_note",
+      "snow_free_month_guide",
+      "mandatory_gear_note",
+      "supplementary_notes"
+    ]) {
+      assert.doesNotMatch(source, new RegExp(attribute));
+    }
+  }
 });
 
 test("mountain foundation V2 adds schema attributes without adding more mountains", () => {

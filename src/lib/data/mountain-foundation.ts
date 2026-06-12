@@ -38,15 +38,32 @@ const MOUNTAIN_FOUNDATION_V2_COLUMNS = [
   "season_opening_window"
 ] as const;
 
+const MOUNTAIN_FOUNDATION_SUPPLEMENTARY_COLUMNS = [
+  "active_volcano_status",
+  "jma_volcano_name",
+  "jma_alert_url",
+  "jma_constant_monitoring",
+  "restriction_status_note",
+  "snow_free_month_guide",
+  "mandatory_gear_note",
+  "supplementary_notes"
+] as const;
+
 const MOUNTAIN_FOUNDATION_BASE_SELECT = MOUNTAIN_FOUNDATION_BASE_COLUMNS.join(",");
 const MOUNTAIN_FOUNDATION_V2_SELECT = [
   ...MOUNTAIN_FOUNDATION_BASE_COLUMNS,
   ...MOUNTAIN_FOUNDATION_V2_COLUMNS
 ].join(",");
+const MOUNTAIN_FOUNDATION_CORE_SELECT = [
+  ...MOUNTAIN_FOUNDATION_BASE_COLUMNS,
+  ...MOUNTAIN_FOUNDATION_V21_COLUMNS,
+  ...MOUNTAIN_FOUNDATION_V2_COLUMNS,
+].join(",");
 const MOUNTAIN_FOUNDATION_SELECT = [
   ...MOUNTAIN_FOUNDATION_BASE_COLUMNS,
   ...MOUNTAIN_FOUNDATION_V21_COLUMNS,
-  ...MOUNTAIN_FOUNDATION_V2_COLUMNS
+  ...MOUNTAIN_FOUNDATION_V2_COLUMNS,
+  ...MOUNTAIN_FOUNDATION_SUPPLEMENTARY_COLUMNS
 ].join(",");
 
 const MOUNTAIN_FOUNDATION_V21_DEFAULTS = {
@@ -72,6 +89,20 @@ const MOUNTAIN_FOUNDATION_V2_DEFAULTS = {
   season_opening_window: "SNOW_FREE"
 } satisfies Pick<MountainFoundationProfile, (typeof MOUNTAIN_FOUNDATION_V2_COLUMNS)[number]>;
 
+const MOUNTAIN_FOUNDATION_SUPPLEMENTARY_DEFAULTS = {
+  active_volcano_status: "NONE",
+  jma_volcano_name: null,
+  jma_alert_url: null,
+  jma_constant_monitoring: null,
+  restriction_status_note: null,
+  snow_free_month_guide: null,
+  mandatory_gear_note: null,
+  supplementary_notes: null
+} satisfies Pick<
+  MountainFoundationProfile,
+  (typeof MOUNTAIN_FOUNDATION_SUPPLEMENTARY_COLUMNS)[number]
+>;
+
 export const getMountainFoundationProfiles = cache(
   async function getMountainFoundationProfiles() {
     const supabase = await createClient();
@@ -80,6 +111,20 @@ export const getMountainFoundationProfiles = cache(
       .select(MOUNTAIN_FOUNDATION_SELECT)
       .returns<MountainFoundationProfile[]>()
       .order("name_ja", { ascending: true });
+
+    if (error && isMissingMountainFoundationSupplementaryColumnError(error)) {
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from("mountain_foundation_profiles")
+        .select(MOUNTAIN_FOUNDATION_CORE_SELECT)
+        .order("name_ja", { ascending: true });
+
+      if (fallbackError) {
+        throw new Error(fallbackError.message);
+      }
+
+      return ((fallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
+        .map(withMountainFoundationDefaults);
+    }
 
     if (error && isMissingMountainFoundationV21ColumnError(error)) {
       const { data: fallbackData, error: fallbackError } = await supabase
@@ -140,6 +185,24 @@ export const getMountainFoundationProfileBySlug = cache(
       .eq("slug", slug)
       .returns<MountainFoundationProfile>()
       .maybeSingle();
+
+    if (error && isMissingMountainFoundationSupplementaryColumnError(error)) {
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from("mountain_foundation_profiles")
+        .select(MOUNTAIN_FOUNDATION_CORE_SELECT)
+        .eq("slug", slug)
+        .maybeSingle();
+
+      if (fallbackError) {
+        throw new Error(fallbackError.message);
+      }
+
+      return fallbackData
+        ? withMountainFoundationDefaults(
+            fallbackData as unknown as Partial<MountainFoundationProfile>
+          )
+        : null;
+    }
 
     if (error && isMissingMountainFoundationV21ColumnError(error)) {
       const { data: fallbackData, error: fallbackError } = await supabase
@@ -209,6 +272,7 @@ function withMountainFoundationDefaults(
   return {
     ...MOUNTAIN_FOUNDATION_V21_DEFAULTS,
     ...MOUNTAIN_FOUNDATION_V2_DEFAULTS,
+    ...MOUNTAIN_FOUNDATION_SUPPLEMENTARY_DEFAULTS,
     ...profile
   } as MountainFoundationProfile;
 }
@@ -231,6 +295,15 @@ function isMissingMountainFoundationV2ColumnError(error: { code?: string; messag
   }
 
   return MOUNTAIN_FOUNDATION_V2_COLUMNS.some((column) => {
+    return error.message?.includes(column);
+  });
+}
+
+function isMissingMountainFoundationSupplementaryColumnError(error: {
+  code?: string;
+  message?: string;
+}) {
+  return MOUNTAIN_FOUNDATION_SUPPLEMENTARY_COLUMNS.some((column) => {
     return error.message?.includes(column);
   });
 }

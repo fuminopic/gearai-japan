@@ -69,6 +69,7 @@ export type MountainSeasonOpeningWindow =
   | "SUMMER_AUTUMN"
   | "HUT_SEASON"
   | "WINTER_EXPERT_ONLY";
+export type MountainActiveVolcanoStatus = "NONE" | "ACTIVE" | "ADJACENT";
 export type PlanningSystem =
   | "WATER_SYSTEM"
   | "SHELTER_SYSTEM"
@@ -329,6 +330,14 @@ export type MountainFoundationProfile = {
   bear_or_wildlife_risk: MountainWildlifeRisk;
   volcanic_risk: MountainVolcanicRisk;
   season_opening_window: MountainSeasonOpeningWindow;
+  active_volcano_status: MountainActiveVolcanoStatus;
+  jma_volcano_name: string | null;
+  jma_alert_url: string | null;
+  jma_constant_monitoring: boolean | null;
+  restriction_status_note: string | null;
+  snow_free_month_guide: number | null;
+  mandatory_gear_note: string | null;
+  supplementary_notes: string | null;
 };
 
 export type SavedTripPlan = {

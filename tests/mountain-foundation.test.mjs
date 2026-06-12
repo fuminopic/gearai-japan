@@ -28,6 +28,13 @@ const v4ExpansionMigration = readFileSync(
   ),
   "utf8"
 );
+const representativeSampleFixMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/018_mountain_foundation_representative_sample_fixes.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -147,6 +154,31 @@ test("mountain foundation V4 corrects confirmed profiles and expands to 100 moun
   assert.doesNotMatch(v4ExpansionMigration, /\btruth\b/i);
   assert.doesNotMatch(v4ExpansionMigration, /\bevidence\b/i);
   assert.doesNotMatch(v4ExpansionMigration, /\baudit\b/i);
+});
+
+test("mountain foundation representative sample fixes only obvious data issues", () => {
+  assert.match(representativeSampleFixMigration, /where slug = 'tomuraushi-yama'/);
+  assert.match(
+    representativeSampleFixMigration,
+    /supported_styles = array\['OVERNIGHT_HUT', 'OVERNIGHT_TENT', 'MULTI_DAY_TREK'\]::text\[\]/
+  );
+  assert.doesNotMatch(
+    representativeSampleFixMigration,
+    /tomuraushi-yama'[\s\S]*?DAY_HIKE/
+  );
+
+  assert.match(representativeSampleFixMigration, /where slug = 'tsukuba-san'/);
+  assert.match(
+    representativeSampleFixMigration,
+    /supported_seasons = array\['SPRING', 'SUMMER', 'AUTUMN', 'WINTER'\]::text\[\]/
+  );
+
+  assert.doesNotMatch(representativeSampleFixMigration, /\bcreate table\b/i);
+  assert.doesNotMatch(representativeSampleFixMigration, /\balter table\b/i);
+  assert.doesNotMatch(representativeSampleFixMigration, /\binsert into\b/i);
+  assert.doesNotMatch(representativeSampleFixMigration, /\btruth\b/i);
+  assert.doesNotMatch(representativeSampleFixMigration, /\bevidence\b/i);
+  assert.doesNotMatch(representativeSampleFixMigration, /\baudit\b/i);
 });
 
 test("mountain foundation V2 adds schema attributes without adding more mountains", () => {

@@ -70,6 +70,13 @@ const meizan200ProfilesMigration = readFileSync(
   ),
   "utf8"
 );
+const opus48StaticFixesMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/024_mountain_foundation_opus48_static_fixes.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -433,6 +440,45 @@ test("mountain foundation meizan 200 migration upserts static profiles only", ()
   assert.doesNotMatch(meizan200ProfilesMigration, /\bevidence\b/i);
   assert.doesNotMatch(meizan200ProfilesMigration, /\baudit\b/i);
   assert.doesNotMatch(meizan200ProfilesMigration, /\blayer\b/i);
+});
+
+test("mountain foundation Opus 4.8 reviewed fixes stay static and scoped", () => {
+  for (const slug of [
+    "rishiri-zan",
+    "utsukushigahara",
+    "kirigamine",
+    "daibosatsu-rei",
+    "tsurugi-san-shikoku"
+  ]) {
+    assert.match(opus48StaticFixesMigration, new RegExp(`where slug = '${slug}'`));
+  }
+
+  assert.match(opus48StaticFixesMigration, /bear_or_wildlife_risk = 'LOW'/);
+  assert.match(opus48StaticFixesMigration, /route_seriousness = 'LOW'/);
+  assert.match(opus48StaticFixesMigration, /route_seriousness = 'MODERATE'/);
+  assert.match(opus48StaticFixesMigration, /technical_terrain = 'MAINTAINED_TRAIL'/);
+
+  assert.doesNotMatch(opus48StaticFixesMigration, /\bcreate table\b/i);
+  assert.doesNotMatch(opus48StaticFixesMigration, /\balter table\b/i);
+  assert.doesNotMatch(opus48StaticFixesMigration, /\binsert into\b/i);
+  assert.doesNotMatch(opus48StaticFixesMigration, /\bdelete\b/i);
+  assert.doesNotMatch(opus48StaticFixesMigration, /\btruncate\b/i);
+  assert.doesNotMatch(opus48StaticFixesMigration, /\btruth\b/i);
+  assert.doesNotMatch(opus48StaticFixesMigration, /\bevidence\b/i);
+  assert.doesNotMatch(opus48StaticFixesMigration, /\baudit\b/i);
+  assert.doesNotMatch(opus48StaticFixesMigration, /\blayer\b/i);
+
+  for (const source of [
+    tripRequirementEngine,
+    packRequirementEngine,
+    gearMatchingEngine
+  ]) {
+    assert.doesNotMatch(source, /rishiri-zan/);
+    assert.doesNotMatch(source, /utsukushigahara/);
+    assert.doesNotMatch(source, /kirigamine/);
+    assert.doesNotMatch(source, /daibosatsu-rei/);
+    assert.doesNotMatch(source, /tsurugi-san-shikoku/);
+  }
 });
 
 test("mountain foundation V2 adds schema attributes without adding more mountains", () => {

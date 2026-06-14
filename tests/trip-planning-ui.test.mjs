@@ -10,6 +10,10 @@ const tripPlanningUiSource = readFileSync(
   new URL("../src/components/trip-planning-ui.tsx", import.meta.url),
   "utf8"
 );
+const planChecklistSource = readFileSync(
+  new URL("../src/lib/plan-checklist.ts", import.meta.url),
+  "utf8"
+);
 const planPageContentSource = readFileSync(
   new URL("../src/components/plan-page-content.tsx", import.meta.url),
   "utf8"
@@ -160,53 +164,69 @@ test("app navigation responds immediately during dynamic route loading", () => {
   assert.match(mountainFoundationSource, /cache\(\s*async function getMountainFoundationProfiles/);
 });
 
-test("trip planning UI emphasizes required systems, coverage, and missing gear", () => {
+test("trip planning UI presents a professional gear checklist", () => {
   for (const copy of [
-    "必要システム",
-    "装備完成度",
-    "不足装備",
-    "照合結果の詳細",
-    "計画メモ",
+    "装備チェックリスト",
+    "総完成度",
+    "未完了",
+    "装備庫との照合詳細",
+    "確認メモ",
     "パック計画を作成",
     "計画履歴"
   ]) {
     assert.match(`${tripPlanningUiSource}\n${tripPlanningFormSource}`, new RegExp(copy));
   }
 
-  assert.match(tripPlanningUiSource, /plan\.required_systems/);
-  assert.match(tripPlanningUiSource, /coveredDisplaySlots/);
-  assert.match(tripPlanningUiSource, /missingDisplaySlots/);
+  for (const copy of [
+    "衣類",
+    "行動装備",
+    "水・食料",
+    "ナビ・電子機器",
+    "安全・救急",
+    "特殊装備",
+    "宿泊装備",
+    "必須",
+    "推奨",
+    "あると便利",
+    "Gear-backed",
+    "Checklist-only"
+  ]) {
+    assert.match(`${tripPlanningUiSource}\n${planChecklistSource}`, new RegExp(copy));
+  }
+
+  assert.match(tripPlanningUiSource, /buildPlanChecklist/);
   assert.match(tripPlanningUiSource, /matching_owned_gear/);
   assert.match(tripPlanningUiSource, /matching_database_gear/);
-  assert.match(tripPlanningUiSource, /coveragePercent/);
   assert.match(tripPlanningUiSource, /登録データ上の対応例/);
   assert.match(tripPlanningUiSource, /HeroReadinessCard/);
-  assert.match(tripPlanningUiSource, /MissingGearCard/);
+  assert.match(tripPlanningUiSource, /ChecklistCategoryCard/);
+  assert.match(tripPlanningUiSource, /ChecklistItemRow/);
   assert.match(tripPlanningUiSource, /PlanHistorySection/);
   assert.match(tripPlanningUiSource, /SavePlanButton/);
   assert.match(tripPlanningUiSource, /<details/);
   assert.match(tripPlanningUiSource, /<summary/);
+  assert.doesNotMatch(tripPlanningUiSource, /必要システム/);
+  assert.doesNotMatch(tripPlanningUiSource, /不足装備/);
   assert.doesNotMatch(tripPlanningUiSource, /対応装備/);
   assert.doesNotMatch(tripPlanningUiSource, /山行サマリー/);
 });
 
-test("pack planning UX V2 prioritizes readiness and missing gear before coverage details", () => {
+test("pack planning checklist prioritizes readiness before gear-backed details", () => {
   const heroIndex = tripPlanningUiSource.indexOf("HeroReadinessCard");
-  const missingIndex = tripPlanningUiSource.indexOf("不足装備");
-  const coveredIndex = tripPlanningUiSource.indexOf("カバー済み装備");
-  const matchingIndex = tripPlanningUiSource.indexOf("照合結果の詳細");
+  const checklistIndex = tripPlanningUiSource.indexOf("装備チェックリスト");
+  const matchingIndex = tripPlanningUiSource.indexOf("装備庫との照合詳細");
 
   assert.ok(heroIndex > -1);
-  assert.ok(missingIndex > heroIndex);
-  assert.ok(coveredIndex > missingIndex);
-  assert.ok(matchingIndex > coveredIndex);
+  assert.ok(checklistIndex > heroIndex);
+  assert.ok(matchingIndex > checklistIndex);
 
   for (const copy of [
     "山行準備",
-    "カバー済み",
-    "不足",
-    "準備する",
-    "次に準備する装備"
+    "本チェックリストは現在の",
+    "準備確認",
+    "完成",
+    "完了",
+    "未完了"
   ]) {
     assert.match(tripPlanningUiSource, new RegExp(copy));
   }
@@ -215,22 +235,31 @@ test("pack planning UX V2 prioritizes readiness and missing gear before coverage
   assert.match(tripPlanningUiSource, /missingCount\.toLocaleString\("ja-JP"\)/);
 });
 
-test("pack planning UX V2 uses deterministic system icons for planning systems", () => {
-  for (const icon of [
-    "Droplets",
-    "Tent",
-    "Bed",
-    "CookingPot",
-    "CloudRain",
-    "Shirt",
-    "Compass",
-    "Cross"
+test("pack planning checklist keeps special and overnight equipment dynamic", () => {
+  for (const copy of [
+    "ヘルメット",
+    "チェーンスパイク",
+    "アイゼン",
+    "ピッケル",
+    "熊対策装備",
+    "インナーシーツ",
+    "耳栓",
+    "洗面用品",
+    "テント",
+    "シュラフ",
+    "マット",
+    "ペグ",
+    "グランドシート"
   ]) {
-    assert.match(tripPlanningUiSource, new RegExp(icon));
+    assert.match(planChecklistSource, new RegExp(copy));
   }
 
-  assert.match(tripPlanningUiSource, /systemIcons: Record<PlanningSystem, LucideIcon>/);
-  assert.match(tripPlanningUiSource, /slotSystems: Record<RequirementSlot, PlanningSystem>/);
+  assert.match(planChecklistSource, /if \(plan\.style === "DAY_HIKE"\)/);
+  assert.match(planChecklistSource, /SPECIAL_GEAR/);
+  assert.match(planChecklistSource, /OVERNIGHT_GEAR/);
+  assert.match(planChecklistSource, /mountain\.helmet_guidance/);
+  assert.match(planChecklistSource, /mountain\.snow_or_ice_risk/);
+  assert.match(planChecklistSource, /mountain\.bear_or_wildlife_risk/);
 });
 
 test("pack planning UI deduplicates merged slot labels and supports checklist progress", () => {
@@ -244,10 +273,19 @@ test("pack planning UI deduplicates merged slot labels and supports checklist pr
   assert.match(tripPlanningUiSource, /"WATER"/);
   assert.match(tripPlanningUiSource, /"RAIN_GEAR"/);
   assert.match(tripPlanningUiSource, /const \[checkedSlots, setCheckedSlots\]/);
+  assert.match(tripPlanningUiSource, /const \[checklistOnlyIds, setChecklistOnlyIds\]/);
   assert.match(tripPlanningUiSource, /type="checkbox"/);
-  assert.match(tripPlanningUiSource, /handleToggleMissingSlot/);
+  assert.match(tripPlanningUiSource, /handleToggleChecklistItem/);
+  assert.match(tripPlanningUiSource, /handleToggleGearBackedItem/);
+  assert.match(tripPlanningUiSource, /handleToggleChecklistOnlyItem/);
   assert.match(tripPlanningUiSource, /onProgressChange/);
-  assert.match(tripPlanningUiSource, /isDisplaySlotCovered/);
+  assert.match(planChecklistSource, /priorityWeights/);
+  assert.match(planChecklistSource, /ESSENTIAL: 5/);
+  assert.match(planChecklistSource, /SUGGESTED: 3/);
+  assert.match(planChecklistSource, /OPTIONAL: 1/);
+  assert.match(planChecklistSource, /source: ChecklistItemSource/);
+  assert.match(planChecklistSource, /GEAR_BACKED/);
+  assert.match(planChecklistSource, /CHECKLIST_ONLY/);
 });
 
 test("trip planning UI avoids recommendation and shopping language", () => {

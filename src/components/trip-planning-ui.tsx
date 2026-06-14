@@ -2,24 +2,12 @@
 
 import {
   AlertTriangle,
-  Bed,
   Check,
   ChevronDown,
   CircleAlert,
-  CloudRain,
-  Compass,
-  CookingPot,
-  Cross,
-  Droplets,
   Square,
-  Mountain,
-  PackageCheck,
-  PackageX,
-  Shirt,
-  Tent,
-  X
+  Mountain
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -38,9 +26,17 @@ import {
   gearSubcategoryLabels,
   mountainFoundationSeasonLabels,
   mountainFoundationStyleLabels,
-  planningSystemLabels,
   requirementSlotLabels
 } from "@/lib/i18n/labels";
+import {
+  buildPlanChecklist,
+  calculateChecklistProgress,
+  checklistPriorityLabels,
+  getChecklistOnlyStorageKey,
+  isSupportedChecklistOnlyId,
+  type ChecklistCategory,
+  type ChecklistItem
+} from "@/lib/plan-checklist";
 import { createClient } from "@/lib/supabase/client";
 import type {
   GearMatchingDatabaseGearMatch,
@@ -52,7 +48,6 @@ import type {
   MountainFoundationStyle,
   PackRequirementPlan,
   PackRequirementSlotPlan,
-  PlanningSystem,
   RequirementSlot,
   SavedTripPlan
 } from "@/lib/types";
@@ -83,40 +78,28 @@ type DisplayGearMatchingResult = Omit<GearMatchingResult, "slot"> & {
 
 const CHECKED_SLOTS_STORAGE_PREFIX = "yamajitaku:trip-plan:checked-slots:";
 const emptyCheckedSlots: RequirementSlot[] = [];
-
-const systemIcons: Record<PlanningSystem, LucideIcon> = {
-  WATER_SYSTEM: Droplets,
-  SHELTER_SYSTEM: Tent,
-  SLEEP_SYSTEM: Bed,
-  COOK_SYSTEM: CookingPot,
-  RAIN_SYSTEM: CloudRain,
-  COLD_WEATHER_LAYER: Shirt,
-  NAVIGATION_SYSTEM: Compass,
-  TECHNICAL_SAFETY_SYSTEM: CircleAlert,
-  EMERGENCY_SYSTEM: Cross
-};
-
-const slotSystems: Record<RequirementSlot, PlanningSystem> = {
-  WATER_STORAGE: "WATER_SYSTEM",
-  WATER_TREATMENT: "WATER_SYSTEM",
-  TENT: "SHELTER_SYSTEM",
-  SLEEP_INSULATION: "SLEEP_SYSTEM",
-  SLEEP_PAD: "SLEEP_SYSTEM",
-  STOVE: "COOK_SYSTEM",
-  FUEL: "COOK_SYSTEM",
-  COOK_POT: "COOK_SYSTEM",
-  TABLEWARE: "COOK_SYSTEM",
-  RAIN_JACKET: "RAIN_SYSTEM",
-  RAIN_PANTS: "RAIN_SYSTEM",
-  INSULATION_LAYER: "COLD_WEATHER_LAYER",
-  BASE_LAYER: "COLD_WEATHER_LAYER",
-  HELMET: "TECHNICAL_SAFETY_SYSTEM",
-  TRACTION_DEVICE: "TECHNICAL_SAFETY_SYSTEM",
-  GPS_DEVICE: "NAVIGATION_SYSTEM",
-  POWER_BANK: "NAVIGATION_SYSTEM",
-  FIRST_AID_KIT: "EMERGENCY_SYSTEM",
-  HEADLAMP: "EMERGENCY_SYSTEM"
-};
+const emptyChecklistOnlyIds: string[] = [];
+const validRequirementSlots = new Set<RequirementSlot>([
+  "WATER_STORAGE",
+  "WATER_TREATMENT",
+  "TENT",
+  "SLEEP_INSULATION",
+  "SLEEP_PAD",
+  "STOVE",
+  "FUEL",
+  "COOK_POT",
+  "TABLEWARE",
+  "RAIN_JACKET",
+  "RAIN_PANTS",
+  "INSULATION_LAYER",
+  "BASE_LAYER",
+  "HELMET",
+  "TRACTION_DEVICE",
+  "GPS_DEVICE",
+  "POWER_BANK",
+  "FIRST_AID_KIT",
+  "HEADLAMP"
+]);
 
 export function TripPlanningUI({
   mountains,
@@ -143,7 +126,11 @@ export function TripPlanningUI({
   const [interactiveCheckedSlots, setInteractiveCheckedSlots] = useState<
     RequirementSlot[] | null
   >(null);
+  const [interactiveChecklistOnlyIds, setInteractiveChecklistOnlyIds] = useState<
+    string[] | null
+  >(null);
   const [storedCheckedSlots, setStoredCheckedSlots] = useState<RequirementSlot[]>([]);
+  const [storedChecklistOnlyIds, setStoredChecklistOnlyIds] = useState<string[]>([]);
   const effectiveMountainSlug = hydratedPlan?.mountain_slug ?? selectedMountainSlug;
   const effectiveSeason = hydratedPlan?.season ?? selectedSeason;
   const effectiveStyle = hydratedPlan?.style ?? selectedStyle;
@@ -155,15 +142,23 @@ export function TripPlanningUI({
   const currentCheckedSlots = plan
     ? filterCheckedSlotsForPlan(rawCurrentCheckedSlots, plan)
     : rawCurrentCheckedSlots;
+  const currentChecklistOnlyIds =
+    interactiveChecklistOnlyIds ?? storedChecklistOnlyIds;
   const currentProgressValue = plan
-    ? interactiveProgress ?? calculatePlanProgress(plan, currentCheckedSlots)
+    ? interactiveProgress ??
+      calculateChecklistProgress(plan, currentCheckedSlots, currentChecklistOnlyIds)
     : hydratedPlan?.progress ?? 0;
+  const planStateKey = plan
+    ? `${plan.mountain.slug}:${plan.season}:${plan.style}`
+    : "no-plan";
 
   useEffect(() => {
     setInteractiveProgress(null);
     setInteractiveCheckedSlots(null);
+    setInteractiveChecklistOnlyIds(null);
     setStoredCheckedSlots(planId ? readStoredCheckedSlots(planId) : []);
-  }, [planId]);
+    setStoredChecklistOnlyIds(planId ? readStoredChecklistOnlyIds(planId) : []);
+  }, [planId, planStateKey]);
 
   useEffect(() => {
     if (!planId) {
@@ -257,8 +252,10 @@ export function TripPlanningUI({
             plan={plan}
             compatibilityBySlot={compatibilityBySlot}
             initialCheckedSlots={currentCheckedSlots}
+            initialChecklistOnlyIds={currentChecklistOnlyIds}
             onProgressChange={setInteractiveProgress}
             onCheckedSlotsChange={setInteractiveCheckedSlots}
+            onChecklistOnlyIdsChange={setInteractiveChecklistOnlyIds}
           />
           {selectedMountain ? (
             <SavePlanButton
@@ -268,6 +265,7 @@ export function TripPlanningUI({
               style={effectiveStyle}
               progress={currentProgressValue}
               checkedSlots={currentCheckedSlots}
+              checklistOnlyIds={currentChecklistOnlyIds}
               planId={planId}
             />
           ) : null}
@@ -286,7 +284,8 @@ function SavePlanButton({
   season,
   style,
   progress,
-  checkedSlots
+  checkedSlots,
+  checklistOnlyIds
 }: {
   planId: string | null;
   mountainSlug: string;
@@ -295,6 +294,7 @@ function SavePlanButton({
   style: MountainFoundationStyle;
   progress: number;
   checkedSlots: RequirementSlot[];
+  checklistOnlyIds: string[];
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -321,6 +321,7 @@ function SavePlanButton({
 
       if (savedPlanId) {
         writeStoredCheckedSlots(savedPlanId, checkedSlots);
+        writeStoredChecklistOnlyIds(savedPlanId, checklistOnlyIds);
       }
 
       router.push("/dashboard");
@@ -481,6 +482,48 @@ function writeStoredCheckedSlots(planId: string, checkedSlots: RequirementSlot[]
   window.localStorage.setItem(storageKey, JSON.stringify(checkedSlots));
 }
 
+function readStoredChecklistOnlyIds(planId: string) {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const storedValue = window.localStorage.getItem(getChecklistOnlyStorageKey(planId));
+
+    if (!storedValue) {
+      return [];
+    }
+
+    const parsed = JSON.parse(storedValue);
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return uniqueChecklistOnlyIds(parsed);
+  } catch {
+    return [];
+  }
+}
+
+function writeStoredChecklistOnlyIds(planId: string, checklistOnlyIds: string[]) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const storageKey = getChecklistOnlyStorageKey(planId);
+
+  if (checklistOnlyIds.length === 0) {
+    window.localStorage.removeItem(storageKey);
+    return;
+  }
+
+  window.localStorage.setItem(
+    storageKey,
+    JSON.stringify(uniqueChecklistOnlyIds(checklistOnlyIds))
+  );
+}
+
 function getCheckedSlotsStorageKey(planId: string) {
   return `${CHECKED_SLOTS_STORAGE_PREFIX}${planId}`;
 }
@@ -489,30 +532,33 @@ function TripPlanningResult({
   plan,
   compatibilityBySlot,
   initialCheckedSlots = emptyCheckedSlots,
+  initialChecklistOnlyIds = emptyChecklistOnlyIds,
   onProgressChange,
-  onCheckedSlotsChange
+  onCheckedSlotsChange,
+  onChecklistOnlyIdsChange
 }: {
   plan: PackRequirementPlan;
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
   initialCheckedSlots?: RequirementSlot[];
+  initialChecklistOnlyIds?: string[];
   onProgressChange?: (progress: number) => void;
   onCheckedSlotsChange?: (checkedSlots: RequirementSlot[]) => void;
+  onChecklistOnlyIdsChange?: (checklistOnlyIds: string[]) => void;
 }) {
   const [checkedSlots, setCheckedSlots] = useState<RequirementSlot[]>(() => {
     return filterCheckedSlotsForPlan(initialCheckedSlots, plan);
   });
+  const [checklistOnlyIds, setChecklistOnlyIds] = useState<string[]>(() => {
+    return uniqueChecklistOnlyIds(initialChecklistOnlyIds);
+  });
   const initialCheckedSlotsKey = initialCheckedSlots.join("|");
+  const initialChecklistOnlyIdsKey = initialChecklistOnlyIds.join("|");
+  const checklist = buildPlanChecklist({
+    plan,
+    checkedSlots,
+    checkedChecklistOnlyIds: checklistOnlyIds
+  });
   const displaySlots = dedupeDisplaySlots(plan.required_slots);
-  const coveredDisplaySlots = displaySlots.filter((slotPlan) => {
-    return isDisplaySlotCovered(slotPlan, checkedSlots);
-  });
-  const missingDisplaySlots = displaySlots.filter((slotPlan) => {
-    return !isDisplaySlotCovered(slotPlan, checkedSlots);
-  });
-  const totalSlots = displaySlots.length;
-  const coveredCount = coveredDisplaySlots.length;
-  const missingCount = missingDisplaySlots.length;
-  const coveragePercent = calculateProgressFromCounts(coveredCount, totalSlots);
   const compatibleSlots = displaySlots
     .map((slotPlan) => ({
       slotPlan,
@@ -532,10 +578,29 @@ function TripPlanningResult({
   }, [initialCheckedSlotsKey, plan]);
 
   useEffect(() => {
-    onProgressChange?.(coveragePercent);
-  }, [coveragePercent, onProgressChange]);
+    const nextChecklistOnlyIds = uniqueChecklistOnlyIds(initialChecklistOnlyIds);
 
-  function handleToggleMissingSlot(slots: RequirementSlot[]) {
+    setChecklistOnlyIds(nextChecklistOnlyIds);
+  }, [initialChecklistOnlyIdsKey]);
+
+  useEffect(() => {
+    onProgressChange?.(checklist.summary.percent);
+  }, [checklist.summary.percent, onProgressChange]);
+
+  function handleToggleChecklistItem(item: ChecklistItem) {
+    if (item.source === "GEAR_BACKED") {
+      handleToggleGearBackedItem(item.toggleSlots);
+      return;
+    }
+
+    handleToggleChecklistOnlyItem(item.id);
+  }
+
+  function handleToggleGearBackedItem(slots: RequirementSlot[]) {
+    if (slots.length === 0) {
+      return;
+    }
+
     setCheckedSlots((currentSlots) => {
       const nextSlots = new Set(currentSlots);
       const shouldUncheck = slots.every((slot) => nextSlots.has(slot));
@@ -556,87 +621,73 @@ function TripPlanningResult({
     });
   }
 
+  function handleToggleChecklistOnlyItem(id: string) {
+    setChecklistOnlyIds((currentIds) => {
+      const nextIds = new Set(currentIds);
+
+      if (nextIds.has(id)) {
+        nextIds.delete(id);
+      } else {
+        nextIds.add(id);
+      }
+
+      const nextChecklistOnlyIds = uniqueChecklistOnlyIds(Array.from(nextIds));
+
+      onChecklistOnlyIdsChange?.(nextChecklistOnlyIds);
+
+      return nextChecklistOnlyIds;
+    });
+  }
+
   return (
     <div className="space-y-5">
       <HeroReadinessCard
         plan={plan}
-        coveragePercent={coveragePercent}
-        coveredCount={coveredCount}
-        missingCount={missingCount}
-        totalSlots={totalSlots}
+        checkedCount={checklist.summary.checkedCount}
+        missingCount={checklist.summary.missingCount}
+        totalCount={checklist.summary.totalCount}
+        progressPercent={checklist.summary.percent}
       />
 
-      <section className="rounded-lg bg-white p-5 shadow-soft">
-        <h2 className="text-lg font-semibold text-ink">必要システム</h2>
-        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          {plan.required_systems.map((system) => (
-            <div key={system} className="flex items-center gap-2 rounded-lg border border-forest-100 bg-forest-50 px-3 py-2 text-sm font-semibold text-forest-900">
-              <SystemIcon system={system} className="h-4 w-4 shrink-0" />
-              {planningSystemLabels[system]}
-            </div>
+      <section className="space-y-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-forest-700">準備確認</p>
+            <h2 className="mt-1 text-2xl font-semibold tracking-normal text-ink">
+              装備チェックリスト
+            </h2>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center sm:w-auto">
+            <ChecklistStat label="完成" value={`${checklist.summary.percent}%`} />
+            <ChecklistStat
+              label="完了"
+              value={checklist.summary.checkedCount.toLocaleString("ja-JP")}
+            />
+            <ChecklistStat
+              label="未完了"
+              value={checklist.summary.missingCount.toLocaleString("ja-JP")}
+              tone="missing"
+            />
+          </div>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-2">
+          {checklist.categories.map((category) => (
+            <ChecklistCategoryCard
+              key={category.id}
+              category={category}
+              onToggle={handleToggleChecklistItem}
+            />
           ))}
         </div>
-      </section>
-
-      <section className="rounded-lg bg-white p-5 shadow-soft">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <h2 className="text-lg font-semibold text-ink">装備完成度</h2>
-          <p className="text-sm font-semibold text-forest-800">
-            {coveragePercent}% 完成
-          </p>
-        </div>
-        <div className="mt-4 h-2.5 overflow-hidden rounded-lg bg-stone-100">
-          <div
-            className="h-full rounded-lg bg-forest-700"
-            style={{ width: `${coveragePercent}%` }}
-          />
-        </div>
-      </section>
-
-      <section className="rounded-lg bg-white p-5 shadow-soft">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold text-red-700">次に準備する装備</p>
-            <h2 className="mt-1 text-xl font-semibold text-ink">不足装備</h2>
-          </div>
-          <span className="rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-800">
-            {missingCount.toLocaleString("ja-JP")} 件
-          </span>
-        </div>
-        {missingDisplaySlots.length > 0 ? (
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {missingDisplaySlots.map((slotPlan) => (
-              <MissingGearCard
-                key={slotPlan.displayKey}
-                slotPlan={slotPlan}
-                onToggle={handleToggleMissingSlot}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="mt-4 rounded-lg border border-forest-100 bg-forest-50 px-4 py-3 text-sm font-semibold text-forest-900">
-            必要な装備スロットはすべてカバーされています。
-          </div>
-        )}
-      </section>
-
-      <section className="rounded-lg bg-white p-5 shadow-soft">
-        <SlotGroup
-          title="カバー済み装備"
-          emptyLabel="所有装備でカバーされたスロットはありません。"
-          icon="covered"
-          slots={coveredDisplaySlots}
-          checkedSlots={checkedSlots}
-          onToggle={handleToggleMissingSlot}
-        />
       </section>
 
       {compatibleSlots.length > 0 ? (
         <details className="group rounded-lg bg-white p-5 shadow-soft">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-stone-500">分類と所有装備の確認</p>
-              <h2 className="mt-1 text-lg font-semibold text-ink">照合結果の詳細</h2>
+              <p className="text-sm font-semibold text-stone-500">Gear-backed</p>
+              <h2 className="mt-1 text-lg font-semibold text-ink">装備庫との照合詳細</h2>
             </div>
             <ChevronDown className="h-5 w-5 shrink-0 text-stone-500 transition group-open:rotate-180" />
           </summary>
@@ -655,27 +706,15 @@ function TripPlanningResult({
       ) : null}
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
-        <h2 className="text-lg font-semibold text-ink">計画メモ</h2>
+        <h2 className="text-lg font-semibold text-ink">確認メモ</h2>
         <PlanningNotes
-          missingCount={missingCount}
+          missingCount={checklist.summary.missingCount}
           displaySlots={displaySlots}
           compatibilityBySlot={compatibilityBySlot}
         />
       </section>
     </div>
   );
-}
-
-function calculatePlanProgress(
-  plan: PackRequirementPlan,
-  checkedSlots: readonly RequirementSlot[] = []
-) {
-  const displaySlots = dedupeDisplaySlots(plan.required_slots);
-  const coveredSlots = displaySlots.filter((slotPlan) => {
-    return isDisplaySlotCovered(slotPlan, checkedSlots);
-  });
-
-  return calculateProgressFromCounts(coveredSlots.length, displaySlots.length);
 }
 
 function filterCheckedSlotsForPlan(
@@ -697,7 +736,7 @@ function uniqueRequirementSlots(values: readonly unknown[]) {
   for (const value of values) {
     if (
       typeof value === "string" &&
-      value in slotSystems &&
+      validRequirementSlots.has(value as RequirementSlot) &&
       !slots.includes(value as RequirementSlot)
     ) {
       slots.push(value as RequirementSlot);
@@ -707,12 +746,16 @@ function uniqueRequirementSlots(values: readonly unknown[]) {
   return slots;
 }
 
-function calculateProgressFromCounts(coveredCount: number, totalSlots: number) {
-  if (totalSlots === 0) {
-    return 0;
+function uniqueChecklistOnlyIds(values: readonly unknown[]) {
+  const ids: string[] = [];
+
+  for (const value of values) {
+    if (isSupportedChecklistOnlyId(value) && !ids.includes(value)) {
+      ids.push(value);
+    }
   }
 
-  return Math.round((coveredCount / totalSlots) * 100);
+  return ids;
 }
 
 function dedupeDisplaySlots(
@@ -752,17 +795,6 @@ function dedupeDisplaySlots(
   }
 
   return Array.from(displaySlots.values());
-}
-
-function isDisplaySlotCovered(
-  slotPlan: DisplayRequirementSlotPlan,
-  checkedSlots: readonly RequirementSlot[]
-) {
-  const checkedSlotSet = new Set(checkedSlots);
-
-  return slotPlan.slots.every((slot) => {
-    return !slotPlan.missingSlots.includes(slot) || checkedSlotSet.has(slot);
-  });
 }
 
 function getRequirementSlotDisplayKey(slot: RequirementSlot) {
@@ -842,17 +874,19 @@ function mergeGearMatchingConfidence(matches: GearMatchingResult[]) {
 
 function HeroReadinessCard({
   plan,
-  coveragePercent,
-  coveredCount,
+  checkedCount,
   missingCount,
-  totalSlots
+  totalCount,
+  progressPercent
 }: {
   plan: PackRequirementPlan;
-  coveragePercent: number;
-  coveredCount: number;
+  checkedCount: number;
   missingCount: number;
-  totalSlots: number;
+  totalCount: number;
+  progressPercent: number;
 }) {
+  const mountainBrief = buildMountainBrief(plan);
+
   return (
     <section className="overflow-hidden rounded-lg bg-ink text-white shadow-soft">
       <div className="grid gap-0 lg:grid-cols-[1.2fr_0.8fr]">
@@ -873,37 +907,42 @@ function HeroReadinessCard({
             <div className="grid grid-cols-2 gap-2 sm:flex sm:items-stretch sm:text-right">
               <div className="rounded-lg bg-white/10 px-4 py-3">
                 <p className="text-4xl font-semibold tracking-normal">
-                  {coveragePercent}%
+                  {progressPercent}%
                 </p>
-                <p className="text-sm font-semibold text-stone-200">装備完成度</p>
+                <p className="text-sm font-semibold text-stone-200">総完成度</p>
               </div>
               <div className="rounded-lg bg-white/10 px-4 py-3 sm:hidden">
                 <p className="text-4xl font-semibold tracking-normal text-red-200">
                   {missingCount.toLocaleString("ja-JP")}
                 </p>
-                <p className="text-sm font-semibold text-stone-200">不足</p>
+                <p className="text-sm font-semibold text-stone-200">未完了</p>
               </div>
             </div>
+          </div>
+          <div className="mt-5 max-w-2xl space-y-1 text-sm font-medium leading-6 text-stone-200">
+            {mountainBrief.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
           </div>
         </div>
 
         <div className="hidden grid-cols-3 border-t border-white/10 bg-white/5 sm:grid lg:border-l lg:border-t-0">
           <ReadinessMetric
-            label="カバー済み"
-            value={coveredCount}
-            suffix={`/${totalSlots}`}
+            label="完了"
+            value={checkedCount}
+            suffix={`/${totalCount}`}
             tone="covered"
           />
           <ReadinessMetric
-            label="不足"
+            label="未完了"
             value={missingCount}
             suffix="件"
             tone="missing"
           />
           <ReadinessMetric
-            label="準備する"
-            value={missingCount}
-            suffix="件"
+            label="完成度"
+            value={progressPercent}
+            suffix="%"
             tone="neutral"
           />
         </div>
@@ -941,157 +980,189 @@ function ReadinessMetric({
   );
 }
 
-function SystemIcon({
-  system,
-  className
-}: {
-  system: PlanningSystem;
-  className?: string;
-}) {
-  const Icon = systemIcons[system];
+function buildMountainBrief(plan: PackRequirementPlan) {
+  const { mountain } = plan;
+  const lines = [
+    `${formatMountainStatus(mountain.is_hyakumeizan)}標高${mountain.elevation_m.toLocaleString("ja-JP")}mの山です。`,
+    getMountainConditionLine(plan),
+    `本チェックリストは現在の${mountainFoundationStyleLabels[plan.style]}計画に基づいています。`
+  ];
 
-  return <Icon className={className} />;
+  return lines.filter(Boolean).slice(0, 4);
 }
 
-function MissingGearCard({
-  slotPlan,
+function formatMountainStatus(isHyakumeizan: boolean) {
+  return isHyakumeizan ? "日本百名山の一座で、" : "";
+}
+
+function getMountainConditionLine(plan: PackRequirementPlan) {
+  const { mountain, season } = plan;
+
+  if (mountain.volcanic_risk === "ACTIVE_RESTRICTED") {
+    return "火山情報と入山規制を確認し、行動判断を慎重に行う必要があります。";
+  }
+
+  if (mountain.alpine_environment === "HIGH_ALPINE_EXPOSED") {
+    return "稜線や高所では天候変化が大きく、防寒と雨具の確認が重要です。";
+  }
+
+  if (mountain.alpine_environment === "ABOVE_TREELINE") {
+    return "森林限界を越える区間では風雨と低温への備えが必要です。";
+  }
+
+  if (
+    mountain.snow_or_ice_risk === "LIKELY" ||
+    mountain.snow_or_ice_risk === "WINTER_ALPINE"
+  ) {
+    return "雪や凍結を前提に、足まわりと防寒装備を丁寧に確認してください。";
+  }
+
+  if (
+    mountain.snow_or_ice_risk === "SEASONAL_PATCHES" &&
+    (season === "SPRING" || season === "AUTUMN" || season === "WINTER")
+  ) {
+    return "季節により残雪や凍結が出るため、直前の登山道状況を確認してください。";
+  }
+
+  if (mountain.route_seriousness === "HIGH" || mountain.route_seriousness === "EXTREME") {
+    return "行動時間とエスケープルートを確認し、余裕のある準備が必要です。";
+  }
+
+  return "天候変化と行動時間を確認し、基本装備を一つずつ準備してください。";
+}
+
+function ChecklistStat({
+  label,
+  value,
+  tone = "neutral"
+}: {
+  label: string;
+  value: string;
+  tone?: "neutral" | "missing";
+}) {
+  return (
+    <div className="rounded-lg border border-stone-100 bg-white px-3 py-2 shadow-soft sm:min-w-24">
+      <p className="text-[11px] font-semibold text-stone-500">{label}</p>
+      <p
+        className={`mt-1 text-lg font-semibold ${
+          tone === "missing" ? "text-red-700" : "text-ink"
+        }`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function ChecklistCategoryCard({
+  category,
   onToggle
 }: {
-  slotPlan: DisplayRequirementSlotPlan;
-  onToggle: (slots: RequirementSlot[]) => void;
+  category: ChecklistCategory;
+  onToggle: (item: ChecklistItem) => void;
 }) {
-  const system = slotSystems[slotPlan.slot];
+  return (
+    <article className="rounded-lg bg-white p-5 shadow-soft">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-lg font-semibold text-ink">{category.label}</h3>
+          <p className="mt-1 text-xs font-semibold text-stone-500">
+            {category.progress.checkedCount.toLocaleString("ja-JP")} 完了 /{" "}
+            {category.progress.missingCount.toLocaleString("ja-JP")} 未完了
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-2xl font-semibold tracking-normal text-forest-800">
+            {category.progress.percent}%
+          </p>
+          <div className="mt-2 h-1.5 w-20 overflow-hidden rounded-full bg-stone-100">
+            <div
+              className="h-full rounded-full bg-forest-700"
+              style={{ width: `${category.progress.percent}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-4">
+        {category.priorityGroups.map((group) => (
+          <div key={group.priority}>
+            <div className="mb-2 flex items-center gap-2">
+              <span className="h-px flex-1 bg-stone-100" />
+              <p className="text-xs font-semibold text-stone-500">
+                {checklistPriorityLabels[group.priority]}
+              </p>
+              <span className="h-px flex-1 bg-stone-100" />
+            </div>
+            <div className="space-y-2">
+              {group.items.map((item) => (
+                <ChecklistItemRow
+                  key={item.id}
+                  item={item}
+                  onToggle={onToggle}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function ChecklistItemRow({
+  item,
+  onToggle
+}: {
+  item: ChecklistItem;
+  onToggle: (item: ChecklistItem) => void;
+}) {
+  const canToggle = item.source === "CHECKLIST_ONLY" || item.toggleSlots.length > 0;
+  const sourceLabel =
+    item.source === "GEAR_BACKED" ? "Gear-backed" : "Checklist-only";
+  const sourceClass =
+    item.source === "GEAR_BACKED"
+      ? "bg-forest-50 text-forest-800"
+      : "bg-stone-100 text-stone-600";
 
   return (
-    <label className="flex min-h-24 cursor-pointer gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 transition hover:border-red-200 hover:bg-red-100/70">
+    <label
+      className={`flex min-h-14 gap-3 rounded-lg border px-3 py-2.5 transition ${
+        item.checked
+          ? "border-forest-100 bg-forest-50/70"
+          : "border-stone-100 bg-white hover:border-stone-200"
+      } ${canToggle ? "cursor-pointer" : ""}`}
+    >
       <input
         type="checkbox"
         className="sr-only"
-        checked={false}
-        onChange={() => onToggle(slotPlan.missingSlots)}
+        checked={item.checked}
+        disabled={!canToggle}
+        onChange={() => onToggle(item)}
       />
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-red-800">
-        <Square className="h-5 w-5" />
-      </div>
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <SystemIcon system={system} className="h-4 w-4 shrink-0 text-red-800" />
-          <p className="text-sm font-semibold text-red-950">
-            {requirementSlotLabels[slotPlan.slot]}
-          </p>
-        </div>
-        <p className="mt-1 text-xs font-semibold text-red-700">
-          {planningSystemLabels[system]}
-        </p>
-      </div>
+      <span
+        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
+          item.checked
+            ? "border-forest-700 bg-forest-700 text-white"
+            : "border-stone-300 bg-white text-stone-400"
+        }`}
+      >
+        {item.checked ? <Check className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-semibold text-ink">{item.label}</span>
+          <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${sourceClass}`}>
+            {sourceLabel}
+          </span>
+        </span>
+        {item.matchingOwnedGear.length > 0 ? (
+          <span className="mt-1 block truncate text-xs font-medium text-stone-500">
+            {item.matchingOwnedGear.map(formatOwnedGearName).join(" / ")}
+          </span>
+        ) : null}
+      </span>
     </label>
-  );
-}
-
-function SlotGroup({
-  title,
-  emptyLabel,
-  icon,
-  slots,
-  checkedSlots = [],
-  onToggle
-}: {
-  title: string;
-  emptyLabel: string;
-  icon: "covered" | "missing";
-  slots: DisplayRequirementSlotPlan[];
-  checkedSlots?: RequirementSlot[];
-  onToggle?: (slots: RequirementSlot[]) => void;
-}) {
-  const isCovered = icon === "covered";
-
-  return (
-    <div>
-      <div className="flex items-center gap-2">
-        {isCovered ? (
-          <PackageCheck className="h-5 w-5 text-forest-700" />
-        ) : (
-          <PackageX className="h-5 w-5 text-red-700" />
-        )}
-        <h3 className="text-sm font-semibold text-stone-700">{title}</h3>
-      </div>
-      <div className="mt-3 space-y-2">
-        {slots.length === 0 ? (
-          <p className="text-sm text-stone-500">{emptyLabel}</p>
-        ) : (
-          slots.map((slotPlan) => (
-            <CoveredSlotRow
-              key={slotPlan.displayKey}
-              slotPlan={slotPlan}
-              isCovered={isCovered}
-              checkedSlots={checkedSlots}
-              onToggle={onToggle}
-            />
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-function CoveredSlotRow({
-  slotPlan,
-  isCovered,
-  checkedSlots,
-  onToggle
-}: {
-  slotPlan: DisplayRequirementSlotPlan;
-  isCovered: boolean;
-  checkedSlots: RequirementSlot[];
-  onToggle?: (slots: RequirementSlot[]) => void;
-}) {
-  const checkedSlotSet = new Set(checkedSlots);
-  const isUserChecked =
-    slotPlan.missingSlots.length > 0 &&
-    slotPlan.missingSlots.every((slot) => checkedSlotSet.has(slot));
-  const canToggle = isCovered && isUserChecked && onToggle;
-  const content = (
-    <>
-      <div className="flex items-center gap-2">
-        {isCovered ? (
-          <Check className="h-4 w-4 shrink-0 text-forest-700" />
-        ) : (
-          <X className="h-4 w-4 shrink-0 text-red-700" />
-        )}
-        <p className="text-sm font-semibold text-ink">
-          {requirementSlotLabels[slotPlan.slot]}
-        </p>
-      </div>
-      {slotPlan.matching_owned_gear.length > 0 ? (
-        <div className="mt-2 space-y-1 pl-6">
-          {slotPlan.matching_owned_gear.map((gear) => (
-            <p key={gear.id} className="text-xs text-stone-600">
-              {formatOwnedGearName(gear)}
-            </p>
-          ))}
-        </div>
-      ) : null}
-    </>
-  );
-
-  if (canToggle) {
-    return (
-      <label className="block cursor-pointer rounded-lg border border-forest-100 bg-forest-50 px-3 py-2 transition hover:border-forest-200">
-        <input
-          type="checkbox"
-          className="sr-only"
-          checked
-          onChange={() => onToggle(slotPlan.missingSlots)}
-        />
-        {content}
-      </label>
-    );
-  }
-
-  return (
-    <div className="rounded-lg border border-stone-100 bg-stone-50 px-3 py-2">
-      {content}
-    </div>
   );
 }
 
@@ -1208,7 +1279,7 @@ function PlanningNotes({
       {missingCount > 0 ? (
         <p className="flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-900">
           <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>不足装備を先に確認してください: {missingCount.toLocaleString("ja-JP")} 件</span>
+          <span>未完了項目を先に確認してください: {missingCount.toLocaleString("ja-JP")} 件</span>
         </p>
       ) : (
         <p className="flex items-start gap-2 rounded-lg bg-forest-50 px-3 py-2 text-sm font-medium text-forest-900">

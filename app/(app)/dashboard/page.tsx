@@ -11,8 +11,11 @@ import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import { DashboardPlanChecklistSummary } from "@/components/dashboard-plan-checklist-summary";
+import { getPackRequirementPlan } from "@/lib/data/pack-requirements";
 import { getDashboardSummary } from "@/lib/data/dashboard";
 import { getLatestTripPlan } from "@/lib/data/trip-plans";
+import { buildPlanChecklist } from "@/lib/plan-checklist";
 import type { DashboardRecentGear, DashboardSummary, SavedTripPlan } from "@/lib/types";
 import { formatJpy } from "@/lib/utils/format";
 
@@ -34,18 +37,21 @@ const categoryLabels = [
   "その他"
 ];
 const planRoute = "/plan" as Route;
+type DashboardTripChecklist = ReturnType<typeof buildPlanChecklist>;
 
 export default async function DashboardPage() {
   const [summary, nextTrip] = await Promise.all([
     getDashboardSummary(),
     fetchLatestPlan()
   ]);
+  const tripChecklist = nextTrip ? await fetchLatestPlanChecklist(nextTrip) : null;
 
   return (
     <HomePageContent
       hasTrip={Boolean(nextTrip)}
       hasGear={summary.ownedCount > 0}
       trip={nextTrip}
+      tripChecklist={tripChecklist}
       summary={summary}
     />
   );
@@ -55,15 +61,39 @@ async function fetchLatestPlan() {
   return getLatestTripPlan();
 }
 
+async function fetchLatestPlanChecklist(trip: SavedTripPlan) {
+  if (!trip.mountain_slug) {
+    return null;
+  }
+
+  try {
+    const plan = await getPackRequirementPlan({
+      mountainSlug: trip.mountain_slug,
+      season: trip.season,
+      style: trip.style
+    });
+
+    return buildPlanChecklist({
+      plan,
+      checkedSlots: trip.checked_slots
+    });
+  } catch (caught) {
+    console.error("Dashboard checklist summary failed:", caught);
+    return null;
+  }
+}
+
 function HomePageContent({
   hasTrip,
   hasGear,
   trip,
+  tripChecklist,
   summary
 }: {
   hasTrip: boolean;
   hasGear: boolean;
   trip: SavedTripPlan | null;
+  tripChecklist: DashboardTripChecklist | null;
   summary: DashboardSummary;
 }) {
   return (
@@ -102,7 +132,7 @@ function HomePageContent({
 
       <div className="mt-6 space-y-6 px-4">
         <section>
-          <HeroCard hasTrip={hasTrip} trip={trip} />
+          <HeroCard hasTrip={hasTrip} trip={trip} tripChecklist={tripChecklist} />
         </section>
 
         <section>
@@ -145,20 +175,22 @@ function HomeShellCss() {
 
 function HeroCard({
   hasTrip,
-  trip
+  trip,
+  tripChecklist
 }: {
   hasTrip: boolean;
   trip: SavedTripPlan | null;
+  tripChecklist: DashboardTripChecklist | null;
 }) {
   if (!hasTrip || !trip) {
     return <EmptyTripHero />;
   }
 
-  const coveragePercent = calculateCoveragePercent(trip);
+  const coveragePercent = tripChecklist?.summary.percent ?? calculateCoveragePercent(trip);
   const planHref = `/plan?id=${trip.id}` as Route;
 
   return (
-    <section className="relative h-48 w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7] shadow-sm">
+    <section className="relative min-h-[300px] w-full overflow-hidden rounded-lg bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7] shadow-sm">
       <div className="absolute inset-0 z-0">
         <Image
           src="/generic-hills.jpg"
@@ -169,7 +201,7 @@ function HeroCard({
         />
       </div>
       <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#E8F0E8]/40 via-white/90 to-white" />
-      <div className="relative z-20 flex flex-col justify-between p-5 h-full">
+      <div className="relative z-20 flex min-h-[300px] flex-col justify-between gap-5 p-5">
         <div>
           <HeroTitle />
           <div className="mt-3">
@@ -183,19 +215,15 @@ function HeroCard({
           </div>
         </div>
 
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="h-1.5 w-2/3 overflow-hidden rounded-full bg-gray-200">
-              <div
-                className="h-full rounded-full bg-[#3B5B44]"
-                style={{ width: `${coveragePercent}%` }}
-              />
-            </div>
-            <span className="text-xs font-medium">{coveragePercent}%</span>
-          </div>
+        <div className="space-y-4">
+          <DashboardPlanChecklistSummary
+            planId={trip.id}
+            checklist={tripChecklist}
+            fallbackProgress={coveragePercent}
+          />
           <Link
             href={planHref}
-            className="mt-3 inline-flex w-[200px] items-center justify-center rounded-xl bg-[#3B5B44] py-3 text-xs font-bold text-white shadow-sm"
+            className="inline-flex w-[200px] items-center justify-center rounded-lg bg-[#3B5B44] py-3 text-xs font-bold text-white shadow-sm"
           >
             装備チェックを続ける
           </Link>

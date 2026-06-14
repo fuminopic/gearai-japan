@@ -63,6 +63,13 @@ const meizanFullCoverageMigration = readFileSync(
   ),
   "utf8"
 );
+const meizan200ProfilesMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/023_mountain_foundation_meizan_200_profiles.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -367,6 +374,65 @@ test("mountain foundation meizan full coverage classifies the 100 nihyakumeizan 
   assert.doesNotMatch(meizanFullCoverageMigration, /\bevidence\b/i);
   assert.doesNotMatch(meizanFullCoverageMigration, /\baudit\b/i);
   assert.doesNotMatch(meizanFullCoverageMigration, /\blayer\b/i);
+});
+
+test("mountain foundation meizan 200 migration upserts static profiles only", () => {
+  const profileRows = meizan200ProfilesMigration.match(/\n  \('[a-z0-9-]+',/g) ?? [];
+  const hyakumeizanRows =
+    meizan200ProfilesMigration.match(/'JAPAN_HYAKUMEIZAN'/g) ?? [];
+  const nihyakumeizanExtraRows =
+    meizan200ProfilesMigration.match(/'JAPAN_NIHYAKUMEIZAN_EXTRA'/g) ?? [];
+
+  assert.equal(profileRows.length, 200);
+  assert.equal(hyakumeizanRows.length, 100);
+  assert.equal(nihyakumeizanExtraRows.length, 100);
+
+  for (const slug of [
+    "rishiri-zan",
+    "hachimantai",
+    "iide-san",
+    "tsurugi-dake",
+    "fuji-san",
+    "miyanoura-dake",
+    "teshio-dake",
+    "kentoku-san",
+    "tsubakuro-dake",
+    "sakurajima"
+  ]) {
+    assert.match(meizan200ProfilesMigration, new RegExp(`'${slug}'`));
+  }
+
+  for (const attribute of [
+    "active_volcano_status",
+    "jma_volcano_name",
+    "restriction_status_note",
+    "snow_free_month_guide",
+    "mandatory_gear_note",
+    "supplementary_notes"
+  ]) {
+    assert.match(meizan200ProfilesMigration, new RegExp(attribute));
+    assert.doesNotMatch(
+      meizan200ProfilesMigration,
+      new RegExp(`${attribute} = excluded\\.${attribute}`)
+    );
+  }
+
+  for (const source of [
+    tripRequirementEngine,
+    packRequirementEngine,
+    gearMatchingEngine
+  ]) {
+    assert.doesNotMatch(source, /JAPAN_NIHYAKUMEIZAN_EXTRA/);
+    assert.doesNotMatch(source, /meizan_list/);
+  }
+
+  assert.doesNotMatch(meizan200ProfilesMigration, /\bcreate table\b/i);
+  assert.doesNotMatch(meizan200ProfilesMigration, /\bdelete\b/i);
+  assert.doesNotMatch(meizan200ProfilesMigration, /\btruncate\b/i);
+  assert.doesNotMatch(meizan200ProfilesMigration, /\btruth\b/i);
+  assert.doesNotMatch(meizan200ProfilesMigration, /\bevidence\b/i);
+  assert.doesNotMatch(meizan200ProfilesMigration, /\baudit\b/i);
+  assert.doesNotMatch(meizan200ProfilesMigration, /\blayer\b/i);
 });
 
 test("mountain foundation V2 adds schema attributes without adding more mountains", () => {

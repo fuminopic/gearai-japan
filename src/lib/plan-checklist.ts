@@ -38,6 +38,8 @@ export type ChecklistItemIcon =
   | "crampons"
   | "iceAxe"
   | "bearProtection"
+  | "riverShoes"
+  | "portableToilet"
   | "tent"
   | "sleepingBag"
   | "sleepingPad"
@@ -215,7 +217,7 @@ function getBaseCategories(plan: PackRequirementPlan): ChecklistCategoryDefiniti
         {
           id: "safety-emergency-sheet",
           label: "エマージェンシーシート",
-          priority: "SUGGESTED",
+          priority: getEmergencySheetPriority(plan),
           icon: "emergencySheet"
         }
       ]
@@ -354,7 +356,7 @@ function getNavigationItems(plan: PackRequirementPlan): ChecklistItemDefinition[
     {
       id: "nav-spare-battery",
       label: "ヘッドランプ予備電池",
-      priority: headlampPriority === "ESSENTIAL" ? "SUGGESTED" : "OPTIONAL",
+      priority: getSpareBatteryPriority(plan, headlampPriority),
       icon: "battery"
     },
     {
@@ -521,10 +523,11 @@ function getSpecialGearItems(plan: PackRequirementPlan): ChecklistItemDefinition
     hasRequiredSlot(plan, "TRACTION_DEVICE") ||
     mountain.snow_or_ice_risk === "LIKELY" ||
     mountain.snow_or_ice_risk === "WINTER_ALPINE" ||
+    isLowMountainWinterTractionContext(plan) ||
     (mountain.snow_or_ice_risk === "SEASONAL_PATCHES" &&
       (season === "SPRING" || season === "AUTUMN" || season === "WINTER"));
-  const winterSnow =
-    mountain.snow_or_ice_risk === "WINTER_ALPINE" || season === "WINTER";
+  const needsCrampons = requiresCrampons(plan);
+  const needsIceAxe = requiresIceAxe(plan);
 
   if (needsHelmet) {
     items.push({
@@ -544,29 +547,30 @@ function getSpecialGearItems(plan: PackRequirementPlan): ChecklistItemDefinition
         mountain.snow_or_ice_risk === "LIKELY" ||
         mountain.snow_or_ice_risk === "WINTER_ALPINE"
           ? "ESSENTIAL"
+          : isLowMountainWinterTractionContext(plan)
+            ? "OPTIONAL"
           : "SUGGESTED",
       icon: "traction",
       slots: ["TRACTION_DEVICE"]
     });
   }
 
-  if (winterSnow) {
-    items.push(
-      {
-        id: "special-crampons",
-        label: "アイゼン",
-        priority:
-          mountain.snow_or_ice_risk === "WINTER_ALPINE" ? "ESSENTIAL" : "SUGGESTED",
-        icon: "crampons"
-      },
-      {
-        id: "special-ice-axe",
-        label: "ピッケル",
-        priority:
-          mountain.snow_or_ice_risk === "WINTER_ALPINE" ? "SUGGESTED" : "OPTIONAL",
-        icon: "iceAxe"
-      }
-    );
+  if (needsCrampons) {
+    items.push({
+      id: "special-crampons",
+      label: "アイゼン",
+      priority: mountain.snow_or_ice_risk === "WINTER_ALPINE" ? "ESSENTIAL" : "SUGGESTED",
+      icon: "crampons"
+    });
+  }
+
+  if (needsIceAxe) {
+    items.push({
+      id: "special-ice-axe",
+      label: "ピッケル",
+      priority: mountain.snow_or_ice_risk === "WINTER_ALPINE" ? "SUGGESTED" : "OPTIONAL",
+      icon: "iceAxe"
+    });
   }
 
   if (
@@ -578,6 +582,24 @@ function getSpecialGearItems(plan: PackRequirementPlan): ChecklistItemDefinition
       label: "熊対策装備",
       priority: mountain.bear_or_wildlife_risk === "HIGH" ? "ESSENTIAL" : "SUGGESTED",
       icon: "bearProtection"
+    });
+  }
+
+  if (requiresRiverCrossingShoes(plan)) {
+    items.push({
+      id: "special-river-crossing-shoes",
+      label: "渡渉用シューズ（沢靴・替え靴）",
+      priority: "ESSENTIAL",
+      icon: "riverShoes"
+    });
+  }
+
+  if (requiresPortableToilet(plan)) {
+    items.push({
+      id: "special-portable-toilet",
+      label: "携帯トイレ",
+      priority: "ESSENTIAL",
+      icon: "portableToilet"
     });
   }
 
@@ -706,6 +728,21 @@ function getHeadlampPriority(plan: PackRequirementPlan): ChecklistPriority {
   return "SUGGESTED";
 }
 
+function getSpareBatteryPriority(
+  plan: PackRequirementPlan,
+  headlampPriority: ChecklistPriority
+): ChecklistPriority {
+  if (isForcedBivouacRisk(plan)) {
+    return "ESSENTIAL";
+  }
+
+  return headlampPriority === "ESSENTIAL" ? "SUGGESTED" : "OPTIONAL";
+}
+
+function getEmergencySheetPriority(plan: PackRequirementPlan): ChecklistPriority {
+  return isForcedBivouacRisk(plan) ? "ESSENTIAL" : "SUGGESTED";
+}
+
 function getBackupNavigationPriority(plan: PackRequirementPlan): ChecklistPriority {
   if (isHighNavigationRisk(plan)) {
     return "SUGGESTED";
@@ -730,6 +767,90 @@ function isHighNavigationRisk(plan: PackRequirementPlan) {
     mountain.alpine_environment === "HIGH_ALPINE_EXPOSED" ||
     season === "WINTER"
   );
+}
+
+function isForcedBivouacRisk(plan: PackRequirementPlan) {
+  const { mountain } = plan;
+
+  return (
+    plan.style === "MULTI_DAY_TREK" ||
+    mountain.route_duration_band === "LONG_DAY" ||
+    mountain.route_duration_band === "MULTI_DAY" ||
+    mountain.route_seriousness === "EXTREME" ||
+    mountain.escape_options === "REMOTE" ||
+    mountain.cell_signal_reliability === "NONE" ||
+    (mountain.cell_signal_reliability === "POOR" &&
+      ["HIGH", "EXTREME"].includes(mountain.route_seriousness ?? ""))
+  );
+}
+
+function isLowMountainWinterTractionContext(plan: PackRequirementPlan) {
+  const { mountain, season } = plan;
+
+  return (
+    season === "WINTER" &&
+    mountain.snow_or_ice_risk === "LOW" &&
+    mountain.elevation_m < 1500 &&
+    mountain.technical_terrain === "MAINTAINED_TRAIL" &&
+    mountain.route_seriousness === "LOW"
+  );
+}
+
+function requiresCrampons(plan: PackRequirementPlan) {
+  const { mountain, season } = plan;
+
+  if (mountain.snow_or_ice_risk === "WINTER_ALPINE") {
+    return true;
+  }
+
+  return (
+    season === "WINTER" &&
+    mountain.snow_or_ice_risk === "LIKELY" &&
+    mountain.elevation_m >= 1500 &&
+    (["ABOVE_TREELINE", "HIGH_ALPINE_EXPOSED"].includes(
+      mountain.alpine_environment ?? ""
+    ) ||
+      ["HIGH", "EXTREME"].includes(mountain.route_seriousness ?? ""))
+  );
+}
+
+function requiresIceAxe(plan: PackRequirementPlan) {
+  const { mountain, season } = plan;
+
+  if (mountain.snow_or_ice_risk === "WINTER_ALPINE") {
+    return true;
+  }
+
+  return (
+    season === "WINTER" &&
+    mountain.snow_or_ice_risk === "LIKELY" &&
+    mountain.elevation_m >= 2000 &&
+    (mountain.technical_terrain === "STEEP_ROCKY" ||
+      mountain.technical_terrain === "CHAIN_LADDER" ||
+      mountain.technical_terrain === "EXPOSED_SCRAMBLE") &&
+    ["HIGH", "EXTREME"].includes(mountain.route_seriousness ?? "")
+  );
+}
+
+function requiresRiverCrossingShoes(plan: PackRequirementPlan) {
+  return /渡渉|徒渉|沢靴|替え靴|川渡り/.test(getMountainNotesText(plan));
+}
+
+function requiresPortableToilet(plan: PackRequirementPlan) {
+  return /携帯トイレ|トイレ無|山中トイレ無/.test(getMountainNotesText(plan));
+}
+
+function getMountainNotesText(plan: PackRequirementPlan) {
+  const { mountain } = plan;
+
+  return [
+    mountain.mandatory_gear_note,
+    mountain.supplementary_notes,
+    mountain.restriction_status_note
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .normalize("NFKC");
 }
 
 function matchChecklistOwnedGear(

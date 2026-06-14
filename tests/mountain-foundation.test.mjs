@@ -42,6 +42,13 @@ const supplementaryMigration = readFileSync(
   ),
   "utf8"
 );
+const ruleReviewFixMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/020_mountain_foundation_rule_review_fixes.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -260,6 +267,24 @@ test("mountain foundation supplementary fields stay out of recommendation engine
       assert.doesNotMatch(source, new RegExp(attribute));
     }
   }
+});
+
+test("mountain foundation rule review fixes stay static and scoped", () => {
+  assert.match(ruleReviewFixMigration, /where slug = 'meakan-dake'/);
+  assert.match(ruleReviewFixMigration, /volcanic_risk = 'ACTIVE_RESTRICTED'/);
+  assert.match(ruleReviewFixMigration, /噴火警戒レベル2（火口周辺規制）/);
+
+  assert.match(ruleReviewFixMigration, /where slug = 'poroshiri-dake'/);
+  assert.match(ruleReviewFixMigration, /渡渉装備/);
+  assert.match(ruleReviewFixMigration, /携帯トイレ必携/);
+
+  assert.doesNotMatch(ruleReviewFixMigration, /\bcreate table\b/i);
+  assert.doesNotMatch(ruleReviewFixMigration, /\balter table\b/i);
+  assert.doesNotMatch(ruleReviewFixMigration, /\binsert into\b/i);
+  assert.doesNotMatch(ruleReviewFixMigration, /\btruth\b/i);
+  assert.doesNotMatch(ruleReviewFixMigration, /\bevidence\b/i);
+  assert.doesNotMatch(ruleReviewFixMigration, /\baudit\b/i);
+  assert.doesNotMatch(ruleReviewFixMigration, /\blayer\b/i);
 });
 
 test("mountain foundation V2 adds schema attributes without adding more mountains", () => {

@@ -259,6 +259,8 @@ test("pack planning checklist keeps special and overnight equipment dynamic", ()
     "アイゼン",
     "ピッケル",
     "熊対策装備",
+    "渡渉用シューズ",
+    "携帯トイレ",
     "インナーシーツ",
     "耳栓",
     "洗面用品",

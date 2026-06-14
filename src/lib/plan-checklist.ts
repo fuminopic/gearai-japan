@@ -651,13 +651,7 @@ function getOvernightGearItems(plan: PackRequirementPlan): ChecklistItemDefiniti
   }
 
   return [
-    {
-      id: "overnight-inner-sheet",
-      label: "インナーシーツ",
-      priority: "ESSENTIAL",
-      icon: "innerSheet",
-      slots: ["SLEEP_INSULATION"]
-    },
+    getHutSleepItem(plan),
     {
       id: "overnight-toiletries",
       label: "洗面用品",
@@ -671,6 +665,25 @@ function getOvernightGearItems(plan: PackRequirementPlan): ChecklistItemDefiniti
       icon: "earplugs"
     }
   ];
+}
+
+function getHutSleepItem(plan: PackRequirementPlan): ChecklistItemDefinition {
+  if (hasRequiredSlot(plan, "SLEEP_INSULATION")) {
+    return {
+      id: "overnight-hut-sleeping-bag",
+      label: "シュラフ（寝袋）",
+      priority: "ESSENTIAL",
+      icon: "sleepingBag",
+      slots: ["SLEEP_INSULATION"]
+    };
+  }
+
+  return {
+    id: "overnight-inner-sheet",
+    label: "インナーシーツ",
+    priority: "ESSENTIAL",
+    icon: "innerSheet"
+  };
 }
 
 function usesTentStyle(style: MountainFoundationStyle, plan: PackRequirementPlan) {

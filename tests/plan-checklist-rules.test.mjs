@@ -190,3 +190,34 @@ test("river-crossing and portable-toilet notes create special checklist items", 
   );
   assert.equal(itemByLabel(checklist, "携帯トイレ")?.priority, "ESSENTIAL");
 });
+
+test("hut stays without bedding ask for a sleeping bag instead of an inner sheet", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      season: "SUMMER",
+      style: "OVERNIGHT_HUT",
+      mountain: {
+        hut_support: "BASIC_NO_BEDDING"
+      },
+      requiredSlots: ["SLEEP_INSULATION"]
+    })
+  });
+
+  assert.equal(itemByLabel(checklist, "シュラフ（寝袋）")?.priority, "ESSENTIAL");
+  assert.equal(itemByLabel(checklist, "インナーシーツ"), undefined);
+});
+
+test("full-service hut stays keep the inner sheet checklist item", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      season: "SUMMER",
+      style: "OVERNIGHT_HUT",
+      mountain: {
+        hut_support: "FULL_SERVICE"
+      }
+    })
+  });
+
+  assert.equal(itemByLabel(checklist, "インナーシーツ")?.priority, "ESSENTIAL");
+  assert.equal(itemByLabel(checklist, "シュラフ（寝袋）"), undefined);
+});

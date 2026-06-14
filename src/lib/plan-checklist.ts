@@ -8,6 +8,45 @@ import type {
 
 export type ChecklistPriority = "ESSENTIAL" | "SUGGESTED" | "OPTIONAL";
 export type ChecklistItemSource = "GEAR_BACKED" | "CHECKLIST_ONLY";
+export type ChecklistItemIcon =
+  | "baseLayer"
+  | "midLayer"
+  | "insulation"
+  | "rainwear"
+  | "hat"
+  | "gloves"
+  | "gaiters"
+  | "backpack"
+  | "trekkingPoles"
+  | "sunglasses"
+  | "water"
+  | "trailFood"
+  | "meal"
+  | "stove"
+  | "cookPot"
+  | "fuel"
+  | "navigationApp"
+  | "mapCompass"
+  | "gpsDevice"
+  | "headlamp"
+  | "battery"
+  | "firstAid"
+  | "insurance"
+  | "whistle"
+  | "emergencySheet"
+  | "helmet"
+  | "traction"
+  | "crampons"
+  | "iceAxe"
+  | "bearProtection"
+  | "tent"
+  | "sleepingBag"
+  | "sleepingPad"
+  | "pegs"
+  | "groundsheet"
+  | "innerSheet"
+  | "toiletries"
+  | "earplugs";
 export type ChecklistCategoryId =
   | "CLOTHING"
   | "ACTION_GEAR"
@@ -21,7 +60,9 @@ export type ChecklistItemDefinition = {
   id: string;
   label: string;
   priority: ChecklistPriority;
+  icon: ChecklistItemIcon;
   slots?: RequirementSlot[];
+  ownedGearMatcher?: "GROUNDSHEET";
 };
 
 export type ChecklistItem = ChecklistItemDefinition & {
@@ -84,191 +125,247 @@ const categoryLabels: Record<ChecklistCategoryId, string> = {
   OVERNIGHT_GEAR: "宿泊装備"
 };
 
-const baseCategories: Array<{
+type ChecklistCategoryDefinition = {
   id: ChecklistCategoryId;
   items: ChecklistItemDefinition[];
-}> = [
-  {
-    id: "CLOTHING",
-    items: [
+};
+
+function getBaseCategories(plan: PackRequirementPlan): ChecklistCategoryDefinition[] {
+  return [
+    {
+      id: "CLOTHING",
+      items: getClothingItems(plan)
+    },
+    {
+      id: "ACTION_GEAR",
+      items: [
+        {
+          id: "action-backpack",
+          label: "ザック",
+          priority: "ESSENTIAL",
+          icon: "backpack"
+        },
+        {
+          id: "action-trekking-poles",
+          label: "トレッキングポール",
+          priority: "SUGGESTED",
+          icon: "trekkingPoles"
+        },
+        {
+          id: "action-sunglasses",
+          label: "サングラス",
+          priority: "SUGGESTED",
+          icon: "sunglasses"
+        }
+      ]
+    },
+    {
+      id: "FOOD_WATER",
+      items: getFoodWaterItems(plan)
+    },
+    {
+      id: "NAV_ELECTRONICS",
+      items: getNavigationItems(plan)
+    },
+    {
+      id: "SAFETY_FIRST_AID",
+      items: [
+        {
+          id: "safety-first-aid",
+          label: "救急セット",
+          priority: "ESSENTIAL",
+          icon: "firstAid",
+          slots: ["FIRST_AID_KIT"]
+        },
+        {
+          id: "safety-insurance-card",
+          label: "保険証",
+          priority: "ESSENTIAL",
+          icon: "insurance"
+        },
+        {
+          id: "safety-whistle",
+          label: "ホイッスル",
+          priority: "SUGGESTED",
+          icon: "whistle"
+        },
+        {
+          id: "safety-emergency-sheet",
+          label: "エマージェンシーシート",
+          priority: "SUGGESTED",
+          icon: "emergencySheet"
+        }
+      ]
+    }
+  ];
+}
+
+function getClothingItems(plan: PackRequirementPlan): ChecklistItemDefinition[] {
+  return [
       {
         id: "clothing-base-layer",
-        label: "ベースレイヤー",
+        label: "肌着・ベースレイヤー",
         priority: "ESSENTIAL",
+        icon: "baseLayer",
         slots: ["BASE_LAYER"]
       },
       {
         id: "clothing-insulation",
         label: "防寒着",
         priority: "ESSENTIAL",
+        icon: "insulation",
         slots: ["INSULATION_LAYER"]
       },
       {
         id: "clothing-rainwear",
         label: "レインウェア",
         priority: "ESSENTIAL",
+        icon: "rainwear",
         slots: ["RAIN_JACKET", "RAIN_PANTS"]
       },
       {
         id: "clothing-mid-layer",
-        label: "ミドルレイヤー",
-        priority: "SUGGESTED"
+        label: "中間着",
+        priority: "SUGGESTED",
+        icon: "midLayer"
       },
       {
         id: "clothing-hat",
         label: "帽子",
-        priority: "SUGGESTED"
+        priority: "SUGGESTED",
+        icon: "hat"
       },
       {
         id: "clothing-gloves",
         label: "手袋",
-        priority: "SUGGESTED"
+        priority: getGlovesPriority(plan),
+        icon: "gloves"
       },
       {
         id: "clothing-gaiters",
         label: "ゲイター",
-        priority: "OPTIONAL"
+        priority: "OPTIONAL",
+        icon: "gaiters"
       }
-    ]
-  },
-  {
-    id: "ACTION_GEAR",
-    items: [
-      {
-        id: "action-backpack",
-        label: "ザック",
-        priority: "ESSENTIAL"
-      },
-      {
-        id: "action-trekking-poles",
-        label: "トレッキングポール",
-        priority: "SUGGESTED"
-      },
-      {
-        id: "action-sunglasses",
-        label: "サングラス",
-        priority: "SUGGESTED"
-      }
-    ]
-  },
-  {
-    id: "FOOD_WATER",
-    items: [
-      {
-        id: "food-water",
-        label: "水",
-        priority: "ESSENTIAL",
-        slots: ["WATER_STORAGE", "WATER_TREATMENT"]
-      },
-      {
-        id: "food-trail-snacks",
-        label: "行動食",
-        priority: "ESSENTIAL"
-      },
-      {
-        id: "food-meals",
-        label: "食料",
-        priority: "SUGGESTED"
-      },
-      {
-        id: "food-stove",
-        label: "バーナー",
-        priority: "SUGGESTED",
-        slots: ["STOVE"]
-      },
-      {
-        id: "food-cook-pot",
-        label: "クッカー",
-        priority: "SUGGESTED",
-        slots: ["COOK_POT"]
-      },
-      {
-        id: "food-fuel",
-        label: "ガス",
-        priority: "SUGGESTED",
-        slots: ["FUEL"]
-      }
-    ]
-  },
-  {
-    id: "NAV_ELECTRONICS",
-    items: [
-      {
-        id: "nav-map",
-        label: "地図",
-        priority: "ESSENTIAL"
-      },
-      {
-        id: "nav-smartphone",
-        label: "スマホ",
-        priority: "ESSENTIAL"
-      },
-      {
-        id: "nav-headlamp",
-        label: "ヘッドランプ",
-        priority: "ESSENTIAL",
-        slots: ["HEADLAMP"]
-      },
-      {
-        id: "nav-compass",
-        label: "コンパス",
-        priority: "SUGGESTED"
-      },
-      {
-        id: "nav-gps",
-        label: "GPS",
-        priority: "SUGGESTED",
-        slots: ["GPS_DEVICE"]
-      },
-      {
-        id: "nav-spare-battery",
-        label: "予備電池",
-        priority: "SUGGESTED"
-      },
-      {
-        id: "nav-power-bank",
-        label: "モバイルバッテリー",
-        priority: "SUGGESTED",
-        slots: ["POWER_BANK"]
-      }
-    ]
-  },
-  {
-    id: "SAFETY_FIRST_AID",
-    items: [
-      {
-        id: "safety-first-aid",
-        label: "ファーストエイド",
-        priority: "ESSENTIAL",
-        slots: ["FIRST_AID_KIT"]
-      },
-      {
-        id: "safety-insurance-card",
-        label: "保険証",
-        priority: "ESSENTIAL"
-      },
-      {
-        id: "safety-whistle",
-        label: "ホイッスル",
-        priority: "SUGGESTED"
-      },
-      {
-        id: "safety-emergency-sheet",
-        label: "エマージェンシーシート",
-        priority: "SUGGESTED"
-      }
-    ]
+  ];
+}
+
+function getFoodWaterItems(plan: PackRequirementPlan): ChecklistItemDefinition[] {
+  const items: ChecklistItemDefinition[] = [
+    {
+      id: "food-water",
+      label: "飲み水",
+      priority: "ESSENTIAL",
+      icon: "water",
+      slots: ["WATER_STORAGE", "WATER_TREATMENT"]
+    },
+    {
+      id: "food-trail-snacks",
+      label: "行動食",
+      priority: "ESSENTIAL",
+      icon: "trailFood"
+    },
+    {
+      id: "food-meals",
+      label: "食事・非常食",
+      priority: "SUGGESTED",
+      icon: "meal"
+    }
+  ];
+
+  if (!hasAnyRequiredSlot(plan, ["STOVE", "COOK_POT", "FUEL"])) {
+    return items;
   }
-];
+
+  return [
+    ...items,
+    {
+      id: "food-stove",
+      label: "バーナー",
+      priority: "SUGGESTED",
+      icon: "stove",
+      slots: ["STOVE"]
+    },
+    {
+      id: "food-cook-pot",
+      label: "クッカー",
+      priority: "SUGGESTED",
+      icon: "cookPot",
+      slots: ["COOK_POT"]
+    },
+    {
+      id: "food-fuel",
+      label: "ガス缶",
+      priority: "SUGGESTED",
+      icon: "fuel",
+      slots: ["FUEL"]
+    }
+  ];
+}
+
+function getNavigationItems(plan: PackRequirementPlan): ChecklistItemDefinition[] {
+  const headlampPriority = getHeadlampPriority(plan);
+  const items: ChecklistItemDefinition[] = [
+    {
+      id: "nav-map-app",
+      label: "登山地図アプリ（YAMAP・ヤマレコ等）",
+      priority: "ESSENTIAL",
+      icon: "navigationApp"
+    },
+    {
+      id: "nav-map-compass",
+      label: "紙地図・コンパス",
+      priority: getBackupNavigationPriority(plan),
+      icon: "mapCompass"
+    }
+  ];
+
+  if (shouldShowGpsDevice(plan)) {
+    items.push({
+      id: "nav-gps-device",
+      label: "GPS端末",
+      priority: "SUGGESTED",
+      icon: "gpsDevice",
+      slots: ["GPS_DEVICE"]
+    });
+  }
+
+  items.push(
+    {
+      id: "nav-headlamp",
+      label: "ヘッドランプ",
+      priority: headlampPriority,
+      icon: "headlamp",
+      slots: ["HEADLAMP"]
+    },
+    {
+      id: "nav-spare-battery",
+      label: "ヘッドランプ予備電池",
+      priority: headlampPriority === "ESSENTIAL" ? "SUGGESTED" : "OPTIONAL",
+      icon: "battery"
+    },
+    {
+      id: "nav-power-bank",
+      label: "モバイルバッテリー",
+      priority: isHighNavigationRisk(plan) ? "ESSENTIAL" : "SUGGESTED",
+      icon: "battery",
+      slots: ["POWER_BANK"]
+    }
+  );
+
+  return items;
+}
 
 export function buildPlanChecklist({
   plan,
   checkedSlots = [],
-  checkedChecklistOnlyIds = []
+  checkedChecklistOnlyIds = [],
+  ownedGear = []
 }: {
   plan: PackRequirementPlan;
   checkedSlots?: readonly RequirementSlot[];
   checkedChecklistOnlyIds?: readonly string[];
+  ownedGear?: readonly GearMatchingOwnedGearMatch[];
 }): ChecklistView {
   const slotPlansBySlot = new Map(
     plan.required_slots.map((slotPlan) => [slotPlan.slot, slotPlan])
@@ -276,7 +373,7 @@ export function buildPlanChecklist({
   const checkedSlotSet = new Set(checkedSlots);
   const checkedChecklistOnlySet = new Set(checkedChecklistOnlyIds);
   const categories = [
-    ...baseCategories,
+    ...getBaseCategories(plan),
     {
       id: "SPECIAL_GEAR" as const,
       items: getSpecialGearItems(plan)
@@ -292,7 +389,8 @@ export function buildPlanChecklist({
           definition: item,
           slotPlansBySlot,
           checkedSlotSet,
-          checkedChecklistOnlySet
+          checkedChecklistOnlySet,
+          ownedGear
         });
       });
 
@@ -310,33 +408,44 @@ function buildChecklistItem({
   definition,
   slotPlansBySlot,
   checkedSlotSet,
-  checkedChecklistOnlySet
+  checkedChecklistOnlySet,
+  ownedGear
 }: {
   definition: ChecklistItemDefinition;
   slotPlansBySlot: Map<RequirementSlot, PackRequirementSlotPlan>;
   checkedSlotSet: Set<RequirementSlot>;
   checkedChecklistOnlySet: Set<string>;
+  ownedGear: readonly GearMatchingOwnedGearMatch[];
 }): ChecklistItem {
   const slots = (definition.slots ?? []).filter((slot) => slotPlansBySlot.has(slot));
-  const source: ChecklistItemSource = slots.length > 0 ? "GEAR_BACKED" : "CHECKLIST_ONLY";
+  const auxiliaryOwnedGear = matchChecklistOwnedGear(definition, ownedGear);
+  const source: ChecklistItemSource =
+    slots.length > 0 || auxiliaryOwnedGear.length > 0
+      ? "GEAR_BACKED"
+      : "CHECKLIST_ONLY";
   const toggleSlots = slots.filter((slot) => {
     const slotPlan = slotPlansBySlot.get(slot);
 
     return slotPlan?.coverage_status === "MISSING";
   });
   const matchingOwnedGear = uniqueOwnedGear(
-    slots.flatMap((slot) => slotPlansBySlot.get(slot)?.matching_owned_gear ?? [])
+    [
+      ...slots.flatMap((slot) => slotPlansBySlot.get(slot)?.matching_owned_gear ?? []),
+      ...auxiliaryOwnedGear
+    ]
   );
   const checked =
     source === "GEAR_BACKED"
-      ? slots.every((slot) => {
-          const slotPlan = slotPlansBySlot.get(slot);
+      ? slots.length > 0
+        ? slots.every((slot) => {
+            const slotPlan = slotPlansBySlot.get(slot);
 
-          return (
-            slotPlan?.coverage_status === "COVERED" ||
-            (slotPlan?.coverage_status === "MISSING" && checkedSlotSet.has(slot))
-          );
-        })
+            return (
+              slotPlan?.coverage_status === "COVERED" ||
+              (slotPlan?.coverage_status === "MISSING" && checkedSlotSet.has(slot))
+            );
+          })
+        : auxiliaryOwnedGear.length > 0
       : checkedChecklistOnlySet.has(definition.id);
 
   return {
@@ -409,6 +518,7 @@ function getSpecialGearItems(plan: PackRequirementPlan): ChecklistItemDefinition
       id: "special-helmet",
       label: "ヘルメット",
       priority: mountain.helmet_guidance === "REQUIRED" ? "ESSENTIAL" : "SUGGESTED",
+      icon: "helmet",
       slots: ["HELMET"]
     });
   }
@@ -422,6 +532,7 @@ function getSpecialGearItems(plan: PackRequirementPlan): ChecklistItemDefinition
         mountain.snow_or_ice_risk === "WINTER_ALPINE"
           ? "ESSENTIAL"
           : "SUGGESTED",
+      icon: "traction",
       slots: ["TRACTION_DEVICE"]
     });
   }
@@ -431,21 +542,29 @@ function getSpecialGearItems(plan: PackRequirementPlan): ChecklistItemDefinition
       {
         id: "special-crampons",
         label: "アイゼン",
-        priority: mountain.snow_or_ice_risk === "WINTER_ALPINE" ? "ESSENTIAL" : "SUGGESTED"
+        priority:
+          mountain.snow_or_ice_risk === "WINTER_ALPINE" ? "ESSENTIAL" : "SUGGESTED",
+        icon: "crampons"
       },
       {
         id: "special-ice-axe",
         label: "ピッケル",
-        priority: mountain.snow_or_ice_risk === "WINTER_ALPINE" ? "SUGGESTED" : "OPTIONAL"
+        priority:
+          mountain.snow_or_ice_risk === "WINTER_ALPINE" ? "SUGGESTED" : "OPTIONAL",
+        icon: "iceAxe"
       }
     );
   }
 
-  if (mountain.bear_or_wildlife_risk === "MODERATE" || mountain.bear_or_wildlife_risk === "HIGH") {
+  if (
+    mountain.bear_or_wildlife_risk === "MODERATE" ||
+    mountain.bear_or_wildlife_risk === "HIGH"
+  ) {
     items.push({
       id: "special-bear-protection",
       label: "熊対策装備",
-      priority: mountain.bear_or_wildlife_risk === "HIGH" ? "ESSENTIAL" : "SUGGESTED"
+      priority: mountain.bear_or_wildlife_risk === "HIGH" ? "ESSENTIAL" : "SUGGESTED",
+      icon: "bearProtection"
     });
   }
 
@@ -463,29 +582,35 @@ function getOvernightGearItems(plan: PackRequirementPlan): ChecklistItemDefiniti
         id: "overnight-tent",
         label: "テント",
         priority: "ESSENTIAL",
+        icon: "tent",
         slots: ["TENT"]
       },
       {
         id: "overnight-sleeping-bag",
-        label: "シュラフ",
+        label: "シュラフ（寝袋）",
         priority: "ESSENTIAL",
+        icon: "sleepingBag",
         slots: ["SLEEP_INSULATION"]
       },
       {
         id: "overnight-sleeping-pad",
-        label: "マット",
+        label: "スリーピングマット",
         priority: "ESSENTIAL",
+        icon: "sleepingPad",
         slots: ["SLEEP_PAD"]
       },
       {
         id: "overnight-pegs",
         label: "ペグ",
-        priority: "SUGGESTED"
+        priority: "SUGGESTED",
+        icon: "pegs"
       },
       {
         id: "overnight-groundsheet",
         label: "グランドシート",
-        priority: "SUGGESTED"
+        priority: "SUGGESTED",
+        icon: "groundsheet",
+        ownedGearMatcher: "GROUNDSHEET"
       }
     ];
   }
@@ -495,17 +620,20 @@ function getOvernightGearItems(plan: PackRequirementPlan): ChecklistItemDefiniti
       id: "overnight-inner-sheet",
       label: "インナーシーツ",
       priority: "ESSENTIAL",
+      icon: "innerSheet",
       slots: ["SLEEP_INSULATION"]
     },
     {
       id: "overnight-toiletries",
       label: "洗面用品",
-      priority: "SUGGESTED"
+      priority: "SUGGESTED",
+      icon: "toiletries"
     },
     {
       id: "overnight-earplugs",
       label: "耳栓",
-      priority: "OPTIONAL"
+      priority: "OPTIONAL",
+      icon: "earplugs"
     }
   ];
 }
@@ -516,6 +644,114 @@ function usesTentStyle(style: MountainFoundationStyle, plan: PackRequirementPlan
 
 function hasRequiredSlot(plan: PackRequirementPlan, slot: RequirementSlot) {
   return plan.required_slots.some((slotPlan) => slotPlan.slot === slot);
+}
+
+function hasAnyRequiredSlot(plan: PackRequirementPlan, slots: readonly RequirementSlot[]) {
+  return slots.some((slot) => hasRequiredSlot(plan, slot));
+}
+
+function getGlovesPriority(plan: PackRequirementPlan): ChecklistPriority {
+  const { mountain, season } = plan;
+
+  if (
+    season === "WINTER" ||
+    mountain.snow_or_ice_risk === "WINTER_ALPINE" ||
+    mountain.snow_or_ice_risk === "LIKELY"
+  ) {
+    return "ESSENTIAL";
+  }
+
+  if (
+    season === "AUTUMN" ||
+    ["ABOVE_TREELINE", "HIGH_ALPINE_EXPOSED"].includes(
+      mountain.alpine_environment ?? ""
+    ) ||
+    ["HIGH", "EXTREME"].includes(mountain.route_seriousness ?? "")
+  ) {
+    return "SUGGESTED";
+  }
+
+  return "OPTIONAL";
+}
+
+function getHeadlampPriority(plan: PackRequirementPlan): ChecklistPriority {
+  if (isHighNavigationRisk(plan) || plan.style !== "DAY_HIKE") {
+    return "ESSENTIAL";
+  }
+
+  const { mountain } = plan;
+
+  if (
+    mountain.route_duration_band === "SHORT" &&
+    mountain.route_seriousness === "LOW" &&
+    mountain.technical_terrain === "MAINTAINED_TRAIL" &&
+    mountain.alpine_environment === "LOWLAND_FOREST"
+  ) {
+    return "OPTIONAL";
+  }
+
+  return "SUGGESTED";
+}
+
+function getBackupNavigationPriority(plan: PackRequirementPlan): ChecklistPriority {
+  if (isHighNavigationRisk(plan)) {
+    return "SUGGESTED";
+  }
+
+  return "OPTIONAL";
+}
+
+function shouldShowGpsDevice(plan: PackRequirementPlan) {
+  return hasRequiredSlot(plan, "GPS_DEVICE") && isHighNavigationRisk(plan);
+}
+
+function isHighNavigationRisk(plan: PackRequirementPlan) {
+  const { mountain, season } = plan;
+
+  return (
+    plan.style === "MULTI_DAY_TREK" ||
+    mountain.route_duration_band === "LONG_DAY" ||
+    mountain.route_duration_band === "MULTI_DAY" ||
+    ["HIGH", "EXTREME"].includes(mountain.route_seriousness ?? "") ||
+    ["CHAIN_LADDER", "EXPOSED_SCRAMBLE"].includes(
+      mountain.technical_terrain ?? ""
+    ) ||
+    ["LIMITED", "REMOTE"].includes(mountain.escape_options ?? "") ||
+    ["POOR", "NONE"].includes(mountain.cell_signal_reliability ?? "") ||
+    mountain.alpine_environment === "HIGH_ALPINE_EXPOSED" ||
+    season === "WINTER"
+  );
+}
+
+function matchChecklistOwnedGear(
+  definition: ChecklistItemDefinition,
+  ownedGear: readonly GearMatchingOwnedGearMatch[]
+) {
+  if (definition.ownedGearMatcher !== "GROUNDSHEET") {
+    return [];
+  }
+
+  return ownedGear.filter(isGroundsheetGear);
+}
+
+function isGroundsheetGear(item: GearMatchingOwnedGearMatch) {
+  const text = [
+    item.name,
+    item.brand,
+    item.model,
+    item.gear_categories?.name_en,
+    item.gear_categories?.name_ja,
+    item.gear_subcategories?.name_en,
+    item.gear_subcategories?.name_ja
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .normalize("NFKC");
+
+  return (
+    /ground\s*sheet|groundsheet|foot\s*print|footprint/i.test(text) ||
+    /グラウンドシート|グランドシート|フットプリント|地布/.test(text)
+  );
 }
 
 function uniqueOwnedGear(matches: GearMatchingOwnedGearMatch[]) {
@@ -531,12 +767,14 @@ function uniqueOwnedGear(matches: GearMatchingOwnedGearMatch[]) {
 export function calculateChecklistProgress(
   plan: PackRequirementPlan,
   checkedSlots: readonly RequirementSlot[] = [],
-  checkedChecklistOnlyIds: readonly string[] = []
+  checkedChecklistOnlyIds: readonly string[] = [],
+  ownedGear: readonly GearMatchingOwnedGearMatch[] = []
 ) {
   return buildPlanChecklist({
     plan,
     checkedSlots,
-    checkedChecklistOnlyIds
+    checkedChecklistOnlyIds,
+    ownedGear
   }).summary.percent;
 }
 

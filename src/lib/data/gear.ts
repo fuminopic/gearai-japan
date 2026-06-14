@@ -131,7 +131,7 @@ export async function getUserGear(filters: GearFilters = {}) {
   return data as unknown as UserGear[];
 }
 
-export async function getOwnedGearForPlanning() {
+export const getOwnedGearForPlanning = cache(async function getOwnedGearForPlanning() {
   const { supabase, user } = await requireUser();
   const { data, error } = await supabase
     .from("user_gear")
@@ -145,7 +145,7 @@ export async function getOwnedGearForPlanning() {
   }
 
   return data as unknown as UserGear[];
-}
+});
 
 export async function getUserGearById(id: string) {
   const { supabase, user } = await requireUser();

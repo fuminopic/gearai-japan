@@ -188,13 +188,24 @@ test("trip planning UI presents a professional gear checklist", () => {
     "必須",
     "推奨",
     "あると便利",
-    "Gear-backed",
-    "Checklist-only"
+    "所持済み",
+    "未登録",
+    "確認済み",
+    "要確認",
+    "登山地図アプリ（YAMAP・ヤマレコ等）",
+    "紙地図・コンパス"
   ]) {
     assert.match(`${tripPlanningUiSource}\n${planChecklistSource}`, new RegExp(copy));
   }
 
+  assert.doesNotMatch(tripPlanningUiSource, /Gear-backed/);
+  assert.doesNotMatch(tripPlanningUiSource, /Checklist-only/);
+  assert.doesNotMatch(planChecklistSource, /nav-smartphone/);
+  assert.doesNotMatch(planChecklistSource, /label: "スマホ"/);
   assert.match(tripPlanningUiSource, /buildPlanChecklist/);
+  assert.match(tripPlanningUiSource, /calculateChecklistProgress\(/);
+  assert.match(tripPlanningUiSource, /checklistItemIcons/);
+  assert.match(tripPlanningUiSource, /type ChecklistItemIcon/);
   assert.match(tripPlanningUiSource, /matching_owned_gear/);
   assert.match(tripPlanningUiSource, /matching_database_gear/);
   assert.match(tripPlanningUiSource, /登録データ上の対応例/);
@@ -260,6 +271,24 @@ test("pack planning checklist keeps special and overnight equipment dynamic", ()
   assert.match(planChecklistSource, /mountain\.helmet_guidance/);
   assert.match(planChecklistSource, /mountain\.snow_or_ice_risk/);
   assert.match(planChecklistSource, /mountain\.bear_or_wildlife_risk/);
+});
+
+test("pack planning checklist fixes first-round readiness issues", () => {
+  assert.match(planPageContentSource, /getOwnedGearForPlanning/);
+  assert.match(planPageContentSource, /ownedGear=\{ownedGear\}/);
+  assert.match(dashboardPageSource, /getOwnedGearForPlanning/);
+  assert.match(dashboardPageSource, /buildPlanChecklist\(\{/);
+  assert.match(dashboardPageSource, /ownedGear/);
+  assert.match(planChecklistSource, /ownedGearMatcher: "GROUNDSHEET"/);
+  assert.match(
+    planChecklistSource,
+    /hasAnyRequiredSlot\(plan, \["STOVE", "COOK_POT", "FUEL"\]\)/
+  );
+  assert.match(planChecklistSource, /getHeadlampPriority/);
+  assert.match(planChecklistSource, /getGlovesPriority/);
+  assert.match(planChecklistSource, /shouldShowGpsDevice/);
+  assert.match(planChecklistSource, /label: "保険証"/);
+  assert.match(planChecklistSource, /priority: "ESSENTIAL"/);
 });
 
 test("pack planning UI deduplicates merged slot labels and supports checklist progress", () => {

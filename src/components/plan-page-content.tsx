@@ -1,5 +1,5 @@
 import { TripPlanningUI } from "@/components/trip-planning-ui";
-import { getGearProducts, requireUser } from "@/lib/data/gear";
+import { getGearProducts, getOwnedGearForPlanning, requireUser } from "@/lib/data/gear";
 import { getMountainFoundationProfiles } from "@/lib/data/mountain-foundation";
 import { getPackRequirementPlan } from "@/lib/data/pack-requirements";
 import { getRecommendationHistory } from "@/lib/data/recommendations";
@@ -10,7 +10,8 @@ import type {
   MountainFoundationProfile,
   MountainFoundationSeason,
   MountainFoundationStyle,
-  RequirementSlot
+  RequirementSlot,
+  UserGear
 } from "@/lib/types";
 
 export type PlanPageContentProps = {
@@ -65,19 +66,22 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   );
   let plan;
   let compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>> = {};
+  let ownedGear: UserGear[] = [];
 
   if (shouldGeneratePlan && mountains.length > 0) {
     try {
-      const [generatedPlan, databaseGear] = await Promise.all([
+      const [generatedPlan, databaseGear, planningOwnedGear] = await Promise.all([
         getPackRequirementPlan({
           mountainSlug: selectedMountainSlug,
           season: selectedSeason,
           style: selectedStyle
         }),
-        getGearProducts()
+        getGearProducts(),
+        getOwnedGearForPlanning()
       ]);
 
       plan = generatedPlan;
+      ownedGear = planningOwnedGear;
       compatibilityBySlot = Object.fromEntries(
         plan.required_slots.map((slotPlan) => {
           const match = matchGearForRequirementSlot({
@@ -109,6 +113,7 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
       selectedSeason={selectedSeason}
       selectedStyle={selectedStyle}
       plan={plan}
+      ownedGear={ownedGear}
       compatibilityBySlot={compatibilityBySlot}
       planHistory={planHistory}
       savedPlans={savedPlans}

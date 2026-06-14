@@ -283,6 +283,7 @@ test("pack requirement generator applies V2 mountain attributes to concrete slot
       [
         "WATER_SYSTEM",
         "SHELTER_SYSTEM",
+        "COOK_SYSTEM",
         "RAIN_SYSTEM",
         "COLD_WEATHER_LAYER",
         "NAVIGATION_SYSTEM",

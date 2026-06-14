@@ -216,7 +216,7 @@ function requiresHutSleepInsulation(mountain?: PackRequirementInput["mountain"])
 }
 
 function requiresHutCooking(mountain?: PackRequirementInput["mountain"]) {
-  return mountain?.hut_support !== "FULL_SERVICE";
+  return false;
 }
 
 function requiresTractionDevice(

@@ -159,7 +159,6 @@ test("trip requirement engine applies generic season and style rules only within
       "WATER_SYSTEM",
       "SHELTER_SYSTEM",
       "SLEEP_SYSTEM",
-      "COOK_SYSTEM",
       "RAIN_SYSTEM",
       "COLD_WEATHER_LAYER",
       "NAVIGATION_SYSTEM",

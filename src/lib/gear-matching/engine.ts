@@ -346,7 +346,10 @@ function matchesSlotTextHint(item: UserGear | GearProduct, slot: RequirementSlot
 function isTentAccessory(item: UserGear | GearProduct) {
   const text = getGearSearchText(item);
 
-  return /foot\s*print/i.test(text) || /地布/.test(text) || /フットプリント/i.test(text);
+  return (
+    /ground\s*sheet|groundsheet|foot\s*print|footprint/i.test(text) ||
+    /グラウンドシート|グランドシート|地布|フットプリント/i.test(text)
+  );
 }
 
 function normalizeCategory(...values: Array<string | null | undefined>) {

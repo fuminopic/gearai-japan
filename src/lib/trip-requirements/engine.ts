@@ -136,7 +136,7 @@ function requiresHutSleepInsulation(mountain: TripRequirementInput["mountain"]) 
 }
 
 function requiresHutCooking(mountain: TripRequirementInput["mountain"]) {
-  return mountain.hut_support !== "FULL_SERVICE";
+  return false;
 }
 
 function requiresColdWeatherLayer(

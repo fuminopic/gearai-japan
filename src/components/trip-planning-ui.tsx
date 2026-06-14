@@ -2,11 +2,45 @@
 
 import {
   AlertTriangle,
+  Axe,
+  Backpack,
+  Battery,
+  Bean,
+  Bed,
+  Bell,
+  BriefcaseMedical,
   Check,
   ChevronDown,
   CircleAlert,
-  Square,
-  Mountain
+  CircleDashed,
+  CloudRain,
+  Compass,
+  Cookie,
+  CookingPot,
+  Droplets,
+  Footprints,
+  Glasses,
+  Hammer,
+  Hand,
+  HardHat,
+  House,
+  IdCard,
+  Lamp,
+  Map as MapIcon,
+  MapPinned,
+  Mountain,
+  Navigation,
+  PlugZap,
+  Shirt,
+  ShieldAlert,
+  Snowflake,
+  Soup,
+  Sparkles,
+  Tent,
+  Utensils,
+  Volume2,
+  Zap,
+  type LucideIcon
 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
@@ -35,6 +69,7 @@ import {
   getChecklistOnlyStorageKey,
   isSupportedChecklistOnlyId,
   type ChecklistCategory,
+  type ChecklistItemIcon,
   type ChecklistItem
 } from "@/lib/plan-checklist";
 import { createClient } from "@/lib/supabase/client";
@@ -49,7 +84,8 @@ import type {
   PackRequirementPlan,
   PackRequirementSlotPlan,
   RequirementSlot,
-  SavedTripPlan
+  SavedTripPlan,
+  UserGear
 } from "@/lib/types";
 
 type TripPlanningUIProps = {
@@ -58,6 +94,7 @@ type TripPlanningUIProps = {
   selectedSeason: MountainFoundationSeason;
   selectedStyle: MountainFoundationStyle;
   plan?: PackRequirementPlan;
+  ownedGear?: UserGear[];
   compatibilityBySlot?: Partial<Record<RequirementSlot, GearMatchingResult>>;
   planHistory?: AIRecommendationRecord[];
   savedPlans?: SavedTripPlan[];
@@ -107,6 +144,7 @@ export function TripPlanningUI({
   selectedSeason,
   selectedStyle,
   plan,
+  ownedGear = [],
   compatibilityBySlot = {},
   planHistory = [],
   savedPlans = [],
@@ -146,7 +184,12 @@ export function TripPlanningUI({
     interactiveChecklistOnlyIds ?? storedChecklistOnlyIds;
   const currentProgressValue = plan
     ? interactiveProgress ??
-      calculateChecklistProgress(plan, currentCheckedSlots, currentChecklistOnlyIds)
+      calculateChecklistProgress(
+        plan,
+        currentCheckedSlots,
+        currentChecklistOnlyIds,
+        ownedGear
+      )
     : hydratedPlan?.progress ?? 0;
   const planStateKey = plan
     ? `${plan.mountain.slug}:${plan.season}:${plan.style}`
@@ -251,6 +294,7 @@ export function TripPlanningUI({
           <TripPlanningResult
             plan={plan}
             compatibilityBySlot={compatibilityBySlot}
+            ownedGear={ownedGear}
             initialCheckedSlots={currentCheckedSlots}
             initialChecklistOnlyIds={currentChecklistOnlyIds}
             onProgressChange={setInteractiveProgress}
@@ -531,6 +575,7 @@ function getCheckedSlotsStorageKey(planId: string) {
 function TripPlanningResult({
   plan,
   compatibilityBySlot,
+  ownedGear,
   initialCheckedSlots = emptyCheckedSlots,
   initialChecklistOnlyIds = emptyChecklistOnlyIds,
   onProgressChange,
@@ -539,6 +584,7 @@ function TripPlanningResult({
 }: {
   plan: PackRequirementPlan;
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
+  ownedGear: UserGear[];
   initialCheckedSlots?: RequirementSlot[];
   initialChecklistOnlyIds?: string[];
   onProgressChange?: (progress: number) => void;
@@ -556,7 +602,8 @@ function TripPlanningResult({
   const checklist = buildPlanChecklist({
     plan,
     checkedSlots,
-    checkedChecklistOnlyIds: checklistOnlyIds
+    checkedChecklistOnlyIds: checklistOnlyIds,
+    ownedGear
   });
   const displaySlots = dedupeDisplaySlots(plan.required_slots);
   const compatibleSlots = displaySlots
@@ -686,7 +733,7 @@ function TripPlanningResult({
         <details className="group rounded-lg bg-white p-5 shadow-soft">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-stone-500">Gear-backed</p>
+              <p className="text-sm font-semibold text-stone-500">装備登録の確認</p>
               <h2 className="mt-1 text-lg font-semibold text-ink">装備庫との照合詳細</h2>
             </div>
             <ChevronDown className="h-5 w-5 shrink-0 text-stone-500 transition group-open:rotate-180" />
@@ -1118,12 +1165,8 @@ function ChecklistItemRow({
   onToggle: (item: ChecklistItem) => void;
 }) {
   const canToggle = item.source === "CHECKLIST_ONLY" || item.toggleSlots.length > 0;
-  const sourceLabel =
-    item.source === "GEAR_BACKED" ? "Gear-backed" : "Checklist-only";
-  const sourceClass =
-    item.source === "GEAR_BACKED"
-      ? "bg-forest-50 text-forest-800"
-      : "bg-stone-100 text-stone-600";
+  const ItemIcon = checklistItemIcons[item.icon];
+  const status = getChecklistItemStatus(item);
 
   return (
     <label
@@ -1140,6 +1183,9 @@ function ChecklistItemRow({
         disabled={!canToggle}
         onChange={() => onToggle(item)}
       />
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-stone-700">
+        <ItemIcon className="h-4 w-4" aria-hidden="true" />
+      </span>
       <span
         className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
           item.checked
@@ -1147,13 +1193,17 @@ function ChecklistItemRow({
             : "border-stone-300 bg-white text-stone-400"
         }`}
       >
-        {item.checked ? <Check className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+        {item.checked ? (
+          <Check className="h-3.5 w-3.5" />
+        ) : (
+          <CircleDashed className="h-3.5 w-3.5" />
+        )}
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-semibold text-ink">{item.label}</span>
-          <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${sourceClass}`}>
-            {sourceLabel}
+          <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${status.className}`}>
+            {status.label}
           </span>
         </span>
         {item.matchingOwnedGear.length > 0 ? (
@@ -1164,6 +1214,82 @@ function ChecklistItemRow({
       </span>
     </label>
   );
+}
+
+const checklistItemIcons: Record<ChecklistItemIcon, LucideIcon> = {
+  baseLayer: Shirt,
+  midLayer: Shirt,
+  insulation: Snowflake,
+  rainwear: CloudRain,
+  hat: Sparkles,
+  gloves: Hand,
+  gaiters: Footprints,
+  backpack: Backpack,
+  trekkingPoles: Footprints,
+  sunglasses: Glasses,
+  water: Droplets,
+  trailFood: Cookie,
+  meal: Soup,
+  stove: CookingPot,
+  cookPot: Utensils,
+  fuel: PlugZap,
+  navigationApp: Navigation,
+  mapCompass: Compass,
+  gpsDevice: MapPinned,
+  headlamp: Lamp,
+  battery: Battery,
+  firstAid: BriefcaseMedical,
+  insurance: IdCard,
+  whistle: Volume2,
+  emergencySheet: ShieldAlert,
+  helmet: HardHat,
+  traction: Zap,
+  crampons: Snowflake,
+  iceAxe: Axe,
+  bearProtection: Bell,
+  tent: Tent,
+  sleepingBag: Bed,
+  sleepingPad: Bed,
+  pegs: Hammer,
+  groundsheet: MapIcon,
+  innerSheet: House,
+  toiletries: Sparkles,
+  earplugs: Bean
+};
+
+function getChecklistItemStatus(item: ChecklistItem) {
+  if (item.matchingOwnedGear.length > 0) {
+    return {
+      label: "所持済み",
+      className: "bg-forest-50 text-forest-800"
+    };
+  }
+
+  if (item.source === "GEAR_BACKED" && item.checked) {
+    return {
+      label: "確認済み",
+      className: "bg-blue-50 text-blue-700"
+    };
+  }
+
+  if (item.source === "GEAR_BACKED") {
+    return {
+      label: "未登録",
+      className: "bg-amber-50 text-amber-800"
+    };
+  }
+
+  if (item.checked) {
+    return {
+      label: "確認済み",
+      className: "bg-blue-50 text-blue-700"
+    };
+  }
+
+  return {
+    label: "要確認",
+    className: "bg-stone-100 text-stone-600"
+  };
 }
 
 function CompatibleGearSlot({
@@ -1297,9 +1423,35 @@ function PlanningNotes({
 }
 
 function formatOwnedGearName(gear: GearMatchingOwnedGearMatch) {
-  return [gear.brand, gear.model, gear.name].filter(Boolean).join(" / ");
+  return formatDisplayGearName({
+    brand: gear.brand,
+    model: gear.model,
+    name: gear.name
+  });
 }
 
 function formatDatabaseGearName(gear: GearMatchingDatabaseGearMatch) {
-  return [gear.brand, gear.model, gear.name_ja].filter(Boolean).join(" / ");
+  return formatDisplayGearName({
+    brand: gear.brand,
+    model: gear.model,
+    name: gear.name_ja
+  });
+}
+
+function formatDisplayGearName({
+  brand,
+  model,
+  name
+}: {
+  brand: string | null;
+  model: string | null;
+  name: string | null;
+}) {
+  const primaryName = [brand, model].filter(Boolean).join(" ").trim();
+
+  if (primaryName && name && !primaryName.includes(name)) {
+    return `${primaryName}（${name}）`;
+  }
+
+  return primaryName || name || "登録装備";
 }

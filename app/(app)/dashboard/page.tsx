@@ -12,6 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { DashboardPlanChecklistSummary } from "@/components/dashboard-plan-checklist-summary";
+import { getOwnedGearForPlanning } from "@/lib/data/gear";
 import { getPackRequirementPlan } from "@/lib/data/pack-requirements";
 import { getDashboardSummary } from "@/lib/data/dashboard";
 import { getLatestTripPlan } from "@/lib/data/trip-plans";
@@ -67,15 +68,19 @@ async function fetchLatestPlanChecklist(trip: SavedTripPlan) {
   }
 
   try {
-    const plan = await getPackRequirementPlan({
-      mountainSlug: trip.mountain_slug,
-      season: trip.season,
-      style: trip.style
-    });
+    const [plan, ownedGear] = await Promise.all([
+      getPackRequirementPlan({
+        mountainSlug: trip.mountain_slug,
+        season: trip.season,
+        style: trip.style
+      }),
+      getOwnedGearForPlanning()
+    ]);
 
     return buildPlanChecklist({
       plan,
-      checkedSlots: trip.checked_slots
+      checkedSlots: trip.checked_slots,
+      ownedGear
     });
   } catch (caught) {
     console.error("Dashboard checklist summary failed:", caught);
@@ -186,7 +191,7 @@ function HeroCard({
     return <EmptyTripHero />;
   }
 
-  const coveragePercent = tripChecklist?.summary.percent ?? calculateCoveragePercent(trip);
+  const coveragePercent = tripChecklist?.summary.percent ?? getSavedProgressFallback(trip);
   const planHref = `/plan?id=${trip.id}` as Route;
 
   return (
@@ -545,7 +550,7 @@ function buildDistribution(summary: DashboardSummary, hasGear: boolean) {
   return mapped;
 }
 
-function calculateCoveragePercent(trip: SavedTripPlan) {
+function getSavedProgressFallback(trip: SavedTripPlan) {
   return clampProgress(trip.progress);
 }
 

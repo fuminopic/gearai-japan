@@ -285,6 +285,18 @@ test("gear matching excludes tent footprint accessories from tent coverage", () 
         name: "テント 地布",
         categoryName: "shelter",
         subcategoryName: "tent"
+      }),
+      ownedGear({
+        id: "ground-sheet-en",
+        name: "Ground Sheet",
+        categoryName: "shelter",
+        subcategoryName: "tent"
+      }),
+      ownedGear({
+        id: "ground-sheet-ja",
+        name: "グランドシート",
+        categoryName: "shelter",
+        subcategoryName: "tent"
       })
     ],
     databaseGear: [

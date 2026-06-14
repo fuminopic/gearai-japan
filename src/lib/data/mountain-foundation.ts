@@ -9,6 +9,7 @@ const MOUNTAIN_FOUNDATION_BASE_COLUMNS = [
   "region",
   "elevation_m",
   "is_hyakumeizan",
+  "meizan_list",
   "supported_seasons",
   "supported_styles",
   "trip_profile",
@@ -50,8 +51,15 @@ const MOUNTAIN_FOUNDATION_SUPPLEMENTARY_COLUMNS = [
 ] as const;
 
 const MOUNTAIN_FOUNDATION_BASE_SELECT = MOUNTAIN_FOUNDATION_BASE_COLUMNS.join(",");
+const MOUNTAIN_FOUNDATION_LEGACY_BASE_SELECT = MOUNTAIN_FOUNDATION_BASE_COLUMNS
+  .filter((column) => column !== "meizan_list")
+  .join(",");
 const MOUNTAIN_FOUNDATION_V2_SELECT = [
   ...MOUNTAIN_FOUNDATION_BASE_COLUMNS,
+  ...MOUNTAIN_FOUNDATION_V2_COLUMNS
+].join(",");
+const MOUNTAIN_FOUNDATION_LEGACY_V2_SELECT = [
+  ...MOUNTAIN_FOUNDATION_BASE_COLUMNS.filter((column) => column !== "meizan_list"),
   ...MOUNTAIN_FOUNDATION_V2_COLUMNS
 ].join(",");
 const MOUNTAIN_FOUNDATION_CORE_SELECT = [
@@ -59,8 +67,19 @@ const MOUNTAIN_FOUNDATION_CORE_SELECT = [
   ...MOUNTAIN_FOUNDATION_V21_COLUMNS,
   ...MOUNTAIN_FOUNDATION_V2_COLUMNS,
 ].join(",");
+const MOUNTAIN_FOUNDATION_LEGACY_CORE_SELECT = [
+  ...MOUNTAIN_FOUNDATION_BASE_COLUMNS.filter((column) => column !== "meizan_list"),
+  ...MOUNTAIN_FOUNDATION_V21_COLUMNS,
+  ...MOUNTAIN_FOUNDATION_V2_COLUMNS,
+].join(",");
 const MOUNTAIN_FOUNDATION_SELECT = [
   ...MOUNTAIN_FOUNDATION_BASE_COLUMNS,
+  ...MOUNTAIN_FOUNDATION_V21_COLUMNS,
+  ...MOUNTAIN_FOUNDATION_V2_COLUMNS,
+  ...MOUNTAIN_FOUNDATION_SUPPLEMENTARY_COLUMNS
+].join(",");
+const MOUNTAIN_FOUNDATION_LEGACY_SELECT = [
+  ...MOUNTAIN_FOUNDATION_BASE_COLUMNS.filter((column) => column !== "meizan_list"),
   ...MOUNTAIN_FOUNDATION_V21_COLUMNS,
   ...MOUNTAIN_FOUNDATION_V2_COLUMNS,
   ...MOUNTAIN_FOUNDATION_SUPPLEMENTARY_COLUMNS
@@ -103,6 +122,11 @@ const MOUNTAIN_FOUNDATION_SUPPLEMENTARY_DEFAULTS = {
   (typeof MOUNTAIN_FOUNDATION_SUPPLEMENTARY_COLUMNS)[number]
 >;
 
+const JAPAN_NIHYAKUMEIZAN_EXTRA_SLUGS = new Set([
+  "kentoku-san",
+  "tsubakuro-dake"
+]);
+
 export const getMountainFoundationProfiles = cache(
   async function getMountainFoundationProfiles() {
     const supabase = await createClient();
@@ -112,11 +136,53 @@ export const getMountainFoundationProfiles = cache(
       .returns<MountainFoundationProfile[]>()
       .order("name_ja", { ascending: true });
 
+    if (error && isMissingMountainFoundationMeizanColumnError(error)) {
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from("mountain_foundation_profiles")
+        .select(MOUNTAIN_FOUNDATION_LEGACY_SELECT)
+        .order("name_ja", { ascending: true });
+
+      if (fallbackError && isMissingMountainFoundationSupplementaryColumnError(fallbackError)) {
+        const { data: coreFallbackData, error: coreFallbackError } = await supabase
+          .from("mountain_foundation_profiles")
+          .select(MOUNTAIN_FOUNDATION_LEGACY_CORE_SELECT)
+          .order("name_ja", { ascending: true });
+
+        if (coreFallbackError) {
+          throw new Error(coreFallbackError.message);
+        }
+
+        return ((coreFallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
+          .map(withMountainFoundationDefaults);
+      }
+
+      if (fallbackError) {
+        throw new Error(fallbackError.message);
+      }
+
+      return ((fallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
+        .map(withMountainFoundationDefaults);
+    }
+
     if (error && isMissingMountainFoundationSupplementaryColumnError(error)) {
       const { data: fallbackData, error: fallbackError } = await supabase
         .from("mountain_foundation_profiles")
         .select(MOUNTAIN_FOUNDATION_CORE_SELECT)
         .order("name_ja", { ascending: true });
+
+      if (fallbackError && isMissingMountainFoundationMeizanColumnError(fallbackError)) {
+        const { data: legacyFallbackData, error: legacyFallbackError } = await supabase
+          .from("mountain_foundation_profiles")
+          .select(MOUNTAIN_FOUNDATION_LEGACY_CORE_SELECT)
+          .order("name_ja", { ascending: true });
+
+        if (legacyFallbackError) {
+          throw new Error(legacyFallbackError.message);
+        }
+
+        return ((legacyFallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
+          .map(withMountainFoundationDefaults);
+      }
 
       if (fallbackError) {
         throw new Error(fallbackError.message);
@@ -132,11 +198,39 @@ export const getMountainFoundationProfiles = cache(
         .select(MOUNTAIN_FOUNDATION_V2_SELECT)
         .order("name_ja", { ascending: true });
 
+      if (fallbackError && isMissingMountainFoundationMeizanColumnError(fallbackError)) {
+        const { data: legacyFallbackData, error: legacyFallbackError } = await supabase
+          .from("mountain_foundation_profiles")
+          .select(MOUNTAIN_FOUNDATION_LEGACY_V2_SELECT)
+          .order("name_ja", { ascending: true });
+
+        if (legacyFallbackError) {
+          throw new Error(legacyFallbackError.message);
+        }
+
+        return ((legacyFallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
+          .map(withMountainFoundationDefaults);
+      }
+
       if (fallbackError && isMissingMountainFoundationV2ColumnError(fallbackError)) {
         const { data: baseFallbackData, error: baseFallbackError } = await supabase
           .from("mountain_foundation_profiles")
           .select(MOUNTAIN_FOUNDATION_BASE_SELECT)
           .order("name_ja", { ascending: true });
+
+        if (baseFallbackError && isMissingMountainFoundationMeizanColumnError(baseFallbackError)) {
+          const { data: legacyBaseData, error: legacyBaseError } = await supabase
+            .from("mountain_foundation_profiles")
+            .select(MOUNTAIN_FOUNDATION_LEGACY_BASE_SELECT)
+            .order("name_ja", { ascending: true });
+
+          if (legacyBaseError) {
+            throw new Error(legacyBaseError.message);
+          }
+
+          return ((legacyBaseData ?? []) as unknown as Partial<MountainFoundationProfile>[])
+            .map(withMountainFoundationDefaults);
+        }
 
         if (baseFallbackError) {
           throw new Error(baseFallbackError.message);
@@ -159,6 +253,20 @@ export const getMountainFoundationProfiles = cache(
         .from("mountain_foundation_profiles")
         .select(MOUNTAIN_FOUNDATION_BASE_SELECT)
         .order("name_ja", { ascending: true });
+
+      if (fallbackError && isMissingMountainFoundationMeizanColumnError(fallbackError)) {
+        const { data: legacyFallbackData, error: legacyFallbackError } = await supabase
+          .from("mountain_foundation_profiles")
+          .select(MOUNTAIN_FOUNDATION_LEGACY_BASE_SELECT)
+          .order("name_ja", { ascending: true });
+
+        if (legacyFallbackError) {
+          throw new Error(legacyFallbackError.message);
+        }
+
+        return ((legacyFallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
+          .map(withMountainFoundationDefaults);
+      }
 
       if (fallbackError) {
         throw new Error(fallbackError.message);
@@ -186,12 +294,66 @@ export const getMountainFoundationProfileBySlug = cache(
       .returns<MountainFoundationProfile>()
       .maybeSingle();
 
+    if (error && isMissingMountainFoundationMeizanColumnError(error)) {
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from("mountain_foundation_profiles")
+        .select(MOUNTAIN_FOUNDATION_LEGACY_SELECT)
+        .eq("slug", slug)
+        .maybeSingle();
+
+      if (fallbackError && isMissingMountainFoundationSupplementaryColumnError(fallbackError)) {
+        const { data: coreFallbackData, error: coreFallbackError } = await supabase
+          .from("mountain_foundation_profiles")
+          .select(MOUNTAIN_FOUNDATION_LEGACY_CORE_SELECT)
+          .eq("slug", slug)
+          .maybeSingle();
+
+        if (coreFallbackError) {
+          throw new Error(coreFallbackError.message);
+        }
+
+        return coreFallbackData
+          ? withMountainFoundationDefaults(
+              coreFallbackData as unknown as Partial<MountainFoundationProfile>
+            )
+          : null;
+      }
+
+      if (fallbackError) {
+        throw new Error(fallbackError.message);
+      }
+
+      return fallbackData
+        ? withMountainFoundationDefaults(
+            fallbackData as unknown as Partial<MountainFoundationProfile>
+          )
+        : null;
+    }
+
     if (error && isMissingMountainFoundationSupplementaryColumnError(error)) {
       const { data: fallbackData, error: fallbackError } = await supabase
         .from("mountain_foundation_profiles")
         .select(MOUNTAIN_FOUNDATION_CORE_SELECT)
         .eq("slug", slug)
         .maybeSingle();
+
+      if (fallbackError && isMissingMountainFoundationMeizanColumnError(fallbackError)) {
+        const { data: legacyFallbackData, error: legacyFallbackError } = await supabase
+          .from("mountain_foundation_profiles")
+          .select(MOUNTAIN_FOUNDATION_LEGACY_CORE_SELECT)
+          .eq("slug", slug)
+          .maybeSingle();
+
+        if (legacyFallbackError) {
+          throw new Error(legacyFallbackError.message);
+        }
+
+        return legacyFallbackData
+          ? withMountainFoundationDefaults(
+              legacyFallbackData as unknown as Partial<MountainFoundationProfile>
+            )
+          : null;
+      }
 
       if (fallbackError) {
         throw new Error(fallbackError.message);
@@ -211,12 +373,48 @@ export const getMountainFoundationProfileBySlug = cache(
         .eq("slug", slug)
         .maybeSingle();
 
+      if (fallbackError && isMissingMountainFoundationMeizanColumnError(fallbackError)) {
+        const { data: legacyFallbackData, error: legacyFallbackError } = await supabase
+          .from("mountain_foundation_profiles")
+          .select(MOUNTAIN_FOUNDATION_LEGACY_V2_SELECT)
+          .eq("slug", slug)
+          .maybeSingle();
+
+        if (legacyFallbackError) {
+          throw new Error(legacyFallbackError.message);
+        }
+
+        return legacyFallbackData
+          ? withMountainFoundationDefaults(
+              legacyFallbackData as unknown as Partial<MountainFoundationProfile>
+            )
+          : null;
+      }
+
       if (fallbackError && isMissingMountainFoundationV2ColumnError(fallbackError)) {
         const { data: baseFallbackData, error: baseFallbackError } = await supabase
           .from("mountain_foundation_profiles")
           .select(MOUNTAIN_FOUNDATION_BASE_SELECT)
           .eq("slug", slug)
           .maybeSingle();
+
+        if (baseFallbackError && isMissingMountainFoundationMeizanColumnError(baseFallbackError)) {
+          const { data: legacyBaseData, error: legacyBaseError } = await supabase
+            .from("mountain_foundation_profiles")
+            .select(MOUNTAIN_FOUNDATION_LEGACY_BASE_SELECT)
+            .eq("slug", slug)
+            .maybeSingle();
+
+          if (legacyBaseError) {
+            throw new Error(legacyBaseError.message);
+          }
+
+          return legacyBaseData
+            ? withMountainFoundationDefaults(
+                legacyBaseData as unknown as Partial<MountainFoundationProfile>
+              )
+            : null;
+        }
 
         if (baseFallbackError) {
           throw new Error(baseFallbackError.message);
@@ -247,6 +445,24 @@ export const getMountainFoundationProfileBySlug = cache(
         .eq("slug", slug)
         .maybeSingle();
 
+      if (fallbackError && isMissingMountainFoundationMeizanColumnError(fallbackError)) {
+        const { data: legacyFallbackData, error: legacyFallbackError } = await supabase
+          .from("mountain_foundation_profiles")
+          .select(MOUNTAIN_FOUNDATION_LEGACY_BASE_SELECT)
+          .eq("slug", slug)
+          .maybeSingle();
+
+        if (legacyFallbackError) {
+          throw new Error(legacyFallbackError.message);
+        }
+
+        return legacyFallbackData
+          ? withMountainFoundationDefaults(
+              legacyFallbackData as unknown as Partial<MountainFoundationProfile>
+            )
+          : null;
+      }
+
       if (fallbackError) {
         throw new Error(fallbackError.message);
       }
@@ -269,12 +485,38 @@ export const getMountainFoundationProfileBySlug = cache(
 function withMountainFoundationDefaults(
   profile: Partial<MountainFoundationProfile>
 ) {
+  const meizanList = profile.meizan_list ?? resolveMeizanList(profile);
+
   return {
     ...MOUNTAIN_FOUNDATION_V21_DEFAULTS,
     ...MOUNTAIN_FOUNDATION_V2_DEFAULTS,
     ...MOUNTAIN_FOUNDATION_SUPPLEMENTARY_DEFAULTS,
-    ...profile
+    ...profile,
+    meizan_list: meizanList
   } as MountainFoundationProfile;
+}
+
+function resolveMeizanList(profile: Partial<MountainFoundationProfile>) {
+  if (profile.is_hyakumeizan) {
+    return "JAPAN_HYAKUMEIZAN";
+  }
+
+  if (profile.slug && JAPAN_NIHYAKUMEIZAN_EXTRA_SLUGS.has(profile.slug)) {
+    return "JAPAN_NIHYAKUMEIZAN_EXTRA";
+  }
+
+  return "OTHER";
+}
+
+function isMissingMountainFoundationMeizanColumnError(error: {
+  code?: string;
+  message?: string;
+}) {
+  if (error.code === "42703") {
+    return error.message?.includes("meizan_list") ?? false;
+  }
+
+  return error.message?.includes("meizan_list") ?? false;
 }
 
 function isMissingMountainFoundationV21ColumnError(error: { code?: string; message?: string }) {

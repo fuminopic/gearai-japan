@@ -49,6 +49,13 @@ const ruleReviewFixMigration = readFileSync(
   ),
   "utf8"
 );
+const meizanListMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/021_mountain_foundation_meizan_list.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -131,10 +138,13 @@ test("mountain foundation classifications are normalized enum-style values", () 
     "OKUCHICHIBU",
     "TANZAWA",
     "NIKKO",
-    "JOSHU"
+    "JOSHU",
+    "JAPAN_HYAKUMEIZAN",
+    "JAPAN_NIHYAKUMEIZAN_EXTRA",
+    "OTHER"
   ]) {
     assert.match(
-      `${migration}\n${v2Migration}\n${v21Migration}\n${v3GeographyMigration}\n${v4ExpansionMigration}`,
+      `${migration}\n${v2Migration}\n${v21Migration}\n${v3GeographyMigration}\n${v4ExpansionMigration}\n${meizanListMigration}`,
       new RegExp(`'${value}'`)
     );
     assert.match(types, new RegExp(`"${value}"`));
@@ -285,6 +295,36 @@ test("mountain foundation rule review fixes stay static and scoped", () => {
   assert.doesNotMatch(ruleReviewFixMigration, /\bevidence\b/i);
   assert.doesNotMatch(ruleReviewFixMigration, /\baudit\b/i);
   assert.doesNotMatch(ruleReviewFixMigration, /\blayer\b/i);
+});
+
+test("mountain foundation meizan list separates hyakumeizan and nihyakumeizan extras", () => {
+  assert.match(meizanListMigration, /add column if not exists meizan_list/);
+  assert.match(meizanListMigration, /mountain_foundation_profiles_meizan_list_check/);
+  assert.match(meizanListMigration, /when is_hyakumeizan then 'JAPAN_HYAKUMEIZAN'/);
+  assert.match(meizanListMigration, /'kentoku-san'/);
+  assert.match(meizanListMigration, /'tsubakuro-dake'/);
+  assert.match(meizanListMigration, /'JAPAN_NIHYAKUMEIZAN_EXTRA'/);
+
+  assert.match(repository, /meizan_list/);
+  assert.match(repository, /JAPAN_NIHYAKUMEIZAN_EXTRA_SLUGS/);
+  assert.match(repository, /isMissingMountainFoundationMeizanColumnError/);
+  assert.match(repository, /MOUNTAIN_FOUNDATION_LEGACY_BASE_SELECT/);
+  assert.match(types, /MountainMeizanList/);
+
+  for (const source of [
+    tripRequirementEngine,
+    packRequirementEngine,
+    gearMatchingEngine
+  ]) {
+    assert.doesNotMatch(source, /meizan_list/);
+  }
+
+  assert.doesNotMatch(meizanListMigration, /\bcreate table\b/i);
+  assert.doesNotMatch(meizanListMigration, /\binsert into\b/i);
+  assert.doesNotMatch(meizanListMigration, /\btruth\b/i);
+  assert.doesNotMatch(meizanListMigration, /\bevidence\b/i);
+  assert.doesNotMatch(meizanListMigration, /\baudit\b/i);
+  assert.doesNotMatch(meizanListMigration, /\blayer\b/i);
 });
 
 test("mountain foundation V2 adds schema attributes without adding more mountains", () => {

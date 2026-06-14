@@ -343,6 +343,16 @@ test("trip planning form filters seasons and styles by selected mountain", () =>
   assert.match(tripPlanningFormSource, /router\.push/);
   assert.doesNotMatch(tripPlanningFormSource, /action="\/plan"/);
   assert.match(tripPlanningFormSource, /name="id" value=\{planId\}/);
+  assert.match(tripPlanningFormSource, /type="search"/);
+  assert.match(tripPlanningFormSource, /山名・地域・ローマ字で検索/);
+  assert.match(tripPlanningFormSource, /日本百名山（標高順）/);
+  assert.match(tripPlanningFormSource, /二百名山（百名山以外・標高順）/);
+  assert.match(tripPlanningFormSource, /登録山岳（標高順）/);
+  assert.match(tripPlanningFormSource, /MountainListBadge/);
+  assert.match(tripPlanningFormSource, /meizan_list/);
+  assert.match(tripPlanningFormSource, /JAPAN_NIHYAKUMEIZAN_EXTRA/);
+  assert.match(tripPlanningFormSource, /getFilteredMountains/);
+  assert.doesNotMatch(tripPlanningFormSource, /<select\s+name="mountain"/);
   assert.match(tripPlanningFormSource, /supported_seasons/);
   assert.match(tripPlanningFormSource, /supported_styles/);
   assert.match(tripPlanningFormSource, /seasonOptions\.map/);

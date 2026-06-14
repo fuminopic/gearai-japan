@@ -70,6 +70,10 @@ export type MountainSeasonOpeningWindow =
   | "HUT_SEASON"
   | "WINTER_EXPERT_ONLY";
 export type MountainActiveVolcanoStatus = "NONE" | "ACTIVE" | "ADJACENT";
+export type MountainMeizanList =
+  | "JAPAN_HYAKUMEIZAN"
+  | "JAPAN_NIHYAKUMEIZAN_EXTRA"
+  | "OTHER";
 export type PlanningSystem =
   | "WATER_SYSTEM"
   | "SHELTER_SYSTEM"
@@ -312,6 +316,7 @@ export type MountainFoundationProfile = {
   prefectures: string[];
   elevation_m: number;
   is_hyakumeizan: boolean;
+  meizan_list: MountainMeizanList;
   supported_seasons: MountainFoundationSeason[];
   supported_styles: MountainFoundationStyle[];
   trip_profile: MountainTripProfile;

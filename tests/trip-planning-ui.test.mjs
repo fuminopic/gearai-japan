@@ -356,6 +356,10 @@ test("trip planning form filters seasons and styles by selected mountain", () =>
   assert.match(tripPlanningFormSource, /MountainListBadge/);
   assert.match(tripPlanningFormSource, /meizan_list/);
   assert.match(tripPlanningFormSource, /JAPAN_NIHYAKUMEIZAN_EXTRA/);
+  assert.match(tripPlanningFormSource, /getOfficialMeizanMountains/);
+  assert.match(tripPlanningFormSource, /const selectableMountains/);
+  assert.match(tripPlanningFormSource, /getMountainListCounts\(selectableMountains\)/);
+  assert.match(tripPlanningFormSource, /getMountainAreaOptions\(selectableMountains\)/);
   assert.match(tripPlanningFormSource, /getFilteredMountains/);
   assert.doesNotMatch(tripPlanningFormSource, /<select\s+name="mountain"/);
   assert.match(tripPlanningFormSource, /supported_seasons/);

@@ -113,22 +113,40 @@ export function TripPlanningForm({
 }: TripPlanningFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const initialMountainSlug = getAvailableMountainSlug(selectedMountainSlug, mountains);
+  const selectableMountains = useMemo(() => getOfficialMeizanMountains(mountains), [mountains]);
+  const initialMountainSlug = getAvailableMountainSlug(
+    selectedMountainSlug,
+    selectableMountains
+  );
   const [mountainSlug, setMountainSlug] = useState(initialMountainSlug);
   const [mountainQuery, setMountainQuery] = useState("");
   const [mountainListFilter, setMountainListFilter] =
     useState<MountainListFilter>(() =>
-      getDefaultMountainListFilter(getMountainBySlug(initialMountainSlug, mountains))
+      getDefaultMountainListFilter(getMountainBySlug(initialMountainSlug, selectableMountains))
     );
   const [selectedArea, setSelectedArea] = useState<MountainAreaFilter>("ALL");
   const selectedMountain = useMemo(() => {
-    return mountains.find((mountain) => mountain.slug === mountainSlug) ?? mountains[0];
-  }, [mountainSlug, mountains]);
+    return (
+      selectableMountains.find((mountain) => mountain.slug === mountainSlug) ??
+      selectableMountains[0]
+    );
+  }, [mountainSlug, selectableMountains]);
   const filteredMountains = useMemo(() => {
-    return getFilteredMountains(mountains, mountainListFilter, mountainQuery, selectedArea);
-  }, [mountains, mountainListFilter, mountainQuery, selectedArea]);
-  const mountainCounts = useMemo(() => getMountainListCounts(mountains), [mountains]);
-  const mountainAreaOptions = useMemo(() => getMountainAreaOptions(mountains), [mountains]);
+    return getFilteredMountains(
+      selectableMountains,
+      mountainListFilter,
+      mountainQuery,
+      selectedArea
+    );
+  }, [selectableMountains, mountainListFilter, mountainQuery, selectedArea]);
+  const mountainCounts = useMemo(
+    () => getMountainListCounts(selectableMountains),
+    [selectableMountains]
+  );
+  const mountainAreaOptions = useMemo(
+    () => getMountainAreaOptions(selectableMountains),
+    [selectableMountains]
+  );
   const activeListTitle = mountainQuery.trim()
     ? "検索結果"
     : getMountainListFilterTitle(mountainListFilter, selectedArea);
@@ -159,12 +177,15 @@ export function TripPlanningForm({
   }, [effectiveSeason, effectiveStyle, mountainSlug, planId]);
 
   useEffect(() => {
-    const nextMountainSlug = getAvailableMountainSlug(selectedMountainSlug, mountains);
+    const nextMountainSlug = getAvailableMountainSlug(
+      selectedMountainSlug,
+      selectableMountains
+    );
     setMountainSlug(nextMountainSlug);
     setMountainListFilter(
-      getDefaultMountainListFilter(getMountainBySlug(nextMountainSlug, mountains))
+      getDefaultMountainListFilter(getMountainBySlug(nextMountainSlug, selectableMountains))
     );
-  }, [selectedMountainSlug, mountains]);
+  }, [selectedMountainSlug, selectableMountains]);
 
   useEffect(() => {
     if (!prefetchedPlanHref) {
@@ -183,7 +204,7 @@ export function TripPlanningForm({
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (mountains.length === 0) {
+    if (selectableMountains.length === 0) {
       return;
     }
 
@@ -387,7 +408,7 @@ export function TripPlanningForm({
       </div>
 
       <button
-        disabled={mountains.length === 0 || isPending}
+        disabled={selectableMountains.length === 0 || isPending}
         className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-forest-700 px-5 py-3 text-base font-semibold text-white transition hover:bg-forest-900 disabled:opacity-60 sm:mt-4 sm:py-4"
       >
         <ClipboardCheck className="h-5 w-5" />
@@ -406,6 +427,17 @@ function getAvailableMountainSlug(
   }
 
   return mountains[0]?.slug ?? "";
+}
+
+function getOfficialMeizanMountains(
+  mountains: readonly MountainFoundationProfile[]
+) {
+  return mountains.filter((mountain) => {
+    return (
+      mountain.meizan_list === "JAPAN_HYAKUMEIZAN" ||
+      mountain.meizan_list === "JAPAN_NIHYAKUMEIZAN_EXTRA"
+    );
+  });
 }
 
 function getMountainBySlug(

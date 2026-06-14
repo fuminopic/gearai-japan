@@ -221,3 +221,60 @@ test("full-service hut stays keep the inner sheet checklist item", () => {
   assert.equal(itemByLabel(checklist, "インナーシーツ")?.priority, "ESSENTIAL");
   assert.equal(itemByLabel(checklist, "シュラフ（寝袋）"), undefined);
 });
+
+test("reviewed static mountain fixes flow through the checklist without stale risk gear", () => {
+  const rishiriChecklist = buildPlanChecklist({
+    plan: makePlan({
+      mountain: {
+        slug: "rishiri-zan",
+        name_ja: "利尻山",
+        route_seriousness: "HIGH",
+        technical_terrain: "STEEP_ROCKY",
+        helmet_guidance: "NOT_NEEDED",
+        alpine_environment: "ABOVE_TREELINE",
+        bear_or_wildlife_risk: "LOW"
+      }
+    })
+  });
+
+  assert.equal(itemByLabel(rishiriChecklist, "熊対策装備"), undefined);
+
+  for (const mountain of [
+    {
+      slug: "utsukushigahara",
+      name_ja: "美ヶ原",
+      route_seriousness: "LOW"
+    },
+    {
+      slug: "kirigamine",
+      name_ja: "霧ヶ峰",
+      route_seriousness: "LOW"
+    },
+    {
+      slug: "daibosatsu-rei",
+      name_ja: "大菩薩嶺",
+      route_seriousness: "MODERATE"
+    },
+    {
+      slug: "tsurugi-san-shikoku",
+      name_ja: "剣山",
+      route_seriousness: "MODERATE"
+    }
+  ]) {
+    const checklist = buildPlanChecklist({
+      plan: makePlan({
+        mountain: {
+          ...mountain,
+          technical_terrain: "MAINTAINED_TRAIL",
+          helmet_guidance: "NOT_NEEDED",
+          snow_or_ice_risk: "LOW"
+        }
+      })
+    });
+
+    assert.equal(itemByLabel(checklist, "ヘルメット"), undefined);
+    assert.equal(itemByLabel(checklist, "チェーンスパイク"), undefined);
+    assert.equal(itemByLabel(checklist, "アイゼン"), undefined);
+    assert.equal(itemByLabel(checklist, "ピッケル"), undefined);
+  }
+});

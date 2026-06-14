@@ -27,7 +27,6 @@ export type ChecklistItemIcon =
   | "fuel"
   | "navigationApp"
   | "mapCompass"
-  | "gpsDevice"
   | "headlamp"
   | "battery"
   | "firstAid"
@@ -96,6 +95,30 @@ export type ChecklistView = {
   categories: ChecklistCategory[];
   summary: ChecklistProgress;
 };
+
+const checkedSlotsStoragePrefix = "yamajitaku:trip-plan:checked-slots:";
+
+const supportedRequirementSlots = new Set<RequirementSlot>([
+  "WATER_STORAGE",
+  "WATER_TREATMENT",
+  "TENT",
+  "SLEEP_INSULATION",
+  "SLEEP_PAD",
+  "STOVE",
+  "FUEL",
+  "COOK_POT",
+  "TABLEWARE",
+  "RAIN_JACKET",
+  "RAIN_PANTS",
+  "INSULATION_LAYER",
+  "BASE_LAYER",
+  "HELMET",
+  "TRACTION_DEVICE",
+  "GPS_DEVICE",
+  "POWER_BANK",
+  "FIRST_AID_KIT",
+  "HEADLAMP"
+]);
 
 export const checklistPriorityLabels: Record<ChecklistPriority, string> = {
   ESSENTIAL: "必須",
@@ -319,16 +342,6 @@ function getNavigationItems(plan: PackRequirementPlan): ChecklistItemDefinition[
       icon: "mapCompass"
     }
   ];
-
-  if (shouldShowGpsDevice(plan)) {
-    items.push({
-      id: "nav-gps-device",
-      label: "GPS端末",
-      priority: "SUGGESTED",
-      icon: "gpsDevice",
-      slots: ["GPS_DEVICE"]
-    });
-  }
 
   items.push(
     {
@@ -701,10 +714,6 @@ function getBackupNavigationPriority(plan: PackRequirementPlan): ChecklistPriori
   return "OPTIONAL";
 }
 
-function shouldShowGpsDevice(plan: PackRequirementPlan) {
-  return hasRequiredSlot(plan, "GPS_DEVICE") && isHighNavigationRisk(plan);
-}
-
 function isHighNavigationRisk(plan: PackRequirementPlan) {
   const { mountain, season } = plan;
 
@@ -782,12 +791,43 @@ export function applyChecklistOnlyIdsToChecklist(
   checklist: ChecklistView,
   checkedChecklistOnlyIds: readonly string[]
 ): ChecklistView {
+  return applyChecklistStateToChecklist({
+    checklist,
+    checkedChecklistOnlyIds
+  });
+}
+
+export function applyChecklistStateToChecklist({
+  checklist,
+  checkedSlots,
+  checkedChecklistOnlyIds
+}: {
+  checklist: ChecklistView;
+  checkedSlots?: readonly RequirementSlot[];
+  checkedChecklistOnlyIds?: readonly string[];
+}): ChecklistView {
+  const shouldApplyCheckedSlots = Array.isArray(checkedSlots);
+  const shouldApplyChecklistOnlyIds = Array.isArray(checkedChecklistOnlyIds);
+  const checkedSlotSet = new Set(
+    (checkedSlots ?? []).filter(isSupportedRequirementSlot)
+  );
   const checkedChecklistOnlySet = new Set(
-    checkedChecklistOnlyIds.filter(isSupportedChecklistOnlyId)
+    (checkedChecklistOnlyIds ?? []).filter(isSupportedChecklistOnlyId)
   );
   const categories = checklist.categories.map((category) => {
     const items = category.items.map((item) => {
-      if (item.source !== "CHECKLIST_ONLY") {
+      if (item.source === "GEAR_BACKED") {
+        if (!shouldApplyCheckedSlots || item.toggleSlots.length === 0) {
+          return item;
+        }
+
+        return {
+          ...item,
+          checked: item.toggleSlots.every((slot) => checkedSlotSet.has(slot))
+        };
+      }
+
+      if (item.source !== "CHECKLIST_ONLY" || !shouldApplyChecklistOnlyIds) {
         return item;
       }
 
@@ -810,6 +850,14 @@ export function getChecklistOnlyStorageKey(planId: string) {
   return `yamajitaku:trip-plan:checklist-only:${planId}`;
 }
 
+export function getCheckedSlotsStorageKey(planId: string) {
+  return `${checkedSlotsStoragePrefix}${planId}`;
+}
+
 export function isSupportedChecklistOnlyId(value: unknown): value is string {
   return typeof value === "string" && value.length > 0 && value.length <= 80;
+}
+
+export function isSupportedRequirementSlot(value: unknown): value is RequirementSlot {
+  return typeof value === "string" && supportedRequirementSlots.has(value as RequirementSlot);
 }

@@ -3,12 +3,15 @@
 import { useEffect, useState } from "react";
 
 import {
-  applyChecklistOnlyIdsToChecklist,
+  applyChecklistStateToChecklist,
+  getCheckedSlotsStorageKey,
   getChecklistOnlyStorageKey,
   isSupportedChecklistOnlyId,
+  isSupportedRequirementSlot,
   type ChecklistCategory,
   type ChecklistView
 } from "@/lib/plan-checklist";
+import type { RequirementSlot } from "@/lib/types";
 
 export function DashboardPlanChecklistSummary({
   planId,
@@ -26,25 +29,21 @@ export function DashboardPlanChecklistSummary({
       return;
     }
 
-    const storedValue = window.localStorage.getItem(getChecklistOnlyStorageKey(planId));
+    const checkedSlots = readStoredCheckedSlots(planId);
+    const checkedChecklistOnlyIds = readStoredChecklistOnlyIds(planId);
 
-    if (!storedValue) {
+    if (!checkedSlots && !checkedChecklistOnlyIds) {
       setHydratedChecklist(checklist);
       return;
     }
 
-    try {
-      const parsed = JSON.parse(storedValue);
-      const checkedChecklistOnlyIds = Array.isArray(parsed)
-        ? parsed.filter(isSupportedChecklistOnlyId)
-        : [];
-
-      setHydratedChecklist(
-        applyChecklistOnlyIdsToChecklist(checklist, checkedChecklistOnlyIds)
-      );
-    } catch {
-      setHydratedChecklist(checklist);
-    }
+    setHydratedChecklist(
+      applyChecklistStateToChecklist({
+        checklist,
+        checkedSlots,
+        checkedChecklistOnlyIds
+      })
+    );
   }, [checklist, planId]);
 
   const progress = hydratedChecklist?.summary.percent ?? fallbackProgress;
@@ -76,6 +75,46 @@ export function DashboardPlanChecklistSummary({
       ) : null}
     </div>
   );
+}
+
+function readStoredCheckedSlots(planId: string): RequirementSlot[] | undefined {
+  try {
+    const storedValue = window.localStorage.getItem(getCheckedSlotsStorageKey(planId));
+
+    if (!storedValue) {
+      return undefined;
+    }
+
+    const parsed = JSON.parse(storedValue);
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed.filter(isSupportedRequirementSlot);
+  } catch {
+    return [];
+  }
+}
+
+function readStoredChecklistOnlyIds(planId: string): string[] | undefined {
+  try {
+    const storedValue = window.localStorage.getItem(getChecklistOnlyStorageKey(planId));
+
+    if (!storedValue) {
+      return undefined;
+    }
+
+    const parsed = JSON.parse(storedValue);
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed.filter(isSupportedChecklistOnlyId);
+  } catch {
+    return [];
+  }
 }
 
 function PlanCategorySummary({

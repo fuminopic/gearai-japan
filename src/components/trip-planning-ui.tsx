@@ -27,7 +27,6 @@ import {
   IdCard,
   Lamp,
   Map as MapIcon,
-  MapPinned,
   Mountain,
   Navigation,
   PlugZap,
@@ -67,7 +66,9 @@ import {
   calculateChecklistProgress,
   checklistPriorityLabels,
   getChecklistOnlyStorageKey,
+  getCheckedSlotsStorageKey,
   isSupportedChecklistOnlyId,
+  isSupportedRequirementSlot,
   type ChecklistCategory,
   type ChecklistItemIcon,
   type ChecklistItem
@@ -113,30 +114,8 @@ type DisplayGearMatchingResult = Omit<GearMatchingResult, "slot"> & {
   slot: RequirementSlot;
 };
 
-const CHECKED_SLOTS_STORAGE_PREFIX = "yamajitaku:trip-plan:checked-slots:";
 const emptyCheckedSlots: RequirementSlot[] = [];
 const emptyChecklistOnlyIds: string[] = [];
-const validRequirementSlots = new Set<RequirementSlot>([
-  "WATER_STORAGE",
-  "WATER_TREATMENT",
-  "TENT",
-  "SLEEP_INSULATION",
-  "SLEEP_PAD",
-  "STOVE",
-  "FUEL",
-  "COOK_POT",
-  "TABLEWARE",
-  "RAIN_JACKET",
-  "RAIN_PANTS",
-  "INSULATION_LAYER",
-  "BASE_LAYER",
-  "HELMET",
-  "TRACTION_DEVICE",
-  "GPS_DEVICE",
-  "POWER_BANK",
-  "FIRST_AID_KIT",
-  "HEADLAMP"
-]);
 
 export function TripPlanningUI({
   mountains,
@@ -160,7 +139,7 @@ export function TripPlanningUI({
   const [hydratedPlan, setHydratedPlan] = useState<SavedTripPlan | null>(
     initialSavedPlan
   );
-  const [interactiveProgress, setInteractiveProgress] = useState<number | null>(null);
+  const [, setInteractiveProgress] = useState<number | null>(null);
   const [interactiveCheckedSlots, setInteractiveCheckedSlots] = useState<
     RequirementSlot[] | null
   >(null);
@@ -175,7 +154,8 @@ export function TripPlanningUI({
   const selectedMountain =
     mountains.find((mountain) => mountain.slug === effectiveMountainSlug) ?? null;
   const savedCheckedSlots = getSavedPlanCheckedSlots(hydratedPlan);
-  const restoredCheckedSlots = savedCheckedSlots ?? storedCheckedSlots;
+  const restoredCheckedSlots =
+    storedCheckedSlots.length > 0 ? storedCheckedSlots : savedCheckedSlots ?? [];
   const rawCurrentCheckedSlots = interactiveCheckedSlots ?? restoredCheckedSlots;
   const currentCheckedSlots = plan
     ? filterCheckedSlotsForPlan(rawCurrentCheckedSlots, plan)
@@ -183,8 +163,7 @@ export function TripPlanningUI({
   const currentChecklistOnlyIds =
     interactiveChecklistOnlyIds ?? storedChecklistOnlyIds;
   const currentProgressValue = plan
-    ? interactiveProgress ??
-      calculateChecklistProgress(
+    ? calculateChecklistProgress(
         plan,
         currentCheckedSlots,
         currentChecklistOnlyIds,
@@ -300,6 +279,7 @@ export function TripPlanningUI({
             onProgressChange={setInteractiveProgress}
             onCheckedSlotsChange={setInteractiveCheckedSlots}
             onChecklistOnlyIdsChange={setInteractiveChecklistOnlyIds}
+            planId={planId}
           />
           {selectedMountain ? (
             <SavePlanButton
@@ -568,14 +548,11 @@ function writeStoredChecklistOnlyIds(planId: string, checklistOnlyIds: string[])
   );
 }
 
-function getCheckedSlotsStorageKey(planId: string) {
-  return `${CHECKED_SLOTS_STORAGE_PREFIX}${planId}`;
-}
-
 function TripPlanningResult({
   plan,
   compatibilityBySlot,
   ownedGear,
+  planId,
   initialCheckedSlots = emptyCheckedSlots,
   initialChecklistOnlyIds = emptyChecklistOnlyIds,
   onProgressChange,
@@ -585,6 +562,7 @@ function TripPlanningResult({
   plan: PackRequirementPlan;
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
   ownedGear: UserGear[];
+  planId: string | null;
   initialCheckedSlots?: RequirementSlot[];
   initialChecklistOnlyIds?: string[];
   onProgressChange?: (progress: number) => void;
@@ -662,6 +640,10 @@ function TripPlanningResult({
 
       const nextCheckedSlots = filterCheckedSlotsForPlan(Array.from(nextSlots), plan);
 
+      if (planId) {
+        writeStoredCheckedSlots(planId, nextCheckedSlots);
+      }
+
       onCheckedSlotsChange?.(nextCheckedSlots);
 
       return nextCheckedSlots;
@@ -679,6 +661,10 @@ function TripPlanningResult({
       }
 
       const nextChecklistOnlyIds = uniqueChecklistOnlyIds(Array.from(nextIds));
+
+      if (planId) {
+        writeStoredChecklistOnlyIds(planId, nextChecklistOnlyIds);
+      }
 
       onChecklistOnlyIdsChange?.(nextChecklistOnlyIds);
 
@@ -782,8 +768,7 @@ function uniqueRequirementSlots(values: readonly unknown[]) {
 
   for (const value of values) {
     if (
-      typeof value === "string" &&
-      validRequirementSlots.has(value as RequirementSlot) &&
+      isSupportedRequirementSlot(value) &&
       !slots.includes(value as RequirementSlot)
     ) {
       slots.push(value as RequirementSlot);
@@ -1235,7 +1220,6 @@ const checklistItemIcons: Record<ChecklistItemIcon, LucideIcon> = {
   fuel: PlugZap,
   navigationApp: Navigation,
   mapCompass: Compass,
-  gpsDevice: MapPinned,
   headlamp: Lamp,
   battery: Battery,
   firstAid: BriefcaseMedical,
@@ -1274,8 +1258,8 @@ function getChecklistItemStatus(item: ChecklistItem) {
 
   if (item.source === "GEAR_BACKED") {
     return {
-      label: "未登録",
-      className: "bg-amber-50 text-amber-800"
+      label: "要確認",
+      className: "bg-stone-100 text-stone-600"
     };
   }
 

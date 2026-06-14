@@ -94,6 +94,10 @@ const dashboardPageSource = readFileSync(
   new URL("../app/(app)/dashboard/page.tsx", import.meta.url),
   "utf8"
 );
+const dashboardPlanChecklistSummarySource = readFileSync(
+  new URL("../src/components/dashboard-plan-checklist-summary.tsx", import.meta.url),
+  "utf8"
+);
 const gearDataSource = readFileSync(
   new URL("../src/lib/data/gear.ts", import.meta.url),
   "utf8"
@@ -189,7 +193,6 @@ test("trip planning UI presents a professional gear checklist", () => {
     "推奨",
     "あると便利",
     "所持済み",
-    "未登録",
     "確認済み",
     "要確認",
     "登山地図アプリ（YAMAP・ヤマレコ等）",
@@ -202,6 +205,9 @@ test("trip planning UI presents a professional gear checklist", () => {
   assert.doesNotMatch(tripPlanningUiSource, /Checklist-only/);
   assert.doesNotMatch(planChecklistSource, /nav-smartphone/);
   assert.doesNotMatch(planChecklistSource, /label: "スマホ"/);
+  assert.doesNotMatch(planChecklistSource, /GPS端末/);
+  assert.doesNotMatch(planChecklistSource, /gpsDevice/);
+  assert.doesNotMatch(tripPlanningUiSource, /未登録/);
   assert.match(tripPlanningUiSource, /buildPlanChecklist/);
   assert.match(tripPlanningUiSource, /calculateChecklistProgress\(/);
   assert.match(tripPlanningUiSource, /checklistItemIcons/);
@@ -286,9 +292,11 @@ test("pack planning checklist fixes first-round readiness issues", () => {
   );
   assert.match(planChecklistSource, /getHeadlampPriority/);
   assert.match(planChecklistSource, /getGlovesPriority/);
-  assert.match(planChecklistSource, /shouldShowGpsDevice/);
+  assert.doesNotMatch(planChecklistSource, /shouldShowGpsDevice/);
   assert.match(planChecklistSource, /label: "保険証"/);
   assert.match(planChecklistSource, /priority: "ESSENTIAL"/);
+  assert.match(dashboardPlanChecklistSummarySource, /getCheckedSlotsStorageKey/);
+  assert.match(dashboardPlanChecklistSummarySource, /applyChecklistStateToChecklist/);
 });
 
 test("pack planning UI deduplicates merged slot labels and supports checklist progress", () => {
@@ -395,6 +403,8 @@ test("saving and updating a plan writes progress payload and redirects home", ()
   assert.match(tripPlanningUiSource, /JSON\.stringify\(checkedSlots\)/);
   assert.match(tripPlanningUiSource, /writeStoredCheckedSlots/);
   assert.match(tripPlanningUiSource, /readStoredCheckedSlots/);
+  assert.match(tripPlanningUiSource, /writeStoredChecklistOnlyIds/);
+  assert.match(tripPlanningUiSource, /readStoredChecklistOnlyIds/);
   assert.match(tripPlanningUiSource, /initialCheckedSlots/);
   assert.match(planActionsSource, /mountain_name: mountainName/);
   assert.match(planActionsSource, /season,/);

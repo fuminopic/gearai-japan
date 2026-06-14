@@ -129,7 +129,8 @@ test("home hero shows the saved plan checklist summary over the static hills bac
   assert.match(dashboardSource, /getPackRequirementPlan/);
   assert.match(dashboardSource, /buildPlanChecklist/);
   assert.match(dashboardPlanChecklistSummarySource, /getChecklistOnlyStorageKey/);
-  assert.match(dashboardPlanChecklistSummarySource, /applyChecklistOnlyIdsToChecklist/);
+  assert.match(dashboardPlanChecklistSummarySource, /getCheckedSlotsStorageKey/);
+  assert.match(dashboardPlanChecklistSummarySource, /applyChecklistStateToChecklist/);
   assert.match(dashboardPlanChecklistSummarySource, /PlanCategorySummary/);
   assert.match(dashboardPlanChecklistSummarySource, /未完了/);
   assert.match(dashboardPlanChecklistSummarySource, /category\.progress\.percent/);

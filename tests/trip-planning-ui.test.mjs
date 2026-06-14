@@ -347,6 +347,11 @@ test("trip planning form filters seasons and styles by selected mountain", () =>
   assert.match(tripPlanningFormSource, /山名・地域・ローマ字で検索/);
   assert.match(tripPlanningFormSource, /日本百名山（標高順）/);
   assert.match(tripPlanningFormSource, /二百名山（百名山以外・標高順）/);
+  assert.match(tripPlanningFormSource, /label: "エリア"/);
+  assert.match(tripPlanningFormSource, /エリア別/);
+  assert.match(tripPlanningFormSource, /getMountainAreaOptions/);
+  assert.match(tripPlanningFormSource, /mountainAreaLabels/);
+  assert.match(tripPlanningFormSource, /primary_region/);
   assert.match(tripPlanningFormSource, /登録山岳（標高順）/);
   assert.match(tripPlanningFormSource, /MountainListBadge/);
   assert.match(tripPlanningFormSource, /meizan_list/);

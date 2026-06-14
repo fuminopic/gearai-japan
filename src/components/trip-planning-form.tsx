@@ -11,6 +11,7 @@ import {
 } from "@/lib/i18n/labels";
 import type {
   MountainFoundationProfile,
+  MountainFoundationPrimaryRegion,
   MountainFoundationSeason,
   MountainFoundationStyle
 } from "@/lib/types";
@@ -24,7 +25,8 @@ type TripPlanningFormProps = {
   error?: string;
 };
 
-type MountainListFilter = "HYAKUMEIZAN" | "NIHYAKUMEIZAN_EXTRA" | "ALL";
+type MountainListFilter = "HYAKUMEIZAN" | "NIHYAKUMEIZAN_EXTRA" | "AREA" | "ALL";
+type MountainAreaFilter = "ALL" | MountainFoundationPrimaryRegion;
 
 const mountainListFilters: Array<{
   value: MountainListFilter;
@@ -42,11 +44,64 @@ const mountainListFilters: Array<{
     title: "二百名山（百名山以外・標高順）"
   },
   {
+    value: "AREA",
+    label: "エリア",
+    title: "エリア別"
+  },
+  {
     value: "ALL",
     label: "すべて",
     title: "登録山岳（標高順）"
   }
 ];
+
+const mountainAreaOrder: readonly MountainFoundationPrimaryRegion[] = [
+  "HOKKAIDO",
+  "TOHOKU",
+  "HOKUSHINETSU",
+  "KANTO",
+  "KANTO_TOKYO",
+  "JOSHU",
+  "NIKKO",
+  "TANZAWA",
+  "OKUCHICHIBU",
+  "FUJI",
+  "YATSUGATAKE",
+  "NORTHERN_ALPS",
+  "CENTRAL_ALPS",
+  "SOUTHERN_ALPS",
+  "HOKURIKU",
+  "TOKAI",
+  "KINKI",
+  "CHUGOKU",
+  "SHIKOKU",
+  "KYUSHU",
+  "YAKUSHIMA"
+];
+
+const mountainAreaLabels: Record<MountainFoundationPrimaryRegion, string> = {
+  HOKKAIDO: "北海道",
+  TOHOKU: "東北",
+  HOKUSHINETSU: "北信越",
+  KANTO: "関東",
+  KANTO_TOKYO: "東京近郊",
+  HOKURIKU: "北陸",
+  TOKAI: "東海",
+  KINKI: "近畿",
+  FUJI: "富士山周辺",
+  OKUCHICHIBU: "奥秩父",
+  TANZAWA: "丹沢",
+  NIKKO: "日光",
+  YATSUGATAKE: "八ヶ岳",
+  NORTHERN_ALPS: "北アルプス",
+  CENTRAL_ALPS: "中央アルプス",
+  SOUTHERN_ALPS: "南アルプス",
+  CHUGOKU: "中国",
+  SHIKOKU: "四国",
+  KYUSHU: "九州",
+  YAKUSHIMA: "屋久島",
+  JOSHU: "上州"
+};
 
 export function TripPlanningForm({
   mountains,
@@ -65,16 +120,18 @@ export function TripPlanningForm({
     useState<MountainListFilter>(() =>
       getDefaultMountainListFilter(getMountainBySlug(initialMountainSlug, mountains))
     );
+  const [selectedArea, setSelectedArea] = useState<MountainAreaFilter>("ALL");
   const selectedMountain = useMemo(() => {
     return mountains.find((mountain) => mountain.slug === mountainSlug) ?? mountains[0];
   }, [mountainSlug, mountains]);
   const filteredMountains = useMemo(() => {
-    return getFilteredMountains(mountains, mountainListFilter, mountainQuery);
-  }, [mountains, mountainListFilter, mountainQuery]);
+    return getFilteredMountains(mountains, mountainListFilter, mountainQuery, selectedArea);
+  }, [mountains, mountainListFilter, mountainQuery, selectedArea]);
   const mountainCounts = useMemo(() => getMountainListCounts(mountains), [mountains]);
+  const mountainAreaOptions = useMemo(() => getMountainAreaOptions(mountains), [mountains]);
   const activeListTitle = mountainQuery.trim()
     ? "検索結果"
-    : getMountainListFilterTitle(mountainListFilter);
+    : getMountainListFilterTitle(mountainListFilter, selectedArea);
   const seasonOptions = selectedMountain?.supported_seasons ?? [];
   const styleOptions = selectedMountain?.supported_styles ?? [];
   const effectiveSeason = seasonOptions.includes(selectedSeason)
@@ -180,7 +237,12 @@ export function TripPlanningForm({
               <button
                 key={filter.value}
                 type="button"
-                onClick={() => setMountainListFilter(filter.value)}
+                onClick={() => {
+                  setMountainListFilter(filter.value);
+                  if (filter.value === "AREA" && selectedMountain) {
+                    setSelectedArea(selectedMountain.primary_region);
+                  }
+                }}
                 className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                   mountainListFilter === filter.value
                     ? "bg-forest-700 text-white"
@@ -194,6 +256,28 @@ export function TripPlanningForm({
               </button>
             ))}
           </div>
+
+          {mountainListFilter === "AREA" && !mountainQuery.trim() ? (
+            <div className="mt-3 flex max-h-28 flex-wrap gap-2 overflow-y-auto rounded-lg border border-stone-100 bg-stone-50 p-2">
+              {mountainAreaOptions.map((area) => (
+                <button
+                  key={area.value}
+                  type="button"
+                  onClick={() => setSelectedArea(area.value)}
+                  className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${
+                    selectedArea === area.value
+                      ? "bg-forest-700 text-white"
+                      : "bg-white text-stone-600 hover:bg-forest-50 hover:text-forest-800"
+                  }`}
+                >
+                  {area.label}
+                  <span className="ml-1 opacity-75">
+                    {area.count.toLocaleString("ja-JP")}
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : null}
 
           {selectedMountain ? (
             <div className="mt-3 rounded-lg border border-forest-100 bg-forest-50 px-3 py-2">
@@ -348,12 +432,15 @@ function getDefaultMountainListFilter(
 function getFilteredMountains(
   mountains: readonly MountainFoundationProfile[],
   filter: MountainListFilter,
-  query: string
+  query: string,
+  selectedArea: MountainAreaFilter
 ) {
   const normalizedQuery = normalizeMountainQuery(query);
   const source = normalizedQuery
     ? mountains
-    : mountains.filter((mountain) => matchesMountainListFilter(mountain, filter));
+    : mountains.filter((mountain) =>
+        matchesMountainListFilter(mountain, filter, selectedArea)
+      );
 
   return source
     .filter((mountain) => {
@@ -370,7 +457,8 @@ function getFilteredMountains(
 
 function matchesMountainListFilter(
   mountain: MountainFoundationProfile,
-  filter: MountainListFilter
+  filter: MountainListFilter,
+  selectedArea: MountainAreaFilter = "ALL"
 ) {
   if (filter === "HYAKUMEIZAN") {
     return mountain.meizan_list === "JAPAN_HYAKUMEIZAN";
@@ -378,6 +466,10 @@ function matchesMountainListFilter(
 
   if (filter === "NIHYAKUMEIZAN_EXTRA") {
     return mountain.meizan_list === "JAPAN_NIHYAKUMEIZAN_EXTRA";
+  }
+
+  if (filter === "AREA") {
+    return selectedArea === "ALL" || mountain.primary_region === selectedArea;
   }
 
   return true;
@@ -391,6 +483,7 @@ function getMountainListCounts(mountains: readonly MountainFoundationProfile[]) 
     NIHYAKE_EXTRA: mountains.filter((mountain) =>
       matchesMountainListFilter(mountain, "NIHYAKUMEIZAN_EXTRA")
     ).length,
+    AREA: mountains.length,
     ALL: mountains.length
   };
 }
@@ -406,8 +499,56 @@ function getMountainListCount(
   return counts[filter].toLocaleString("ja-JP");
 }
 
-function getMountainListFilterTitle(filter: MountainListFilter) {
+function getMountainListFilterTitle(
+  filter: MountainListFilter,
+  selectedArea: MountainAreaFilter
+) {
+  if (filter === "AREA") {
+    return `エリア別（${getMountainAreaLabel(selectedArea)}）`;
+  }
+
   return mountainListFilters.find((item) => item.value === filter)?.title ?? "登録山岳";
+}
+
+function getMountainAreaOptions(mountains: readonly MountainFoundationProfile[]) {
+  const counts = new Map<MountainFoundationPrimaryRegion, number>();
+
+  for (const mountain of mountains) {
+    counts.set(mountain.primary_region, (counts.get(mountain.primary_region) ?? 0) + 1);
+  }
+
+  const areas = [...counts.entries()]
+    .map(([value, count]) => ({
+      value,
+      label: getMountainAreaLabel(value),
+      count
+    }))
+    .sort((areaA, areaB) => {
+      return getMountainAreaOrder(areaA.value) - getMountainAreaOrder(areaB.value);
+    });
+
+  return [
+    {
+      value: "ALL" as const,
+      label: "すべて",
+      count: mountains.length
+    },
+    ...areas
+  ];
+}
+
+function getMountainAreaLabel(area: MountainAreaFilter) {
+  if (area === "ALL") {
+    return "すべて";
+  }
+
+  return mountainAreaLabels[area] ?? area;
+}
+
+function getMountainAreaOrder(area: MountainFoundationPrimaryRegion) {
+  const index = mountainAreaOrder.indexOf(area);
+
+  return index === -1 ? mountainAreaOrder.length : index;
 }
 
 function getMountainSearchFields(mountain: MountainFoundationProfile) {

@@ -537,10 +537,23 @@ function getProductSearchValues(product: GearProduct) {
     product.name_ja,
     product.model,
     product.brand,
+    ...getBrandSearchAliases(product.brand),
     product.capacity,
     `${product.brand} ${product.model}`,
     ...(product.gear_product_aliases?.map((item) => item.alias) ?? [])
   ].filter((value): value is string => Boolean(value));
+}
+
+function getBrandSearchAliases(brand: string) {
+  if (normalize(brand) === "thenorthface") {
+    return ["ザ・ノース・フェイス", "ザノースフェイス", "ノースフェイス", "北面", "TNF"];
+  }
+
+  if (normalize(brand) === "mont-bell" || normalize(brand) === "montbell") {
+    return ["モンベル"];
+  }
+
+  return [];
 }
 
 function normalize(value: string) {

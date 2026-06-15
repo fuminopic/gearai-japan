@@ -32,6 +32,18 @@ const insertRows = productRows.filter((row) =>
   ["NANGA", "ISUKA", "NEMO", "Therm-a-Rest"].includes(row.brand)
 );
 
+const aliasRows = [
+  ...migrationSource.matchAll(
+    /\('([^']*(?:''[^']*)*)', '([^']*(?:''[^']*)*)', '([^']*(?:''[^']*)*)'\)/g
+  )
+]
+  .map((match) => ({
+    brand: match[1].replaceAll("''", "'"),
+    model: match[2].replaceAll("''", "'"),
+    alias: match[3].replaceAll("''", "'")
+  }))
+  .filter((row) => ["NANGA", "ISUKA", "NEMO", "Therm-a-Rest"].includes(row.brand));
+
 function countBy(rows, key) {
   return rows.reduce((counts, row) => {
     const value = typeof key === "function" ? key(row) : row[key];
@@ -82,6 +94,8 @@ test("official catalog rows include images and safe weights", () => {
 });
 
 test("sleep system catalog covers key Japanese, English, and model-code aliases", () => {
+  assert.equal(new Set(aliasRows.map((row) => row.alias.toLocaleLowerCase())).size, aliasRows.length);
+
   for (const expected of [
     "AURORA TEX LIGHT 450DX",
     "UDD BAG 450DX",

@@ -583,6 +583,33 @@ function getBrandSearchAliases(brand: string) {
     ];
   }
 
+  if (normalize(brand) === "nanga") {
+    return ["NANGA", "Nanga", "ナンガ"];
+  }
+
+  if (normalize(brand) === "isuka") {
+    return ["ISUKA", "Isuka", "イスカ"];
+  }
+
+  if (normalize(brand) === "nemo") {
+    return [
+      "NEMO",
+      "Nemo",
+      "NEMO Equipment",
+      "ニーモ",
+      "ニーモイクイップメント"
+    ];
+  }
+
+  if (normalize(brand) === "thermarest") {
+    return [
+      "Therm-a-Rest",
+      "Thermarest",
+      "Therm A Rest",
+      "サーマレスト"
+    ];
+  }
+
   return [];
 }
 
@@ -758,6 +785,86 @@ function getProductFamilySearchAliases(product: GearProduct) {
 
   if (normalizedText.includes("ブリッツ")) {
     add("Blitz", "BLITZ", "ブリッツ");
+  }
+
+  if (normalizedText.includes("オーロラテックス")) {
+    add("Aurora", "AURORA", "AURORA TEX", "Aurora Tex", "Aurora Light");
+  }
+
+  if (normalizedText.includes("udd")) {
+    add("UDD BAG", "UDD Bag", "UDDバッグ");
+  }
+
+  if (normalizedText.includes("ミニマリスム")) {
+    add("MINIMARHYTHM", "Minimarhythm", "Minimalism");
+  }
+
+  if (normalizedText.includes("レベル8")) {
+    add("LEVEL8", "Level 8", "Level8");
+  }
+
+  if (normalizedText.includes("エアドライト")) {
+    add("Air Dryght", "AirDryght", "エア ドライト");
+  }
+
+  if (normalizedText.includes("エアプラス")) {
+    add("Air Plus", "AirPlus", "エア プラス");
+  }
+
+  if (normalizedText.includes("アルファライト")) {
+    add("Alpha Light", "AlphaLight", "ALPHA LIGHT");
+  }
+
+  if (normalizedText.includes("ダウンプラス")) {
+    add("Down Plus", "DownPlus", "DOWN PLUS");
+  }
+
+  if (normalizedText.includes("シュラフカバー")) {
+    add("Sleeping Bag Cover", "Sleepingbag Cover", "シュラフ カバー");
+  }
+
+  if (normalizedText.includes("テンサー")) {
+    add("Tensor", "TENSOR", "テンサー");
+  }
+
+  if (normalizedText.includes("フィッロ")) {
+    add("Fillo", "FILLO", "ピロー", "Pillow", "枕", "まくら");
+  }
+
+  if (normalizedText.includes("ドラゴンフライ")) {
+    add("Dragonfly", "Dragonfly OSMO", "ドラゴンフライ オズモ");
+  }
+
+  if (normalizedText.includes("ホーネット")) {
+    add("Hornet", "Hornet OSMO", "ホーネット オズモ");
+  }
+
+  if (normalizedText.includes("タニ")) {
+    add("Tani", "Tani OSMO", "タニ オズモ");
+  }
+
+  if (normalizedText.includes("neoair")) {
+    add("NeoAir", "ネオエアー", "ネオエア");
+  }
+
+  if (normalizedText.includes("xlite")) {
+    add("XLite", "X Lite", "エックスライト");
+  }
+
+  if (normalizedText.includes("xtherm")) {
+    add("XTherm", "X Therm", "エックスサーム");
+  }
+
+  if (normalizedText.includes("zlite")) {
+    add("Z Lite", "ZLite", "Zライト");
+  }
+
+  if (normalizedText.includes("prolite")) {
+    add("ProLite", "Pro Lite", "プロライト");
+  }
+
+  if (normalizedText.includes("ridgerest")) {
+    add("RidgeRest", "Ridge Rest", "リッジレスト");
   }
 
   return aliases;

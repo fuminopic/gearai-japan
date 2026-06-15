@@ -42,6 +42,7 @@ export function GearForm({
   const [subcategoryId, setSubcategoryId] = useState(initialSubcategoryId);
   const [productId, setProductId] = useState(gear?.product_id ?? "");
   const [query, setQuery] = useState(gear?.name ?? "");
+  const [brandFilter, setBrandFilter] = useState("all");
   const [name, setName] = useState(gear?.name ?? "");
   const [brand, setBrand] = useState(gear?.brand ?? "");
   const [model, setModel] = useState(gear?.model ?? "");
@@ -112,16 +113,27 @@ export function GearForm({
       }
     ];
   }, [gear, subcategoriesForCategory]);
+  const brandOptions = useMemo(() => {
+    const brands = Array.from(new Set(products.map((product) => product.brand)))
+      .filter(Boolean)
+      .sort(compareProductBrands);
+
+    return brands;
+  }, [products]);
 
   const filteredProducts = useMemo(() => {
     const normalizedQuery = normalize(query);
+    const productsForBrand =
+      brandFilter === "all"
+        ? products
+        : products.filter((product) => product.brand === brandFilter);
+
     if (!normalizedQuery) {
-      return products.slice(0, 12);
+      return productsForBrand.slice(0, 12);
     }
 
-    return products
-      .filter((product) => matchesProductQuery(product, query));
-  }, [products, query]);
+    return productsForBrand.filter((product) => matchesProductQuery(product, query));
+  }, [brandFilter, products, query]);
   const savingsJpy = calculateSavingsJpy(
     parsePositiveNumber(msrpJpy),
     parsePositiveNumber(purchasePriceJpy)
@@ -176,18 +188,36 @@ export function GearForm({
           }
         >
           <div className="min-w-0">
-            <label className="block">
-              <span className="text-sm font-medium text-stone-700">製品名</span>
-              <input
-                name="name"
-                required
-                value={query}
-                onChange={(event) => handleProductQuery(event.target.value)}
-                className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                placeholder="例：Mountain Shot 2"
-                autoComplete="off"
-              />
-            </label>
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_12rem]">
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">製品名</span>
+                <input
+                  name="name"
+                  required
+                  value={query}
+                  onChange={(event) => handleProductQuery(event.target.value)}
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                  placeholder="例：Mountain Shot 2"
+                  autoComplete="off"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">ブランド</span>
+                <select
+                  value={brandFilter}
+                  onChange={(event) => setBrandFilter(event.target.value)}
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                >
+                  <option value="all">すべて</option>
+                  {brandOptions.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
             {filteredProducts.length > 0 ? (
               <div className="mt-4 grid gap-2">
@@ -552,6 +582,30 @@ function getProductSearchValues(product: GearProduct) {
     `${product.brand} ${product.model}`,
     ...(product.gear_product_aliases?.map((item) => item.alias) ?? [])
   ].filter((value): value is string => Boolean(value));
+}
+
+const brandPriority = [
+  "mont-bell",
+  "THE NORTH FACE",
+  "Black Diamond",
+  "NANGA",
+  "ISUKA",
+  "NEMO",
+  "Therm-a-Rest",
+  "SOTO"
+];
+const brandCollator = new Intl.Collator("ja");
+
+function compareProductBrands(a: string, b: string) {
+  const priorityA = brandPriority.findIndex((brand) => normalize(brand) === normalize(a));
+  const priorityB = brandPriority.findIndex((brand) => normalize(brand) === normalize(b));
+
+  if (priorityA !== -1 || priorityB !== -1) {
+    return (priorityA === -1 ? Number.MAX_SAFE_INTEGER : priorityA)
+      - (priorityB === -1 ? Number.MAX_SAFE_INTEGER : priorityB);
+  }
+
+  return brandCollator.compare(a, b);
 }
 
 function getBrandSearchAliases(brand: string) {

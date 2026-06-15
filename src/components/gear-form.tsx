@@ -204,7 +204,9 @@ export function GearForm({
                     </span>
                     <span className="text-right text-xs text-stone-500">
                       <span className="block">
-                        {product.official_weight_grams ?? product.weight_grams ?? "-"}g
+                        {formatWeightGrams(
+                          product.official_weight_grams ?? product.weight_grams
+                        )}
                       </span>
                       <span className="mt-1 block">
                         {product.msrp_jpy ? formatJpy(product.msrp_jpy) : "-"}
@@ -543,6 +545,10 @@ function getProductSearchValues(product: GearProduct) {
 
 function normalize(value: string) {
   return value.toLocaleLowerCase().replace(/\s+/g, "");
+}
+
+function formatWeightGrams(value: number | null | undefined) {
+  return typeof value === "number" ? `${value}g` : "-";
 }
 
 function matchesProductQuery(product: GearProduct, query: string) {

@@ -6,6 +6,17 @@ const migrationSource = readFileSync(
   new URL("../supabase/migrations/027_the_north_face_official_50_products.sql", import.meta.url),
   "utf8"
 );
+const searchFixMigrationSource = readFileSync(
+  new URL(
+    "../supabase/migrations/028_tnf_search_weight_and_sample_cleanup.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
+const gearFormSource = readFileSync(
+  new URL("../src/components/gear-form.tsx", import.meta.url),
+  "utf8"
+);
 
 const productRows = [
   ...migrationSource.matchAll(
@@ -90,4 +101,43 @@ test("THE NORTH FACE catalog adds only display subcategories needed by these pro
     /\('clothing', 'トレッキングパンツ', 'trekking_pants', 80\)/
   );
   assert.match(migrationSource, /\('rainwear', 'レインジャケット', 'rain_jacket', 10\)/);
+});
+
+test("THE NORTH FACE catalog follow-up fills verified weights and retires wrong sample data", () => {
+  const verifiedWeightBlock = searchFixMigrationSource.match(
+    /from \(\n  values\n(?<values>[\s\S]+?)\n\) as v\(model, official_weight_grams\)/
+  )?.groups?.values;
+  assert.ok(verifiedWeightBlock);
+
+  const weightRows = [
+    ...verifiedWeightBlock.matchAll(/\('([^']*(?:''[^']*)*)', (\d+)\)/g)
+  ].filter((match) => Number(match[2]) > 100);
+
+  assert.equal(weightRows.length, 44);
+  assert.match(searchFixMigrationSource, /p\.brand = 'THE NORTH FACE'/);
+  assert.match(searchFixMigrationSource, /p\.brand = 'finetrack'/);
+  assert.match(searchFixMigrationSource, /p\.model = 'Mountain Shot 2'/);
+  assert.match(searchFixMigrationSource, /discontinued = true/);
+  assert.match(searchFixMigrationSource, /verification_status = 'needs_review'/);
+  assert.match(searchFixMigrationSource, /'MountainShot2'/);
+  assert.match(searchFixMigrationSource, /'マウンテンショット 2'/);
+});
+
+test("product picker search covers brand, Japanese, English family, and model patterns", () => {
+  assert.match(gearFormSource, /getProductFamilySearchAliases/);
+  for (const expected of [
+    "North Face",
+    "ノースフェイス",
+    "Tellus",
+    "Saum",
+    "Summit AMK",
+    "Mountain Shot",
+    "MountainShot",
+    "Footprint",
+    "Groundsheet",
+    "Creston",
+    "Vectiv"
+  ]) {
+    assert.ok(gearFormSource.includes(expected), `${expected} missing`);
+  }
 });

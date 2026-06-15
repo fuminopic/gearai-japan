@@ -538,6 +538,7 @@ function getProductSearchValues(product: GearProduct) {
     product.model,
     product.brand,
     ...getBrandSearchAliases(product.brand),
+    ...getProductFamilySearchAliases(product),
     product.capacity,
     `${product.brand} ${product.model}`,
     ...(product.gear_product_aliases?.map((item) => item.alias) ?? [])
@@ -546,18 +547,102 @@ function getProductSearchValues(product: GearProduct) {
 
 function getBrandSearchAliases(brand: string) {
   if (normalize(brand) === "thenorthface") {
-    return ["ザ・ノース・フェイス", "ザノースフェイス", "ノースフェイス", "北面", "TNF"];
+    return [
+      "THE NORTH FACE",
+      "The North Face",
+      "North Face",
+      "northface",
+      "ザ・ノース・フェイス",
+      "ザノースフェイス",
+      "ノースフェイス",
+      "北面",
+      "TNF"
+    ];
   }
 
   if (normalize(brand) === "mont-bell" || normalize(brand) === "montbell") {
-    return ["モンベル"];
+    return ["montbell", "モンベル"];
   }
 
   return [];
 }
 
+function getProductFamilySearchAliases(product: GearProduct) {
+  const text = `${product.name_ja ?? ""} ${product.model ?? ""}`;
+  const normalizedText = normalize(text);
+  const aliases: string[] = [];
+  const add = (...items: string[]) => aliases.push(...items);
+
+  if (normalizedText.includes("テルス")) {
+    add("Tellus", "TELLUS", "テルス");
+  }
+
+  if (normalizedText.includes("サム")) {
+    add("Saum", "SAUM", "サム");
+  }
+
+  if (normalizedText.includes("サミットamk")) {
+    add("Summit AMK", "SUMMIT AMK", "AMK", "サミット AMK");
+  }
+
+  if (normalizedText.includes("アークティック")) {
+    add("Arctic", "ARCTIC", "アークティック");
+  }
+
+  if (normalizedText.includes("マウンテンショット")) {
+    add("Mountain Shot", "MountainShot", "MOUNTAIN SHOT", "マウンテンショット");
+  }
+
+  if (normalizedText.includes("マウンテングローリー")) {
+    add("Mountain Glory", "MountainGlory", "MOUNTAIN GLORY", "マウンテングローリー");
+  }
+
+  if (normalizedText.includes("フットプリント")) {
+    add("Footprint", "footprint", "Groundsheet", "Ground Sheet", "グラウンドシート");
+  }
+
+  if (normalizedText.includes("クライムライト")) {
+    add("Climb Light", "ClimbLight", "クライムライト");
+  }
+
+  if (normalizedText.includes("フューチャーライト")) {
+    add("Futurelight", "Future Light", "FUTURELIGHT", "フューチャーライト");
+  }
+
+  if (normalizedText.includes("ストライクトレイル")) {
+    add("Strike Trail", "StrikeTrail", "ストライクトレイル");
+  }
+
+  if (normalizedText.includes("サンダー")) {
+    add("Thunder", "サンダー");
+  }
+
+  if (normalizedText.includes("デナリ")) {
+    add("Denali", "デナリ");
+  }
+
+  if (normalizedText.includes("アルパインライト")) {
+    add("Alpine Light", "AlpineLight", "アルパインライト");
+  }
+
+  if (normalizedText.includes("クレストン")) {
+    add("Creston", "クレストン");
+  }
+
+  if (normalizedText.includes("ベクティブ")) {
+    add("Vectiv", "VECTIV", "ベクティブ");
+  }
+
+  return aliases;
+}
+
 function normalize(value: string) {
-  return value.toLocaleLowerCase().replace(/\s+/g, "");
+  return value
+    .normalize("NFKC")
+    .toLocaleLowerCase()
+    .replace(/^ザ[・･]?/, "")
+    .replace(/['’"“”`]/g, "")
+    .replace(/[\s()\[\]{}（）【】「」『』・･/／\\_.。,，:：;；#＃+-]+/g, "");
 }
 
 function formatWeightGrams(value: number | null | undefined) {

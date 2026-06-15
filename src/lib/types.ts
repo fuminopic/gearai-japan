@@ -253,6 +253,7 @@ export type GearFilters = {
   q?: string;
   status?: GearStatus | "all";
   category?: string;
+  brand?: string;
   sort?: "newest" | "weight" | "price";
 };
 

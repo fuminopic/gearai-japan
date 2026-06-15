@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { GearList } from "@/components/gear-list";
-import { getGearCategories, getUserGear } from "@/lib/data/gear";
+import { getGearCategories, getUserGear, getUserGearBrands } from "@/lib/data/gear";
 import type { GearFilters, GearStatus } from "@/lib/types";
 
 type GearPageProps = {
@@ -9,6 +9,7 @@ type GearPageProps = {
     q?: string;
     status?: string;
     category?: string;
+    brand?: string;
     sort?: string;
     error?: string;
   }>;
@@ -20,11 +21,13 @@ export default async function GearPage({ searchParams }: GearPageProps) {
     q: params.q,
     status: isGearStatus(params.status) ? params.status : "all",
     category: params.category,
+    brand: params.brand,
     sort: isSort(params.sort) ? params.sort : "newest"
   };
 
-  const [categories, gear] = await Promise.all([
+  const [categories, brands, gear] = await Promise.all([
     getGearCategories(),
+    getUserGearBrands(),
     getUserGear(filters)
   ]);
 
@@ -49,7 +52,7 @@ export default async function GearPage({ searchParams }: GearPageProps) {
         </p>
       ) : null}
 
-      <GearList gear={gear} categories={categories} filters={filters} />
+      <GearList gear={gear} categories={categories} brands={brands} filters={filters} />
     </div>
   );
 }

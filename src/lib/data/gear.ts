@@ -112,6 +112,10 @@ export async function getUserGear(filters: GearFilters = {}) {
     query = query.eq("category_id", filters.category);
   }
 
+  if (filters.brand) {
+    query = query.eq("brand", filters.brand);
+  }
+
   if (filters.sort === "weight") {
     query = query.order("weight_grams", { ascending: false });
   } else if (filters.sort === "price") {
@@ -130,6 +134,28 @@ export async function getUserGear(filters: GearFilters = {}) {
   }
 
   return data as unknown as UserGear[];
+}
+
+export async function getUserGearBrands() {
+  const { supabase, user } = await requireUser();
+  const { data, error } = await supabase
+    .from("user_gear")
+    .select("brand")
+    .eq("user_id", user.id)
+    .not("brand", "is", null)
+    .order("brand", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return Array.from(
+    new Set(
+      (data ?? [])
+        .map((item) => item.brand?.trim())
+        .filter((brand): brand is string => Boolean(brand))
+    )
+  ).sort((a, b) => a.localeCompare(b, "ja"));
 }
 
 export const getOwnedGearForPlanning = cache(async function getOwnedGearForPlanning() {

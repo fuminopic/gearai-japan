@@ -11,10 +11,13 @@ import { formatJpy, formatWeight } from "@/lib/utils/format";
 type GearListProps = {
   gear: UserGear[];
   categories: GearCategory[];
+  brands: string[];
   filters: GearFilters;
 };
 
-export function GearList({ gear, categories, filters }: GearListProps) {
+export function GearList({ gear, categories, brands, filters }: GearListProps) {
+  const gearGroups = groupGearByCategory(gear, categories);
+
   return (
     <div className="space-y-5">
       <form className="rounded-lg bg-white p-4 shadow-soft">
@@ -28,10 +31,11 @@ export function GearList({ gear, categories, filters }: GearListProps) {
           />
         </div>
 
-        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+        <div className="mt-3 grid gap-2 sm:grid-cols-4">
           <select
             name="status"
             defaultValue={filters.status ?? "all"}
+            aria-label="所有状態"
             className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm"
           >
             <option value="all">すべて</option>
@@ -42,6 +46,7 @@ export function GearList({ gear, categories, filters }: GearListProps) {
           <select
             name="category"
             defaultValue={filters.category ?? ""}
+            aria-label="カテゴリー"
             className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm"
           >
             <option value="">カテゴリーを選択</option>
@@ -53,8 +58,23 @@ export function GearList({ gear, categories, filters }: GearListProps) {
           </select>
 
           <select
+            name="brand"
+            defaultValue={filters.brand ?? ""}
+            aria-label="ブランド"
+            className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm"
+          >
+            <option value="">ブランドを選択</option>
+            {brands.map((brand) => (
+              <option key={brand} value={brand}>
+                {brand}
+              </option>
+            ))}
+          </select>
+
+          <select
             name="sort"
             defaultValue={filters.sort ?? "newest"}
+            aria-label="並び順"
             className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm"
           >
             <option value="newest">新しい順</option>
@@ -82,121 +102,184 @@ export function GearList({ gear, categories, filters }: GearListProps) {
           </Link>
         </section>
       ) : (
-        <div className="space-y-3">
-          {gear.map((item) => {
-            const savingsJpy = calculateSavingsJpy(
-              item.msrp_jpy,
-              item.purchase_price_jpy
-            );
-
-            return (
-            <article key={item.id} className="rounded-lg bg-white p-4 shadow-soft">
-              <div
-                className={
-                  item.image_url
-                    ? "grid gap-4 sm:grid-cols-[6.5rem_minmax(0,1fr)]"
-                    : "grid gap-4"
-                }
-              >
-                {item.image_url ? (
-                  <Link
-                    href={`/gear/${item.id}`}
-                    className="flex h-32 w-full items-center justify-center rounded-lg border border-stone-100 bg-stone-50 p-2 sm:h-28"
-                  >
-                    <img
-                      src={item.image_url}
-                      alt={item.name}
-                      className="max-h-full max-w-full object-contain"
-                      loading="lazy"
-                    />
-                  </Link>
-                ) : null}
-
-                <div className="min-w-0">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <Link
-                        href={`/gear/${item.id}`}
-                        className="block truncate text-lg font-semibold text-ink"
-                      >
-                        {item.name}
-                      </Link>
-                      <p className="mt-1 text-sm text-stone-500">
-                        {[
-                          item.brand,
-                          item.model,
-                          item.gear_categories?.name_ja,
-                          item.gear_subcategories?.name_ja
-                        ]
-                          .filter(Boolean)
-                          .join(" / ")}
-                      </p>
-                    </div>
-                    <span className="shrink-0 rounded-lg bg-forest-50 px-3 py-1 text-xs font-semibold text-forest-700">
-                      {statusLabels[item.status]}
-                    </span>
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-5">
-                    <div>
-                      <p className="text-stone-400">重量</p>
-                      <p className="font-semibold text-ink">
-                        {formatWeight(
-                          Number(item.measured_weight_grams ?? item.official_weight_grams ?? item.weight_grams)
-                        )}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-stone-400">MSRP</p>
-                      <p className="font-semibold text-ink">
-                        {item.msrp_jpy === null ? "-" : formatJpy(item.msrp_jpy)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-stone-400">購入価格</p>
-                      <p className="font-semibold text-ink">
-                        {item.purchase_price_jpy === null
-                          ? "-"
-                          : formatJpy(item.purchase_price_jpy)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-stone-400">節約</p>
-                      <p className="font-semibold text-ink">
-                        {savingsJpy === null ? "-" : formatJpy(savingsJpy)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-stone-400">タイプ</p>
-                      <p className="font-semibold text-ink">{weightTypeLabels[item.weight_type]}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex gap-2">
-                    <Link
-                      href={`/gear/${item.id}/edit`}
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-stone-200 px-4 py-2 text-sm font-semibold text-stone-700"
-                    >
-                      <Edit3 className="h-4 w-4" />
-                      編集
-                    </Link>
-                    <form action={deleteGear.bind(null, item.id)} className="flex-1">
-                      <SubmitButton
-                        pendingLabel="削除中..."
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-60"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        削除
-                      </SubmitButton>
-                    </form>
-                  </div>
+        <div className="space-y-5">
+          {gearGroups.map((group) => (
+            <section key={group.id} className="space-y-3">
+              <div className="flex items-end justify-between gap-3 px-1">
+                <div>
+                  <h2 className="text-base font-semibold text-ink">{group.name}</h2>
+                  <p className="mt-1 text-xs text-stone-500">
+                    {group.count.toLocaleString("ja-JP")}件 /{" "}
+                    {formatWeight(group.weightGrams)}
+                  </p>
                 </div>
               </div>
-            </article>
-            );
-          })}
+
+              <div className="space-y-3">
+                {group.items.map((item) => (
+                  <GearCard key={item.id} item={item} />
+                ))}
+              </div>
+            </section>
+          ))}
         </div>
       )}
     </div>
+  );
+}
+
+function GearCard({ item }: { item: UserGear }) {
+  const savingsJpy = calculateSavingsJpy(item.msrp_jpy, item.purchase_price_jpy);
+
+  return (
+    <article className="rounded-lg bg-white p-4 shadow-soft">
+      <div
+        className={
+          item.image_url
+            ? "grid gap-4 sm:grid-cols-[6.5rem_minmax(0,1fr)]"
+            : "grid gap-4"
+        }
+      >
+        {item.image_url ? (
+          <Link
+            href={`/gear/${item.id}`}
+            className="flex h-32 w-full items-center justify-center rounded-lg border border-stone-100 bg-stone-50 p-2 sm:h-28"
+          >
+            <img
+              src={item.image_url}
+              alt={item.name}
+              className="max-h-full max-w-full object-contain"
+              loading="lazy"
+            />
+          </Link>
+        ) : null}
+
+        <div className="min-w-0">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <Link
+                href={`/gear/${item.id}`}
+                className="block truncate text-lg font-semibold text-ink"
+              >
+                {item.name}
+              </Link>
+              <p className="mt-1 text-sm text-stone-500">
+                {[
+                  item.brand,
+                  item.model,
+                  item.gear_categories?.name_ja,
+                  item.gear_subcategories?.name_ja
+                ]
+                  .filter(Boolean)
+                  .join(" / ")}
+              </p>
+            </div>
+            <span className="shrink-0 rounded-lg bg-forest-50 px-3 py-1 text-xs font-semibold text-forest-700">
+              {statusLabels[item.status]}
+            </span>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-5">
+            <div>
+              <p className="text-stone-400">重量</p>
+              <p className="font-semibold text-ink">
+                {formatWeight(getGearWeightGrams(item))}
+              </p>
+            </div>
+            <div>
+              <p className="text-stone-400">MSRP</p>
+              <p className="font-semibold text-ink">
+                {item.msrp_jpy === null ? "-" : formatJpy(item.msrp_jpy)}
+              </p>
+            </div>
+            <div>
+              <p className="text-stone-400">購入価格</p>
+              <p className="font-semibold text-ink">
+                {item.purchase_price_jpy === null ? "-" : formatJpy(item.purchase_price_jpy)}
+              </p>
+            </div>
+            <div>
+              <p className="text-stone-400">節約</p>
+              <p className="font-semibold text-ink">
+                {savingsJpy === null ? "-" : formatJpy(savingsJpy)}
+              </p>
+            </div>
+            <div>
+              <p className="text-stone-400">タイプ</p>
+              <p className="font-semibold text-ink">
+                {weightTypeLabels[item.weight_type]}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 flex gap-2">
+            <Link
+              href={`/gear/${item.id}/edit`}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-stone-200 px-4 py-2 text-sm font-semibold text-stone-700"
+            >
+              <Edit3 className="h-4 w-4" />
+              編集
+            </Link>
+            <form action={deleteGear.bind(null, item.id)} className="flex-1">
+              <SubmitButton
+                pendingLabel="削除中..."
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-60"
+              >
+                <Trash2 className="h-4 w-4" />
+                削除
+              </SubmitButton>
+            </form>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function groupGearByCategory(gear: UserGear[], categories: GearCategory[]) {
+  const categoryOrder = new Map(
+    categories.map((category, index) => [category.id, category.sort_order ?? index])
+  );
+  const groups = new Map<
+    string,
+    {
+      id: string;
+      name: string;
+      sortOrder: number;
+      items: UserGear[];
+      count: number;
+      weightGrams: number;
+    }
+  >();
+
+  for (const item of gear) {
+    const groupId = item.category_id || "other";
+    const current = groups.get(groupId) ?? {
+      id: groupId,
+      name: item.gear_categories?.name_ja ?? "その他",
+      sortOrder: categoryOrder.get(groupId) ?? Number.MAX_SAFE_INTEGER,
+      items: [],
+      count: 0,
+      weightGrams: 0
+    };
+
+    current.items.push(item);
+    current.count += 1;
+    current.weightGrams += getGearWeightGrams(item);
+    groups.set(groupId, current);
+  }
+
+  return [...groups.values()].sort((a, b) => {
+    if (a.sortOrder !== b.sortOrder) {
+      return a.sortOrder - b.sortOrder;
+    }
+
+    return a.name.localeCompare(b.name, "ja");
+  });
+}
+
+function getGearWeightGrams(item: UserGear) {
+  return Number(
+    item.measured_weight_grams ?? item.official_weight_grams ?? item.weight_grams
   );
 }

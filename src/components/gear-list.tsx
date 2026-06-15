@@ -31,56 +31,64 @@ export function GearList({ gear, categories, brands, filters }: GearListProps) {
           />
         </div>
 
-        <div className="mt-3 grid gap-2 sm:grid-cols-4">
-          <select
-            name="status"
-            defaultValue={filters.status ?? "all"}
-            aria-label="所有状態"
-            className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm"
-          >
-            <option value="all">すべて</option>
-            <option value="owned">所有</option>
-            <option value="wishlist">欲しい</option>
-          </select>
+        <div className="mt-3 grid gap-3 sm:grid-cols-4">
+          <label className="block">
+            <span className="text-xs font-semibold text-stone-500">所有状態</span>
+            <select
+              name="status"
+              defaultValue={filters.status ?? "all"}
+              className="mt-1 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm"
+            >
+              <option value="all">すべて</option>
+              <option value="owned">所有</option>
+              <option value="wishlist">欲しい</option>
+            </select>
+          </label>
 
-          <select
-            name="category"
-            defaultValue={filters.category ?? ""}
-            aria-label="カテゴリー"
-            className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm"
-          >
-            <option value="">カテゴリーを選択</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name_ja}
-              </option>
-            ))}
-          </select>
+          <label className="block">
+            <span className="text-xs font-semibold text-stone-500">カテゴリー</span>
+            <select
+              name="category"
+              defaultValue={filters.category ?? ""}
+              className="mt-1 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm"
+            >
+              <option value="">すべて</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name_ja}
+                </option>
+              ))}
+            </select>
+          </label>
 
-          <select
-            name="brand"
-            defaultValue={filters.brand ?? ""}
-            aria-label="ブランド"
-            className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm"
-          >
-            <option value="">ブランドを選択</option>
-            {brands.map((brand) => (
-              <option key={brand} value={brand}>
-                {brand}
-              </option>
-            ))}
-          </select>
+          <label className="block">
+            <span className="text-xs font-semibold text-stone-500">ブランド</span>
+            <select
+              name="brand"
+              defaultValue={filters.brand ?? ""}
+              className="mt-1 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm"
+            >
+              <option value="">すべて</option>
+              {brands.map((brand) => (
+                <option key={brand} value={brand}>
+                  {brand}
+                </option>
+              ))}
+            </select>
+          </label>
 
-          <select
-            name="sort"
-            defaultValue={filters.sort ?? "newest"}
-            aria-label="並び順"
-            className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm"
-          >
-            <option value="newest">新しい順</option>
-            <option value="weight">重い順</option>
-            <option value="price">高い順</option>
-          </select>
+          <label className="block">
+            <span className="text-xs font-semibold text-stone-500">並び順</span>
+            <select
+              name="sort"
+              defaultValue={filters.sort ?? "newest"}
+              className="mt-1 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm"
+            >
+              <option value="newest">新しい順</option>
+              <option value="weight">重い順</option>
+              <option value="price">高い順</option>
+            </select>
+          </label>
         </div>
 
         <button className="mt-3 w-full rounded-lg bg-ink px-4 py-3 text-sm font-semibold text-white">
@@ -103,9 +111,18 @@ export function GearList({ gear, categories, brands, filters }: GearListProps) {
         </section>
       ) : (
         <div className="space-y-5">
+          <div className="rounded-lg border border-forest-100 bg-forest-50 px-4 py-3">
+            <p className="text-sm font-semibold text-forest-800">
+              カテゴリー別に表示中
+            </p>
+            <p className="mt-1 text-xs text-forest-700">
+              ブランド・カテゴリーで絞り込みできます
+            </p>
+          </div>
+
           {gearGroups.map((group) => (
             <section key={group.id} className="space-y-3">
-              <div className="flex items-end justify-between gap-3 px-1">
+              <div className="flex items-end justify-between gap-3 rounded-lg bg-stone-100 px-4 py-3">
                 <div>
                   <h2 className="text-base font-semibold text-ink">{group.name}</h2>
                   <p className="mt-1 text-xs text-stone-500">

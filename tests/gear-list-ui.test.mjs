@@ -27,8 +27,9 @@ test("gear list supports brand filtering from the gear page query", () => {
 
 test("gear list exposes brand and category-oriented list controls", () => {
   assert.match(gearListSource, /name="brand"/);
-  assert.match(gearListSource, /aria-label="ブランド"/);
-  assert.match(gearListSource, /ブランドを選択/);
+  assert.match(gearListSource, />ブランド<\/span>/);
+  assert.match(gearListSource, />カテゴリー<\/span>/);
+  assert.match(gearListSource, />所有状態<\/span>/);
   assert.match(gearListSource, /sm:grid-cols-4/);
 });
 
@@ -38,4 +39,6 @@ test("gear list groups registered gear by category without changing cards", () =
   assert.match(gearListSource, /group\.items\.map/);
   assert.match(gearListSource, /GearCard/);
   assert.match(gearListSource, /formatWeight\(group\.weightGrams\)/);
+  assert.match(gearListSource, /カテゴリー別に表示中/);
+  assert.match(gearListSource, /ブランド・カテゴリーで絞り込みできます/);
 });

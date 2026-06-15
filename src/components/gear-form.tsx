@@ -668,6 +668,10 @@ function getProductFamilySearchAliases(product: GearProduct) {
     add("Astro", "ASTRO", "アストロ");
   }
 
+  if (normalizedText.includes("コズモ")) {
+    add("Cosmo", "COSMO", "Cosmo 350", "Cosmo350", "コズモ");
+  }
+
   if (normalizedText.includes("ディプロイ")) {
     add("Deploy", "DEPLOY", "ディプロイ");
   }

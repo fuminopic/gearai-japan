@@ -27,10 +27,11 @@ test("gear list supports brand filtering from the gear page query", () => {
 
 test("gear list exposes brand and category-oriented list controls", () => {
   assert.match(gearListSource, /name="brand"/);
-  assert.match(gearListSource, />ブランド<\/span>/);
-  assert.match(gearListSource, />カテゴリー<\/span>/);
-  assert.match(gearListSource, />所有状態<\/span>/);
-  assert.match(gearListSource, /sm:grid-cols-4/);
+  assert.match(gearListSource, /FilterChip/);
+  assert.match(gearListSource, /StatusChip/);
+  assert.match(gearListSource, /buildGearHref/);
+  assert.match(gearListSource, /label="ブランド"/);
+  assert.match(gearListSource, /のカテゴリー/);
 });
 
 test("gear list groups registered gear by category without changing cards", () => {
@@ -39,6 +40,8 @@ test("gear list groups registered gear by category without changing cards", () =
   assert.match(gearListSource, /group\.items\.map/);
   assert.match(gearListSource, /GearCard/);
   assert.match(gearListSource, /formatWeight\(group\.weightGrams\)/);
-  assert.match(gearListSource, /カテゴリー別に表示中/);
-  assert.match(gearListSource, /ブランド・カテゴリーで絞り込みできます/);
+  assert.match(gearListSource, /InventoryStat/);
+  assert.match(gearListSource, /totalWeightGrams/);
+  assert.match(gearListSource, /装備庫/);
+  assert.match(gearListSource, /divide-y divide-stone-100/);
 });

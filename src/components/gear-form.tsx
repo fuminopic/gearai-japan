@@ -1,9 +1,18 @@
 "use client";
 
+import {
+  Barcode,
+  Camera,
+  Check,
+  ChevronRight,
+  PackagePlus,
+  Search,
+  Sparkles
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
-import { GearImageViewer } from "@/components/gear-image-viewer";
 import { SubmitButton } from "@/components/submit-button";
 import {
   gearSubcategoryLabels,
@@ -211,6 +220,7 @@ export function GearForm({
     parsePositiveNumber(msrpJpy),
     parsePositiveNumber(purchasePriceJpy)
   );
+  const selectedProduct = products.find((product) => product.id === productId) ?? null;
 
   function handleProductQuery(value: string) {
     setQuery(value);
@@ -257,121 +267,127 @@ export function GearForm({
       <input type="hidden" name="product_id" value={productId} />
       <input type="hidden" name="image_url" value={imageUrl} />
 
-      <section className="rounded-lg bg-white p-5 shadow-soft">
-        <div
-          className={
-            imageUrl
-              ? "grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start"
-              : "grid gap-4"
-          }
-        >
-          <div className="min-w-0">
-            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_11rem_11rem]">
-              <label className="block">
-                <span className="text-sm font-medium text-stone-700">製品名</span>
-                <input
-                  name="name"
-                  required
-                  value={query}
-                  onChange={(event) => handleProductQuery(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                  placeholder="例：Mountain Shot 2"
-                  autoComplete="off"
-                />
-              </label>
+      <section className="overflow-hidden rounded-lg border border-white/70 bg-white/90 shadow-soft">
+        <div className="border-b border-stone-100 px-4 py-4 sm:px-5">
+          <div className="flex items-center gap-2 text-xs font-semibold text-forest-700">
+            <Sparkles className="h-4 w-4" />
+            <span>公式カタログから選択</span>
+          </div>
+          <label className="mt-3 flex items-center gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-3">
+            <Search className="h-5 w-5 shrink-0 text-stone-400" />
+            <input
+              name="name"
+              required
+              value={query}
+              onChange={(event) => handleProductQuery(event.target.value)}
+              className="min-w-0 flex-1 bg-transparent text-base outline-none"
+              placeholder="製品名・ブランド・型番で検索"
+              autoComplete="off"
+            />
+          </label>
 
-              <label className="block">
-                <span className="text-sm font-medium text-stone-700">ブランド</span>
-                <select
-                  value={brandFilter}
-                  onChange={(event) => handleBrandFilter(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                >
-                  <option value="all">すべて</option>
-                  {brandOptions.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
-              </label>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              className="flex items-center justify-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-sm font-semibold text-stone-700"
+            >
+              <Barcode className="h-4 w-4 text-forest-700" />
+              バーコード
+            </button>
+            <button
+              type="button"
+              className="flex items-center justify-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-sm font-semibold text-stone-700"
+            >
+              <Camera className="h-4 w-4 text-forest-700" />
+              カメラ
+            </button>
+          </div>
+        </div>
 
-              <label className="block">
-                <span className="text-sm font-medium text-stone-700">カテゴリー</span>
-                <select
-                  value={productCategoryFilter}
-                  onChange={(event) => setProductCategoryFilter(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                >
-                  <option value="all">すべて</option>
-                  {productCategoryOptions.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.label}（{item.count}）
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            {categoryProductGroups.length > 0 ? (
-              <div className="mt-4 grid gap-4">
-                {categoryProductGroups.map((group) => (
-                  <div key={group.id}>
-                    <div className="flex items-center justify-between px-1 text-xs font-semibold text-stone-500">
-                      <span>{group.label}</span>
-                      <span>{group.products.length}件</span>
-                    </div>
-                    <div className="mt-2 grid gap-2">
-                      {group.products.map((product) => (
-                        <button
-                          key={product.id}
-                          type="button"
-                          onClick={() => applyProduct(product)}
-                          className="grid grid-cols-[1fr_auto] gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-left transition hover:border-forest-500 hover:bg-white"
-                        >
-                          <span className="min-w-0">
-                            <span className="block truncate text-sm font-semibold text-ink">
-                              {product.name_ja ?? product.model}
-                            </span>
-                            <span className="mt-1 block truncate text-xs text-stone-500">
-                              {[product.brand, product.model]
-                                .filter(Boolean)
-                                .join(" / ")}
-                            </span>
-                          </span>
-                          <span className="text-right text-xs text-stone-500">
-                            <span className="block">
-                              {formatWeightGrams(
-                                product.official_weight_grams ?? product.weight_grams
-                              )}
-                            </span>
-                            <span className="mt-1 block">
-                              {product.msrp_jpy ? formatJpy(product.msrp_jpy) : "-"}
-                            </span>
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="mt-4 rounded-lg bg-stone-50 px-4 py-3 text-sm text-stone-500">
-                該当する製品はありません
-              </p>
-            )}
+        <div className="px-4 py-4 sm:px-5">
+          <p className="text-xs font-semibold text-stone-500">ブランド</p>
+          <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto px-1 pb-1">
+            <ProductFilterChip
+              active={brandFilter === "all"}
+              onClick={() => handleBrandFilter("all")}
+            >
+              すべて
+            </ProductFilterChip>
+            {brandOptions.map((item) => (
+              <ProductFilterChip
+                key={item}
+                active={brandFilter === item}
+                onClick={() => handleBrandFilter(item)}
+              >
+                {item}
+              </ProductFilterChip>
+            ))}
           </div>
 
-          {imageUrl ? (
-            <div>
-              <p className="mb-2 text-sm font-medium text-stone-700">製品画像</p>
-              <GearImageViewer
-                src={imageUrl}
-                alt={name || "製品画像"}
-                className="h-56 sm:h-64 lg:h-72"
-              />
+          <div className="mt-4 rounded-lg bg-stone-50 p-3">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="text-xs font-semibold text-stone-500">
+                  {brandFilter === "all" ? "カテゴリー" : `${brandFilter} のカテゴリー`}
+                </p>
+                <p className="mt-1 text-xs text-stone-400">
+                  ブランドを選ぶと、その中のカテゴリーだけを表示します
+                </p>
+              </div>
+              <span className="shrink-0 rounded bg-white px-2 py-1 text-xs font-semibold text-stone-500">
+                {productsForBrand.length}件
+              </span>
             </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <ProductFilterChip
+                active={productCategoryFilter === "all"}
+                onClick={() => setProductCategoryFilter("all")}
+              >
+                すべて
+              </ProductFilterChip>
+              {productCategoryOptions.map((item) => (
+                <ProductFilterChip
+                  key={item.id}
+                  active={productCategoryFilter === item.id}
+                  onClick={() => setProductCategoryFilter(item.id)}
+                >
+                  {item.label}
+                  <span className="ml-1 text-[11px] opacity-70">{item.count}</span>
+                </ProductFilterChip>
+              ))}
+            </div>
+          </div>
+
+          {selectedProduct ? (
+            <SelectedProductPreview product={selectedProduct} />
           ) : null}
+
+          {categoryProductGroups.length > 0 ? (
+            <div className="mt-4 grid gap-4">
+              {categoryProductGroups.map((group) => (
+                <div key={group.id}>
+                  <div className="flex items-center justify-between px-1 text-xs font-semibold text-stone-500">
+                    <span>{group.label}</span>
+                    <span>{group.products.length}件</span>
+                  </div>
+                  <div className="mt-2 grid gap-2">
+                    {group.products.map((product) => (
+                      <ProductResultCard
+                        key={product.id}
+                        product={product}
+                        selected={product.id === productId}
+                        onSelect={() => applyProduct(product)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-4 rounded-lg bg-stone-50 px-4 py-3 text-sm text-stone-500">
+              該当する製品はありません
+            </p>
+          )}
         </div>
       </section>
 
@@ -673,6 +689,126 @@ export function GearForm({
         </SubmitButton>
       </div>
     </form>
+  );
+}
+
+function ProductFilterChip({
+  active,
+  onClick,
+  children
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`shrink-0 rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+        active
+          ? "border-forest-700 bg-forest-700 text-white"
+          : "border-stone-200 bg-white text-stone-700 hover:border-forest-200 hover:bg-forest-50 hover:text-forest-800"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ProductResultCard({
+  product,
+  selected,
+  onSelect
+}: {
+  product: GearProduct;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const displayName = product.name_ja ?? product.model;
+  const weight = product.official_weight_grams ?? product.weight_grams;
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`grid grid-cols-[4.25rem_minmax(0,1fr)_auto] items-center gap-3 rounded-lg border px-3 py-3 text-left transition ${
+        selected
+          ? "border-forest-700 bg-forest-50"
+          : "border-stone-200 bg-white hover:border-forest-300 hover:bg-forest-50/60"
+      }`}
+    >
+      <span className="flex h-16 w-16 items-center justify-center rounded-lg bg-stone-50 p-1.5">
+        {product.image_url ? (
+          <img
+            src={product.image_url}
+            alt={displayName}
+            className="max-h-full max-w-full object-contain"
+            loading="lazy"
+          />
+        ) : (
+          <PackagePlus className="h-6 w-6 text-stone-300" />
+        )}
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate text-base font-semibold text-ink">
+          {displayName}
+        </span>
+        <span className="mt-0.5 block truncate text-sm text-stone-500">
+          {[product.brand, product.model].filter(Boolean).join(" / ")}
+        </span>
+        <span className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+          <span className="rounded bg-forest-50 px-2 py-1 font-semibold text-forest-800">
+            {getProductCategoryLabel(product)}
+          </span>
+          <span className="font-semibold text-stone-600">
+            {formatWeightGrams(weight)}
+          </span>
+          <span className="text-stone-400">
+            {product.msrp_jpy ? formatJpy(product.msrp_jpy) : "-"}
+          </span>
+        </span>
+      </span>
+      <span
+        className={`flex h-9 w-9 items-center justify-center rounded-lg border ${
+          selected
+            ? "border-forest-700 bg-forest-700 text-white"
+            : "border-stone-200 bg-white text-forest-700"
+        }`}
+      >
+        {selected ? <Check className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+      </span>
+    </button>
+  );
+}
+
+function SelectedProductPreview({ product }: { product: GearProduct }) {
+  return (
+    <div className="mt-4 grid grid-cols-[3.75rem_minmax(0,1fr)] gap-3 rounded-lg border border-forest-100 bg-forest-50 p-3">
+      <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-white p-1.5">
+        {product.image_url ? (
+          <img
+            src={product.image_url}
+            alt={product.name_ja ?? product.model}
+            className="max-h-full max-w-full object-contain"
+            loading="lazy"
+          />
+        ) : (
+          <PackagePlus className="h-5 w-5 text-forest-700" />
+        )}
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs font-semibold text-forest-700">選択中</p>
+        <p className="mt-1 truncate text-sm font-semibold text-ink">
+          {product.name_ja ?? product.model}
+        </p>
+        <p className="mt-0.5 truncate text-xs text-stone-500">
+          {[product.brand, getProductCategoryLabel(product), formatWeightGrams(product.official_weight_grams ?? product.weight_grams)]
+            .filter(Boolean)
+            .join(" / ")}
+        </p>
+      </div>
+    </div>
   );
 }
 

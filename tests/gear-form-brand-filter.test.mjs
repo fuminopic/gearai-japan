@@ -9,8 +9,9 @@ const gearFormSource = readFileSync(
 
 test("gear add form exposes a product brand filter beside product search", () => {
   assert.match(gearFormSource, /brandFilter/);
-  assert.match(gearFormSource, /<option value="all">すべて<\/option>/);
-  assert.match(gearFormSource, /sm:grid-cols-\[minmax\(0,1fr\)_11rem_11rem\]/);
+  assert.match(gearFormSource, /ProductFilterChip/);
+  assert.match(gearFormSource, /handleBrandFilter\("all"\)/);
+  assert.match(gearFormSource, /公式カタログから選択/);
   assert.match(gearFormSource, /productsForBrand/);
 });
 
@@ -18,8 +19,10 @@ test("gear add form separates brand results by product category", () => {
   assert.match(gearFormSource, /productCategoryFilter/);
   assert.match(gearFormSource, /productCategoryOptions/);
   assert.match(gearFormSource, /categoryProductGroups/);
+  assert.match(gearFormSource, /ProductResultCard/);
+  assert.match(gearFormSource, /SelectedProductPreview/);
   assert.match(gearFormSource, /compareProductPickerItems/);
-  assert.match(gearFormSource, />カテゴリー<\/span>/);
+  assert.match(gearFormSource, /のカテゴリー/);
   assert.match(gearFormSource, /該当する製品はありません/);
 });
 

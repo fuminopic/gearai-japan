@@ -1,3 +1,6 @@
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+
 import { GearForm } from "@/components/gear-form";
 import { createGear } from "@/lib/actions/gear";
 import {
@@ -21,11 +24,22 @@ export default async function NewGearPage({ searchParams }: NewGearPageProps) {
   ]);
 
   return (
-    <div className="space-y-5">
-      <div>
-        <p className="text-sm font-semibold text-forest-700">新規登録</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">装備を追加</h1>
-      </div>
+    <div className="space-y-4">
+      <section className="flex items-end justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-forest-700">新規登録</p>
+          <h1 className="mt-1 text-4xl font-semibold tracking-normal text-ink">
+            装備を追加
+          </h1>
+        </div>
+        <Link
+          href="/gear"
+          className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-white text-stone-700 shadow-soft"
+          aria-label="装備一覧へ戻る"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Link>
+      </section>
       <GearForm
         categories={categories}
         subcategories={subcategories}

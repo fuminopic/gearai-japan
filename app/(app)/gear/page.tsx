@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Plus } from "lucide-react";
 
 import { GearList } from "@/components/gear-list";
 import { getGearCategories, getUserGear, getUserGearBrands } from "@/lib/data/gear";
@@ -32,17 +33,18 @@ export default async function GearPage({ searchParams }: GearPageProps) {
   ]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <section className="flex items-end justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-forest-700">装備管理</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">装備</h1>
+          <h1 className="mt-1 text-4xl font-semibold tracking-normal text-ink">装備</h1>
         </div>
         <Link
           href="/gear/new"
-          className="rounded-lg bg-forest-700 px-5 py-3 text-sm font-semibold text-white"
+          className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-forest-700 text-white shadow-soft"
+          aria-label="装備を追加"
         >
-          追加
+          <Plus className="h-6 w-6" />
         </Link>
       </section>
 

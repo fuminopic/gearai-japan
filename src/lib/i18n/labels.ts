@@ -77,6 +77,7 @@ export const categoryLabels: Record<string, string> = {
   shelter: "シェルター",
   sleep: "睡眠システム",
   clothing: "ウェア",
+  rainwear: "レインウェア",
   cooking: "クッキング",
   electronics: "電子機器",
   first_aid: "応急処置",

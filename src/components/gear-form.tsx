@@ -43,6 +43,7 @@ export function GearForm({
   const [productId, setProductId] = useState(gear?.product_id ?? "");
   const [query, setQuery] = useState(gear?.name ?? "");
   const [brandFilter, setBrandFilter] = useState("all");
+  const [productCategoryFilter, setProductCategoryFilter] = useState("all");
   const [name, setName] = useState(gear?.name ?? "");
   const [brand, setBrand] = useState(gear?.brand ?? "");
   const [model, setModel] = useState(gear?.model ?? "");
@@ -120,20 +121,92 @@ export function GearForm({
 
     return brands;
   }, [products]);
-
-  const filteredProducts = useMemo(() => {
-    const normalizedQuery = normalize(query);
-    const productsForBrand =
+  const categorySortOrder = useMemo(() => {
+    return new Map(categories.map((category, index) => [
+      category.id,
+      category.sort_order ?? index
+    ]));
+  }, [categories]);
+  const productsForBrand = useMemo(() => {
+    const brandProducts =
       brandFilter === "all"
         ? products
         : products.filter((product) => product.brand === brandFilter);
 
-    if (!normalizedQuery) {
-      return productsForBrand.slice(0, 12);
+    return [...brandProducts].sort((a, b) =>
+      compareProductPickerItems(a, b, categorySortOrder)
+    );
+  }, [brandFilter, categorySortOrder, products]);
+  const productCategoryOptions = useMemo(() => {
+    const options = new Map<
+      string,
+      { id: string; label: string; count: number; sortOrder: number }
+    >();
+
+    for (const product of productsForBrand) {
+      const current = options.get(product.category_id) ?? {
+        id: product.category_id,
+        label: getProductCategoryLabel(product),
+        count: 0,
+        sortOrder: categorySortOrder.get(product.category_id) ?? Number.MAX_SAFE_INTEGER
+      };
+
+      current.count += 1;
+      options.set(product.category_id, current);
     }
 
-    return productsForBrand.filter((product) => matchesProductQuery(product, query));
-  }, [brandFilter, products, query]);
+    return [...options.values()].sort((a, b) => {
+      if (a.sortOrder !== b.sortOrder) {
+        return a.sortOrder - b.sortOrder;
+      }
+
+      return brandCollator.compare(a.label, b.label);
+    });
+  }, [categorySortOrder, productsForBrand]);
+  const productsForCategory = useMemo(() => {
+    if (productCategoryFilter === "all") {
+      return productsForBrand;
+    }
+
+    return productsForBrand.filter(
+      (product) => product.category_id === productCategoryFilter
+    );
+  }, [productCategoryFilter, productsForBrand]);
+  const filteredProducts = useMemo(() => {
+    const normalizedQuery = normalize(query);
+
+    if (!normalizedQuery) {
+      return productsForCategory.slice(0, 12);
+    }
+
+    return productsForCategory.filter((product) => matchesProductQuery(product, query));
+  }, [productsForCategory, query]);
+  const categoryProductGroups = useMemo(() => {
+    const groups = new Map<
+      string,
+      { id: string; label: string; sortOrder: number; products: GearProduct[] }
+    >();
+
+    for (const product of filteredProducts) {
+      const current = groups.get(product.category_id) ?? {
+        id: product.category_id,
+        label: getProductCategoryLabel(product),
+        sortOrder: categorySortOrder.get(product.category_id) ?? Number.MAX_SAFE_INTEGER,
+        products: []
+      };
+
+      current.products.push(product);
+      groups.set(product.category_id, current);
+    }
+
+    return [...groups.values()].sort((a, b) => {
+      if (a.sortOrder !== b.sortOrder) {
+        return a.sortOrder - b.sortOrder;
+      }
+
+      return brandCollator.compare(a.label, b.label);
+    });
+  }, [categorySortOrder, filteredProducts]);
   const savingsJpy = calculateSavingsJpy(
     parsePositiveNumber(msrpJpy),
     parsePositiveNumber(purchasePriceJpy)
@@ -143,6 +216,11 @@ export function GearForm({
     setQuery(value);
     setName(value);
     setProductId("");
+  }
+
+  function handleBrandFilter(value: string) {
+    setBrandFilter(value);
+    setProductCategoryFilter("all");
   }
 
   function applyProduct(product: GearProduct) {
@@ -188,7 +266,7 @@ export function GearForm({
           }
         >
           <div className="min-w-0">
-            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_12rem]">
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_11rem_11rem]">
               <label className="block">
                 <span className="text-sm font-medium text-stone-700">製品名</span>
                 <input
@@ -206,7 +284,7 @@ export function GearForm({
                 <span className="text-sm font-medium text-stone-700">ブランド</span>
                 <select
                   value={brandFilter}
-                  onChange={(event) => setBrandFilter(event.target.value)}
+                  onChange={(event) => handleBrandFilter(event.target.value)}
                   className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
                 >
                   <option value="all">すべて</option>
@@ -217,39 +295,71 @@ export function GearForm({
                   ))}
                 </select>
               </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">カテゴリー</span>
+                <select
+                  value={productCategoryFilter}
+                  onChange={(event) => setProductCategoryFilter(event.target.value)}
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                >
+                  <option value="all">すべて</option>
+                  {productCategoryOptions.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.label}（{item.count}）
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
 
-            {filteredProducts.length > 0 ? (
-              <div className="mt-4 grid gap-2">
-                {filteredProducts.map((product) => (
-                  <button
-                    key={product.id}
-                    type="button"
-                    onClick={() => applyProduct(product)}
-                    className="grid grid-cols-[1fr_auto] gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-left transition hover:border-forest-500 hover:bg-white"
-                  >
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-semibold text-ink">
-                        {product.name_ja ?? product.model}
-                      </span>
-                      <span className="mt-1 block truncate text-xs text-stone-500">
-                        {[product.brand, product.model].filter(Boolean).join(" / ")}
-                      </span>
-                    </span>
-                    <span className="text-right text-xs text-stone-500">
-                      <span className="block">
-                        {formatWeightGrams(
-                          product.official_weight_grams ?? product.weight_grams
-                        )}
-                      </span>
-                      <span className="mt-1 block">
-                        {product.msrp_jpy ? formatJpy(product.msrp_jpy) : "-"}
-                      </span>
-                    </span>
-                  </button>
+            {categoryProductGroups.length > 0 ? (
+              <div className="mt-4 grid gap-4">
+                {categoryProductGroups.map((group) => (
+                  <div key={group.id}>
+                    <div className="flex items-center justify-between px-1 text-xs font-semibold text-stone-500">
+                      <span>{group.label}</span>
+                      <span>{group.products.length}件</span>
+                    </div>
+                    <div className="mt-2 grid gap-2">
+                      {group.products.map((product) => (
+                        <button
+                          key={product.id}
+                          type="button"
+                          onClick={() => applyProduct(product)}
+                          className="grid grid-cols-[1fr_auto] gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-left transition hover:border-forest-500 hover:bg-white"
+                        >
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-semibold text-ink">
+                              {product.name_ja ?? product.model}
+                            </span>
+                            <span className="mt-1 block truncate text-xs text-stone-500">
+                              {[product.brand, product.model]
+                                .filter(Boolean)
+                                .join(" / ")}
+                            </span>
+                          </span>
+                          <span className="text-right text-xs text-stone-500">
+                            <span className="block">
+                              {formatWeightGrams(
+                                product.official_weight_grams ?? product.weight_grams
+                              )}
+                            </span>
+                            <span className="mt-1 block">
+                              {product.msrp_jpy ? formatJpy(product.msrp_jpy) : "-"}
+                            </span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
-            ) : null}
+            ) : (
+              <p className="mt-4 rounded-lg bg-stone-50 px-4 py-3 text-sm text-stone-500">
+                該当する製品はありません
+              </p>
+            )}
           </div>
 
           {imageUrl ? (
@@ -582,6 +692,34 @@ function getProductSearchValues(product: GearProduct) {
     `${product.brand} ${product.model}`,
     ...(product.gear_product_aliases?.map((item) => item.alias) ?? [])
   ].filter((value): value is string => Boolean(value));
+}
+
+function getProductCategoryLabel(product: GearProduct) {
+  return product.gear_categories?.name_ja ?? "その他";
+}
+
+function compareProductPickerItems(
+  a: GearProduct,
+  b: GearProduct,
+  categorySortOrder: Map<string, number>
+) {
+  const categoryA = categorySortOrder.get(a.category_id) ?? Number.MAX_SAFE_INTEGER;
+  const categoryB = categorySortOrder.get(b.category_id) ?? Number.MAX_SAFE_INTEGER;
+
+  if (categoryA !== categoryB) {
+    return categoryA - categoryB;
+  }
+
+  const categoryLabel = brandCollator.compare(
+    getProductCategoryLabel(a),
+    getProductCategoryLabel(b)
+  );
+
+  if (categoryLabel !== 0) {
+    return categoryLabel;
+  }
+
+  return brandCollator.compare(a.model, b.model);
 }
 
 const brandPriority = [

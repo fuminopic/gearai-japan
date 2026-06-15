@@ -10,8 +10,17 @@ const gearFormSource = readFileSync(
 test("gear add form exposes a product brand filter beside product search", () => {
   assert.match(gearFormSource, /brandFilter/);
   assert.match(gearFormSource, /<option value="all">すべて<\/option>/);
-  assert.match(gearFormSource, /sm:grid-cols-\[minmax\(0,1fr\)_12rem\]/);
+  assert.match(gearFormSource, /sm:grid-cols-\[minmax\(0,1fr\)_11rem_11rem\]/);
   assert.match(gearFormSource, /productsForBrand/);
+});
+
+test("gear add form separates brand results by product category", () => {
+  assert.match(gearFormSource, /productCategoryFilter/);
+  assert.match(gearFormSource, /productCategoryOptions/);
+  assert.match(gearFormSource, /categoryProductGroups/);
+  assert.match(gearFormSource, /compareProductPickerItems/);
+  assert.match(gearFormSource, />カテゴリー<\/span>/);
+  assert.match(gearFormSource, /該当する製品はありません/);
 });
 
 test("gear add form keeps common Japanese outdoor brands at the top", () => {

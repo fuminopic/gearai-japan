@@ -157,6 +157,7 @@ export const gearSubcategoryLabels: Record<string, string> = {
   footwear: "フットウェア",
   helmet: "ヘルメット",
   traction_device: "軽アイゼン・チェーンスパイク",
+  ice_axe: "ピッケル",
   gloves: "手袋",
   trekking_pole: "トレッキングポール",
   gps: "GPS",

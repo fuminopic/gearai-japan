@@ -5,7 +5,11 @@ import Link from "next/link";
 
 import { GearImageViewer } from "@/components/gear-image-viewer";
 import { SubmitButton } from "@/components/submit-button";
-import { statusLabels, weightTypeLabels } from "@/lib/i18n/labels";
+import {
+  gearSubcategoryLabels,
+  statusLabels,
+  weightTypeLabels
+} from "@/lib/i18n/labels";
 import type {
   GearCategory,
   GearProduct,
@@ -537,6 +541,11 @@ function getProductSearchValues(product: GearProduct) {
     product.name_ja,
     product.model,
     product.brand,
+    product.gear_subcategories?.name_ja,
+    product.gear_subcategories?.name_en,
+    product.gear_subcategories?.name_en
+      ? gearSubcategoryLabels[product.gear_subcategories.name_en]
+      : null,
     ...getBrandSearchAliases(product.brand),
     ...getProductFamilySearchAliases(product),
     product.capacity,
@@ -562,6 +571,16 @@ function getBrandSearchAliases(brand: string) {
 
   if (normalize(brand) === "mont-bell" || normalize(brand) === "montbell") {
     return ["montbell", "モンベル"];
+  }
+
+  if (normalize(brand) === "blackdiamond") {
+    return [
+      "BlackDiamond",
+      "Black Diamond",
+      "ブラックダイヤモンド",
+      "ブラック ダイヤモンド",
+      "BD"
+    ];
   }
 
   return [];
@@ -631,6 +650,110 @@ function getProductFamilySearchAliases(product: GearProduct) {
 
   if (normalizedText.includes("ベクティブ")) {
     add("Vectiv", "VECTIV", "ベクティブ");
+  }
+
+  if (normalizedText.includes("ディスタンス")) {
+    add("Distance", "DISTANCE", "ディスタンス");
+  }
+
+  if (normalizedText.includes("スポット")) {
+    add("Spot", "SPOT", "スポット");
+  }
+
+  if (normalizedText.includes("ストーム")) {
+    add("Storm", "STORM", "ストーム");
+  }
+
+  if (normalizedText.includes("アストロ")) {
+    add("Astro", "ASTRO", "アストロ");
+  }
+
+  if (normalizedText.includes("ディプロイ")) {
+    add("Deploy", "DEPLOY", "ディプロイ");
+  }
+
+  if (normalizedText.includes("トレイルビスタ")) {
+    add("Trail Vista", "TrailVista", "トレイル ビスタ");
+  }
+
+  if (normalizedText.includes("パーシュート")) {
+    add("Pursuit", "Pursuit Carbon", "パーシュート");
+  }
+
+  if (normalizedText.includes("トレイルバック")) {
+    add("Trail Back", "Trailback", "トレイル バック");
+  }
+
+  if (normalizedText === normalize("トレイル")) {
+    add("Black Diamond Trail", "Trail");
+  }
+
+  if (normalizedText.includes("ベイパー")) {
+    add("Vapor", "ベイパー");
+  }
+
+  if (normalizedText.includes("ビジョン")) {
+    add("Vision", "VISION", "ビジョン");
+  }
+
+  if (normalizedText.includes("キャピタン")) {
+    add("Capitan", "Capitan E", "キャピタン");
+  }
+
+  if (normalizedText.includes("ハーフドーム")) {
+    add("Half Dome", "HalfDome", "ハーフ ドーム");
+  }
+
+  if (normalizedText.includes("レイブン")) {
+    add("Raven", "Raven Pro", "ピッケル");
+  }
+
+  if (normalizedText.includes("ベノム")) {
+    add("Venom", "Venom LT", "ピッケル");
+  }
+
+  if (normalizedText.includes("コンタクト")) {
+    add("Contact", "Contact Strap", "アイゼン", "Crampon", "Crampons");
+  }
+
+  if (normalizedText.includes("セラック")) {
+    add("Serac", "アイゼン", "Crampon", "Crampons");
+  }
+
+  if (normalizedText.includes("セイバートゥース")) {
+    add("Sabretooth", "Sabretooth Pro", "アイゼン", "Crampon", "Crampons");
+  }
+
+  if (normalizedText.includes("サイボーグ")) {
+    add("Cyborg", "Cyborg Pro", "アイゼン", "Crampon", "Crampons");
+  }
+
+  if (normalizedText.includes("ネーベ")) {
+    add("Neve", "アイゼン", "Crampon", "Crampons");
+  }
+
+  if (normalizedText.includes("スクリーンタップ")) {
+    add("Screentap", "Screen Tap", "ライナー", "Liner");
+  }
+
+  if (normalizedText.includes("ソロイスト")) {
+    add("Soloist", "Soloist Gloves", "ソロイスト");
+  }
+
+  if (normalizedText.includes("ガイドグローブ")) {
+    add("Guide Gloves", "Guide Glove", "ガイド グローブ");
+  }
+
+  if (normalizedText.includes("ミッション")) {
+    add("Mission", "Mission 55", "ミッション");
+  }
+
+  if (normalizedText.includes("スピード")) {
+    add("Speed", "SPEED", "スピード");
+  }
+
+  if (normalizedText.includes("ブリッツ")) {
+    add("Blitz", "BLITZ", "ブリッツ");
   }
 
   return aliases;

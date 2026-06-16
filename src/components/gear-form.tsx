@@ -202,6 +202,17 @@ export function GearForm({
 
     return productsForCategory.filter((product) => matchesProductQuery(product, query));
   }, [productsForCategory, query]);
+  const productSuggestions = useMemo(() => {
+    const normalizedQuery = normalize(query);
+
+    if (!normalizedQuery) {
+      return productsForCategory.slice(0, 6);
+    }
+
+    return productsForCategory
+      .filter((product) => matchesProductQuery(product, query))
+      .slice(0, 6);
+  }, [productsForCategory, query]);
   const categoryProductGroups = useMemo(() => {
     const groups = new Map<
       string,
@@ -240,6 +251,17 @@ export function GearForm({
     setProductId("");
   }
 
+  function confirmProductSearch() {
+    const exactMatch = productSuggestions.find(
+      (product) => normalize(getProductDisplayTitle(product)) === normalize(query)
+    );
+    const nextProduct = exactMatch ?? (productSuggestions.length === 1 ? productSuggestions[0] : null);
+
+    if (nextProduct) {
+      applyProduct(nextProduct);
+    }
+  }
+
   function handleBrandFilter(value: string) {
     setBrandFilter(value);
     setProductCategoryFilter("all");
@@ -258,6 +280,7 @@ export function GearForm({
 
   function applyProduct(product: GearProduct) {
     const productName = product.name_ja ?? product.model;
+    const productVolume = getProductVolume(product);
     setProductId(product.id);
     setCategoryId(product.category_id);
     setSubcategoryId(product.subcategory_id ?? "");
@@ -273,10 +296,10 @@ export function GearForm({
     setPurchasePriceJpy("");
     setStatus("owned");
     setSize(product.size ?? "");
-    setVolume(product.volume ?? "");
+    setVolume(productVolume ?? "");
     setColor(product.color ?? "");
     setMaterial(product.material ?? "");
-    setCapacity(product.capacity ?? "");
+    setCapacity(isBackpackProduct(product) ? "" : product.capacity ?? "");
     setOfficialUrl(product.official_url ?? "");
     setImageUrl(product.image_url ?? "");
     setImageStoragePath("");
@@ -350,18 +373,52 @@ export function GearForm({
             <Sparkles className="h-4 w-4" />
             <span>公式カタログから選択</span>
           </div>
-          <label className="mt-3 flex items-center gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-3">
-            <Search className="h-5 w-5 shrink-0 text-stone-400" />
-            <input
-              name="name"
-              required
-              value={query}
-              onChange={(event) => handleProductQuery(event.target.value)}
-              className="min-w-0 flex-1 bg-transparent text-base outline-none"
-              placeholder="製品名・ブランド・型番で検索"
-              autoComplete="off"
-            />
-          </label>
+          <div className="mt-3 rounded-lg border border-stone-200 bg-stone-50 px-3 py-3">
+            <div className="flex items-center gap-2">
+              <Search className="h-5 w-5 shrink-0 text-stone-400" />
+              <input
+                name="name"
+                required
+                value={query}
+                onChange={(event) => handleProductQuery(event.target.value)}
+                className="min-w-0 flex-1 bg-transparent text-base outline-none"
+                placeholder="製品名・ブランド・型番で検索"
+                autoComplete="off"
+                list="gear-product-suggestions"
+              />
+              <button
+                type="button"
+                onClick={confirmProductSearch}
+                className="shrink-0 rounded-md bg-forest-700 px-3 py-2 text-sm font-semibold text-white"
+              >
+                検索
+              </button>
+            </div>
+            <datalist id="gear-product-suggestions">
+              {productSuggestions.map((product) => (
+                <option key={product.id} value={getProductDisplayTitle(product)} />
+              ))}
+            </datalist>
+            {query ? (
+              <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                {productSuggestions.map((product) => (
+                  <button
+                    key={product.id}
+                    type="button"
+                    onClick={() => applyProduct(product)}
+                    className="shrink-0 rounded-md border border-stone-200 bg-white px-3 py-2 text-left text-xs font-semibold text-stone-700"
+                  >
+                    <span className="block max-w-44 truncate">
+                      {getProductDisplayTitle(product)}
+                    </span>
+                    <span className="mt-0.5 block max-w-44 truncate font-medium text-stone-400">
+                      {product.brand}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
 
           <div className="mt-3">
             <button
@@ -391,8 +448,9 @@ export function GearForm({
                 key={item}
                 active={brandFilter === item}
                 onClick={() => handleBrandFilter(item)}
+                ariaLabel={`${item}を選択`}
               >
-                {item}
+                <BrandLogoMark brand={item} />
               </ProductFilterChip>
             ))}
           </div>
@@ -826,16 +884,20 @@ export function GearForm({
 function ProductFilterChip({
   active,
   onClick,
-  children
+  children,
+  ariaLabel
 }: {
   active: boolean;
   onClick: () => void;
   children: ReactNode;
+  ariaLabel?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-label={ariaLabel}
+      title={ariaLabel}
       className={`shrink-0 rounded-lg border px-3 py-2 text-sm font-semibold transition ${
         active
           ? "border-forest-700 bg-forest-700 text-white"
@@ -856,7 +918,7 @@ function ProductResultCard({
   selected: boolean;
   onSelect: () => void;
 }) {
-  const displayName = product.name_ja ?? product.model;
+  const displayName = getProductDisplayTitle(product);
   const weight = product.official_weight_grams ?? product.weight_grams;
 
   return (
@@ -888,10 +950,12 @@ function ProductResultCard({
         <span className="mt-0.5 block truncate text-sm text-stone-500">
           {[product.brand, product.model].filter(Boolean).join(" / ")}
         </span>
-        <span className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+        <span className="mt-2 block">
           <span className="rounded bg-forest-50 px-2 py-1 font-semibold text-forest-800">
             {getProductCategoryLabel(product)}
           </span>
+        </span>
+        <span className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
           <span className="font-semibold text-stone-600">
             {formatWeightGrams(weight)}
           </span>
@@ -914,13 +978,15 @@ function ProductResultCard({
 }
 
 function SelectedProductPreview({ product }: { product: GearProduct }) {
+  const displayName = getProductDisplayTitle(product);
+
   return (
     <div className="mt-4 grid grid-cols-[3.75rem_minmax(0,1fr)] gap-3 rounded-lg border border-forest-100 bg-forest-50 p-3">
       <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-white p-1.5">
         {product.image_url ? (
           <img
             src={product.image_url}
-            alt={product.name_ja ?? product.model}
+            alt={displayName}
             className="max-h-full max-w-full object-contain"
             loading="lazy"
           />
@@ -931,7 +997,7 @@ function SelectedProductPreview({ product }: { product: GearProduct }) {
       <div className="min-w-0">
         <p className="text-xs font-semibold text-forest-700">選択中</p>
         <p className="mt-1 truncate text-sm font-semibold text-ink">
-          {product.name_ja ?? product.model}
+          {displayName}
         </p>
         <p className="mt-0.5 truncate text-xs text-stone-500">
           {[product.brand, getProductCategoryLabel(product), formatWeightGrams(product.official_weight_grams ?? product.weight_grams)]
@@ -955,7 +1021,10 @@ function getProductSearchValues(product: GearProduct) {
       : null,
     ...getBrandSearchAliases(product.brand),
     ...getProductFamilySearchAliases(product),
-    product.capacity,
+    getProductDisplayTitle(product),
+    product.volume,
+    getProductVolume(product),
+    isBackpackProduct(product) ? null : product.capacity,
     `${product.brand} ${product.model}`,
     ...(product.gear_product_aliases?.map((item) => item.alias) ?? [])
   ].filter((value): value is string => Boolean(value));
@@ -963,6 +1032,55 @@ function getProductSearchValues(product: GearProduct) {
 
 function getProductCategoryLabel(product: GearProduct) {
   return product.gear_categories?.name_ja ?? "その他";
+}
+
+function getProductDisplayTitle(product: GearProduct) {
+  const baseName = product.name_ja ?? product.model;
+  const productVolume = getProductVolume(product);
+
+  if (isBackpackProduct(product) && productVolume && !baseName.includes(productVolume)) {
+    return `${baseName} (${productVolume})`;
+  }
+
+  return baseName;
+}
+
+function getProductVolume(product: GearProduct) {
+  if (product.volume) {
+    return product.volume;
+  }
+
+  if (isBackpackProduct(product) && product.capacity && /(?:\d|L|リットル)/i.test(product.capacity)) {
+    return product.capacity;
+  }
+
+  return null;
+}
+
+function isBackpackProduct(product: GearProduct) {
+  return (
+    normalize(product.gear_categories?.name_en ?? "") === "backpack" ||
+    normalize(product.gear_subcategories?.name_en ?? "") === "backpack"
+  );
+}
+
+function BrandLogoMark({ brand }: { brand: string }) {
+  const normalizedBrand = normalize(brand);
+  const label = brandLogoLabels[normalizedBrand] ?? brand;
+
+  return (
+    <span
+      className={`inline-flex min-h-5 min-w-10 items-center justify-center rounded px-1.5 text-[13px] font-bold leading-none tracking-normal ${
+        normalizedBrand === "thenorthface"
+          ? "font-black uppercase"
+          : normalizedBrand === "montbell"
+            ? "font-semibold lowercase"
+            : "uppercase"
+      }`}
+    >
+      {label}
+    </span>
+  );
 }
 
 function compareProductPickerItems(
@@ -1010,6 +1128,26 @@ const brandPriority = [
   "Salomon"
 ];
 const brandCollator = new Intl.Collator("ja");
+const brandLogoLabels: Record<string, string> = {
+  montbell: "mont-bell",
+  "山と道": "山と道",
+  finetrack: "finetrack",
+  thenorthface: "TNF",
+  caravan: "Caravan",
+  osprey: "OSPREY",
+  blackdiamond: "BD",
+  petzl: "PETZL",
+  nanga: "NANGA",
+  isuka: "ISUKA",
+  nemo: "NEMO",
+  thermarest: "Therm-a-Rest",
+  soto: "SOTO",
+  evernew: "EVERNEW",
+  アライテント: "ARAI",
+  msr: "MSR",
+  garmin: "GARMIN",
+  salomon: "SALOMON"
+};
 
 function compareProductBrands(a: string, b: string) {
   const priorityA = brandPriority.findIndex((brand) => normalize(brand) === normalize(a));

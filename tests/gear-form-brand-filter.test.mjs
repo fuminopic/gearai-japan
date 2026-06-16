@@ -27,6 +27,18 @@ test("gear add form exposes a product brand filter beside product search", () =>
   assert.match(gearFormSource, /productsForBrand/);
 });
 
+test("gear add form supports explicit search, suggestions, and logo-like brand chips", () => {
+  assert.match(gearFormSource, /confirmProductSearch/);
+  assert.match(gearFormSource, /productSuggestions/);
+  assert.match(gearFormSource, /list="gear-product-suggestions"/);
+  assert.match(gearFormSource, /<datalist id="gear-product-suggestions">/);
+  assert.match(gearFormSource, />\s*検索\s*<\/button>/);
+  assert.match(gearFormSource, /getProductDisplayTitle\(product\)/);
+  assert.match(gearFormSource, /BrandLogoMark/);
+  assert.match(gearFormSource, /brandLogoLabels/);
+  assert.match(gearFormSource, /ariaLabel=\{`\$\{item\}を選択`\}/);
+});
+
 test("gear add form replaces scanning shortcuts with manual registration and photo upload", () => {
   assert.match(gearFormSource, /手入力で登録/);
   assert.match(gearFormSource, /manualEntryRef/);
@@ -61,6 +73,15 @@ test("gear add form separates brand results by product category", () => {
   assert.match(gearFormSource, /compareProductPickerItems/);
   assert.match(gearFormSource, /のカテゴリー/);
   assert.match(gearFormSource, /該当する製品はありません/);
+});
+
+test("gear add form treats backpack liters as volume, not people capacity", () => {
+  assert.match(gearFormSource, /function getProductVolume/);
+  assert.match(gearFormSource, /function isBackpackProduct/);
+  assert.match(gearFormSource, /setVolume\(productVolume \?\? ""\)/);
+  assert.match(gearFormSource, /setCapacity\(isBackpackProduct\(product\) \? "" : product\.capacity \?\? ""\)/);
+  assert.match(gearFormSource, /`\$\{baseName\} \(\$\{productVolume\}\)`/);
+  assert.match(gearFormSource, /isBackpackProduct\(product\) \? null : product\.capacity/);
 });
 
 test("gear add form keeps common Japanese outdoor brands at the top", () => {

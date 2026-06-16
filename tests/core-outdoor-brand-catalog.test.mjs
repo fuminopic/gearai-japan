@@ -6,6 +6,18 @@ const migrationSource = readFileSync(
   new URL("../supabase/migrations/033_core_outdoor_brand_products.sql", import.meta.url),
   "utf8"
 );
+const cleanupMigrationSource = readFileSync(
+  new URL("../supabase/migrations/034_gear_catalog_search_and_image_cleanup.sql", import.meta.url),
+  "utf8"
+);
+const qualityFollowupMigrationSource = readFileSync(
+  new URL("../supabase/migrations/035_gear_catalog_quality_followup.sql", import.meta.url),
+  "utf8"
+);
+const restoreTnfFootprintsMigrationSource = readFileSync(
+  new URL("../supabase/migrations/036_restore_tnf_required_footprints.sql", import.meta.url),
+  "utf8"
+);
 const gearFormSource = readFileSync(
   new URL("../src/components/gear-form.tsx", import.meta.url),
   "utf8"
@@ -92,6 +104,69 @@ test("core outdoor catalog rows include official images and safe weights", () =>
   ]) {
     assert.ok(migrationSource.includes(expected), `${expected} missing`);
   }
+});
+
+test("core outdoor backpack volumes are stored as volume instead of capacity", () => {
+  for (const expected of [
+    "'山と道', 'MINI2', 'MINI2', 'backpack', 'backpack', 413, 36000, null, '25-35L', null, null, null",
+    "'Osprey', 'ケストレル48', 'ケストレル48', 'backpack', 'backpack', 2010, 37400, 'S/M=2.01kg', '46-48L', null, null, null",
+    "'Osprey', 'テンペストベロシティ20', 'テンペストベロシティ20', 'backpack', 'backpack', 820, 30800, 'WXS/S', '18-20L', null, null, null"
+  ]) {
+    assert.ok(migrationSource.includes(expected), `${expected} missing`);
+  }
+});
+
+test("catalog cleanup migration fixes existing backpack volume and product images", () => {
+  assert.match(cleanupMigrationSource, /backpack_volume_fixes/);
+  assert.match(cleanupMigrationSource, /\('山と道', 'MINI2', '25-35L'\)/);
+  assert.match(cleanupMigrationSource, /\('Osprey', 'ケストレル48', '46-48L'\)/);
+  assert.match(cleanupMigrationSource, /capacity = null/);
+  assert.match(cleanupMigrationSource, /soto_image_fixes/);
+  assert.match(cleanupMigrationSource, /SOD-310_01-1-550x826\.jpg/);
+  assert.match(cleanupMigrationSource, /ST-340_01-2-550x413\.jpg/);
+});
+
+test("catalog cleanup migration hides old active products without product images", () => {
+  for (const expected of [
+    "('Durston', 'X-Mid 1 Solid')",
+    "('EVERNEW', 'Ti 570FD Cup')",
+    "('Garmin', 'eTrex SE')",
+    "('Hyperlite Mountain Gear', 'Southwest 55')",
+    "('mont-bell', 'Alpine Down Parka')",
+    "('mont-bell', 'Down Hugger 800 #3')",
+    "('Nalgene', 'Wide Mouth 1.0L')",
+    "('NEMO', 'Tensor Trail Regular')",
+    "('YAMAP', 'Basic First Aid Kit')"
+  ]) {
+    assert.ok(cleanupMigrationSource.includes(expected), `${expected} missing`);
+  }
+
+  assert.match(cleanupMigrationSource, /discontinued = true/);
+  assert.match(cleanupMigrationSource, /verification_status = 'needs_review'/);
+  assert.match(cleanupMigrationSource, /nullif\(btrim\(p\.image_url\), ''\) is null/);
+});
+
+test("catalog quality follow-up normalizes remaining backpack liters and missing weights", () => {
+  assert.match(qualityFollowupMigrationSource, /c\.name_en = 'backpack'/);
+  assert.match(qualityFollowupMigrationSource, /set volume = coalesce\(p\.volume, p\.capacity\)/);
+  assert.match(qualityFollowupMigrationSource, /and p\.capacity ~ '\[0-9\]\.\*L'/);
+  assert.match(qualityFollowupMigrationSource, /model = 'レベル8 -13 オーロラテックス ライト'/);
+  assert.match(qualityFollowupMigrationSource, /official_weight_grams = 1260/);
+  assert.match(qualityFollowupMigrationSource, /missing_weight_catalog_cleanup/);
+  assert.match(qualityFollowupMigrationSource, /'THE NORTH FACE', 'サミットAMKアサルト2'/);
+  assert.doesNotMatch(qualityFollowupMigrationSource, /'THE NORTH FACE', 'フットプリント\/マウンテンショット1'/);
+  assert.doesNotMatch(qualityFollowupMigrationSource, /'THE NORTH FACE', 'フットプリント\/マウンテンショット2'/);
+  assert.match(qualityFollowupMigrationSource, /discontinued = true/);
+  assert.match(qualityFollowupMigrationSource, /verification_status = 'needs_review'/);
+});
+
+test("TNF required footprints stay searchable even when official weight is unpublished", () => {
+  assert.match(restoreTnfFootprintsMigrationSource, /discontinued = false/);
+  assert.match(restoreTnfFootprintsMigrationSource, /verification_status = 'needs_review'/);
+  assert.match(restoreTnfFootprintsMigrationSource, /フットプリント\/マウンテンショット1/);
+  assert.match(restoreTnfFootprintsMigrationSource, /フットプリント\/マウンテンショット2/);
+  assert.match(restoreTnfFootprintsMigrationSource, /image_url is not null/);
+  assert.match(restoreTnfFootprintsMigrationSource, /official_url is not null/);
 });
 
 test("core outdoor catalog covers key Japanese, English, and model aliases", () => {

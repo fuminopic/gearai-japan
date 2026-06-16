@@ -1,0 +1,6 @@
+-- Remote migration history placeholder.
+--
+-- This version exists in the linked production project's migration history but
+-- predates the current numbered local migration sequence. Keep this file empty
+-- so the Supabase CLI can compare local and remote histories without repairing
+-- production metadata.

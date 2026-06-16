@@ -133,7 +133,7 @@ export async function getUserGear(filters: GearFilters = {}) {
     throw new Error(error.message);
   }
 
-  return data as unknown as UserGear[];
+  return signGearImageUrls(supabase, data as unknown as UserGear[]);
 }
 
 export async function getUserGearBrands() {
@@ -187,5 +187,29 @@ export async function getUserGearById(id: string) {
     throw new Error(error.message);
   }
 
-  return data as UserGear;
+  return (await signGearImageUrls(supabase, [data as UserGear]))[0];
+}
+
+async function signGearImageUrls(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  gear: UserGear[]
+) {
+  const signedGear = await Promise.all(
+    gear.map(async (item) => {
+      if (!item.image_storage_path) {
+        return item;
+      }
+
+      const { data } = await supabase.storage
+        .from("gear-images")
+        .createSignedUrl(item.image_storage_path, 60 * 60);
+
+      return {
+        ...item,
+        image_url: data?.signedUrl ?? item.image_url
+      };
+    })
+  );
+
+  return signedGear;
 }

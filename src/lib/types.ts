@@ -223,6 +223,7 @@ export type UserGear = {
   capacity: string | null;
   official_url: string | null;
   image_url: string | null;
+  image_storage_path: string | null;
   purchase_date: string | null;
   status: GearStatus;
   weight_type: WeightType;
@@ -259,7 +260,7 @@ export type GearFilters = {
 
 export type DashboardRecentGear = Pick<
   UserGear,
-  "id" | "name" | "image_url" | "weight_grams"
+  "id" | "name" | "image_url" | "image_storage_path" | "weight_grams"
 >;
 
 export type DashboardSummary = {

@@ -1,11 +1,12 @@
 "use client";
 
 import {
-  Barcode,
-  Camera,
   Check,
   ChevronRight,
+  ImagePlus,
+  Loader2,
   PackagePlus,
+  Pencil,
   Search,
   Sparkles
 } from "lucide-react";
@@ -19,6 +20,7 @@ import {
   statusLabels,
   weightTypeLabels
 } from "@/lib/i18n/labels";
+import { createClient } from "@/lib/supabase/client";
 import type {
   GearCategory,
   GearProduct,
@@ -75,6 +77,15 @@ export function GearForm({
   const [capacity, setCapacity] = useState(gear?.capacity ?? "");
   const [officialUrl, setOfficialUrl] = useState(gear?.official_url ?? "");
   const [imageUrl, setImageUrl] = useState(gear?.image_url ?? "");
+  const [imageStoragePath, setImageStoragePath] = useState(
+    gear?.image_storage_path ?? ""
+  );
+  const [localImagePreviewUrl, setLocalImagePreviewUrl] = useState("");
+  const [manualMode, setManualMode] = useState(Boolean(gear));
+  const [imageUploadStatus, setImageUploadStatus] = useState<
+    "idle" | "uploading" | "error"
+  >("idle");
+  const [imageUploadError, setImageUploadError] = useState("");
 
   const subcategoriesForCategory = useMemo(
     () => subcategories.filter((item) => item.category_id === categoryId),
@@ -233,6 +244,11 @@ export function GearForm({
     setProductCategoryFilter("all");
   }
 
+  function startManualEntry() {
+    setManualMode(true);
+    setProductId("");
+  }
+
   function applyProduct(product: GearProduct) {
     const productName = product.name_ja ?? product.model;
     setProductId(product.id);
@@ -256,6 +272,53 @@ export function GearForm({
     setCapacity(product.capacity ?? "");
     setOfficialUrl(product.official_url ?? "");
     setImageUrl(product.image_url ?? "");
+    setImageStoragePath("");
+    setLocalImagePreviewUrl("");
+  }
+
+  async function handleImageFile(file: File | null) {
+    if (!file) {
+      return;
+    }
+
+    setImageUploadStatus("uploading");
+    setImageUploadError("");
+
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+        error: userError
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        throw new Error("ログイン状態を確認できませんでした");
+      }
+
+      const extension = getImageExtension(file);
+      const path = `${user.id}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
+      const { error: uploadError } = await supabase.storage
+        .from("gear-images")
+        .upload(path, file, {
+          cacheControl: "31536000",
+          contentType: file.type || "image/jpeg",
+          upsert: false
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      setImageUrl("");
+      setImageStoragePath(path);
+      setLocalImagePreviewUrl(URL.createObjectURL(file));
+      setImageUploadStatus("idle");
+    } catch (error) {
+      setImageUploadStatus("error");
+      setImageUploadError(
+        error instanceof Error ? error.message : "画像をアップロードできませんでした"
+      );
+    }
   }
 
   return (
@@ -266,6 +329,13 @@ export function GearForm({
 
       <input type="hidden" name="product_id" value={productId} />
       <input type="hidden" name="image_url" value={imageUrl} />
+      <input type="hidden" name="image_storage_path" value={imageStoragePath} />
+      <input type="hidden" name="brand" value={brand} />
+      <input type="hidden" name="model" value={model} />
+      <input type="hidden" name="category_id" value={categoryId} />
+      <input type="hidden" name="subcategory_id" value={subcategoryId} />
+      <input type="hidden" name="official_weight_grams" value={officialWeightGrams} />
+      <input type="hidden" name="measured_weight_grams" value={measuredWeightGrams} />
 
       <section className="overflow-hidden rounded-lg border border-white/70 bg-white/90 shadow-soft">
         <div className="border-b border-stone-100 px-4 py-4 sm:px-5">
@@ -286,20 +356,17 @@ export function GearForm({
             />
           </label>
 
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="mt-3">
             <button
               type="button"
-              className="flex items-center justify-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-sm font-semibold text-stone-700"
+              onClick={startManualEntry}
+              className="flex w-full items-center justify-between gap-3 rounded-lg border border-stone-200 bg-white px-3 py-3 text-left text-sm font-semibold text-stone-700"
             >
-              <Barcode className="h-4 w-4 text-forest-700" />
-              バーコード
-            </button>
-            <button
-              type="button"
-              className="flex items-center justify-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-sm font-semibold text-stone-700"
-            >
-              <Camera className="h-4 w-4 text-forest-700" />
-              カメラ
+              <span className="flex items-center gap-2">
+                <Pencil className="h-4 w-4 text-forest-700" />
+                手入力で登録
+              </span>
+              <span className="text-xs text-stone-400">写真も追加できます</span>
             </button>
           </div>
         </div>
@@ -390,6 +457,156 @@ export function GearForm({
           )}
         </div>
       </section>
+
+      {manualMode ? (
+        <section className="rounded-lg bg-white p-5 shadow-soft">
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-forest-700">手入力</p>
+            <h2 className="mt-1 text-lg font-semibold text-ink">自分の装備情報</h2>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">ブランド</span>
+                <input
+                  value={brand}
+                  onChange={(event) => setBrand(event.target.value)}
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                  placeholder="例：finetrack"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">モデル</span>
+                <input
+                  value={model}
+                  onChange={(event) => setModel(event.target.value)}
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                  placeholder="例：MINI2"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">カテゴリー</span>
+                <select
+                  required
+                  value={categoryId}
+                  onChange={(event) => {
+                    setCategoryId(event.target.value);
+                    setSubcategoryId("");
+                  }}
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                >
+                  <option value="">カテゴリーを選択</option>
+                  {categoryOptions.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name_ja}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">サブカテゴリー</span>
+                <select
+                  value={subcategoryId}
+                  onChange={(event) => setSubcategoryId(event.target.value)}
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                >
+                  <option value="">サブカテゴリーを選択</option>
+                  {subcategoryOptions.map((subcategory) => (
+                    <option key={subcategory.id} value={subcategory.id}>
+                      {subcategory.name_ja}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">公式重量（g）</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={officialWeightGrams}
+                  onChange={(event) => setOfficialWeightGrams(event.target.value)}
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                  placeholder="例：398"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">実測重量（g）</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={measuredWeightGrams}
+                  onChange={(event) => setMeasuredWeightGrams(event.target.value)}
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                  placeholder="例：398"
+                />
+              </label>
+            </div>
+
+            <div>
+              <p className="text-sm font-medium text-stone-700">装備写真</p>
+              <label className="mt-2 flex min-h-48 cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-stone-300 bg-stone-50 p-3 text-center transition hover:border-forest-400 hover:bg-forest-50">
+                {localImagePreviewUrl || imageUrl ? (
+                  <img
+                    src={localImagePreviewUrl || imageUrl}
+                    alt={name || "装備写真"}
+                    className="max-h-40 max-w-full object-contain"
+                  />
+                ) : (
+                  <>
+                    <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-white text-forest-700 shadow-sm">
+                      <ImagePlus className="h-6 w-6" />
+                    </span>
+                    <span className="text-sm font-semibold text-ink">
+                      写真を追加
+                    </span>
+                    <span className="text-xs leading-5 text-stone-500">
+                      スマホの写真から選択できます
+                    </span>
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={(event) => void handleImageFile(event.target.files?.[0] ?? null)}
+                />
+              </label>
+              {imageUploadStatus === "uploading" ? (
+                <p className="mt-2 flex items-center gap-2 text-xs font-semibold text-forest-700">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  画像をアップロード中
+                </p>
+              ) : null}
+              {imageUploadStatus === "error" ? (
+                <p className="mt-2 text-xs font-semibold text-red-700">
+                  {imageUploadError}
+                </p>
+              ) : null}
+              {localImagePreviewUrl || imageUrl || imageStoragePath ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImageUrl("");
+                    setImageStoragePath("");
+                    setLocalImagePreviewUrl("");
+                  }}
+                  className="mt-2 text-xs font-semibold text-stone-500"
+                >
+                  写真を削除
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -501,99 +718,7 @@ export function GearForm({
           詳細設定
         </summary>
         <div className="mt-4 grid gap-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-sm font-medium text-stone-700">ブランド</span>
-              <input
-                name="brand"
-                value={brand}
-                onChange={(event) => setBrand(event.target.value)}
-                className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                placeholder="例：finetrack"
-              />
-            </label>
-
-            <label className="block">
-              <span className="text-sm font-medium text-stone-700">モデル</span>
-              <input
-                name="model"
-                value={model}
-                onChange={(event) => setModel(event.target.value)}
-                className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                placeholder="例：MINI2"
-              />
-            </label>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-sm font-medium text-stone-700">カテゴリー</span>
-              <select
-                name="category_id"
-                required
-                value={categoryId}
-                onChange={(event) => {
-                  setCategoryId(event.target.value);
-                  setSubcategoryId("");
-                }}
-                className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-              >
-                <option value="">カテゴリーを選択</option>
-                {categoryOptions.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name_ja}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="text-sm font-medium text-stone-700">サブカテゴリー</span>
-              <select
-                name="subcategory_id"
-                value={subcategoryId}
-                onChange={(event) => setSubcategoryId(event.target.value)}
-                className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-              >
-                <option value="">サブカテゴリーを選択</option>
-                {subcategoryOptions.map((subcategory) => (
-                  <option key={subcategory.id} value={subcategory.id}>
-                    {subcategory.name_ja}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
           <div className="grid gap-3 sm:grid-cols-3">
-            <label className="block">
-              <span className="text-sm font-medium text-stone-700">公式重量（g）</span>
-              <input
-                name="official_weight_grams"
-                type="number"
-                min="0"
-                step="1"
-                value={officialWeightGrams}
-                onChange={(event) => setOfficialWeightGrams(event.target.value)}
-                className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                placeholder="例：398"
-              />
-            </label>
-
-            <label className="block">
-              <span className="text-sm font-medium text-stone-700">実測重量（g）</span>
-              <input
-                name="measured_weight_grams"
-                type="number"
-                min="0"
-                step="1"
-                value={measuredWeightGrams}
-                onChange={(event) => setMeasuredWeightGrams(event.target.value)}
-                className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                placeholder="例：398"
-              />
-            </label>
-
             <label className="block">
               <span className="text-sm font-medium text-stone-700">重量タイプ</span>
               <select
@@ -1209,6 +1334,36 @@ function normalize(value: string) {
 
 function formatWeightGrams(value: number | null | undefined) {
   return typeof value === "number" ? `${value}g` : "-";
+}
+
+function getImageExtension(file: File) {
+  const extensionFromName = file.name.split(".").pop()?.toLowerCase();
+
+  if (extensionFromName && /^[a-z0-9]+$/.test(extensionFromName)) {
+    return extensionFromName === "jpeg" ? "jpg" : extensionFromName;
+  }
+
+  if (file.type === "image/png") {
+    return "png";
+  }
+
+  if (file.type === "image/webp") {
+    return "webp";
+  }
+
+  if (file.type === "image/gif") {
+    return "gif";
+  }
+
+  if (file.type === "image/heic") {
+    return "heic";
+  }
+
+  if (file.type === "image/heif") {
+    return "heif";
+  }
+
+  return "jpg";
 }
 
 function matchesProductQuery(product: GearProduct, query: string) {

@@ -2,7 +2,7 @@ import { requireUser } from "@/lib/data/gear";
 import type { DashboardRecentGear, DashboardSummary, UserGear } from "@/lib/types";
 
 const DASHBOARD_GEAR_SELECT =
-  "id,name,image_url,status,weight_grams,weight_type,msrp_jpy,purchase_price_jpy,created_at,gear_categories:category_id(id,name_ja,name_en)";
+  "id,name,image_url,image_storage_path,status,weight_grams,weight_type,msrp_jpy,purchase_price_jpy,created_at,gear_categories:category_id(id,name_ja,name_en)";
 
 type DashboardGear = DashboardRecentGear &
   Pick<UserGear, "status" | "weight_type" | "msrp_jpy" | "purchase_price_jpy"> & {
@@ -106,7 +106,7 @@ async function getDashboardGear() {
     throw new Error(error.message);
   }
 
-  return data as unknown as DashboardGear[];
+  return signDashboardGearImageUrls(supabase, data as unknown as DashboardGear[]);
 }
 
 function toDashboardRecentGear(item: DashboardGear): DashboardRecentGear {
@@ -114,8 +114,31 @@ function toDashboardRecentGear(item: DashboardGear): DashboardRecentGear {
     id: item.id,
     name: item.name,
     image_url: item.image_url,
+    image_storage_path: item.image_storage_path,
     weight_grams: item.weight_grams
   };
+}
+
+async function signDashboardGearImageUrls(
+  supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
+  gear: DashboardGear[]
+) {
+  return Promise.all(
+    gear.map(async (item) => {
+      if (!item.image_storage_path) {
+        return item;
+      }
+
+      const { data } = await supabase.storage
+        .from("gear-images")
+        .createSignedUrl(item.image_storage_path, 60 * 60);
+
+      return {
+        ...item,
+        image_url: data?.signedUrl ?? item.image_url
+      };
+    })
+  );
 }
 
 function sumWeight(items: DashboardGear[]) {

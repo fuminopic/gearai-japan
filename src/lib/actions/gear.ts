@@ -103,6 +103,7 @@ function getGearPayload(formData: FormData) {
     capacity: optionalString(formData.get("capacity")),
     official_url: optionalString(formData.get("official_url")),
     image_url: optionalString(formData.get("image_url")),
+    image_storage_path: optionalString(formData.get("image_storage_path")),
     purchase_date: purchaseDate || null,
     status: String(formData.get("status") ?? "owned") as GearStatus,
     weight_type: String(formData.get("weight_type") ?? "base") as WeightType,

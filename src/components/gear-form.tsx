@@ -10,7 +10,7 @@ import {
   Search,
   Sparkles
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -86,6 +86,7 @@ export function GearForm({
     "idle" | "uploading" | "error"
   >("idle");
   const [imageUploadError, setImageUploadError] = useState("");
+  const manualEntryRef = useRef<HTMLElement>(null);
 
   const subcategoriesForCategory = useMemo(
     () => subcategories.filter((item) => item.category_id === categoryId),
@@ -247,6 +248,12 @@ export function GearForm({
   function startManualEntry() {
     setManualMode(true);
     setProductId("");
+    window.requestAnimationFrame(() => {
+      manualEntryRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    });
   }
 
   function applyProduct(product: GearProduct) {
@@ -366,7 +373,6 @@ export function GearForm({
                 <Pencil className="h-4 w-4 text-forest-700" />
                 手入力で登録
               </span>
-              <span className="text-xs text-stone-400">写真も追加できます</span>
             </button>
           </div>
         </div>
@@ -459,7 +465,7 @@ export function GearForm({
       </section>
 
       {manualMode ? (
-        <section className="rounded-lg bg-white p-5 shadow-soft">
+        <section ref={manualEntryRef} className="scroll-mt-6 rounded-lg bg-white p-5 shadow-soft">
           <div className="mb-4">
             <p className="text-xs font-semibold text-forest-700">手入力</p>
             <h2 className="mt-1 text-lg font-semibold text-ink">自分の装備情報</h2>

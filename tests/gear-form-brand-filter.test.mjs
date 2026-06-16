@@ -29,11 +29,14 @@ test("gear add form exposes a product brand filter beside product search", () =>
 
 test("gear add form replaces scanning shortcuts with manual registration and photo upload", () => {
   assert.match(gearFormSource, /手入力で登録/);
+  assert.match(gearFormSource, /manualEntryRef/);
+  assert.match(gearFormSource, /scrollIntoView/);
   assert.match(gearFormSource, /写真を追加/);
   assert.match(gearFormSource, /handleImageFile/);
   assert.match(gearFormSource, /gear-images/);
   assert.match(gearFormSource, /image_storage_path/);
   assert.match(gearFormSource, /accept="image\/\*"/);
+  assert.doesNotMatch(gearFormSource, /写真も追加できます/);
   assert.doesNotMatch(gearFormSource, /バーコード/);
   assert.doesNotMatch(gearFormSource, /カメラ/);
 });

@@ -991,13 +991,23 @@ function compareProductPickerItems(
 
 const brandPriority = [
   "mont-bell",
+  "山と道",
+  "finetrack",
   "THE NORTH FACE",
+  "Caravan",
+  "Osprey",
   "Black Diamond",
+  "Petzl",
   "NANGA",
   "ISUKA",
   "NEMO",
   "Therm-a-Rest",
-  "SOTO"
+  "SOTO",
+  "EVERNEW",
+  "アライテント",
+  "MSR",
+  "Garmin",
+  "Salomon"
 ];
 const brandCollator = new Intl.Collator("ja");
 
@@ -1042,6 +1052,26 @@ function getBrandSearchAliases(brand: string) {
     ];
   }
 
+  if (normalize(brand) === "山と道") {
+    return ["Yamatomichi", "Yama to Michi", "Yama-to-Michi", "山道", "ヤマトミチ"];
+  }
+
+  if (normalize(brand) === "finetrack") {
+    return ["finetrack", "Fine Track", "ファイントラック"];
+  }
+
+  if (normalize(brand) === "caravan") {
+    return ["Caravan", "キャラバン", "GRANDKING", "Grandking", "グランドキング"];
+  }
+
+  if (normalize(brand) === "osprey") {
+    return ["Osprey", "OSPREY", "Osprey Packs", "オスプレー"];
+  }
+
+  if (normalize(brand) === "petzl") {
+    return ["Petzl", "PETZL", "ペツル"];
+  }
+
   if (normalize(brand) === "nanga") {
     return ["NANGA", "Nanga", "ナンガ"];
   }
@@ -1069,6 +1099,30 @@ function getBrandSearchAliases(brand: string) {
     ];
   }
 
+  if (normalize(brand) === "soto") {
+    return ["SOTO", "新富士バーナー", "ソト"];
+  }
+
+  if (normalize(brand) === "evernew") {
+    return ["EVERNEW", "Evernew", "エバニュー"];
+  }
+
+  if (normalize(brand) === "アライテント") {
+    return ["Arai Tent", "ARAITENT", "Arai", "アライ", "ライペン", "RIPEN"];
+  }
+
+  if (normalize(brand) === "msr") {
+    return ["MSR", "Mountain Safety Research", "エムエスアール"];
+  }
+
+  if (normalize(brand) === "garmin") {
+    return ["Garmin", "GARMIN", "ガーミン"];
+  }
+
+  if (normalize(brand) === "salomon") {
+    return ["Salomon", "SALOMON", "サロモン"];
+  }
+
   return [];
 }
 
@@ -1080,6 +1134,122 @@ function getProductFamilySearchAliases(product: GearProduct) {
 
   if (normalizedText.includes("テルス")) {
     add("Tellus", "TELLUS", "テルス");
+  }
+
+  if (normalizedText.includes("mini2")) {
+    add("Yamatomichi MINI2", "山と道 MINI2", "山道 MINI2");
+  }
+
+  if (normalizedText.includes("mini")) {
+    add("Yamatomichi MINI", "山と道 MINI", "山道 MINI");
+  }
+
+  if (normalizedText.includes("three")) {
+    add("Yamatomichi THREE", "山と道 THREE", "山道 THREE");
+  }
+
+  if (normalizedText.includes("one")) {
+    add("Yamatomichi ONE", "山と道 ONE", "山道 ONE");
+  }
+
+  if (normalizedText.includes("sacoche")) {
+    add("サコッシュ", "Yamatomichi Sacoche", "山と道 サコッシュ");
+  }
+
+  if (normalizedText.includes("stuffpack")) {
+    add("Stuff Pack", "スタッフパック");
+  }
+
+  if (normalizedText.includes("zippack")) {
+    add("Zip Pack", "ジップパック");
+  }
+
+  if (normalizedText.includes("packliner")) {
+    add("Pack Liner", "パックライナー");
+  }
+
+  if (normalizedText.includes("ulshirt")) {
+    add("UL Shirt", "ULシャツ");
+  }
+
+  if (normalizedText.includes("allweather")) {
+    add("All-weather", "All Weather", "オールウェザー", "レインウェア");
+  }
+
+  if (normalizedText.includes("lightalpha")) {
+    add("Light Alpha", "ライトアルファ", "Alpha Direct", "アルファダイレクト");
+  }
+
+  if (normalizedText.includes("カミナドーム")) {
+    add("Kamina Dome", "KAMINA DOME", "カミナ ドーム");
+  }
+
+  if (normalizedText.includes("カミナモノポール")) {
+    add("Kamina Monopole", "KAMINA MONOPOLE", "カミナ モノポール");
+  }
+
+  if (normalizedText.includes("ピコシェルター")) {
+    add("Pico Shelter", "Picoshelter", "ビバーク", "ツエルト");
+  }
+
+  if (normalizedText.includes("ツエルト")) {
+    add("Zelt", "ツェルト", "ビバーク");
+  }
+
+  if (normalizedText.includes("ゴージュタープ")) {
+    add("Gorge Tarp", "GorgeTarp", "タープ");
+  }
+
+  if (normalizedText.includes("c102s")) {
+    add("C1_02S", "C1-02S", "C102S", "キャラバン C1");
+  }
+
+  if (normalizedText.includes("c403")) {
+    add("C4_03", "C4-03", "C403", "キャラバン C4");
+  }
+
+  if (normalizedText.includes("gk85")) {
+    add("GK85", "GRANDKING GK85", "グランドキング GK85");
+  }
+
+  if (normalizedText.includes("gk8x")) {
+    add("GK8X", "GK8X FFF", "GRANDKING GK8X", "グランドキング GK8X");
+  }
+
+  if (normalizedText.includes("gkalthi")) {
+    add("GK ALT HI", "GK_ALT HI", "GRANDKING ALT", "グランドキング ALT");
+  }
+
+  if (normalizedText.includes("ケストレル")) {
+    add("Kestrel", "オスプレー ケストレル");
+  }
+
+  if (normalizedText.includes("エクソス")) {
+    add("Exos", "Exos Pro", "オスプレー エクソス");
+  }
+
+  if (normalizedText.includes("タロン")) {
+    add("Talon", "Talon Pro", "Talon Velocity", "オスプレー タロン");
+  }
+
+  if (normalizedText.includes("テンペスト")) {
+    add("Tempest", "Tempest Velocity", "オスプレー テンペスト");
+  }
+
+  if (normalizedText.includes("actik")) {
+    add("ACTIK", "Actik", "アクティック");
+  }
+
+  if (normalizedText.includes("tikka")) {
+    add("TIKKA", "Tikka", "ティカ");
+  }
+
+  if (normalizedText.includes("swiftrl")) {
+    add("SWIFT RL", "Swift RL", "スイフト RL");
+  }
+
+  if (normalizedText.includes("ikocore")) {
+    add("IKO CORE", "Iko Core", "イコ コア");
   }
 
   if (normalizedText.includes("サム")) {
@@ -1324,6 +1494,14 @@ function getProductFamilySearchAliases(product: GearProduct) {
 
   if (normalizedText.includes("ridgerest")) {
     add("RidgeRest", "Ridge Rest", "リッジレスト");
+  }
+
+  if (normalizedText.includes("etrex")) {
+    add("eTrex", "eTrex SE", "イートレックス", "ガーミン GPS");
+  }
+
+  if (normalizedText.includes("ti570")) {
+    add("Ti 570FD", "Ti 570FD Cup", "EBY274", "エバニュー チタンカップ");
   }
 
   return aliases;

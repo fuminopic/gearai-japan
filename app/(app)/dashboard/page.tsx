@@ -19,6 +19,9 @@ import { getLatestTripPlan } from "@/lib/data/trip-plans";
 import { buildPlanChecklist } from "@/lib/plan-checklist";
 import type { DashboardRecentGear, DashboardSummary, SavedTripPlan } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const categoryColors = [
   "#2f80ed",
   "#9b6be8",

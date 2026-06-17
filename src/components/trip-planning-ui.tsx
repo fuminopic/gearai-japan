@@ -155,16 +155,22 @@ export function TripPlanningUI({
   const effectiveMountainSlug = hydratedPlan?.mountain_slug ?? selectedMountainSlug;
   const effectiveSeason = hydratedPlan?.season ?? selectedSeason;
   const effectiveStyle = hydratedPlan?.style ?? selectedStyle;
-  const effectivePlannedDate =
+  const resolvedPlannedDate =
     sanitizeDateParam(searchParams.get("date")) ?? hydratedPlan?.planned_date ?? "";
-  const effectiveTripMemo =
+  const resolvedTripMemo =
     sanitizeMemoParam(searchParams.get("memo")) ?? hydratedPlan?.trip_memo ?? "";
-  const effectiveBringCash =
+  const resolvedBringCash =
     parseBooleanParam(searchParams.get("cash")) ?? hydratedPlan?.bring_cash ?? false;
-  const effectiveHasMountainInsurance =
+  const resolvedHasMountainInsurance =
     parseBooleanParam(searchParams.get("insurance")) ??
     hydratedPlan?.has_mountain_insurance ??
     false;
+  const [planDetailsDraft, setPlanDetailsDraft] = useState({
+    plannedDate: resolvedPlannedDate,
+    tripMemo: resolvedTripMemo,
+    bringCash: resolvedBringCash,
+    hasMountainInsurance: resolvedHasMountainInsurance
+  });
   const selectedMountain =
     mountains.find((mountain) => mountain.slug === effectiveMountainSlug) ?? null;
   const savedCheckedSlots = getSavedPlanCheckedSlots(hydratedPlan);
@@ -195,6 +201,20 @@ export function TripPlanningUI({
     setStoredCheckedSlots(planId ? readStoredCheckedSlots(planId) : []);
     setStoredChecklistOnlyIds(planId ? readStoredChecklistOnlyIds(planId) : []);
   }, [planId, planStateKey]);
+
+  useEffect(() => {
+    setPlanDetailsDraft({
+      plannedDate: resolvedPlannedDate,
+      tripMemo: resolvedTripMemo,
+      bringCash: resolvedBringCash,
+      hasMountainInsurance: resolvedHasMountainInsurance
+    });
+  }, [
+    resolvedBringCash,
+    resolvedHasMountainInsurance,
+    resolvedPlannedDate,
+    resolvedTripMemo
+  ]);
 
   useEffect(() => {
     if (!planId) {
@@ -306,10 +326,13 @@ export function TripPlanningUI({
         selectedMountainSlug={effectiveMountainSlug}
         selectedSeason={effectiveSeason}
         selectedStyle={effectiveStyle}
-        selectedPlannedDate={effectivePlannedDate}
-        selectedTripMemo={effectiveTripMemo}
-        selectedBringCash={effectiveBringCash}
-        selectedHasMountainInsurance={effectiveHasMountainInsurance}
+        selectedPlannedDate={planDetailsDraft.plannedDate}
+        selectedTripMemo={planDetailsDraft.tripMemo}
+        selectedBringCash={planDetailsDraft.bringCash}
+        selectedHasMountainInsurance={planDetailsDraft.hasMountainInsurance}
+        onPlanDetailsChange={(details) =>
+          setPlanDetailsDraft((current) => ({ ...current, ...details }))
+        }
         planId={planId}
         error={error}
       />
@@ -335,10 +358,10 @@ export function TripPlanningUI({
               mountainName={selectedMountain.name_ja}
               season={effectiveSeason}
               style={effectiveStyle}
-              plannedDate={effectivePlannedDate}
-              tripMemo={effectiveTripMemo}
-              bringCash={effectiveBringCash}
-              hasMountainInsurance={effectiveHasMountainInsurance}
+              plannedDate={planDetailsDraft.plannedDate}
+              tripMemo={planDetailsDraft.tripMemo}
+              bringCash={planDetailsDraft.bringCash}
+              hasMountainInsurance={planDetailsDraft.hasMountainInsurance}
               progress={currentProgressValue}
               checkedSlots={currentCheckedSlots}
               checklistOnlyIds={currentChecklistOnlyIds}

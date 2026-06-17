@@ -23,15 +23,11 @@ export function DashboardPlanMeta({
     plannedDate: string;
     tripMemo: string;
   } | null>(null);
-  const displayDate = plannedDate || localMeta?.plannedDate || "";
-  const displayMemo = tripMemo?.trim() || localMeta?.tripMemo || "";
+  const displayDate = localMeta?.plannedDate || plannedDate || "";
+  const displayMemo = localMeta?.tripMemo || tripMemo?.trim() || "";
   const plannedDateLabel = formatPlanDate(displayDate);
 
   useEffect(() => {
-    if (plannedDate && tripMemo?.trim()) {
-      return;
-    }
-
     setLocalMeta(readTripPlanLocalMeta(planId));
   }, [planId, plannedDate, tripMemo]);
 

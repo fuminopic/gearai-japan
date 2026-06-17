@@ -25,8 +25,16 @@ type TripPlanningFormProps = {
   selectedTripMemo?: string;
   selectedBringCash?: boolean;
   selectedHasMountainInsurance?: boolean;
+  onPlanDetailsChange?: (details: Partial<PlanDetailsDraft>) => void;
   planId?: string | null;
   error?: string;
+};
+
+type PlanDetailsDraft = {
+  plannedDate: string;
+  tripMemo: string;
+  bringCash: boolean;
+  hasMountainInsurance: boolean;
 };
 
 type MountainListFilter = "HYAKUMEIZAN" | "NIHYAKUMEIZAN_EXTRA" | "AREA" | "ALL";
@@ -116,6 +124,7 @@ export function TripPlanningForm({
   selectedTripMemo = "",
   selectedBringCash = false,
   selectedHasMountainInsurance = false,
+  onPlanDetailsChange,
   planId,
   error
 }: TripPlanningFormProps) {
@@ -423,10 +432,12 @@ export function TripPlanningForm({
         <label className="block">
           <span className="text-sm font-medium text-stone-700">予定日</span>
           <input
-            key={`planned-date-${selectedPlannedDate}`}
             type="date"
             name="date"
-            defaultValue={selectedPlannedDate}
+            value={selectedPlannedDate}
+            onChange={(event) =>
+              onPlanDetailsChange?.({ plannedDate: event.target.value })
+            }
             className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-base outline-none focus:border-forest-500 focus:bg-white sm:mt-2 sm:py-3"
           />
         </label>
@@ -437,22 +448,28 @@ export function TripPlanningForm({
             <label className="flex items-center justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm font-semibold text-ink">
               <span>現金を持参</span>
               <input
-                key={`cash-${selectedBringCash ? "1" : "0"}`}
                 type="checkbox"
                 name="cash"
                 value="1"
-                defaultChecked={selectedBringCash}
+                checked={selectedBringCash}
+                onChange={(event) =>
+                  onPlanDetailsChange?.({ bringCash: event.target.checked })
+                }
                 className="h-5 w-5 accent-forest-700"
               />
             </label>
             <label className="flex items-center justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm font-semibold text-ink">
               <span>山岳保険に加入済み</span>
               <input
-                key={`insurance-${selectedHasMountainInsurance ? "1" : "0"}`}
                 type="checkbox"
                 name="insurance"
                 value="1"
-                defaultChecked={selectedHasMountainInsurance}
+                checked={selectedHasMountainInsurance}
+                onChange={(event) =>
+                  onPlanDetailsChange?.({
+                    hasMountainInsurance: event.target.checked
+                  })
+                }
                 className="h-5 w-5 accent-forest-700"
               />
             </label>
@@ -463,10 +480,12 @@ export function TripPlanningForm({
       <label className="mt-4 block">
         <span className="text-sm font-medium text-stone-700">メモ</span>
         <textarea
-          key={`trip-memo-${selectedTripMemo}`}
           name="memo"
           rows={2}
-          defaultValue={selectedTripMemo}
+          value={selectedTripMemo}
+          onChange={(event) =>
+            onPlanDetailsChange?.({ tripMemo: event.target.value })
+          }
           placeholder="集合時間、登山口、同行者など"
           className="mt-1.5 w-full resize-none rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white sm:mt-2"
         />

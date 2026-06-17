@@ -36,18 +36,21 @@ export default async function GearPage({ searchParams }: GearPageProps) {
   const savedMessage = getSavedMessage(params.saved);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <section className="flex items-end justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-forest-700">装備管理</p>
-          <h1 className="mt-1 text-4xl font-semibold tracking-normal text-ink">装備</h1>
+          <h1 className="mt-1 text-[34px] font-bold leading-tight tracking-normal text-ink">
+            マイ装備
+          </h1>
         </div>
         <Link
           href="/gear/new"
-          className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-forest-700 text-white shadow-soft"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-forest-700 px-4 text-sm font-bold text-white shadow-sm transition active:scale-95"
           aria-label="装備を追加"
         >
-          <Plus className="h-6 w-6" />
+          <Plus className="h-5 w-5" />
+          追加
         </Link>
       </section>
 

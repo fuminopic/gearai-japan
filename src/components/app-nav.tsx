@@ -24,16 +24,18 @@ export function AppNav() {
       <NavigationFeedback />
       <AppRoutePrefetcher />
 
-      <header className="sticky top-0 z-20 border-b border-stone-200/70 bg-trail-50/90 px-5 py-4 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-gray-100/70 bg-[#FAFAFA]/90 px-4 pb-3 pt-[max(env(safe-area-inset-top),20px)] backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <Link href="/dashboard" className="leading-none text-ink">
-            <span className="block text-lg font-semibold tracking-normal">山支度</span>
-            <span className="block text-[10px] font-semibold text-forest-700">
+          <Link href="/dashboard" className="leading-none text-gray-900">
+            <span className="block text-[28px] font-bold leading-none tracking-tight">
+              山支度
+            </span>
+            <span className="mt-1 block text-[10px] font-medium tracking-widest text-forest-700">
               YAMAJITAKU
             </span>
           </Link>
           <form action={signOut}>
-            <button className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm">
+            <button className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-stone-700 shadow-sm transition active:scale-95">
               ログアウト
             </button>
           </form>
@@ -42,7 +44,7 @@ export function AppNav() {
 
       <AppBottomNav />
 
-      <aside className="fixed left-0 top-0 hidden h-screen w-24 border-r border-stone-200 bg-white px-3 py-5 md:block">
+      <aside className="fixed left-0 top-0 hidden h-screen w-24 border-r border-stone-200 bg-white/90 px-3 py-5 backdrop-blur md:block">
         <Link href="/dashboard" className="mb-8 block text-center leading-none text-forest-700">
           <span className="block text-sm font-semibold text-ink">山支度</span>
           <span className="mt-1 block text-[9px] font-semibold">YAMAJITAKU</span>

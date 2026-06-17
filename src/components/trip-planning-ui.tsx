@@ -295,7 +295,7 @@ export function TripPlanningUI({
       <section className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-sm font-semibold text-forest-700">山行計画</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-normal text-ink">
+          <h1 className="mt-1 text-[34px] font-bold leading-tight tracking-normal text-ink">
             パック計画
           </h1>
         </div>
@@ -441,9 +441,9 @@ function SavePlanButton({
         type="button"
         disabled={isPending}
         onClick={handleSavePlan}
-        className="fixed bottom-24 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl bg-[#C62828] py-3.5 font-bold text-white shadow-xl transition disabled:opacity-70"
+        className="fixed bottom-24 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl bg-forest-700 py-3.5 font-bold text-white shadow-xl transition active:scale-[0.99] disabled:opacity-70"
       >
-        {isPending ? "保存中..." : planId ? "変更を更新！" : "計画を保存！"}
+        {isPending ? "保存中..." : planId ? "変更を更新" : "計画を保存"}
       </button>
     </form>
   );

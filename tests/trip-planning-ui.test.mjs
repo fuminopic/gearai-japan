@@ -424,11 +424,11 @@ test("saving and updating a plan writes progress payload and redirects home", ()
   assert.match(tripPlanningUiSource, /await saveTripPlan\(formData\)/);
   assert.match(tripPlanningUiSource, /await updateTripPlan\(formData\)/);
   assert.match(tripPlanningUiSource, /router\.push\("\/dashboard"\)/);
-  assert.match(tripPlanningUiSource, /計画を保存！/);
-  assert.match(tripPlanningUiSource, /変更を更新！/);
+  assert.match(tripPlanningUiSource, /計画を保存/);
+  assert.match(tripPlanningUiSource, /変更を更新/);
   assert.match(
     tripPlanningUiSource,
-    /fixed bottom-24 left-1\/2 z-50 w-\[calc\(100%-2rem\)\] max-w-sm -translate-x-1\/2 rounded-2xl bg-\[#C62828\] py-3\.5/
+    /fixed bottom-24 left-1\/2 z-50 w-\[calc\(100%-2rem\)\] max-w-sm -translate-x-1\/2 rounded-2xl bg-forest-700 py-3\.5/
   );
   assert.match(tripPlanningUiSource, /name="progress" value=\{progress\}/);
   assert.match(tripPlanningUiSource, /name="checked_slots"/);

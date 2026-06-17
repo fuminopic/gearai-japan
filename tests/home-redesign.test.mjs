@@ -121,14 +121,14 @@ test("home redesign v2 removes hero secondary actions and replaces bell with men
 });
 
 test("home hero shows the saved plan checklist summary over the static hills background", () => {
-  assert.match(dashboardSource, /relative min-h-\[300px\] w-full overflow-hidden rounded-lg/);
+  assert.match(dashboardSource, /relative min-h-\[300px\] w-full overflow-hidden rounded-\[28px\]/);
   assert.match(dashboardSource, /absolute inset-0 z-0/);
   assert.match(dashboardSource, /src="\/generic-hills\.jpg"/);
   assert.match(dashboardSource, /object-cover object-bottom opacity-80/);
   assert.match(dashboardSource, /absolute inset-0 z-10 bg-gradient-to-t from-\[#E8F0E8\]\/40 via-white\/90 to-white/);
   assert.match(dashboardSource, /relative z-20 flex min-h-\[300px\] flex-col justify-between gap-5 p-5/);
   assert.match(dashboardSource, /mt-3/);
-  assert.match(dashboardSource, /w-\[200px\].*bg-\[#3B5B44\]/s);
+  assert.match(dashboardSource, /w-\[200px\].*rounded-2xl.*bg-\[#3B5B44\]/s);
   assert.match(dashboardSource, /DashboardPlanChecklistSummary/);
   assert.match(dashboardSource, /getPackRequirementPlan/);
   assert.match(dashboardSource, /buildPlanChecklist/);

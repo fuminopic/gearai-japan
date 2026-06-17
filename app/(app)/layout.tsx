@@ -10,9 +10,9 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-trail-50 pb-32 text-ink">
+    <div className="min-h-screen bg-[#FAFAFA] pb-32 text-ink">
       <AppNav />
-      <main className="mx-auto max-w-5xl px-5 pb-32 pt-6 md:ml-24 md:pb-10 md:pt-8">
+      <main className="mx-auto max-w-5xl px-4 pb-32 pt-5 md:ml-24 md:px-6 md:pb-10 md:pt-8">
         <Suspense fallback={<AppLoadingFallback />}>
           <AuthGate>{children}</AuthGate>
         </Suspense>

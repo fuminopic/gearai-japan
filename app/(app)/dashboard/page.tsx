@@ -156,8 +156,8 @@ function HomePageContent({
 function HomeShellCss() {
   return (
     <style>{`
-      header:has(a[href="/dashboard"]),
-      aside:has(a[href="/dashboard"]) {
+      body:has(main.home-redesign) > div > header:has(a[href="/dashboard"]),
+      body:has(main.home-redesign) > div > aside:has(a[href="/dashboard"]) {
         display: none;
       }
       main:has(> main.home-redesign) {
@@ -193,7 +193,7 @@ function HeroCard({
   const coveragePercent = tripChecklist?.summary.percent ?? getSavedProgressFallback(trip);
   const planHref = `/plan?id=${trip.id}` as Route;
   return (
-    <section className="relative min-h-[300px] w-full overflow-hidden rounded-lg bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7] shadow-sm">
+    <section className="relative min-h-[300px] w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7] shadow-sm">
       <div className="absolute inset-0 z-0">
         <Image
           src="/generic-hills.jpg"
@@ -229,7 +229,7 @@ function HeroCard({
           />
           <Link
             href={planHref}
-            className="inline-flex w-[200px] items-center justify-center rounded-lg bg-[#3B5B44] py-3 text-xs font-bold text-white shadow-sm"
+            className="inline-flex w-[200px] items-center justify-center rounded-2xl bg-[#3B5B44] py-3 text-xs font-bold text-white shadow-sm transition active:scale-95"
           >
             装備チェックを続ける
           </Link>
@@ -266,7 +266,7 @@ function EmptyTripHero() {
 
         <Link
           href={planRoute}
-          className="inline-flex w-[200px] items-center justify-center rounded-xl bg-[#3B5B44] py-3 text-xs font-bold text-white shadow-sm"
+          className="inline-flex w-[200px] items-center justify-center rounded-2xl bg-[#3B5B44] py-3 text-xs font-bold text-white shadow-sm transition active:scale-95"
         >
           山行計画を作成
         </Link>
@@ -286,7 +286,7 @@ function HeroTitle() {
 
 function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
   return (
-    <section className="flex flex-col gap-4 rounded-[24px] bg-white p-5 shadow-sm">
+    <section className="flex flex-col gap-4 rounded-[28px] bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-bold">マイ装備</h2>
         <Link
@@ -367,7 +367,7 @@ function RecentGearSection({
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-[24px] bg-white px-5 py-6 text-center shadow-sm">
+        <div className="flex flex-col items-center justify-center rounded-[28px] bg-white px-5 py-6 text-center shadow-sm">
           <BackpackIllustration />
           <h3 className="mt-4 text-base font-bold">まだ装備がありません</h3>
           <p className="mt-3 text-xs leading-6 text-gray-600">
@@ -397,7 +397,7 @@ function CategoryDistribution({
   const distribution = buildDistribution(summary, hasGear);
 
   return (
-    <section className="flex flex-col gap-5 rounded-[24px] bg-white p-5 shadow-sm">
+    <section className="flex flex-col gap-5 rounded-[28px] bg-white p-5 shadow-sm">
       <SectionHeader title="カテゴリー分布" href="/gear" />
       <div className="flex flex-row items-center justify-between gap-4">
         <DonutChart distribution={distribution} hasGear={hasGear} />

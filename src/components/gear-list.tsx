@@ -1,7 +1,6 @@
 import {
   Archive,
   ChevronRight,
-  Edit3,
   PackagePlus,
   Search,
   SlidersHorizontal,
@@ -51,8 +50,8 @@ export function GearList({
   ].sort(compareGearBrands);
 
   return (
-    <div className="space-y-4">
-      <section className="overflow-hidden rounded-lg border border-white/70 bg-white/90 shadow-soft">
+    <div className="space-y-5">
+      <section className="overflow-hidden rounded-[24px] bg-white shadow-sm">
         <div className="grid grid-cols-3 divide-x divide-stone-100">
           <InventoryStat
             icon={<Archive className="h-4 w-4" />}
@@ -73,7 +72,7 @@ export function GearList({
         <div className="border-t border-stone-100 px-4 py-3">
           {majorCategoryCoverage.missingLabels.length > 0 ? (
             <p className="text-xs font-semibold leading-5 text-stone-500">
-              未登録カテゴリー: {majorCategoryCoverage.missingLabels.join("、")}
+              未登録: {majorCategoryCoverage.missingLabels.join("、")}
             </p>
           ) : (
             <p className="text-xs font-semibold text-forest-700">
@@ -83,7 +82,7 @@ export function GearList({
         </div>
       </section>
 
-      <section className="rounded-lg border border-white/70 bg-white/90 p-3 shadow-soft">
+      <section className="rounded-[24px] bg-white p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between gap-3 px-1">
           <div>
             <p className="text-xs font-semibold text-forest-700">絞り込み</p>
@@ -94,14 +93,14 @@ export function GearList({
           {(filters.q || filters.brand || filters.category || (filters.status && filters.status !== "all")) ? (
             <Link
               href="/gear"
-              className="rounded-lg bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-600"
+              className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-600"
             >
               解除
             </Link>
           ) : null}
         </div>
 
-        <form className="flex items-center gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2">
+        <form className="flex items-center gap-2 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2">
           <Search className="h-5 w-5 shrink-0 text-stone-400" />
           <input
             name="q"
@@ -113,7 +112,7 @@ export function GearList({
           <input type="hidden" name="brand" value={filters.brand ?? ""} />
           <input type="hidden" name="category" value={filters.category ?? ""} />
           <input type="hidden" name="sort" value={filters.sort ?? "newest"} />
-          <button className="rounded-lg bg-ink px-3 py-2 text-xs font-semibold text-white">
+          <button className="rounded-xl bg-ink px-3 py-2 text-xs font-semibold text-white transition active:scale-95">
             検索
           </button>
         </form>
@@ -164,7 +163,7 @@ export function GearList({
         </div>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
-          <div className="grid grid-cols-3 rounded-lg bg-stone-100 p-1 text-sm font-semibold">
+          <div className="grid grid-cols-3 rounded-2xl bg-stone-100 p-1 text-sm font-semibold">
             <StatusChip href={buildGearHref(filters, { status: "all" })} active={(filters.status ?? "all") === "all"}>
               すべて
             </StatusChip>
@@ -176,7 +175,7 @@ export function GearList({
             </StatusChip>
           </div>
 
-          <form className="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2">
+          <form className="flex items-center gap-2 rounded-2xl border border-stone-200 bg-white px-3 py-2">
             <input type="hidden" name="q" value={filters.q ?? ""} />
             <input type="hidden" name="status" value={filters.status ?? "all"} />
             <input type="hidden" name="brand" value={filters.brand ?? ""} />
@@ -193,7 +192,7 @@ export function GearList({
               <option value="newest">新しい順</option>
               <option value="weight">重い順</option>
             </select>
-            <button className="rounded bg-stone-100 px-2 py-1 text-xs font-semibold text-stone-700">
+            <button className="rounded-lg bg-stone-100 px-2 py-1 text-xs font-semibold text-stone-700">
               適用
             </button>
           </form>
@@ -201,14 +200,14 @@ export function GearList({
       </section>
 
       {gear.length === 0 ? (
-        <section className="rounded-lg bg-white p-6 text-center shadow-soft">
+        <section className="rounded-[24px] bg-white p-6 text-center shadow-sm">
           <p className="text-lg font-semibold text-ink">まだ装備がありません</p>
           <p className="mt-2 text-sm leading-6 text-stone-500">
             まずはバックパック、レインウェア、ヘッドライトなどから登録してみましょう。
           </p>
           <Link
             href="/gear/new"
-            className="mt-5 inline-flex rounded-lg bg-forest-700 px-5 py-3 text-sm font-semibold text-white"
+            className="mt-5 inline-flex rounded-xl bg-forest-700 px-5 py-3 text-sm font-semibold text-white"
           >
             装備を追加
           </Link>
@@ -228,11 +227,8 @@ export function GearList({
           </div>
 
           {gearGroups.map((group) => (
-            <section
-              key={group.id}
-              className="overflow-hidden rounded-lg border border-white/70 bg-white/90 shadow-soft"
-            >
-              <div className="flex items-end justify-between gap-3 border-b border-stone-100 bg-stone-50/80 px-4 py-3">
+            <section key={group.id} className="space-y-2">
+              <div className="flex items-end justify-between gap-3 px-1">
                 <div>
                   <h2 className="text-base font-semibold text-ink">{group.name}</h2>
                   <p className="mt-1 text-xs text-stone-500">
@@ -242,7 +238,7 @@ export function GearList({
                 </div>
               </div>
 
-              <div className="divide-y divide-stone-100">
+              <div className="grid gap-2">
                 {group.items.map((item) => (
                   <GearCard key={item.id} item={item} />
                 ))}
@@ -260,49 +256,42 @@ function GearCard({ item }: { item: UserGear }) {
   const weightLabel = getGearDisplayWeightLabel(item);
 
   return (
-    <article className="bg-white px-3 py-2.5 transition hover:bg-stone-50/70 sm:px-4">
-      <div className="grid grid-cols-[3.75rem_minmax(0,1fr)_auto] items-center gap-3">
+    <article className="overflow-hidden rounded-[20px] border border-stone-100 bg-white shadow-sm transition hover:border-forest-100 hover:bg-forest-50/30">
+      <Link
+        href={`/gear/${item.id}`}
+        className="grid grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-3 px-3 py-3 sm:px-4"
+      >
         {item.image_url ? (
-          <Link
-            href={`/gear/${item.id}`}
-            className="flex h-14 w-14 items-center justify-center rounded-lg border border-stone-100 bg-stone-50 p-1.5"
-          >
+          <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-stone-100 bg-stone-50 p-2">
             <img
               src={item.image_url}
               alt={item.name}
               className="max-h-full max-w-full object-contain"
               loading="lazy"
             />
-          </Link>
+          </span>
         ) : (
-          <Link
-            href={`/gear/${item.id}`}
-            className="flex h-14 w-14 items-center justify-center rounded-lg bg-forest-50 text-forest-700"
-          >
+          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-forest-50 text-forest-700">
             <PackagePlus className="h-6 w-6" />
-          </Link>
+          </span>
         )}
 
         <div className="min-w-0">
           <div className="flex min-w-0 items-start justify-between gap-2">
-            <Link href={`/gear/${item.id}`} className="block min-w-0">
-              <span className="block truncate text-base font-semibold text-ink">
-                {item.name}
-              </span>
-            </Link>
-            <span className="shrink-0 rounded-md bg-forest-50 px-2 py-1 text-[11px] font-semibold text-forest-700 sm:hidden">
+            <span className="block min-w-0 truncate text-base font-semibold text-ink">
+              {item.name}
+            </span>
+            <span className="shrink-0 rounded-full bg-forest-50 px-2 py-1 text-[11px] font-semibold text-forest-700">
               {statusLabels[item.status]}
             </span>
           </div>
-          <Link href={`/gear/${item.id}`} className="mt-0.5 block min-w-0">
-            <span className="mt-0.5 block truncate text-sm text-stone-500">
-              {[item.brand, item.model].filter(Boolean).join(" / ") || "ブランド未設定"}
-            </span>
-          </Link>
+          <span className="mt-0.5 block truncate text-sm text-stone-500">
+            {[item.brand, item.model].filter(Boolean).join(" / ") || "ブランド未設定"}
+          </span>
 
           <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
             {categoryLabel ? (
-              <span className="rounded bg-forest-50 px-2 py-0.5 font-semibold text-forest-800">
+              <span className="rounded-lg bg-forest-50 px-2 py-0.5 font-semibold text-forest-800">
                 {categoryLabel}
               </span>
             ) : null}
@@ -314,43 +303,11 @@ function GearCard({ item }: { item: UserGear }) {
               {weightTypeLabels[item.weight_type]}
             </span>
           </div>
-
-          <div className="mt-2 flex gap-2 sm:hidden">
-            <Link
-              href={`/gear/${item.id}`}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-forest-50 px-3 py-1.5 text-xs font-semibold text-forest-700"
-            >
-              詳細
-            </Link>
-            <Link
-              href={`/gear/${item.id}/edit`}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-700"
-            >
-              <Edit3 className="h-4 w-4" />
-              編集
-            </Link>
-          </div>
         </div>
-        <div className="hidden items-center gap-1 sm:flex">
-          <span className="rounded-lg bg-forest-50 px-2.5 py-1 text-xs font-semibold text-forest-700">
-            {statusLabels[item.status]}
-          </span>
-          <Link
-            href={`/gear/${item.id}/edit`}
-            className="rounded-lg p-2 text-stone-500 hover:bg-stone-100 hover:text-ink"
-            aria-label={`${item.name}を編集`}
-          >
-            <Edit3 className="h-4 w-4" />
-          </Link>
-          <Link
-            href={`/gear/${item.id}`}
-            className="rounded-lg p-2 text-stone-400 hover:bg-stone-100 hover:text-ink"
-            aria-label={`${item.name}の詳細`}
-          >
-            <ChevronRight className="h-5 w-5" />
-          </Link>
-        </div>
-      </div>
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-stone-100 bg-white text-forest-700">
+          <ChevronRight className="h-5 w-5" />
+        </span>
+      </Link>
     </article>
   );
 }
@@ -366,7 +323,7 @@ function InventoryStat({
 }) {
   return (
     <div className="px-3 py-4 text-center">
-      <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-forest-50 text-forest-700">
+      <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-forest-50 text-forest-700">
         {icon}
       </div>
       <p className="mt-2 text-lg font-semibold tracking-normal text-ink">{value}</p>
@@ -396,7 +353,7 @@ function FilterChip({
   return (
     <Link
       href={href}
-      className={`shrink-0 rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+      className={`shrink-0 rounded-full border px-3 py-2 text-sm font-semibold transition ${
         active
           ? "border-forest-700 bg-forest-700 text-white"
           : "border-stone-200 bg-white text-stone-700 hover:border-forest-200 hover:bg-forest-50 hover:text-forest-800"
@@ -419,7 +376,7 @@ function StatusChip({
   return (
     <Link
       href={href}
-      className={`rounded-lg px-3 py-2 text-center transition ${
+      className={`rounded-xl px-3 py-2 text-center transition ${
         active ? "bg-white text-ink shadow-sm" : "text-stone-500 hover:text-ink"
       }`}
     >

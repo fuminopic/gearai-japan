@@ -67,10 +67,10 @@ test("gear list groups registered gear by category without changing cards", () =
   assert.match(gearListSource, /totalWeightGrams/);
   assert.match(gearListSource, /getMajorGearCategoryCoverage/);
   assert.match(gearListSource, /主要カテゴリー/);
-  assert.match(gearListSource, /未登録カテゴリー/);
+  assert.match(gearListSource, /未登録:/);
   assert.match(gearPageSource, /summaryGear/);
   assert.match(gearListSource, /装備庫/);
-  assert.match(gearListSource, /divide-y divide-stone-100/);
+  assert.match(gearListSource, /grid gap-2/);
   assert.doesNotMatch(gearListSource, /総額/);
   assert.doesNotMatch(gearListSource, /高い順/);
   assert.doesNotMatch(gearListSource, /節約/);

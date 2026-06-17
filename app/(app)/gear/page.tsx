@@ -27,10 +27,11 @@ export default async function GearPage({ searchParams }: GearPageProps) {
     sort: isSort(params.sort) ? params.sort : "newest"
   };
 
-  const [categories, brands, gear] = await Promise.all([
+  const [categories, brands, gear, summaryGear] = await Promise.all([
     getGearCategories(),
     getUserGearBrands(),
-    getUserGear(filters)
+    getUserGear(filters),
+    getUserGear({ status: "owned" })
   ]);
   const savedMessage = getSavedMessage(params.saved);
 
@@ -62,7 +63,13 @@ export default async function GearPage({ searchParams }: GearPageProps) {
         </p>
       ) : null}
 
-      <GearList gear={gear} categories={categories} brands={brands} filters={filters} />
+      <GearList
+        gear={gear}
+        summaryGear={summaryGear}
+        categories={categories}
+        brands={brands}
+        filters={filters}
+      />
     </div>
   );
 }

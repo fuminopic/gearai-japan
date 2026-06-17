@@ -2,12 +2,7 @@ import type { GearProduct, UserGear } from "@/lib/types";
 import { formatWeight } from "@/lib/utils/format";
 
 export function getGearDisplayWeightGrams(item: UserGear) {
-  const measured = item.measured_weight_grams;
   const official = item.official_weight_grams;
-
-  if (typeof measured === "number") {
-    return measured;
-  }
 
   if (typeof official === "number") {
     return official;

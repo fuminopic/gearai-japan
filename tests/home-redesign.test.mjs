@@ -169,6 +169,8 @@ test("home redesign exposes only allowed gear summary metrics", () => {
   for (const copy of ["マイ装備", "所有装備数", "総重量", "主要カテゴリー"]) {
     assert.match(dashboardSource, new RegExp(copy));
   }
+  assert.match(dashboardSource, /majorCategoryMissingLabels/);
+  assert.match(dashboardDataSource, /getMajorGearCategoryCoverage/);
 
   for (const forbidden of [
     "私の装備",

@@ -45,10 +45,11 @@ test("gear add form supports explicit search, suggestions, and real brand logo c
   assert.match(gearFormSource, /BrandLogo/);
   assert.match(gearFormSource, /<BrandLogo brand=\{item\} compact/);
   assert.match(brandLogoSource, /role="img"/);
-  assert.match(brandLogoSource, /viewBox=/);
+  assert.match(brandLogoSource, /officialBrandLogos/);
+  assert.match(brandLogoSource, /<img/);
+  assert.doesNotMatch(brandLogoSource, /<svg/);
   assert.match(brandLogoSource, /thenorthface/);
   assert.match(brandLogoSource, /blackdiamond/);
-  assert.match(brandLogoSource, /mont-bell/);
   assert.match(brandLogoSource, /hyperlitemountaingear/);
   assert.match(gearFormSource, /ariaLabel=\{`\$\{item\}を選択`\}/);
 });
@@ -79,6 +80,12 @@ test("gear add form keeps official unit price but removes purchase tracking fiel
   assert.match(gearActionSource, /purchase_date: null/);
 });
 
+test("gear form removes measured weight from user-facing detail editing", () => {
+  assert.doesNotMatch(gearFormSource, /実測重量/);
+  assert.doesNotMatch(gearFormSource, /measuredWeightGrams/);
+  assert.doesNotMatch(gearFormSource, /name="measured_weight_grams"/);
+  assert.match(gearActionSource, /measured_weight_grams: null/);
+});
 
 test("gear photo upload uses private storage paths instead of public gear photos", () => {
   assert.match(gearImageStorageMigrationSource, /add column if not exists image_storage_path/);

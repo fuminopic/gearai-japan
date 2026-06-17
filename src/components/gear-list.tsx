@@ -17,21 +17,34 @@ import {
   getGearDisplayWeightGrams,
   getGearDisplayWeightLabel
 } from "@/lib/gear-display";
+import {
+  getMajorGearCategoryCoverage
+} from "@/lib/gear-major-categories";
 import { statusLabels, weightTypeLabels } from "@/lib/i18n/labels";
 import type { GearCategory, GearFilters, UserGear } from "@/lib/types";
 import { formatWeight } from "@/lib/utils/format";
 
 type GearListProps = {
   gear: UserGear[];
+  summaryGear: UserGear[];
   categories: GearCategory[];
   brands: string[];
   filters: GearFilters;
 };
 
-export function GearList({ gear, categories, brands, filters }: GearListProps) {
+export function GearList({
+  gear,
+  summaryGear,
+  categories,
+  brands,
+  filters
+}: GearListProps) {
   const gearGroups = groupGearByCategory(gear, categories);
-  const totalWeightGrams = gear.reduce((sum, item) => sum + getGearWeightGrams(item), 0);
-  const majorCategoryCoverage = getMajorCategoryCoverage(gear);
+  const totalWeightGrams = summaryGear.reduce(
+    (sum, item) => sum + getGearWeightGrams(item),
+    0
+  );
+  const majorCategoryCoverage = getMajorGearCategoryCoverage(summaryGear);
   const selectedBrand = filters.brand ?? "";
   const visibleBrands = [
     ...new Set([selectedBrand, ...brands].filter((brand): brand is string => Boolean(brand)))
@@ -44,7 +57,7 @@ export function GearList({ gear, categories, brands, filters }: GearListProps) {
           <InventoryStat
             icon={<Archive className="h-4 w-4" />}
             label="所有アイテム"
-            value={`${gear.length.toLocaleString("ja-JP")}件`}
+            value={`${summaryGear.length.toLocaleString("ja-JP")}件`}
           />
           <InventoryStat
             icon={<Weight className="h-4 w-4" />}
@@ -54,8 +67,19 @@ export function GearList({ gear, categories, brands, filters }: GearListProps) {
           <InventoryStat
             icon={<PackagePlus className="h-4 w-4" />}
             label="主要カテゴリー"
-            value={`${majorCategoryCoverage} / ${MAJOR_CATEGORY_IDS.length}`}
+            value={`${majorCategoryCoverage.coveredCount} / ${majorCategoryCoverage.totalCount}`}
           />
+        </div>
+        <div className="border-t border-stone-100 px-4 py-3">
+          {majorCategoryCoverage.missingLabels.length > 0 ? (
+            <p className="text-xs font-semibold leading-5 text-stone-500">
+              未登録カテゴリー: {majorCategoryCoverage.missingLabels.join("、")}
+            </p>
+          ) : (
+            <p className="text-xs font-semibold text-forest-700">
+              主要カテゴリーは登録済みです
+            </p>
+          )}
         </div>
       </section>
 
@@ -475,27 +499,6 @@ function groupGearByCategory(gear: UserGear[], categories: GearCategory[]) {
 
     return a.name.localeCompare(b.name, "ja");
   });
-}
-
-const MAJOR_CATEGORY_IDS = [
-  "backpack",
-  "shelter",
-  "sleep",
-  "cooking",
-  "clothing",
-  "electronics"
-] as const;
-
-function getMajorCategoryCoverage(gear: UserGear[]) {
-  const covered = new Set<string>();
-
-  for (const item of gear) {
-    if (MAJOR_CATEGORY_IDS.includes(item.category_id as typeof MAJOR_CATEGORY_IDS[number])) {
-      covered.add(item.category_id);
-    }
-  }
-
-  return covered.size;
 }
 
 function getGearWeightGrams(item: UserGear) {

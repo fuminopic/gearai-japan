@@ -76,9 +76,8 @@ export async function deleteGear(id: string) {
 
 function getGearPayload(formData: FormData) {
   const officialWeight = toNumber(formData.get("official_weight_grams"));
-  const measuredWeight = toNumber(formData.get("measured_weight_grams"));
   const msrp = toNumber(formData.get("msrp_jpy"));
-  const storedWeight = measuredWeight ?? officialWeight ?? 0;
+  const storedWeight = officialWeight ?? 0;
 
   return {
     product_id: optionalString(formData.get("product_id")),
@@ -90,8 +89,7 @@ function getGearPayload(formData: FormData) {
     weight_grams: Math.max(0, Math.round(storedWeight)),
     official_weight_grams:
       officialWeight === null ? null : Math.max(0, Math.round(officialWeight)),
-    measured_weight_grams:
-      measuredWeight === null ? null : Math.max(0, Math.round(measuredWeight)),
+    measured_weight_grams: null,
     msrp_jpy: msrp === null ? null : Math.round(msrp),
     purchase_price_jpy: null,
     size: optionalString(formData.get("size")),

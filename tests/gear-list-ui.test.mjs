@@ -51,7 +51,9 @@ test("gear list exposes brand and category-oriented list controls", () => {
   assert.match(gearListSource, /BrandLogo/);
   assert.match(gearListSource, /<BrandLogo brand=\{brand\} compact/);
   assert.match(brandLogoSource, /role="img"/);
-  assert.match(brandLogoSource, /viewBox=/);
+  assert.match(brandLogoSource, /officialBrandLogos/);
+  assert.match(brandLogoSource, /<img/);
+  assert.doesNotMatch(brandLogoSource, /<svg/);
   assert.match(gearDisplaySource, /compareGearBrands/);
 });
 
@@ -63,8 +65,10 @@ test("gear list groups registered gear by category without changing cards", () =
   assert.match(gearListSource, /formatWeight\(group\.weightGrams\)/);
   assert.match(gearListSource, /InventoryStat/);
   assert.match(gearListSource, /totalWeightGrams/);
-  assert.match(gearListSource, /getMajorCategoryCoverage/);
+  assert.match(gearListSource, /getMajorGearCategoryCoverage/);
   assert.match(gearListSource, /主要カテゴリー/);
+  assert.match(gearListSource, /未登録カテゴリー/);
+  assert.match(gearPageSource, /summaryGear/);
   assert.match(gearListSource, /装備庫/);
   assert.match(gearListSource, /divide-y divide-stone-100/);
   assert.doesNotMatch(gearListSource, /総額/);
@@ -101,6 +105,7 @@ test("gear detail page uses user-facing Japanese labels instead of internal fiel
   assert.doesNotMatch(gearDetailSource, /購入価格/);
   assert.doesNotMatch(gearDetailSource, /購入日/);
   assert.doesNotMatch(gearDetailSource, /節約額/);
+  assert.doesNotMatch(gearDetailSource, /実測重量/);
   assert.doesNotMatch(gearDetailSource, />verification_status</);
   assert.doesNotMatch(gearDetailSource, />last_verified_at</);
   assert.doesNotMatch(gearDetailSource, />MSRP source</);
@@ -111,4 +116,5 @@ test("gear display helpers avoid showing unknown weights as zero grams", () => {
   assert.match(gearDisplaySource, /item\.weight_grams > 0/);
   assert.match(gearDisplaySource, /return typeof grams === "number" \? formatWeight\(grams\) : "-"/);
   assert.match(gearListSource, /getGearDisplayWeightLabel\(item\)/);
+  assert.doesNotMatch(gearDisplaySource, /const measured/);
 });

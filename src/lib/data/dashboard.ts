@@ -1,22 +1,14 @@
 import { requireUser } from "@/lib/data/gear";
+import { getMajorGearCategoryCoverage } from "@/lib/gear-major-categories";
 import type { DashboardRecentGear, DashboardSummary, UserGear } from "@/lib/types";
 
 const DASHBOARD_GEAR_SELECT =
-  "id,name,image_url,image_storage_path,status,weight_grams,weight_type,created_at,gear_categories:category_id(id,name_ja,name_en)";
+  "id,name,image_url,image_storage_path,status,category_id,weight_grams,weight_type,created_at,gear_categories:category_id(id,name_ja,name_en)";
 
 type DashboardGear = DashboardRecentGear &
-  Pick<UserGear, "status" | "weight_type"> & {
+  Pick<UserGear, "status" | "weight_type" | "category_id"> & {
     gear_categories?: UserGear["gear_categories"];
   };
-
-const MAJOR_CATEGORY_IDS = [
-  "backpack",
-  "shelter",
-  "sleep",
-  "cooking",
-  "clothing",
-  "electronics"
-] as const;
 
 const CATEGORY_ARCHITECTURE = {
   backpack: { categoryId: "backpack", nameJa: "背負システム", sortOrder: 10 },
@@ -69,9 +61,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   }
 
   const totalWeightG = sumWeight(ownedGear);
-  const majorCategoryCoverageCount = Array.from(categoryWeights.values()).filter(
-    (category) => MAJOR_CATEGORY_IDS.includes(category.categoryId as typeof MAJOR_CATEGORY_IDS[number])
-  ).length;
+  const majorCategoryCoverage = getMajorGearCategoryCoverage(ownedGear);
   const baseWeightG = sumWeight(ownedGear.filter((item) => item.weight_type === "base"));
   const consumableWeightG = sumWeight(
     ownedGear.filter((item) => item.weight_type === "consumable")
@@ -83,8 +73,9 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     ownedCount: ownedGear.length,
     wishlistCount: gear.filter((item) => item.status === "wishlist").length,
     totalWeightG,
-    majorCategoryCoverageCount,
-    majorCategoryTotalCount: MAJOR_CATEGORY_IDS.length,
+    majorCategoryCoverageCount: majorCategoryCoverage.coveredCount,
+    majorCategoryTotalCount: majorCategoryCoverage.totalCount,
+    majorCategoryMissingLabels: majorCategoryCoverage.missingLabels,
     baseWeightG,
     consumableWeightG,
     wornWeightG,

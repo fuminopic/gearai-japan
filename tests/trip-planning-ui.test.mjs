@@ -160,7 +160,10 @@ test("app navigation responds immediately during dynamic route loading", () => {
   assert.match(navigationFeedbackSource, /useSearchParams/);
   assert.match(navigationFeedbackSource, /link\.href === window\.location\.href/);
   assert.match(tripPlanningFormSource, /onSubmit=\{handleSubmit\}/);
-  assert.match(tripPlanningFormSource, /router\.push\(`\/plan\?\$\{params\.toString\(\)\}` as Route\)/);
+  assert.match(
+    tripPlanningFormSource,
+    /router\.push\(`\/plan\?\$\{params\.toString\(\)\}` as Route, \{ scroll: false \}\)/
+  );
   assert.match(tripPlanningFormSource, /prefetchedPlanHref/);
   assert.match(tripPlanningFormSource, /router\.prefetch\(prefetchedPlanHref\)/);
   assert.match(tripPlanningFormSource, /作成中\.\.\./);
@@ -470,6 +473,10 @@ test("trip planning form captures date, memo, cash, and insurance without touchi
   assert.match(tripPlanningUiSource, /name="trip_memo"/);
   assert.match(tripPlanningUiSource, /name="bring_cash"/);
   assert.match(tripPlanningUiSource, /name="has_mountain_insurance"/);
+  assert.match(tripPlanningFormSource, /focus", "checklist"/);
+  assert.match(tripPlanningFormSource, /scroll: false/);
+  assert.match(tripPlanningUiSource, /resultSectionRef/);
+  assert.match(tripPlanningUiSource, /scrollIntoView/);
   assert.doesNotMatch(planChecklistSource, /山岳保険に加入済み/);
   assert.doesNotMatch(planChecklistSource, /現金を持参/);
 });

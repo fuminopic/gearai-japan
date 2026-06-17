@@ -229,9 +229,10 @@ export function TripPlanningForm({
 
     params.set("cash", formData.get("cash") === "1" ? "1" : "0");
     params.set("insurance", formData.get("insurance") === "1" ? "1" : "0");
+    params.set("focus", "checklist");
 
     startTransition(() => {
-      router.push(`/plan?${params.toString()}` as Route);
+      router.push(`/plan?${params.toString()}` as Route, { scroll: false });
     });
   }
 

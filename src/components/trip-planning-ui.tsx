@@ -135,6 +135,8 @@ export function TripPlanningUI({
   const router = useRouter();
   const searchParams = useSearchParams();
   const planId = searchParams.get("id") ?? selectedPlanId ?? null;
+  const shouldFocusChecklist = searchParams.get("focus") === "checklist";
+  const resultSectionRef = useRef<HTMLDivElement>(null);
   const initialSavedPlan =
     selectedSavedPlan ?? savedPlans.find((record) => record.id === planId) ?? null;
   const [hydratedPlan, setHydratedPlan] = useState<SavedTripPlan | null>(
@@ -270,6 +272,23 @@ export function TripPlanningUI({
     selectedStyle
   ]);
 
+  useEffect(() => {
+    if (!plan || !shouldFocusChecklist) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      resultSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }, 80);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [plan, planStateKey, shouldFocusChecklist]);
+
   return (
     <div className="space-y-5 pb-24">
       <section className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
@@ -296,17 +315,19 @@ export function TripPlanningUI({
 
       {plan ? (
         <>
-          <TripPlanningResult
-            plan={plan}
-            compatibilityBySlot={compatibilityBySlot}
-            ownedGear={ownedGear}
-            initialCheckedSlots={currentCheckedSlots}
-            initialChecklistOnlyIds={currentChecklistOnlyIds}
-            onProgressChange={setInteractiveProgress}
-            onCheckedSlotsChange={setInteractiveCheckedSlots}
-            onChecklistOnlyIdsChange={setInteractiveChecklistOnlyIds}
-            planId={planId}
-          />
+          <div ref={resultSectionRef} className="scroll-mt-24">
+            <TripPlanningResult
+              plan={plan}
+              compatibilityBySlot={compatibilityBySlot}
+              ownedGear={ownedGear}
+              initialCheckedSlots={currentCheckedSlots}
+              initialChecklistOnlyIds={currentChecklistOnlyIds}
+              onProgressChange={setInteractiveProgress}
+              onCheckedSlotsChange={setInteractiveCheckedSlots}
+              onChecklistOnlyIdsChange={setInteractiveChecklistOnlyIds}
+              planId={planId}
+            />
+          </div>
           {selectedMountain ? (
             <SavePlanButton
               mountainSlug={selectedMountain.slug}

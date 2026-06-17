@@ -68,9 +68,6 @@ export function GearForm({
   const [officialWeightGrams, setOfficialWeightGrams] = useState(
     String(gear?.official_weight_grams ?? gear?.weight_grams ?? "")
   );
-  const [measuredWeightGrams, setMeasuredWeightGrams] = useState(
-    String(gear?.measured_weight_grams ?? "")
-  );
   const [msrpJpy, setMsrpJpy] = useState(String(gear?.msrp_jpy ?? ""));
   const [status, setStatus] = useState(gear?.status ?? "owned");
   const [size, setSize] = useState(gear?.size ?? "");
@@ -299,7 +296,6 @@ export function GearForm({
     setOfficialWeightGrams(
       String(product.official_weight_grams ?? product.weight_grams ?? "")
     );
-    setMeasuredWeightGrams("");
     setMsrpJpy(String(product.msrp_jpy ?? ""));
     setStatus("owned");
     setSize(product.size ?? "");
@@ -373,7 +369,6 @@ export function GearForm({
       <input type="hidden" name="category_id" value={categoryId} />
       <input type="hidden" name="subcategory_id" value={subcategoryId} />
       <input type="hidden" name="official_weight_grams" value={officialWeightGrams} />
-      <input type="hidden" name="measured_weight_grams" value={measuredWeightGrams} />
 
       <section className="overflow-hidden rounded-lg border border-white/70 bg-white/90 shadow-soft">
         <div className="border-b border-stone-100 px-4 py-4 sm:px-5">
@@ -616,19 +611,6 @@ export function GearForm({
                   step="1"
                   value={officialWeightGrams}
                   onChange={(event) => setOfficialWeightGrams(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                  placeholder="例：398"
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-sm font-medium text-stone-700">実測重量（g）</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={measuredWeightGrams}
-                  onChange={(event) => setMeasuredWeightGrams(event.target.value)}
                   className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
                   placeholder="例：398"
                 />

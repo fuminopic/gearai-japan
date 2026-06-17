@@ -270,6 +270,7 @@ export type DashboardSummary = {
   totalWeightG: number;
   majorCategoryCoverageCount: number;
   majorCategoryTotalCount: number;
+  majorCategoryMissingLabels: string[];
   baseWeightG: number;
   consumableWeightG: number;
   wornWeightG: number;

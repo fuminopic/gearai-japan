@@ -322,6 +322,15 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
           label="主要カテゴリー"
         />
       </div>
+      {summary.majorCategoryMissingLabels.length > 0 ? (
+        <p className="rounded-lg bg-stone-50 px-3 py-2 text-xs font-semibold leading-5 text-stone-500">
+          未登録: {summary.majorCategoryMissingLabels.join("、")}
+        </p>
+      ) : (
+        <p className="rounded-lg bg-forest-50 px-3 py-2 text-xs font-semibold text-forest-700">
+          主要カテゴリーは登録済みです
+        </p>
+      )}
     </section>
   );
 }

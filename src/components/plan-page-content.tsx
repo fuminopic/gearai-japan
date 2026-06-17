@@ -24,6 +24,7 @@ export type PlanPageContentProps = {
     memo?: string;
     cash?: string;
     insurance?: string;
+    focus?: string;
     error?: string;
   }>;
 };

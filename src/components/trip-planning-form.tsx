@@ -276,7 +276,7 @@ export function TripPlanningForm({
                     setSelectedArea(selectedMountain.primary_region);
                   }
                 }}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                className={`inline-flex h-8 items-center justify-center rounded-lg px-3 text-xs font-semibold leading-none transition ${
                   mountainListFilter === filter.value
                     ? "bg-forest-700 text-white"
                     : "bg-forest-50 text-forest-800 hover:bg-forest-100"
@@ -297,7 +297,7 @@ export function TripPlanningForm({
                   key={area.value}
                   type="button"
                   onClick={() => setSelectedArea(area.value)}
-                  className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${
+                  className={`inline-flex h-7 items-center justify-center rounded-lg px-2.5 text-xs font-semibold leading-none transition ${
                     selectedArea === area.value
                       ? "bg-forest-700 text-white"
                       : "bg-white text-stone-600 hover:bg-forest-50 hover:text-forest-800"

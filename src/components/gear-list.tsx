@@ -51,7 +51,7 @@ export function GearList({
 
   return (
     <div className="space-y-5">
-      <section className="overflow-hidden rounded-[24px] bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
         <div className="grid grid-cols-3 divide-x divide-stone-100">
           <InventoryStat
             icon={<Archive className="h-4 w-4" />}
@@ -82,7 +82,7 @@ export function GearList({
         </div>
       </section>
 
-      <section className="rounded-[24px] bg-white p-4 shadow-sm">
+      <section className="rounded-2xl bg-white p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between gap-3 px-1">
           <div>
             <p className="text-xs font-semibold text-forest-700">絞り込み</p>
@@ -93,14 +93,14 @@ export function GearList({
           {(filters.q || filters.brand || filters.category || (filters.status && filters.status !== "all")) ? (
             <Link
               href="/gear"
-              className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-600"
+              className="inline-flex h-8 items-center justify-center rounded-lg bg-stone-100 px-3 text-xs font-semibold leading-none text-stone-600"
             >
               解除
             </Link>
           ) : null}
         </div>
 
-        <form className="flex items-center gap-2 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2">
+        <form className="flex items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2">
           <Search className="h-5 w-5 shrink-0 text-stone-400" />
           <input
             name="q"
@@ -112,7 +112,7 @@ export function GearList({
           <input type="hidden" name="brand" value={filters.brand ?? ""} />
           <input type="hidden" name="category" value={filters.category ?? ""} />
           <input type="hidden" name="sort" value={filters.sort ?? "newest"} />
-          <button className="rounded-xl bg-ink px-3 py-2 text-xs font-semibold text-white transition active:scale-95">
+          <button className="inline-flex h-9 items-center justify-center rounded-lg bg-ink px-3 text-xs font-semibold leading-none text-white transition active:scale-95">
             検索
           </button>
         </form>
@@ -163,7 +163,7 @@ export function GearList({
         </div>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
-          <div className="grid grid-cols-3 rounded-2xl bg-stone-100 p-1 text-sm font-semibold">
+          <div className="grid grid-cols-3 rounded-xl bg-stone-100 p-1 text-sm font-semibold">
             <StatusChip href={buildGearHref(filters, { status: "all" })} active={(filters.status ?? "all") === "all"}>
               すべて
             </StatusChip>
@@ -175,7 +175,7 @@ export function GearList({
             </StatusChip>
           </div>
 
-          <form className="flex items-center gap-2 rounded-2xl border border-stone-200 bg-white px-3 py-2">
+          <form className="flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 py-2">
             <input type="hidden" name="q" value={filters.q ?? ""} />
             <input type="hidden" name="status" value={filters.status ?? "all"} />
             <input type="hidden" name="brand" value={filters.brand ?? ""} />
@@ -200,7 +200,7 @@ export function GearList({
       </section>
 
       {gear.length === 0 ? (
-        <section className="rounded-[24px] bg-white p-6 text-center shadow-sm">
+        <section className="rounded-2xl bg-white p-6 text-center shadow-sm">
           <p className="text-lg font-semibold text-ink">まだ装備がありません</p>
           <p className="mt-2 text-sm leading-6 text-stone-500">
             まずはバックパック、レインウェア、ヘッドライトなどから登録してみましょう。
@@ -256,13 +256,13 @@ function GearCard({ item }: { item: UserGear }) {
   const weightLabel = getGearDisplayWeightLabel(item);
 
   return (
-    <article className="overflow-hidden rounded-[20px] border border-stone-100 bg-white shadow-sm transition hover:border-forest-100 hover:bg-forest-50/30">
+    <article className="overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm transition hover:border-forest-100 hover:bg-forest-50/30">
       <Link
         href={`/gear/${item.id}`}
         className="grid grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-3 px-3 py-3 sm:px-4"
       >
         {item.image_url ? (
-          <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-stone-100 bg-stone-50 p-2">
+          <span className="flex h-16 w-16 items-center justify-center rounded-xl border border-stone-100 bg-stone-50 p-2">
             <img
               src={item.image_url}
               alt={item.name}
@@ -271,7 +271,7 @@ function GearCard({ item }: { item: UserGear }) {
             />
           </span>
         ) : (
-          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-forest-50 text-forest-700">
+          <span className="flex h-16 w-16 items-center justify-center rounded-xl bg-forest-50 text-forest-700">
             <PackagePlus className="h-6 w-6" />
           </span>
         )}
@@ -281,7 +281,7 @@ function GearCard({ item }: { item: UserGear }) {
             <span className="block min-w-0 truncate text-base font-semibold text-ink">
               {item.name}
             </span>
-            <span className="shrink-0 rounded-full bg-forest-50 px-2 py-1 text-[11px] font-semibold text-forest-700">
+            <span className="inline-flex h-6 shrink-0 items-center justify-center rounded-md bg-forest-50 px-2 text-[11px] font-semibold leading-none text-forest-700">
               {statusLabels[item.status]}
             </span>
           </div>
@@ -353,7 +353,7 @@ function FilterChip({
   return (
     <Link
       href={href}
-      className={`shrink-0 rounded-2xl border px-3 py-2 text-sm font-semibold transition ${
+      className={`inline-flex h-10 shrink-0 items-center justify-center rounded-lg border px-3 text-sm font-semibold leading-none transition ${
         active
           ? "border-forest-700 bg-forest-700 text-white"
           : "border-stone-200 bg-white text-stone-700 hover:border-forest-200 hover:bg-forest-50 hover:text-forest-800"
@@ -376,7 +376,7 @@ function StatusChip({
   return (
     <Link
       href={href}
-      className={`rounded-xl px-3 py-2 text-center transition ${
+      className={`inline-flex h-10 items-center justify-center rounded-lg px-3 text-center leading-none transition ${
         active ? "bg-white text-ink shadow-sm" : "text-stone-500 hover:text-ink"
       }`}
     >

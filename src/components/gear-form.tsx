@@ -370,13 +370,13 @@ export function GearForm({
       <input type="hidden" name="subcategory_id" value={subcategoryId} />
       <input type="hidden" name="official_weight_grams" value={officialWeightGrams} />
 
-      <section className="overflow-hidden rounded-[24px] bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
         <div className="border-b border-stone-100 px-4 py-4 sm:px-5">
           <div className="flex items-center gap-2 text-xs font-semibold text-forest-700">
             <Sparkles className="h-4 w-4" />
             <span>公式カタログから選択</span>
           </div>
-          <div className="mt-3 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-3">
+          <div className="mt-3 rounded-xl border border-stone-200 bg-stone-50 px-3 py-3">
             <div className="flex items-center gap-2">
               <Search className="h-5 w-5 shrink-0 text-stone-400" />
               <input
@@ -390,7 +390,7 @@ export function GearForm({
               <button
                 type="button"
                 onClick={confirmProductSearch}
-                className="shrink-0 rounded-xl bg-ink px-3 py-2 text-sm font-semibold text-white transition active:scale-95"
+                className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg bg-ink px-3 text-sm font-semibold leading-none text-white transition active:scale-95"
               >
                 検索
               </button>
@@ -407,7 +407,7 @@ export function GearForm({
                     key={product.id}
                     type="button"
                     onClick={() => applyProduct(product)}
-                    className="shrink-0 rounded-xl border border-stone-200 bg-white px-3 py-2 text-left text-xs font-semibold text-stone-700"
+                    className="shrink-0 rounded-lg border border-stone-200 bg-white px-3 py-2 text-left text-xs font-semibold text-stone-700"
                   >
                     <span className="block max-w-44 truncate">
                       {getProductDisplayTitle(product)}
@@ -425,7 +425,7 @@ export function GearForm({
             <button
               type="button"
               onClick={startManualEntry}
-              className="flex w-full items-center justify-between gap-3 rounded-2xl border border-forest-100 bg-forest-50 px-3 py-3 text-left text-sm font-semibold text-forest-800 transition active:scale-[0.99]"
+              className="flex w-full items-center justify-between gap-3 rounded-xl border border-forest-100 bg-forest-50 px-3 py-3 text-left text-sm font-semibold text-forest-800 transition active:scale-[0.99]"
             >
               <span className="flex items-center gap-2">
                 <Pencil className="h-4 w-4 text-forest-700" />
@@ -457,7 +457,7 @@ export function GearForm({
             ))}
           </div>
 
-          <div className="mt-4 rounded-2xl bg-[#F7F8F5] p-3">
+          <div className="mt-4 rounded-xl bg-[#F7F8F5] p-3">
             <div className="flex items-center justify-between gap-2">
               <div>
                 <p className="text-xs font-semibold text-stone-500">
@@ -525,7 +525,7 @@ export function GearForm({
       </section>
 
       {manualMode ? (
-        <section ref={manualEntryRef} className="scroll-mt-6 rounded-[24px] bg-white p-5 shadow-sm">
+        <section ref={manualEntryRef} className="scroll-mt-6 rounded-2xl bg-white p-5 shadow-sm">
           <div className="mb-4">
             <p className="text-xs font-semibold text-forest-700">手入力</p>
             <h2 className="mt-1 text-lg font-semibold text-ink">自分の装備情報</h2>
@@ -673,7 +673,7 @@ export function GearForm({
       ) : null}
 
       {shouldShowGearDetails ? (
-        <section className="rounded-[24px] bg-white p-5 shadow-sm">
+        <section className="rounded-2xl bg-white p-5 shadow-sm">
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-ink">登録情報</h2>
           </div>
@@ -740,7 +740,7 @@ export function GearForm({
       ) : null}
 
       {shouldShowGearDetails ? (
-        <details className="rounded-[24px] bg-white p-5 shadow-sm">
+        <details className="rounded-2xl bg-white p-5 shadow-sm">
           <summary className="cursor-pointer text-sm font-semibold text-forest-700">
             詳細設定
           </summary>
@@ -864,7 +864,7 @@ function ProductFilterChip({
       onClick={onClick}
       aria-label={ariaLabel}
       title={ariaLabel}
-      className={`shrink-0 rounded-full border px-3 py-2 text-sm font-semibold transition ${
+      className={`inline-flex h-10 shrink-0 items-center justify-center rounded-lg border px-3 text-sm font-semibold leading-none transition ${
         active
           ? "border-forest-700 bg-forest-700 text-white"
           : "border-stone-200 bg-white text-stone-700 hover:border-forest-200 hover:bg-forest-50 hover:text-forest-800"
@@ -891,13 +891,13 @@ function ProductResultCard({
     <button
       type="button"
       onClick={onSelect}
-      className={`grid grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-3 rounded-[20px] border px-3 py-3 text-left shadow-sm transition ${
+      className={`grid grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border px-3 py-3 text-left shadow-sm transition ${
         selected
           ? "border-forest-700 bg-forest-50"
           : "border-stone-200 bg-white hover:border-forest-300 hover:bg-forest-50/60"
       }`}
     >
-      <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-stone-50 p-2">
+      <span className="flex h-16 w-16 items-center justify-center rounded-xl bg-stone-50 p-2">
         {product.image_url ? (
           <img
             src={product.image_url}
@@ -944,9 +944,9 @@ function SelectedProductConfirmCard({ product }: { product: GearProduct }) {
   const weight = product.official_weight_grams ?? product.weight_grams;
 
   return (
-    <div className="mt-4 rounded-[20px] border border-forest-100 bg-forest-50 p-3">
+    <div className="mt-4 rounded-2xl border border-forest-100 bg-forest-50 p-3">
       <div className="grid grid-cols-[5rem_minmax(0,1fr)] gap-3">
-        <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white p-2 shadow-sm">
+        <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-white p-2 shadow-sm">
           {product.image_url ? (
             <img
               src={product.image_url}

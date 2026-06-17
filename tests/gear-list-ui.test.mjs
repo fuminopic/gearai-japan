@@ -49,6 +49,7 @@ test("gear list exposes brand and category-oriented list controls", () => {
   assert.match(gearListSource, /label="ブランド"/);
   assert.match(gearListSource, /のカテゴリー/);
   assert.match(gearListSource, /BrandLogo/);
+  assert.match(gearListSource, /<BrandLogo brand=\{brand\} compact/);
   assert.match(brandLogoSource, /role="img"/);
   assert.match(brandLogoSource, /viewBox=/);
   assert.match(gearDisplaySource, /compareGearBrands/);
@@ -75,6 +76,14 @@ test("gear list and actions provide clear post-save feedback", () => {
   assert.match(gearActionSource, /\/gear\?saved=created/);
   assert.match(gearActionSource, /\/gear\?saved=updated/);
   assert.match(gearActionSource, /\/gear\?saved=deleted/);
+});
+
+test("gear delete action is kept on the detail page instead of the dense list", () => {
+  assert.doesNotMatch(gearListSource, /deleteGear/);
+  assert.doesNotMatch(gearListSource, /この装備を削除/);
+  assert.match(gearDetailSource, /装備の管理/);
+  assert.match(gearDetailSource, /deleteGear\.bind\(null, gear\.id\)/);
+  assert.match(gearDetailSource, /この装備を削除/);
 });
 
 test("gear detail page uses user-facing Japanese labels instead of internal field names", () => {

@@ -1,8 +1,10 @@
-import { ArrowLeft, ExternalLink, ImagePlus } from "lucide-react";
+import { ArrowLeft, ExternalLink, ImagePlus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { GearImageViewer } from "@/components/gear-image-viewer";
+import { SubmitButton } from "@/components/submit-button";
+import { deleteGear } from "@/lib/actions/gear";
 import { getUserGearById } from "@/lib/data/gear";
 import { getGearDisplayWeightLabel } from "@/lib/gear-display";
 import {
@@ -197,6 +199,22 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
           </p>
         </section>
       ) : null}
+
+      <section className="rounded-lg border border-red-100 bg-white p-5 shadow-soft">
+        <h2 className="text-base font-semibold text-ink">装備の管理</h2>
+        <p className="mt-2 text-sm leading-6 text-stone-500">
+          この装備を一覧から削除します。削除後は元に戻せません。
+        </p>
+        <form action={deleteGear.bind(null, gear.id)} className="mt-4">
+          <SubmitButton
+            pendingLabel="削除中..."
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 disabled:opacity-60 sm:w-auto"
+          >
+            <Trash2 className="h-4 w-4" />
+            この装備を削除
+          </SubmitButton>
+        </form>
+      </section>
     </div>
   );
 }

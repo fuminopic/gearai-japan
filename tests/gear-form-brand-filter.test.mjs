@@ -43,18 +43,22 @@ test("gear add form supports explicit search, suggestions, and real brand logo c
   assert.match(gearFormSource, />\s*検索\s*<\/button>/);
   assert.match(gearFormSource, /getProductDisplayTitle\(product\)/);
   assert.match(gearFormSource, /BrandLogo/);
+  assert.match(gearFormSource, /<BrandLogo brand=\{item\} compact/);
   assert.match(brandLogoSource, /role="img"/);
   assert.match(brandLogoSource, /viewBox=/);
   assert.match(brandLogoSource, /thenorthface/);
   assert.match(brandLogoSource, /blackdiamond/);
   assert.match(brandLogoSource, /mont-bell/);
+  assert.match(brandLogoSource, /hyperlitemountaingear/);
   assert.match(gearFormSource, /ariaLabel=\{`\$\{item\}を選択`\}/);
 });
 
 test("gear add form replaces scanning shortcuts with manual registration and photo upload", () => {
-  assert.match(gearFormSource, /手入力で登録/);
+  assert.match(gearFormSource, /カタログにない装備を登録/);
   assert.match(gearFormSource, /manualEntryRef/);
   assert.match(gearFormSource, /scrollIntoView/);
+  assert.match(gearFormSource, /SelectedProductConfirmCard/);
+  assert.match(gearFormSource, /登録内容を確認/);
   assert.match(gearFormSource, /写真を追加/);
   assert.match(gearFormSource, /handleImageFile/);
   assert.match(gearFormSource, /gear-images/);
@@ -81,7 +85,7 @@ test("gear add form separates brand results by product category", () => {
   assert.match(gearFormSource, /productCategoryOptions/);
   assert.match(gearFormSource, /categoryProductGroups/);
   assert.match(gearFormSource, /ProductResultCard/);
-  assert.match(gearFormSource, /SelectedProductPreview/);
+  assert.match(gearFormSource, /SelectedProductConfirmCard/);
   assert.match(gearFormSource, /compareProductPickerItems/);
   assert.match(gearFormSource, /のカテゴリー/);
   assert.match(gearFormSource, /該当する製品はありません/);

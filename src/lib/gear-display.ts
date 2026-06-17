@@ -90,6 +90,8 @@ const brandPriority = [
   "finetrack",
   "THE NORTH FACE",
   "Caravan",
+  "Hyperlite Mountain Gear",
+  "HMG",
   "Osprey",
   "Black Diamond",
   "Petzl",

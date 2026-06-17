@@ -5,7 +5,6 @@ import {
   PackagePlus,
   Search,
   SlidersHorizontal,
-  Trash2,
   WalletCards,
   Weight
 } from "lucide-react";
@@ -14,8 +13,6 @@ import type { Route } from "next";
 import type { ReactNode } from "react";
 
 import { BrandLogo } from "@/components/brand-logo";
-import { SubmitButton } from "@/components/submit-button";
-import { deleteGear } from "@/lib/actions/gear";
 import {
   compareGearBrands,
   getGearDisplayWeightGrams,
@@ -117,7 +114,7 @@ export function GearList({ gear, categories, brands, filters }: GearListProps) {
                 href={buildGearHref(filters, { brand, category: undefined })}
                 active={selectedBrand === brand}
               >
-                <BrandLogo brand={brand} />
+                <BrandLogo brand={brand} compact />
               </FilterChip>
             ))}
           </div>
@@ -252,12 +249,12 @@ function GearCard({ item }: { item: UserGear }) {
       : formatJpy(item.purchase_price_jpy);
 
   return (
-    <article className="bg-white px-4 py-3 transition hover:bg-stone-50/70">
-      <div className="grid grid-cols-[4.5rem_minmax(0,1fr)_auto] items-center gap-3">
+    <article className="bg-white px-3 py-2.5 transition hover:bg-stone-50/70 sm:px-4">
+      <div className="grid grid-cols-[3.75rem_minmax(0,1fr)_auto] items-center gap-3">
         {item.image_url ? (
           <Link
             href={`/gear/${item.id}`}
-            className="flex h-16 w-16 items-center justify-center rounded-lg border border-stone-100 bg-stone-50 p-1.5"
+            className="flex h-14 w-14 items-center justify-center rounded-lg border border-stone-100 bg-stone-50 p-1.5"
           >
             <img
               src={item.image_url}
@@ -269,7 +266,7 @@ function GearCard({ item }: { item: UserGear }) {
         ) : (
           <Link
             href={`/gear/${item.id}`}
-            className="flex h-16 w-16 items-center justify-center rounded-lg bg-forest-50 text-forest-700"
+            className="flex h-14 w-14 items-center justify-center rounded-lg bg-forest-50 text-forest-700"
           >
             <PackagePlus className="h-6 w-6" />
           </Link>
@@ -292,9 +289,9 @@ function GearCard({ item }: { item: UserGear }) {
             </span>
           </Link>
 
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
             {categoryLabel ? (
-              <span className="rounded bg-forest-50 px-2 py-1 font-semibold text-forest-800">
+              <span className="rounded bg-forest-50 px-2 py-0.5 font-semibold text-forest-800">
                 {categoryLabel}
               </span>
             ) : null}
@@ -312,29 +309,20 @@ function GearCard({ item }: { item: UserGear }) {
             ) : null}
           </div>
 
-          <div className="mt-3 flex gap-2 sm:hidden">
+          <div className="mt-2 flex gap-2 sm:hidden">
             <Link
               href={`/gear/${item.id}`}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-forest-50 px-3 py-2 text-xs font-semibold text-forest-700"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-forest-50 px-3 py-1.5 text-xs font-semibold text-forest-700"
             >
               詳細
             </Link>
             <Link
               href={`/gear/${item.id}/edit`}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-700"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-700"
             >
               <Edit3 className="h-4 w-4" />
               編集
             </Link>
-            <form action={deleteGear.bind(null, item.id)} className="flex-1">
-              <SubmitButton
-                pendingLabel="削除中..."
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 disabled:opacity-60"
-              >
-                <Trash2 className="h-4 w-4" />
-                削除
-              </SubmitButton>
-            </form>
           </div>
         </div>
         <div className="hidden items-center gap-1 sm:flex">

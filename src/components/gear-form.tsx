@@ -35,7 +35,6 @@ import type {
   GearSubcategory,
   UserGear
 } from "@/lib/types";
-import { calculateSavingsJpy, parsePositiveNumber } from "@/lib/utils/asset";
 import { formatJpy } from "@/lib/utils/format";
 
 type GearFormProps = {
@@ -73,11 +72,7 @@ export function GearForm({
     String(gear?.measured_weight_grams ?? "")
   );
   const [msrpJpy, setMsrpJpy] = useState(String(gear?.msrp_jpy ?? ""));
-  const [purchasePriceJpy, setPurchasePriceJpy] = useState(
-    String(gear?.purchase_price_jpy ?? "")
-  );
   const [status, setStatus] = useState(gear?.status ?? "owned");
-  const [purchaseDate, setPurchaseDate] = useState(gear?.purchase_date ?? "");
   const [size, setSize] = useState(gear?.size ?? "");
   const [volume, setVolume] = useState(gear?.volume ?? "");
   const [color, setColor] = useState(gear?.color ?? "");
@@ -247,10 +242,6 @@ export function GearForm({
       return brandCollator.compare(a.label, b.label);
     });
   }, [categorySortOrder, filteredProducts]);
-  const savingsJpy = calculateSavingsJpy(
-    parsePositiveNumber(msrpJpy),
-    parsePositiveNumber(purchasePriceJpy)
-  );
   const selectedProduct = products.find((product) => product.id === productId) ?? null;
   const isEditing = Boolean(gear);
   const shouldShowGearDetails = manualMode || Boolean(selectedProduct);
@@ -310,7 +301,6 @@ export function GearForm({
     );
     setMeasuredWeightGrams("");
     setMsrpJpy(String(product.msrp_jpy ?? ""));
-    setPurchasePriceJpy("");
     setStatus("owned");
     setSize(product.size ?? "");
     setVolume(productVolume ?? "");
@@ -705,19 +695,11 @@ export function GearForm({
 
       {shouldShowGearDetails ? (
         <section className="rounded-lg bg-white p-5 shadow-soft">
-          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-ink">資産情報</h2>
-            </div>
-            <div className="rounded-lg bg-forest-50 px-4 py-3 text-sm">
-              <p className="font-medium text-stone-500">節約額</p>
-              <p className="mt-1 text-xl font-semibold text-forest-800">
-                {savingsJpy === null ? "-" : formatJpy(savingsJpy)}
-              </p>
-            </div>
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-ink">登録情報</h2>
           </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2">
           <label className="block">
             <span className="text-sm font-medium text-stone-700">
               メーカー希望小売価格（円）
@@ -729,19 +711,6 @@ export function GearForm({
               step="1"
               value={msrpJpy}
               onChange={(event) => setMsrpJpy(event.target.value)}
-              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-medium text-stone-700">購入価格（円）</span>
-            <input
-              name="purchase_price_jpy"
-              type="number"
-              min="0"
-              step="1"
-              value={purchasePriceJpy}
-              onChange={(event) => setPurchasePriceJpy(event.target.value)}
               className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
             />
           </label>
@@ -761,34 +730,15 @@ export function GearForm({
               ))}
             </select>
           </label>
-
-          <label className="block">
-            <span className="text-sm font-medium text-stone-700">購入日</span>
-            <input
-              name="purchase_date"
-              type="date"
-              value={purchaseDate}
-              onChange={(event) => setPurchaseDate(event.target.value)}
-              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-            />
-          </label>
         </div>
 
-        <dl className="mt-4 grid gap-3 rounded-lg bg-stone-50 p-4 text-sm sm:grid-cols-3">
+        <dl className="mt-4 grid gap-3 rounded-lg bg-stone-50 p-4 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-stone-500">MSRP</dt>
+            <dt className="text-stone-500">公式価格</dt>
             <dd className="mt-1 font-semibold text-ink">
-              {parsePositiveNumber(msrpJpy) === null
-                ? "-"
-                : formatJpy(Number(parsePositiveNumber(msrpJpy)))}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-stone-500">購入価格</dt>
-            <dd className="mt-1 font-semibold text-ink">
-              {parsePositiveNumber(purchasePriceJpy) === null
-                ? "-"
-                : formatJpy(Number(parsePositiveNumber(purchasePriceJpy)))}
+              {Number(msrpJpy) > 0
+                ? formatJpy(Number(msrpJpy))
+                : "-"}
             </dd>
           </div>
           <div>

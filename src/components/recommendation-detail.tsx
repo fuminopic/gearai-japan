@@ -7,7 +7,7 @@ import type {
 } from "@/lib/types";
 import { accommodationStyleLabels } from "@/lib/i18n/labels";
 import { weightTypeLabels } from "@/lib/i18n/labels";
-import { formatJpy, formatWeight } from "@/lib/utils/format";
+import { formatWeight } from "@/lib/utils/format";
 
 type RecommendationDetailProps = {
   record: AIRecommendationRecord;
@@ -16,7 +16,6 @@ type RecommendationDetailProps = {
 export function RecommendationDetail({ record }: RecommendationDetailProps) {
   const missing = record.missing_analysis;
   const owned = record.owned_analysis;
-  const missingBudget = missing?.estimated_missing_budget_jpy ?? 0;
   const missingRequiredCount = missing?.missing_required_items.length ?? 0;
 
   return (
@@ -46,9 +45,9 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
           </p>
         </div>
         <div className="rounded-lg bg-white p-4 shadow-soft">
-          <p className="text-sm text-stone-500">追加金額</p>
+          <p className="text-sm text-stone-500">推薦項目</p>
           <p className="mt-2 text-2xl font-semibold text-ink">
-            {formatJpy(missingBudget)}
+            {getRecommendedItemCount(record).toLocaleString("ja-JP")} 点
           </p>
         </div>
       </section>
@@ -108,17 +107,11 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
         <h2 className="text-lg font-semibold text-ink">不足装備</h2>
         {missing ? (
           <>
-            <div className="mt-4 grid grid-cols-2 gap-2">
+            <div className="mt-4 grid gap-2">
               <div className="rounded-lg bg-red-50 p-3">
                 <p className="text-xs text-red-700">追加重量目安</p>
                 <p className="mt-1 font-semibold text-red-900">
                   {formatWeight(missing.estimated_missing_weight_g)}
-                </p>
-              </div>
-              <div className="rounded-lg bg-red-50 p-3">
-                <p className="text-xs text-red-700">追加予算目安</p>
-                <p className="mt-1 font-semibold text-red-900">
-                  {formatJpy(missing.estimated_missing_budget_jpy)}
                 </p>
               </div>
             </div>
@@ -147,11 +140,6 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
         <p className="mt-4 rounded-lg bg-forest-50 p-3 text-sm leading-6 text-forest-900">
           {record.output.safety_note}
         </p>
-      </section>
-
-      <section className="rounded-lg bg-white p-5 shadow-soft">
-        <h2 className="text-lg font-semibold text-ink">予算コメント</h2>
-        <p className="mt-3 text-sm leading-6 text-stone-700">{record.output.budget_comment}</p>
       </section>
 
       <div className="grid grid-cols-2 gap-3">
@@ -197,13 +185,20 @@ function RecommendationItems({
             <p className="mt-3 text-xs text-stone-500">
               {item.rule_basis} / {item.subcategory} /{" "}
               {weightTypeLabels[item.weight_type]} /{" "}
-              {formatWeight(item.estimated_weight_g)} /{" "}
-              {formatJpy(item.estimated_price_jpy)}
+              {formatWeight(item.estimated_weight_g)}
             </p>
           </article>
         ))}
       </div>
     </section>
+  );
+}
+
+function getRecommendedItemCount(record: AIRecommendationRecord) {
+  return (
+    record.output.required_items.length +
+    record.output.recommended_items.length +
+    record.output.optional_items.length
   );
 }
 

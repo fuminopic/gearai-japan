@@ -152,6 +152,16 @@ export function TripPlanningUI({
   const effectiveMountainSlug = hydratedPlan?.mountain_slug ?? selectedMountainSlug;
   const effectiveSeason = hydratedPlan?.season ?? selectedSeason;
   const effectiveStyle = hydratedPlan?.style ?? selectedStyle;
+  const effectivePlannedDate =
+    sanitizeDateParam(searchParams.get("date")) ?? hydratedPlan?.planned_date ?? "";
+  const effectiveTripMemo =
+    sanitizeMemoParam(searchParams.get("memo")) ?? hydratedPlan?.trip_memo ?? "";
+  const effectiveBringCash =
+    parseBooleanParam(searchParams.get("cash")) ?? hydratedPlan?.bring_cash ?? false;
+  const effectiveHasMountainInsurance =
+    parseBooleanParam(searchParams.get("insurance")) ??
+    hydratedPlan?.has_mountain_insurance ??
+    false;
   const selectedMountain =
     mountains.find((mountain) => mountain.slug === effectiveMountainSlug) ?? null;
   const savedCheckedSlots = getSavedPlanCheckedSlots(hydratedPlan);
@@ -230,6 +240,17 @@ export function TripPlanningUI({
         nextParams.set("mountain", nextPlan.mountain_slug);
         nextParams.set("season", nextPlan.season);
         nextParams.set("style", nextPlan.style);
+        if (nextPlan.planned_date) {
+          nextParams.set("date", nextPlan.planned_date);
+        }
+        if (nextPlan.trip_memo) {
+          nextParams.set("memo", nextPlan.trip_memo);
+        }
+        nextParams.set("cash", nextPlan.bring_cash ? "1" : "0");
+        nextParams.set(
+          "insurance",
+          nextPlan.has_mountain_insurance ? "1" : "0"
+        );
         router.replace(`/plan?${nextParams.toString()}`);
       }
     }
@@ -265,6 +286,10 @@ export function TripPlanningUI({
         selectedMountainSlug={effectiveMountainSlug}
         selectedSeason={effectiveSeason}
         selectedStyle={effectiveStyle}
+        selectedPlannedDate={effectivePlannedDate}
+        selectedTripMemo={effectiveTripMemo}
+        selectedBringCash={effectiveBringCash}
+        selectedHasMountainInsurance={effectiveHasMountainInsurance}
         planId={planId}
         error={error}
       />
@@ -288,6 +313,10 @@ export function TripPlanningUI({
               mountainName={selectedMountain.name_ja}
               season={effectiveSeason}
               style={effectiveStyle}
+              plannedDate={effectivePlannedDate}
+              tripMemo={effectiveTripMemo}
+              bringCash={effectiveBringCash}
+              hasMountainInsurance={effectiveHasMountainInsurance}
               progress={currentProgressValue}
               checkedSlots={currentCheckedSlots}
               checklistOnlyIds={currentChecklistOnlyIds}
@@ -308,6 +337,10 @@ function SavePlanButton({
   mountainName,
   season,
   style,
+  plannedDate,
+  tripMemo,
+  bringCash,
+  hasMountainInsurance,
   progress,
   checkedSlots,
   checklistOnlyIds
@@ -317,6 +350,10 @@ function SavePlanButton({
   mountainName: string;
   season: MountainFoundationSeason;
   style: MountainFoundationStyle;
+  plannedDate: string;
+  tripMemo: string;
+  bringCash: boolean;
+  hasMountainInsurance: boolean;
   progress: number;
   checkedSlots: RequirementSlot[];
   checklistOnlyIds: string[];
@@ -360,6 +397,14 @@ function SavePlanButton({
       <input type="hidden" name="mountain_name" value={mountainName} />
       <input type="hidden" name="season" value={season} />
       <input type="hidden" name="style" value={style} />
+      <input type="hidden" name="planned_date" value={plannedDate} />
+      <input type="hidden" name="trip_memo" value={tripMemo} />
+      <input type="hidden" name="bring_cash" value={bringCash ? "1" : "0"} />
+      <input
+        type="hidden"
+        name="has_mountain_insurance"
+        value={hasMountainInsurance ? "1" : "0"}
+      />
       <input type="hidden" name="progress" value={progress} />
       <input
         type="hidden"
@@ -454,10 +499,52 @@ function formatSavedPlanMeta(record: SavedTripPlan) {
   const parts = [
     mountainFoundationSeasonLabels[record.season],
     mountainFoundationStyleLabels[record.style],
-    new Date(record.created_at).toLocaleDateString("ja-JP")
+    record.planned_date
+      ? formatPlanDate(record.planned_date)
+      : new Date(record.created_at).toLocaleDateString("ja-JP")
   ];
 
   return parts.join(" / ");
+}
+
+function sanitizeDateParam(value: string | null) {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return null;
+  }
+
+  return value;
+}
+
+function sanitizeMemoParam(value: string | null) {
+  const trimmed = value?.trim() ?? "";
+
+  return trimmed ? trimmed.slice(0, 200) : null;
+}
+
+function parseBooleanParam(value: string | null) {
+  if (value === "1" || value === "true") {
+    return true;
+  }
+
+  if (value === "0" || value === "false") {
+    return false;
+  }
+
+  return null;
+}
+
+function formatPlanDate(value: string) {
+  const date = new Date(`${value}T00:00:00`);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("ja-JP", {
+    month: "numeric",
+    day: "numeric",
+    weekday: "short"
+  }).format(date);
 }
 
 function getSavedPlanCheckedSlots(plan: SavedTripPlan | null) {

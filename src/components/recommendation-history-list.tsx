@@ -11,7 +11,7 @@ import {
   seasonLabels,
   weatherRiskLabels
 } from "@/lib/i18n/labels";
-import { formatJpy, formatWeight } from "@/lib/utils/format";
+import { formatWeight } from "@/lib/utils/format";
 
 type RecommendationHistoryListProps = {
   records: AIRecommendationRecord[];
@@ -62,9 +62,9 @@ export function RecommendationHistoryList({ records }: RecommendationHistoryList
               </p>
             </div>
             <div className="rounded-lg bg-stone-50 p-3">
-              <p className="text-stone-500">推定予算</p>
+              <p className="text-stone-500">必須装備</p>
               <p className="mt-1 font-semibold text-ink">
-                {formatJpy(record.output.estimated_total_budget_jpy)}
+                {record.output.required_items.length.toLocaleString("ja-JP")} 点
               </p>
             </div>
           </div>

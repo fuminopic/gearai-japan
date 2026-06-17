@@ -69,6 +69,17 @@ test("gear add form replaces scanning shortcuts with manual registration and pho
   assert.doesNotMatch(gearFormSource, /カメラ/);
 });
 
+test("gear add form keeps official unit price but removes purchase tracking fields", () => {
+  assert.match(gearFormSource, /メーカー希望小売価格/);
+  assert.match(gearFormSource, /公式価格/);
+  assert.doesNotMatch(gearFormSource, /購入価格/);
+  assert.doesNotMatch(gearFormSource, /購入日/);
+  assert.doesNotMatch(gearFormSource, /節約額/);
+  assert.match(gearActionSource, /purchase_price_jpy: null/);
+  assert.match(gearActionSource, /purchase_date: null/);
+});
+
+
 test("gear photo upload uses private storage paths instead of public gear photos", () => {
   assert.match(gearImageStorageMigrationSource, /add column if not exists image_storage_path/);
   assert.match(gearImageStorageMigrationSource, /'gear-images'/);

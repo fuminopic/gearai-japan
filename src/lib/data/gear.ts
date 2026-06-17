@@ -118,11 +118,6 @@ export async function getUserGear(filters: GearFilters = {}) {
 
   if (filters.sort === "weight") {
     query = query.order("weight_grams", { ascending: false });
-  } else if (filters.sort === "price") {
-    query = query.order("purchase_price_jpy", {
-      ascending: false,
-      nullsFirst: false
-    });
   } else {
     query = query.order("created_at", { ascending: false });
   }

@@ -1,11 +1,10 @@
 import {
   Backpack,
   ChevronRight,
-  CircleDollarSign,
   Mountain,
   Package,
-  WalletCards,
-  Weight
+  Weight,
+  type LucideIcon
 } from "lucide-react";
 import type { Route } from "next";
 import Image from "next/image";
@@ -18,7 +17,6 @@ import { getDashboardSummary } from "@/lib/data/dashboard";
 import { getLatestTripPlan } from "@/lib/data/trip-plans";
 import { buildPlanChecklist } from "@/lib/plan-checklist";
 import type { DashboardRecentGear, DashboardSummary, SavedTripPlan } from "@/lib/types";
-import { formatJpy } from "@/lib/utils/format";
 
 const categoryColors = [
   "#2f80ed",
@@ -193,6 +191,8 @@ function HeroCard({
 
   const coveragePercent = tripChecklist?.summary.percent ?? getSavedProgressFallback(trip);
   const planHref = `/plan?id=${trip.id}` as Route;
+  const plannedDateLabel = formatPlanDate(trip.planned_date);
+  const tripMemo = trip.trip_memo?.trim();
 
   return (
     <section className="relative min-h-[300px] w-full overflow-hidden rounded-lg bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7] shadow-sm">
@@ -215,9 +215,15 @@ function HeroCard({
             </h2>
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
+            {plannedDateLabel ? <TripTag>{plannedDateLabel}</TripTag> : null}
             <TripTag>{seasonLabel(trip.season)}</TripTag>
             <TripTag>{styleLabel(trip.style)}</TripTag>
           </div>
+          {tripMemo ? (
+            <p className="mt-2 truncate text-xs font-medium text-stone-500">
+              {tripMemo}
+            </p>
+          ) : null}
         </div>
 
         <div className="space-y-4">
@@ -287,7 +293,7 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
   return (
     <section className="flex flex-col gap-4 rounded-[24px] bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-bold">私の装備</h2>
+        <h2 className="text-base font-bold">マイ装備</h2>
         <Link
           href="/gear/new"
           className="inline-flex items-center gap-1 text-xs font-bold text-[#3B5B44]"
@@ -299,7 +305,7 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
 
       <div className="flex flex-row items-center justify-between">
         <SummaryMetric
-          icon={WalletCards}
+          icon={Backpack}
           value={`${summary.ownedCount.toLocaleString("ja-JP")} 件`}
           label="所有装備数"
           divided
@@ -311,9 +317,9 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
           divided
         />
         <SummaryMetric
-          icon={CircleDollarSign}
-          value={formatJpy(summary.totalMsrpJpy)}
-          label="総装備価値"
+          icon={Package}
+          value={`${summary.majorCategoryCoverageCount} / ${summary.majorCategoryTotalCount}`}
+          label="主要カテゴリー"
         />
       </div>
     </section>
@@ -442,7 +448,7 @@ function SummaryMetric({
   label,
   divided = false
 }: {
-  icon: typeof WalletCards;
+  icon: LucideIcon;
   value: string;
   label: string;
   divided?: boolean;
@@ -595,4 +601,22 @@ function styleLabel(style: string) {
 
 function formatKg(weightG: number) {
   return `${(weightG / 1000).toFixed(2)} kg`;
+}
+
+function formatPlanDate(value: string | null | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(`${value}T00:00:00`);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("ja-JP", {
+    month: "numeric",
+    day: "numeric",
+    weekday: "short"
+  }).format(date);
 }

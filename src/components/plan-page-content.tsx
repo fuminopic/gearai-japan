@@ -20,6 +20,10 @@ export type PlanPageContentProps = {
     mountain?: string;
     season?: string;
     style?: string;
+    date?: string;
+    memo?: string;
+    cash?: string;
+    insurance?: string;
     error?: string;
   }>;
 };

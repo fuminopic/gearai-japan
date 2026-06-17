@@ -21,6 +21,10 @@ type TripPlanningFormProps = {
   selectedMountainSlug: string;
   selectedSeason: MountainFoundationSeason;
   selectedStyle: MountainFoundationStyle;
+  selectedPlannedDate?: string;
+  selectedTripMemo?: string;
+  selectedBringCash?: boolean;
+  selectedHasMountainInsurance?: boolean;
   planId?: string | null;
   error?: string;
 };
@@ -108,6 +112,10 @@ export function TripPlanningForm({
   selectedMountainSlug,
   selectedSeason,
   selectedStyle,
+  selectedPlannedDate = "",
+  selectedTripMemo = "",
+  selectedBringCash = false,
+  selectedHasMountainInsurance = false,
   planId,
   error
 }: TripPlanningFormProps) {
@@ -211,13 +219,16 @@ export function TripPlanningForm({
     const formData = new FormData(event.currentTarget);
     const params = new URLSearchParams();
 
-    for (const key of ["id", "mountain", "season", "style"]) {
+    for (const key of ["id", "mountain", "season", "style", "date", "memo"]) {
       const value = formData.get(key);
 
       if (typeof value === "string" && value.length > 0) {
         params.set(key, value);
       }
     }
+
+    params.set("cash", formData.get("cash") === "1" ? "1" : "0");
+    params.set("insurance", formData.get("insurance") === "1" ? "1" : "0");
 
     startTransition(() => {
       router.push(`/plan?${params.toString()}` as Route);
@@ -406,6 +417,59 @@ export function TripPlanningForm({
           </select>
         </label>
       </div>
+
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <label className="block">
+          <span className="text-sm font-medium text-stone-700">予定日</span>
+          <input
+            key={`planned-date-${selectedPlannedDate}`}
+            type="date"
+            name="date"
+            defaultValue={selectedPlannedDate}
+            className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-base outline-none focus:border-forest-500 focus:bg-white sm:mt-2 sm:py-3"
+          />
+        </label>
+
+        <div>
+          <span className="text-sm font-medium text-stone-700">山行オプション</span>
+          <div className="mt-1.5 grid gap-2 sm:mt-2">
+            <label className="flex items-center justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm font-semibold text-ink">
+              <span>現金を持参</span>
+              <input
+                key={`cash-${selectedBringCash ? "1" : "0"}`}
+                type="checkbox"
+                name="cash"
+                value="1"
+                defaultChecked={selectedBringCash}
+                className="h-5 w-5 accent-forest-700"
+              />
+            </label>
+            <label className="flex items-center justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm font-semibold text-ink">
+              <span>山岳保険に加入済み</span>
+              <input
+                key={`insurance-${selectedHasMountainInsurance ? "1" : "0"}`}
+                type="checkbox"
+                name="insurance"
+                value="1"
+                defaultChecked={selectedHasMountainInsurance}
+                className="h-5 w-5 accent-forest-700"
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <label className="mt-4 block">
+        <span className="text-sm font-medium text-stone-700">メモ</span>
+        <textarea
+          key={`trip-memo-${selectedTripMemo}`}
+          name="memo"
+          rows={2}
+          defaultValue={selectedTripMemo}
+          placeholder="集合時間、登山口、同行者など"
+          className="mt-1.5 w-full resize-none rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white sm:mt-2"
+        />
+      </label>
 
       <button
         disabled={selectableMountains.length === 0 || isPending}

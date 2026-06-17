@@ -255,7 +255,7 @@ export type GearFilters = {
   status?: GearStatus | "all";
   category?: string;
   brand?: string;
-  sort?: "newest" | "weight" | "price";
+  sort?: "newest" | "weight";
 };
 
 export type DashboardRecentGear = Pick<
@@ -268,10 +268,8 @@ export type DashboardSummary = {
   ownedCount: number;
   wishlistCount: number;
   totalWeightG: number;
-  totalMsrpJpy: number;
-  totalPurchaseJpy: number;
-  savingsJpy: number;
-  savingsRate: number;
+  majorCategoryCoverageCount: number;
+  majorCategoryTotalCount: number;
   baseWeightG: number;
   consumableWeightG: number;
   wornWeightG: number;
@@ -357,6 +355,10 @@ export type SavedTripPlan = {
   image_url: string | null;
   progress: number;
   checked_slots: RequirementSlot[];
+  planned_date: string | null;
+  trip_memo: string | null;
+  bring_cash: boolean;
+  has_mountain_insurance: boolean;
   created_at: string;
 };
 

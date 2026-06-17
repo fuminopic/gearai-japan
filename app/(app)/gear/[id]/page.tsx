@@ -12,7 +12,6 @@ import {
   verificationStatusLabels,
   weightTypeLabels
 } from "@/lib/i18n/labels";
-import { calculateSavingsJpy } from "@/lib/utils/asset";
 import { formatJpy } from "@/lib/utils/format";
 
 type GearDetailPageProps = {
@@ -29,21 +28,12 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
   const verification = verificationStatusLabels[verificationStatus];
   const officialUrl = gear.official_url ?? gear.gear_products?.official_url;
   const msrpSourceUrl = gear.gear_products?.msrp_source_url;
-  const savingsJpy = calculateSavingsJpy(
-    gear.msrp_jpy,
-    gear.purchase_price_jpy
-  );
   const categoryLabel = gear.gear_categories?.name_ja ?? "-";
   const subcategoryLabel = gear.gear_subcategories?.name_ja ?? "-";
   const brandLine =
     [gear.brand, gear.model].filter(Boolean).join(" / ") || "ブランド未設定";
   const weightLabel = getGearDisplayWeightLabel(gear);
-  const priceLabel =
-    gear.purchase_price_jpy === null
-      ? gear.msrp_jpy === null
-        ? "-"
-        : formatJpy(gear.msrp_jpy)
-      : formatJpy(gear.purchase_price_jpy);
+  const priceLabel = formatNullableJpy(gear.msrp_jpy);
   const summaryCategoryLabel =
     subcategoryLabel !== "-" ? subcategoryLabel : categoryLabel;
 
@@ -108,7 +98,7 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
             <div className="mt-5 grid grid-cols-3 gap-2">
               <SummaryPill label="重量" value={weightLabel} />
               <SummaryPill label="カテゴリー" value={summaryCategoryLabel} />
-              <SummaryPill label="価格" value={priceLabel} />
+              <SummaryPill label="公式価格" value={priceLabel} />
             </div>
 
             <dl className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -131,20 +121,11 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <InfoCard title="購入情報">
+        <InfoCard title="価格・公式情報">
           <DetailRow
             label="メーカー希望小売価格"
             value={formatNullableJpy(gear.msrp_jpy)}
           />
-          <DetailRow
-            label="購入価格"
-            value={formatNullableJpy(gear.purchase_price_jpy)}
-          />
-          <DetailRow
-            label="節約額"
-            value={savingsJpy === null ? "-" : formatJpy(savingsJpy)}
-          />
-          <DetailRow label="購入日" value={gear.purchase_date} />
           <DetailRow label="所有状態" value={statusLabels[gear.status]} />
         </InfoCard>
 

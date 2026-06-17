@@ -166,11 +166,13 @@ test("home category distribution prevents legend overflow", () => {
 });
 
 test("home redesign exposes only allowed gear summary metrics", () => {
-  for (const copy of ["所有装備数", "総重量", "総装備価値"]) {
+  for (const copy of ["マイ装備", "所有装備数", "総重量", "主要カテゴリー"]) {
     assert.match(dashboardSource, new RegExp(copy));
   }
 
   for (const forbidden of [
+    "私の装備",
+    "総装備価値",
     "総購入額",
     "節約額",
     "節約率",
@@ -205,4 +207,11 @@ test("home redesign syncs latest saved trip plan from Supabase", () => {
   assert.doesNotMatch(tripPlansDataSource, /console\.log\("Latest Plan:/);
   assert.doesNotMatch(dashboardSource, /getRecommendationHistory\(1\)/);
   assert.doesNotMatch(dashboardSource, /谷川岳/);
+});
+
+test("home hero can display saved trip date and memo without price information", () => {
+  assert.match(dashboardSource, /formatPlanDate\(trip\.planned_date\)/);
+  assert.match(dashboardSource, /trip\.trip_memo\?\.trim/);
+  assert.match(dashboardSource, /plannedDateLabel/);
+  assert.match(dashboardSource, /truncate text-xs font-medium text-stone-500/);
 });

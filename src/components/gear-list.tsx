@@ -5,7 +5,6 @@ import {
   PackagePlus,
   Search,
   SlidersHorizontal,
-  WalletCards,
   Weight
 } from "lucide-react";
 import Link from "next/link";
@@ -20,8 +19,7 @@ import {
 } from "@/lib/gear-display";
 import { statusLabels, weightTypeLabels } from "@/lib/i18n/labels";
 import type { GearCategory, GearFilters, UserGear } from "@/lib/types";
-import { calculateSavingsJpy } from "@/lib/utils/asset";
-import { formatJpy, formatWeight } from "@/lib/utils/format";
+import { formatWeight } from "@/lib/utils/format";
 
 type GearListProps = {
   gear: UserGear[];
@@ -33,10 +31,7 @@ type GearListProps = {
 export function GearList({ gear, categories, brands, filters }: GearListProps) {
   const gearGroups = groupGearByCategory(gear, categories);
   const totalWeightGrams = gear.reduce((sum, item) => sum + getGearWeightGrams(item), 0);
-  const totalValueJpy = gear.reduce(
-    (sum, item) => sum + Number(item.purchase_price_jpy ?? item.msrp_jpy ?? 0),
-    0
-  );
+  const majorCategoryCoverage = getMajorCategoryCoverage(gear);
   const selectedBrand = filters.brand ?? "";
   const visibleBrands = [
     ...new Set([selectedBrand, ...brands].filter((brand): brand is string => Boolean(brand)))
@@ -57,9 +52,9 @@ export function GearList({ gear, categories, brands, filters }: GearListProps) {
             value={formatWeight(totalWeightGrams)}
           />
           <InventoryStat
-            icon={<WalletCards className="h-4 w-4" />}
-            label="総額"
-            value={totalValueJpy === 0 ? "-" : formatJpy(totalValueJpy)}
+            icon={<PackagePlus className="h-4 w-4" />}
+            label="主要カテゴリー"
+            value={`${majorCategoryCoverage} / ${MAJOR_CATEGORY_IDS.length}`}
           />
         </div>
       </section>
@@ -173,7 +168,6 @@ export function GearList({ gear, categories, brands, filters }: GearListProps) {
             >
               <option value="newest">新しい順</option>
               <option value="weight">重い順</option>
-              <option value="price">高い順</option>
             </select>
             <button className="rounded bg-stone-100 px-2 py-1 text-xs font-semibold text-stone-700">
               適用
@@ -238,15 +232,8 @@ export function GearList({ gear, categories, brands, filters }: GearListProps) {
 }
 
 function GearCard({ item }: { item: UserGear }) {
-  const savingsJpy = calculateSavingsJpy(item.msrp_jpy, item.purchase_price_jpy);
   const categoryLabel = item.gear_subcategories?.name_ja ?? item.gear_categories?.name_ja;
   const weightLabel = getGearDisplayWeightLabel(item);
-  const valueLabel =
-    item.purchase_price_jpy === null
-      ? item.msrp_jpy === null
-        ? "-"
-        : formatJpy(item.msrp_jpy)
-      : formatJpy(item.purchase_price_jpy);
 
   return (
     <article className="bg-white px-3 py-2.5 transition hover:bg-stone-50/70 sm:px-4">
@@ -299,14 +286,9 @@ function GearCard({ item }: { item: UserGear }) {
               {weightLabel}
             </span>
             <span className="text-stone-400">/</span>
-            <span className="font-semibold text-stone-600">{valueLabel}</span>
-            <span className="text-stone-400">/</span>
             <span className="font-semibold text-stone-500">
               {weightTypeLabels[item.weight_type]}
             </span>
-            {savingsJpy ? (
-              <span className="text-stone-400">節約 {formatJpy(savingsJpy)}</span>
-            ) : null}
           </div>
 
           <div className="mt-2 flex gap-2 sm:hidden">
@@ -493,6 +475,27 @@ function groupGearByCategory(gear: UserGear[], categories: GearCategory[]) {
 
     return a.name.localeCompare(b.name, "ja");
   });
+}
+
+const MAJOR_CATEGORY_IDS = [
+  "backpack",
+  "shelter",
+  "sleep",
+  "cooking",
+  "clothing",
+  "electronics"
+] as const;
+
+function getMajorCategoryCoverage(gear: UserGear[]) {
+  const covered = new Set<string>();
+
+  for (const item of gear) {
+    if (MAJOR_CATEGORY_IDS.includes(item.category_id as typeof MAJOR_CATEGORY_IDS[number])) {
+      covered.add(item.category_id);
+    }
+  }
+
+  return covered.size;
 }
 
 function getGearWeightGrams(item: UserGear) {

@@ -63,8 +63,13 @@ test("gear list groups registered gear by category without changing cards", () =
   assert.match(gearListSource, /formatWeight\(group\.weightGrams\)/);
   assert.match(gearListSource, /InventoryStat/);
   assert.match(gearListSource, /totalWeightGrams/);
+  assert.match(gearListSource, /getMajorCategoryCoverage/);
+  assert.match(gearListSource, /主要カテゴリー/);
   assert.match(gearListSource, /装備庫/);
   assert.match(gearListSource, /divide-y divide-stone-100/);
+  assert.doesNotMatch(gearListSource, /総額/);
+  assert.doesNotMatch(gearListSource, /高い順/);
+  assert.doesNotMatch(gearListSource, /節約/);
 });
 
 test("gear list and actions provide clear post-save feedback", () => {
@@ -91,8 +96,11 @@ test("gear detail page uses user-facing Japanese labels instead of internal fiel
   assert.match(gearDetailSource, /確認日/);
   assert.match(gearDetailSource, /価格ソース/);
   assert.match(gearDetailSource, /写真未登録/);
-  assert.match(gearDetailSource, /購入情報/);
+  assert.match(gearDetailSource, /価格・公式情報/);
   assert.match(gearDetailSource, /公式情報/);
+  assert.doesNotMatch(gearDetailSource, /購入価格/);
+  assert.doesNotMatch(gearDetailSource, /購入日/);
+  assert.doesNotMatch(gearDetailSource, /節約額/);
   assert.doesNotMatch(gearDetailSource, />verification_status</);
   assert.doesNotMatch(gearDetailSource, />last_verified_at</);
   assert.doesNotMatch(gearDetailSource, />MSRP source</);

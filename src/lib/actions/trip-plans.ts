@@ -16,6 +16,10 @@ export async function saveTripPlan(formData: FormData) {
   const style = parseStyle(formData.get("style"));
   const progress = parseProgress(formData.get("progress"));
   const checkedSlots = parseCheckedSlots(formData.get("checked_slots"));
+  const plannedDate = parsePlannedDate(formData.get("planned_date"));
+  const tripMemo = parseTripMemo(formData.get("trip_memo"));
+  const bringCash = parseBoolean(formData.get("bring_cash"));
+  const hasMountainInsurance = parseBoolean(formData.get("has_mountain_insurance"));
 
   if (!mountainSlug || !mountainName || !season || !style) {
     throw new Error("保存する山行計画の情報が不足しています。");
@@ -28,6 +32,10 @@ export async function saveTripPlan(formData: FormData) {
     mountain_name: mountainName,
     season,
     style,
+    planned_date: plannedDate,
+    trip_memo: tripMemo,
+    bring_cash: bringCash,
+    has_mountain_insurance: hasMountainInsurance,
     progress,
     checked_slots: checkedSlots
   };
@@ -38,11 +46,11 @@ export async function saveTripPlan(formData: FormData) {
     .single();
 
   if (error) {
-    if (!isMissingCheckedSlotsColumnError(error)) {
+    if (!isMissingPlanColumnError(error)) {
       throw new Error(error.message);
     }
 
-    const fallbackPayload = withoutCheckedSlots(payload);
+    const fallbackPayload = withoutOptionalPlanColumns(payload);
     const { data: fallbackData, error: fallbackError } = await supabase
       .from("trip_plans")
       .insert([fallbackPayload])
@@ -73,6 +81,10 @@ export async function updateTripPlan(formData: FormData) {
   const style = parseStyle(formData.get("style"));
   const progress = parseProgress(formData.get("progress"));
   const checkedSlots = parseCheckedSlots(formData.get("checked_slots"));
+  const plannedDate = parsePlannedDate(formData.get("planned_date"));
+  const tripMemo = parseTripMemo(formData.get("trip_memo"));
+  const bringCash = parseBoolean(formData.get("bring_cash"));
+  const hasMountainInsurance = parseBoolean(formData.get("has_mountain_insurance"));
 
   if (!id) {
     throw new Error("更新する計画IDが見つかりませんでした。");
@@ -88,6 +100,10 @@ export async function updateTripPlan(formData: FormData) {
     mountain_name: mountainName,
     season,
     style,
+    planned_date: plannedDate,
+    trip_memo: tripMemo,
+    bring_cash: bringCash,
+    has_mountain_insurance: hasMountainInsurance,
     progress,
     checked_slots: checkedSlots
   };
@@ -98,11 +114,11 @@ export async function updateTripPlan(formData: FormData) {
     .eq("user_id", user.id);
 
   if (error) {
-    if (!isMissingCheckedSlotsColumnError(error)) {
+    if (!isMissingPlanColumnError(error)) {
       throw new Error(error.message);
     }
 
-    const fallbackPayload = withoutCheckedSlots(payload);
+    const fallbackPayload = withoutOptionalPlanColumns(payload);
     const { error: fallbackError } = await supabase
       .from("trip_plans")
       .update(fallbackPayload)
@@ -198,6 +214,34 @@ function parseProgress(value: FormDataEntryValue | null) {
   return Math.min(100, Math.max(0, Math.round(progress)));
 }
 
+function parsePlannedDate(value: FormDataEntryValue | null) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return null;
+  }
+
+  return trimmed;
+}
+
+function parseTripMemo(value: FormDataEntryValue | null) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+
+  return trimmed ? trimmed.slice(0, 200) : null;
+}
+
+function parseBoolean(value: FormDataEntryValue | null) {
+  return value === "1" || value === "true" || value === "on";
+}
+
 const requirementSlots = new Set<RequirementSlot>([
   "WATER_STORAGE",
   "WATER_TREATMENT",
@@ -254,14 +298,32 @@ function uniqueRequirementSlots(values: unknown[]) {
   return slots;
 }
 
-function withoutCheckedSlots<T extends { checked_slots: RequirementSlot[] }>(
-  payload: T
-) {
-  const { checked_slots: _checkedSlots, ...fallbackPayload } = payload;
+function withoutOptionalPlanColumns<
+  T extends {
+    checked_slots: RequirementSlot[];
+    planned_date?: string | null;
+    trip_memo?: string | null;
+    bring_cash?: boolean;
+    has_mountain_insurance?: boolean;
+  }
+>(payload: T) {
+  const {
+    checked_slots: _checkedSlots,
+    planned_date: _plannedDate,
+    trip_memo: _tripMemo,
+    bring_cash: _bringCash,
+    has_mountain_insurance: _hasMountainInsurance,
+    ...fallbackPayload
+  } = payload;
 
   return fallbackPayload;
 }
 
-function isMissingCheckedSlotsColumnError(error: { message?: string; code?: string }) {
-  return error.code === "42703" || /checked_slots/i.test(error.message ?? "");
+function isMissingPlanColumnError(error: { message?: string; code?: string }) {
+  return (
+    error.code === "42703" ||
+    /(checked_slots|planned_date|trip_memo|bring_cash|has_mountain_insurance)/i.test(
+      error.message ?? ""
+    )
+  );
 }

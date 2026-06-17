@@ -2,12 +2,21 @@ import { requireUser } from "@/lib/data/gear";
 import type { DashboardRecentGear, DashboardSummary, UserGear } from "@/lib/types";
 
 const DASHBOARD_GEAR_SELECT =
-  "id,name,image_url,image_storage_path,status,weight_grams,weight_type,msrp_jpy,purchase_price_jpy,created_at,gear_categories:category_id(id,name_ja,name_en)";
+  "id,name,image_url,image_storage_path,status,weight_grams,weight_type,created_at,gear_categories:category_id(id,name_ja,name_en)";
 
 type DashboardGear = DashboardRecentGear &
-  Pick<UserGear, "status" | "weight_type" | "msrp_jpy" | "purchase_price_jpy"> & {
+  Pick<UserGear, "status" | "weight_type"> & {
     gear_categories?: UserGear["gear_categories"];
   };
+
+const MAJOR_CATEGORY_IDS = [
+  "backpack",
+  "shelter",
+  "sleep",
+  "cooking",
+  "clothing",
+  "electronics"
+] as const;
 
 const CATEGORY_ARCHITECTURE = {
   backpack: { categoryId: "backpack", nameJa: "背負システム", sortOrder: 10 },
@@ -60,14 +69,9 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   }
 
   const totalWeightG = sumWeight(ownedGear);
-  const totalMsrpJpy = ownedGear.reduce((total, item) => {
-    return total + Number(item.msrp_jpy ?? 0);
-  }, 0);
-  const totalPurchaseJpy = ownedGear.reduce((total, item) => {
-    return total + Number(item.purchase_price_jpy ?? 0);
-  }, 0);
-  const savingsJpy = totalMsrpJpy - totalPurchaseJpy;
-  const savingsRate = totalMsrpJpy > 0 ? savingsJpy / totalMsrpJpy : 0;
+  const majorCategoryCoverageCount = Array.from(categoryWeights.values()).filter(
+    (category) => MAJOR_CATEGORY_IDS.includes(category.categoryId as typeof MAJOR_CATEGORY_IDS[number])
+  ).length;
   const baseWeightG = sumWeight(ownedGear.filter((item) => item.weight_type === "base"));
   const consumableWeightG = sumWeight(
     ownedGear.filter((item) => item.weight_type === "consumable")
@@ -79,10 +83,8 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     ownedCount: ownedGear.length,
     wishlistCount: gear.filter((item) => item.status === "wishlist").length,
     totalWeightG,
-    totalMsrpJpy,
-    totalPurchaseJpy,
-    savingsJpy,
-    savingsRate,
+    majorCategoryCoverageCount,
+    majorCategoryTotalCount: MAJOR_CATEGORY_IDS.length,
     baseWeightG,
     consumableWeightG,
     wornWeightG,

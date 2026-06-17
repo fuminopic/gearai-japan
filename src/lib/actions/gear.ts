@@ -78,8 +78,6 @@ function getGearPayload(formData: FormData) {
   const officialWeight = toNumber(formData.get("official_weight_grams"));
   const measuredWeight = toNumber(formData.get("measured_weight_grams"));
   const msrp = toNumber(formData.get("msrp_jpy"));
-  const purchasePrice = toNumber(formData.get("purchase_price_jpy"));
-  const purchaseDate = String(formData.get("purchase_date") ?? "");
   const storedWeight = measuredWeight ?? officialWeight ?? 0;
 
   return {
@@ -95,8 +93,7 @@ function getGearPayload(formData: FormData) {
     measured_weight_grams:
       measuredWeight === null ? null : Math.max(0, Math.round(measuredWeight)),
     msrp_jpy: msrp === null ? null : Math.round(msrp),
-    purchase_price_jpy:
-      purchasePrice === null ? null : Math.round(purchasePrice),
+    purchase_price_jpy: null,
     size: optionalString(formData.get("size")),
     volume: optionalString(formData.get("volume")),
     color: optionalString(formData.get("color")),
@@ -105,7 +102,7 @@ function getGearPayload(formData: FormData) {
     official_url: optionalString(formData.get("official_url")),
     image_url: optionalString(formData.get("image_url")),
     image_storage_path: optionalString(formData.get("image_storage_path")),
-    purchase_date: purchaseDate || null,
+    purchase_date: null,
     status: String(formData.get("status") ?? "owned") as GearStatus,
     weight_type: String(formData.get("weight_type") ?? "base") as WeightType,
     memo: optionalString(formData.get("memo"))

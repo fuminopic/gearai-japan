@@ -74,6 +74,10 @@ const tripPlansCheckedSlotsMigrationSource = readFileSync(
   new URL("../supabase/migrations/013_trip_plans_checked_slots.sql", import.meta.url),
   "utf8"
 );
+const tripPlansDetailsMigrationSource = readFileSync(
+  new URL("../supabase/migrations/037_trip_plan_details.sql", import.meta.url),
+  "utf8"
+);
 const planPageSource = readFileSync(
   new URL("../app/(app)/plan/page.tsx", import.meta.url),
   "utf8"
@@ -432,8 +436,12 @@ test("saving and updating a plan writes progress payload and redirects home", ()
   assert.match(planActionsSource, /style,/);
   assert.match(planActionsSource, /progress/);
   assert.match(planActionsSource, /checked_slots: checkedSlots/);
+  assert.match(planActionsSource, /planned_date: plannedDate/);
+  assert.match(planActionsSource, /trip_memo: tripMemo/);
+  assert.match(planActionsSource, /bring_cash: bringCash/);
+  assert.match(planActionsSource, /has_mountain_insurance: hasMountainInsurance/);
   assert.match(planActionsSource, /parseCheckedSlots/);
-  assert.match(planActionsSource, /withoutCheckedSlots/);
+  assert.match(planActionsSource, /withoutOptionalPlanColumns/);
   assert.match(planActionsSource, /export async function updateTripPlan/);
   assert.match(planActionsSource, /\.update\(payload\)/);
   assert.match(tripPlansDataSource, /from\("trip_plans"\)/);
@@ -444,6 +452,26 @@ test("saving and updating a plan writes progress payload and redirects home", ()
   assert.match(tripPlansProgressMigrationSource, /trip_plans_update_own/);
   assert.match(tripPlansCheckedSlotsMigrationSource, /add column if not exists checked_slots text\[\]/);
   assert.match(tripPlansCheckedSlotsMigrationSource, /SLEEP_INSULATION/);
+  assert.match(tripPlansDetailsMigrationSource, /add column if not exists planned_date date/);
+  assert.match(tripPlansDetailsMigrationSource, /add column if not exists trip_memo text/);
+  assert.match(tripPlansDetailsMigrationSource, /add column if not exists bring_cash boolean/);
+  assert.match(tripPlansDetailsMigrationSource, /add column if not exists has_mountain_insurance boolean/);
+});
+
+test("trip planning form captures date, memo, cash, and insurance without touching the engine", () => {
+  assert.match(tripPlanningFormSource, /name="date"/);
+  assert.match(tripPlanningFormSource, /予定日/);
+  assert.match(tripPlanningFormSource, /type="date"/);
+  assert.match(tripPlanningFormSource, /name="memo"/);
+  assert.match(tripPlanningFormSource, /集合時間、登山口、同行者など/);
+  assert.match(tripPlanningFormSource, /現金を持参/);
+  assert.match(tripPlanningFormSource, /山岳保険に加入済み/);
+  assert.match(tripPlanningUiSource, /name="planned_date"/);
+  assert.match(tripPlanningUiSource, /name="trip_memo"/);
+  assert.match(tripPlanningUiSource, /name="bring_cash"/);
+  assert.match(tripPlanningUiSource, /name="has_mountain_insurance"/);
+  assert.doesNotMatch(planChecklistSource, /山岳保険に加入済み/);
+  assert.doesNotMatch(planChecklistSource, /現金を持参/);
 });
 
 test("plan id hydration links home and history to the exact saved plan", () => {

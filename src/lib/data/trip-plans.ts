@@ -62,6 +62,10 @@ function legacyRecommendationToTripPlan(record: AIRecommendationRecord): SavedTr
     image_url: null,
     progress: 0,
     checked_slots: [],
+    planned_date: null,
+    trip_memo: null,
+    bring_cash: false,
+    has_mountain_insurance: false,
     created_at: record.created_at
   };
 }

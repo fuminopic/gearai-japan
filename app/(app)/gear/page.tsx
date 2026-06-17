@@ -72,7 +72,7 @@ function isGearStatus(value?: string): value is GearStatus | "all" {
 }
 
 function isSort(value?: string): value is GearFilters["sort"] {
-  return value === "newest" || value === "weight" || value === "price";
+  return value === "newest" || value === "weight";
 }
 
 function getSavedMessage(value?: string) {

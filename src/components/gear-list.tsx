@@ -353,7 +353,7 @@ function FilterChip({
   return (
     <Link
       href={href}
-      className={`shrink-0 rounded-full border px-3 py-2 text-sm font-semibold transition ${
+      className={`shrink-0 rounded-2xl border px-3 py-2 text-sm font-semibold transition ${
         active
           ? "border-forest-700 bg-forest-700 text-white"
           : "border-stone-200 bg-white text-stone-700 hover:border-forest-200 hover:bg-forest-50 hover:text-forest-800"

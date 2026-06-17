@@ -34,15 +34,15 @@ export function BrandLogo({ brand, className, compact = false }: BrandLogoProps)
       role="img"
       aria-label={logo.alt}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center",
-        compact ? "h-6 w-16" : "h-7 w-28",
+        "inline-flex shrink-0 items-center justify-center overflow-hidden",
+        compact ? "h-6 w-18" : "h-7 w-32",
         className
       )}
     >
       <img
         src={logo.src}
         alt={logo.alt}
-        className={cn("max-h-full max-w-full", logo.className)}
+        className={cn("h-full w-full object-contain", logo.className)}
         loading="lazy"
       />
     </span>

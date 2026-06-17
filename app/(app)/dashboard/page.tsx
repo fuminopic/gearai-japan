@@ -11,6 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { DashboardPlanChecklistSummary } from "@/components/dashboard-plan-checklist-summary";
+import { DashboardPlanMeta } from "@/components/dashboard-plan-meta";
 import { getOwnedGearForPlanning } from "@/lib/data/gear";
 import { getPackRequirementPlan } from "@/lib/data/pack-requirements";
 import { getDashboardSummary } from "@/lib/data/dashboard";
@@ -191,9 +192,6 @@ function HeroCard({
 
   const coveragePercent = tripChecklist?.summary.percent ?? getSavedProgressFallback(trip);
   const planHref = `/plan?id=${trip.id}` as Route;
-  const plannedDateLabel = formatPlanDate(trip.planned_date);
-  const tripMemo = trip.trip_memo?.trim();
-
   return (
     <section className="relative min-h-[300px] w-full overflow-hidden rounded-lg bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7] shadow-sm">
       <div className="absolute inset-0 z-0">
@@ -214,16 +212,13 @@ function HeroCard({
               {trip.mountain_name}
             </h2>
           </div>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {plannedDateLabel ? <TripTag>{plannedDateLabel}</TripTag> : null}
-            <TripTag>{seasonLabel(trip.season)}</TripTag>
-            <TripTag>{styleLabel(trip.style)}</TripTag>
-          </div>
-          {tripMemo ? (
-            <p className="mt-2 truncate text-xs font-medium text-stone-500">
-              {tripMemo}
-            </p>
-          ) : null}
+          <DashboardPlanMeta
+            planId={trip.id}
+            plannedDate={trip.planned_date}
+            tripMemo={trip.trip_memo}
+            seasonLabel={seasonLabel(trip.season)}
+            styleLabel={styleLabel(trip.style)}
+          />
         </div>
 
         <div className="space-y-4">
@@ -443,14 +438,6 @@ function SectionHeader({ title, href }: { title: string; href: Route }) {
   );
 }
 
-function TripTag({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="rounded-lg bg-[#E8F1E8] px-2.5 py-1 text-[11px] font-bold text-[#3B5B44]">
-      {children}
-    </span>
-  );
-}
-
 function SummaryMetric({
   icon: Icon,
   value,
@@ -610,22 +597,4 @@ function styleLabel(style: string) {
 
 function formatKg(weightG: number) {
   return `${(weightG / 1000).toFixed(2)} kg`;
-}
-
-function formatPlanDate(value: string | null | undefined) {
-  if (!value) {
-    return "";
-  }
-
-  const date = new Date(`${value}T00:00:00`);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("ja-JP", {
-    month: "numeric",
-    day: "numeric",
-    weekday: "short"
-  }).format(date);
 }

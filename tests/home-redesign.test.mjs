@@ -10,6 +10,10 @@ const dashboardPlanChecklistSummarySource = readFileSync(
   new URL("../src/components/dashboard-plan-checklist-summary.tsx", import.meta.url),
   "utf8"
 );
+const dashboardPlanMetaSource = readFileSync(
+  new URL("../src/components/dashboard-plan-meta.tsx", import.meta.url),
+  "utf8"
+);
 const appNavSource = readFileSync(
   new URL("../src/components/app-nav.tsx", import.meta.url),
   "utf8"
@@ -212,8 +216,10 @@ test("home redesign syncs latest saved trip plan from Supabase", () => {
 });
 
 test("home hero can display saved trip date and memo without price information", () => {
-  assert.match(dashboardSource, /formatPlanDate\(trip\.planned_date\)/);
-  assert.match(dashboardSource, /trip\.trip_memo\?\.trim/);
-  assert.match(dashboardSource, /plannedDateLabel/);
-  assert.match(dashboardSource, /truncate text-xs font-medium text-stone-500/);
+  assert.match(dashboardSource, /DashboardPlanMeta/);
+  assert.match(dashboardSource, /plannedDate=\{trip\.planned_date\}/);
+  assert.match(dashboardSource, /tripMemo=\{trip\.trip_memo\}/);
+  assert.match(dashboardPlanMetaSource, /readTripPlanLocalMeta/);
+  assert.match(dashboardPlanMetaSource, /formatPlanDate\(displayDate\)/);
+  assert.match(dashboardPlanMetaSource, /truncate text-xs font-medium text-stone-500/);
 });

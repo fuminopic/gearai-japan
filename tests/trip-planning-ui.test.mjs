@@ -22,6 +22,10 @@ const tripPlanningFormSource = readFileSync(
   new URL("../src/components/trip-planning-form.tsx", import.meta.url),
   "utf8"
 );
+const tripPlanLocalMetaSource = readFileSync(
+  new URL("../src/lib/trip-plan-local-meta.ts", import.meta.url),
+  "utf8"
+);
 const appNavSource = readFileSync(
   new URL("../src/components/app-nav.tsx", import.meta.url),
   "utf8"
@@ -433,6 +437,10 @@ test("saving and updating a plan writes progress payload and redirects home", ()
   assert.match(tripPlanningUiSource, /readStoredCheckedSlots/);
   assert.match(tripPlanningUiSource, /writeStoredChecklistOnlyIds/);
   assert.match(tripPlanningUiSource, /readStoredChecklistOnlyIds/);
+  assert.match(tripPlanningUiSource, /writeTripPlanLocalMeta/);
+  assert.match(tripPlanningUiSource, /plannedDate,/);
+  assert.match(tripPlanningUiSource, /tripMemo/);
+  assert.match(tripPlanLocalMetaSource, /yamajitaku:trip-plan-meta/);
   assert.match(tripPlanningUiSource, /initialCheckedSlots/);
   assert.match(planActionsSource, /mountain_name: mountainName/);
   assert.match(planActionsSource, /season,/);

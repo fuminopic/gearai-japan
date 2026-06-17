@@ -75,6 +75,7 @@ import {
   type ChecklistItem
 } from "@/lib/plan-checklist";
 import { createClient } from "@/lib/supabase/client";
+import { writeTripPlanLocalMeta } from "@/lib/trip-plan-local-meta";
 import type {
   GearMatchingDatabaseGearMatch,
   GearMatchingOwnedGearMatch,
@@ -405,6 +406,10 @@ function SavePlanButton({
       if (savedPlanId) {
         writeStoredCheckedSlots(savedPlanId, checkedSlots);
         writeStoredChecklistOnlyIds(savedPlanId, checklistOnlyIds);
+        writeTripPlanLocalMeta(savedPlanId, {
+          plannedDate,
+          tripMemo
+        });
       }
 
       router.push("/dashboard");

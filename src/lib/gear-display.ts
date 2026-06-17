@@ -59,10 +59,6 @@ export function isBackpackProduct(product: GearProduct) {
   );
 }
 
-export function getBrandLogoLabel(brand: string) {
-  return brandLogoLabels[normalizeGearText(brand)] ?? brand;
-}
-
 export function compareGearBrands(a: string, b: string) {
   const priorityA = brandPriority.findIndex(
     (brand) => normalizeGearText(brand) === normalizeGearText(a)
@@ -109,23 +105,3 @@ const brandPriority = [
   "Salomon"
 ];
 const brandCollator = new Intl.Collator("ja");
-const brandLogoLabels: Record<string, string> = {
-  montbell: "mont-bell",
-  "山と道": "山と道",
-  finetrack: "finetrack",
-  thenorthface: "TNF",
-  caravan: "Caravan",
-  osprey: "OSPREY",
-  blackdiamond: "BD",
-  petzl: "PETZL",
-  nanga: "NANGA",
-  isuka: "ISUKA",
-  nemo: "NEMO",
-  thermarest: "Therm-a-Rest",
-  soto: "SOTO",
-  evernew: "EVERNEW",
-  アライテント: "ARAI",
-  msr: "MSR",
-  garmin: "GARMIN",
-  salomon: "SALOMON"
-};

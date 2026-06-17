@@ -14,10 +14,10 @@ import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { BrandLogo } from "@/components/brand-logo";
 import { SubmitButton } from "@/components/submit-button";
 import {
   compareGearBrands,
-  getBrandLogoLabel,
   getProductDisplayTitle,
   getProductVolume,
   isBackpackProduct,
@@ -458,7 +458,7 @@ export function GearForm({
                 onClick={() => handleBrandFilter(item)}
                 ariaLabel={`${item}を選択`}
               >
-                <BrandLogoMark brand={item} />
+                <BrandLogo brand={item} />
               </ProductFilterChip>
             ))}
           </div>
@@ -1040,25 +1040,6 @@ function getProductSearchValues(product: GearProduct) {
 
 function getProductCategoryLabel(product: GearProduct) {
   return product.gear_categories?.name_ja ?? "その他";
-}
-
-function BrandLogoMark({ brand }: { brand: string }) {
-  const normalizedBrand = normalize(brand);
-  const label = getBrandLogoLabel(brand);
-
-  return (
-    <span
-      className={`inline-flex min-h-5 min-w-10 items-center justify-center rounded px-1.5 text-[13px] font-bold leading-none tracking-normal ${
-        normalizedBrand === "thenorthface"
-          ? "font-black uppercase"
-          : normalizedBrand === "montbell"
-            ? "font-semibold lowercase"
-            : "uppercase"
-      }`}
-    >
-      {label}
-    </span>
-  );
 }
 
 function compareProductPickerItems(

@@ -26,6 +26,10 @@ const gearDisplaySource = readFileSync(
   new URL("../src/lib/gear-display.ts", import.meta.url),
   "utf8"
 );
+const brandLogoSource = readFileSync(
+  new URL("../src/components/brand-logo.tsx", import.meta.url),
+  "utf8"
+);
 const typesSource = readFileSync(new URL("../src/lib/types.ts", import.meta.url), "utf8");
 
 test("gear list supports brand filtering from the gear page query", () => {
@@ -44,8 +48,9 @@ test("gear list exposes brand and category-oriented list controls", () => {
   assert.match(gearListSource, /buildGearHref/);
   assert.match(gearListSource, /label="ブランド"/);
   assert.match(gearListSource, /のカテゴリー/);
-  assert.match(gearListSource, /BrandLogoMark/);
-  assert.match(gearListSource, /getBrandLogoLabel/);
+  assert.match(gearListSource, /BrandLogo/);
+  assert.match(brandLogoSource, /role="img"/);
+  assert.match(brandLogoSource, /viewBox=/);
   assert.match(gearDisplaySource, /compareGearBrands/);
 });
 

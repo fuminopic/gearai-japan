@@ -13,14 +13,13 @@ import Link from "next/link";
 import type { Route } from "next";
 import type { ReactNode } from "react";
 
+import { BrandLogo } from "@/components/brand-logo";
 import { SubmitButton } from "@/components/submit-button";
 import { deleteGear } from "@/lib/actions/gear";
 import {
   compareGearBrands,
-  getBrandLogoLabel,
   getGearDisplayWeightGrams,
-  getGearDisplayWeightLabel,
-  normalizeGearText
+  getGearDisplayWeightLabel
 } from "@/lib/gear-display";
 import { statusLabels, weightTypeLabels } from "@/lib/i18n/labels";
 import type { GearCategory, GearFilters, UserGear } from "@/lib/types";
@@ -118,7 +117,7 @@ export function GearList({ gear, categories, brands, filters }: GearListProps) {
                 href={buildGearHref(filters, { brand, category: undefined })}
                 active={selectedBrand === brand}
               >
-                <BrandLogoMark brand={brand} />
+                <BrandLogo brand={brand} />
               </FilterChip>
             ))}
           </div>
@@ -359,25 +358,6 @@ function GearCard({ item }: { item: UserGear }) {
         </div>
       </div>
     </article>
-  );
-}
-
-function BrandLogoMark({ brand }: { brand: string }) {
-  const normalizedBrand = normalizeGearText(brand);
-  const label = getBrandLogoLabel(brand);
-
-  return (
-    <span
-      className={`inline-flex min-h-5 min-w-10 items-center justify-center rounded px-1.5 text-[13px] font-bold leading-none tracking-normal ${
-        normalizedBrand === "thenorthface"
-          ? "font-black uppercase"
-          : normalizedBrand === "montbell"
-            ? "font-semibold lowercase"
-            : "uppercase"
-      }`}
-    >
-      {label}
-    </span>
   );
 }
 

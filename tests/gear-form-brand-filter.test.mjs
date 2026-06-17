@@ -18,6 +18,10 @@ const gearDisplaySource = readFileSync(
   new URL("../src/lib/gear-display.ts", import.meta.url),
   "utf8"
 );
+const brandLogoSource = readFileSync(
+  new URL("../src/components/brand-logo.tsx", import.meta.url),
+  "utf8"
+);
 const gearImageStorageMigrationSource = readFileSync(
   new URL("../supabase/migrations/032_user_gear_private_image_storage.sql", import.meta.url),
   "utf8"
@@ -31,16 +35,19 @@ test("gear add form exposes a product brand filter beside product search", () =>
   assert.match(gearFormSource, /productsForBrand/);
 });
 
-test("gear add form supports explicit search, suggestions, and logo-like brand chips", () => {
+test("gear add form supports explicit search, suggestions, and real brand logo chips", () => {
   assert.match(gearFormSource, /confirmProductSearch/);
   assert.match(gearFormSource, /productSuggestions/);
   assert.match(gearFormSource, /list="gear-product-suggestions"/);
   assert.match(gearFormSource, /<datalist id="gear-product-suggestions">/);
   assert.match(gearFormSource, />\s*検索\s*<\/button>/);
   assert.match(gearFormSource, /getProductDisplayTitle\(product\)/);
-  assert.match(gearFormSource, /BrandLogoMark/);
-  assert.match(gearDisplaySource, /brandLogoLabels/);
-  assert.match(gearFormSource, /getBrandLogoLabel/);
+  assert.match(gearFormSource, /BrandLogo/);
+  assert.match(brandLogoSource, /role="img"/);
+  assert.match(brandLogoSource, /viewBox=/);
+  assert.match(brandLogoSource, /thenorthface/);
+  assert.match(brandLogoSource, /blackdiamond/);
+  assert.match(brandLogoSource, /mont-bell/);
   assert.match(gearFormSource, /ariaLabel=\{`\$\{item\}を選択`\}/);
 });
 

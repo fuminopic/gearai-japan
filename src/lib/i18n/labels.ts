@@ -28,17 +28,17 @@ export const verificationStatusLabels: Record<
   { label: string; marker: string; className: string }
 > = {
   verified: {
-    label: "公式検証データ",
+    label: "公式確認済み",
     marker: "✓",
     className: "border-forest-100 bg-forest-50 text-forest-700"
   },
   unverified: {
-    label: "未検証データ",
+    label: "未確認データ",
     marker: "⚠",
     className: "border-amber-100 bg-amber-50 text-amber-700"
   },
   needs_review: {
-    label: "需要人工审核",
+    label: "確認が必要",
     marker: "⚠",
     className: "border-red-100 bg-red-50 text-red-700"
   }

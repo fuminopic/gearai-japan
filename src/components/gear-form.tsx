@@ -16,6 +16,14 @@ import type { ReactNode } from "react";
 
 import { SubmitButton } from "@/components/submit-button";
 import {
+  compareGearBrands,
+  getBrandLogoLabel,
+  getProductDisplayTitle,
+  getProductVolume,
+  isBackpackProduct,
+  normalizeGearText
+} from "@/lib/gear-display";
+import {
   gearSubcategoryLabels,
   statusLabels,
   weightTypeLabels
@@ -138,7 +146,7 @@ export function GearForm({
   const brandOptions = useMemo(() => {
     const brands = Array.from(new Set(products.map((product) => product.brand)))
       .filter(Boolean)
-      .sort(compareProductBrands);
+      .sort(compareGearBrands);
 
     return brands;
   }, [products]);
@@ -1034,39 +1042,9 @@ function getProductCategoryLabel(product: GearProduct) {
   return product.gear_categories?.name_ja ?? "その他";
 }
 
-function getProductDisplayTitle(product: GearProduct) {
-  const baseName = product.name_ja ?? product.model;
-  const productVolume = getProductVolume(product);
-
-  if (isBackpackProduct(product) && productVolume && !baseName.includes(productVolume)) {
-    return `${baseName} (${productVolume})`;
-  }
-
-  return baseName;
-}
-
-function getProductVolume(product: GearProduct) {
-  if (product.volume) {
-    return product.volume;
-  }
-
-  if (isBackpackProduct(product) && product.capacity && /(?:\d|L|リットル)/i.test(product.capacity)) {
-    return product.capacity;
-  }
-
-  return null;
-}
-
-function isBackpackProduct(product: GearProduct) {
-  return (
-    normalize(product.gear_categories?.name_en ?? "") === "backpack" ||
-    normalize(product.gear_subcategories?.name_en ?? "") === "backpack"
-  );
-}
-
 function BrandLogoMark({ brand }: { brand: string }) {
   const normalizedBrand = normalize(brand);
-  const label = brandLogoLabels[normalizedBrand] ?? brand;
+  const label = getBrandLogoLabel(brand);
 
   return (
     <span
@@ -1107,59 +1085,7 @@ function compareProductPickerItems(
   return brandCollator.compare(a.model, b.model);
 }
 
-const brandPriority = [
-  "mont-bell",
-  "山と道",
-  "finetrack",
-  "THE NORTH FACE",
-  "Caravan",
-  "Osprey",
-  "Black Diamond",
-  "Petzl",
-  "NANGA",
-  "ISUKA",
-  "NEMO",
-  "Therm-a-Rest",
-  "SOTO",
-  "EVERNEW",
-  "アライテント",
-  "MSR",
-  "Garmin",
-  "Salomon"
-];
 const brandCollator = new Intl.Collator("ja");
-const brandLogoLabels: Record<string, string> = {
-  montbell: "mont-bell",
-  "山と道": "山と道",
-  finetrack: "finetrack",
-  thenorthface: "TNF",
-  caravan: "Caravan",
-  osprey: "OSPREY",
-  blackdiamond: "BD",
-  petzl: "PETZL",
-  nanga: "NANGA",
-  isuka: "ISUKA",
-  nemo: "NEMO",
-  thermarest: "Therm-a-Rest",
-  soto: "SOTO",
-  evernew: "EVERNEW",
-  アライテント: "ARAI",
-  msr: "MSR",
-  garmin: "GARMIN",
-  salomon: "SALOMON"
-};
-
-function compareProductBrands(a: string, b: string) {
-  const priorityA = brandPriority.findIndex((brand) => normalize(brand) === normalize(a));
-  const priorityB = brandPriority.findIndex((brand) => normalize(brand) === normalize(b));
-
-  if (priorityA !== -1 || priorityB !== -1) {
-    return (priorityA === -1 ? Number.MAX_SAFE_INTEGER : priorityA)
-      - (priorityB === -1 ? Number.MAX_SAFE_INTEGER : priorityB);
-  }
-
-  return brandCollator.compare(a, b);
-}
 
 function getBrandSearchAliases(brand: string) {
   if (normalize(brand) === "thenorthface") {
@@ -1646,12 +1572,7 @@ function getProductFamilySearchAliases(product: GearProduct) {
 }
 
 function normalize(value: string) {
-  return value
-    .normalize("NFKC")
-    .toLocaleLowerCase()
-    .replace(/^ザ[・･]?/, "")
-    .replace(/['’"“”`]/g, "")
-    .replace(/[\s()\[\]{}（）【】「」『』・･/／\\_.。,，:：;；#＃+-]+/g, "");
+  return normalizeGearText(value);
 }
 
 function formatWeightGrams(value: number | null | undefined) {

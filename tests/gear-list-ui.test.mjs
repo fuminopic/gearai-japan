@@ -14,6 +14,18 @@ const gearDataSource = readFileSync(
   new URL("../src/lib/data/gear.ts", import.meta.url),
   "utf8"
 );
+const gearActionSource = readFileSync(
+  new URL("../src/lib/actions/gear.ts", import.meta.url),
+  "utf8"
+);
+const gearDetailSource = readFileSync(
+  new URL("../app/(app)/gear/[id]/page.tsx", import.meta.url),
+  "utf8"
+);
+const gearDisplaySource = readFileSync(
+  new URL("../src/lib/gear-display.ts", import.meta.url),
+  "utf8"
+);
 const typesSource = readFileSync(new URL("../src/lib/types.ts", import.meta.url), "utf8");
 
 test("gear list supports brand filtering from the gear page query", () => {
@@ -32,6 +44,9 @@ test("gear list exposes brand and category-oriented list controls", () => {
   assert.match(gearListSource, /buildGearHref/);
   assert.match(gearListSource, /label="ブランド"/);
   assert.match(gearListSource, /のカテゴリー/);
+  assert.match(gearListSource, /BrandLogoMark/);
+  assert.match(gearListSource, /getBrandLogoLabel/);
+  assert.match(gearDisplaySource, /compareGearBrands/);
 });
 
 test("gear list groups registered gear by category without changing cards", () => {
@@ -44,4 +59,34 @@ test("gear list groups registered gear by category without changing cards", () =
   assert.match(gearListSource, /totalWeightGrams/);
   assert.match(gearListSource, /装備庫/);
   assert.match(gearListSource, /divide-y divide-stone-100/);
+});
+
+test("gear list and actions provide clear post-save feedback", () => {
+  assert.match(gearPageSource, /saved\?: string/);
+  assert.match(gearPageSource, /getSavedMessage/);
+  assert.match(gearPageSource, /装備を登録しました/);
+  assert.match(gearPageSource, /装備を更新しました/);
+  assert.match(gearPageSource, /装備を削除しました/);
+  assert.match(gearActionSource, /\/gear\?saved=created/);
+  assert.match(gearActionSource, /\/gear\?saved=updated/);
+  assert.match(gearActionSource, /\/gear\?saved=deleted/);
+});
+
+test("gear detail page uses user-facing Japanese labels instead of internal field names", () => {
+  assert.match(gearDetailSource, /カタログ確認/);
+  assert.match(gearDetailSource, /確認日/);
+  assert.match(gearDetailSource, /価格ソース/);
+  assert.match(gearDetailSource, /写真未登録/);
+  assert.match(gearDetailSource, /購入情報/);
+  assert.match(gearDetailSource, /公式情報/);
+  assert.doesNotMatch(gearDetailSource, />verification_status</);
+  assert.doesNotMatch(gearDetailSource, />last_verified_at</);
+  assert.doesNotMatch(gearDetailSource, />MSRP source</);
+});
+
+test("gear display helpers avoid showing unknown weights as zero grams", () => {
+  assert.match(gearDisplaySource, /getGearDisplayWeightLabel/);
+  assert.match(gearDisplaySource, /item\.weight_grams > 0/);
+  assert.match(gearDisplaySource, /return typeof grams === "number" \? formatWeight\(grams\) : "-"/);
+  assert.match(gearListSource, /getGearDisplayWeightLabel\(item\)/);
 });

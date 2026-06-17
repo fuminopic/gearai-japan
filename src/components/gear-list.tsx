@@ -15,6 +15,13 @@ import type { ReactNode } from "react";
 
 import { SubmitButton } from "@/components/submit-button";
 import { deleteGear } from "@/lib/actions/gear";
+import {
+  compareGearBrands,
+  getBrandLogoLabel,
+  getGearDisplayWeightGrams,
+  getGearDisplayWeightLabel,
+  normalizeGearText
+} from "@/lib/gear-display";
 import { statusLabels, weightTypeLabels } from "@/lib/i18n/labels";
 import type { GearCategory, GearFilters, UserGear } from "@/lib/types";
 import { calculateSavingsJpy } from "@/lib/utils/asset";
@@ -37,7 +44,7 @@ export function GearList({ gear, categories, brands, filters }: GearListProps) {
   const selectedBrand = filters.brand ?? "";
   const visibleBrands = [
     ...new Set([selectedBrand, ...brands].filter((brand): brand is string => Boolean(brand)))
-  ].sort((a, b) => a.localeCompare(b, "ja"));
+  ].sort(compareGearBrands);
 
   return (
     <div className="space-y-4">
@@ -62,6 +69,23 @@ export function GearList({ gear, categories, brands, filters }: GearListProps) {
       </section>
 
       <section className="rounded-lg border border-white/70 bg-white/90 p-3 shadow-soft">
+        <div className="mb-3 flex items-center justify-between gap-3 px-1">
+          <div>
+            <p className="text-xs font-semibold text-forest-700">絞り込み</p>
+            <p className="mt-0.5 text-sm font-medium text-stone-500">
+              {gear.length.toLocaleString("ja-JP")}件を表示中
+            </p>
+          </div>
+          {(filters.q || filters.brand || filters.category || (filters.status && filters.status !== "all")) ? (
+            <Link
+              href="/gear"
+              className="rounded-lg bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-600"
+            >
+              解除
+            </Link>
+          ) : null}
+        </div>
+
         <form className="flex items-center gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2">
           <Search className="h-5 w-5 shrink-0 text-stone-400" />
           <input
@@ -94,7 +118,7 @@ export function GearList({ gear, categories, brands, filters }: GearListProps) {
                 href={buildGearHref(filters, { brand, category: undefined })}
                 active={selectedBrand === brand}
               >
-                {brand}
+                <BrandLogoMark brand={brand} />
               </FilterChip>
             ))}
           </div>
@@ -190,7 +214,10 @@ export function GearList({ gear, categories, brands, filters }: GearListProps) {
           </div>
 
           {gearGroups.map((group) => (
-            <section key={group.id} className="overflow-hidden rounded-lg border border-white/70 bg-white/90 shadow-soft">
+            <section
+              key={group.id}
+              className="overflow-hidden rounded-lg border border-white/70 bg-white/90 shadow-soft"
+            >
               <div className="flex items-end justify-between gap-3 border-b border-stone-100 bg-stone-50/80 px-4 py-3">
                 <div>
                   <h2 className="text-base font-semibold text-ink">{group.name}</h2>
@@ -217,6 +244,7 @@ export function GearList({ gear, categories, brands, filters }: GearListProps) {
 function GearCard({ item }: { item: UserGear }) {
   const savingsJpy = calculateSavingsJpy(item.msrp_jpy, item.purchase_price_jpy);
   const categoryLabel = item.gear_subcategories?.name_ja ?? item.gear_categories?.name_ja;
+  const weightLabel = getGearDisplayWeightLabel(item);
   const valueLabel =
     item.purchase_price_jpy === null
       ? item.msrp_jpy === null
@@ -225,7 +253,7 @@ function GearCard({ item }: { item: UserGear }) {
       : formatJpy(item.purchase_price_jpy);
 
   return (
-    <article className="bg-white px-4 py-3">
+    <article className="bg-white px-4 py-3 transition hover:bg-stone-50/70">
       <div className="grid grid-cols-[4.5rem_minmax(0,1fr)_auto] items-center gap-3">
         {item.image_url ? (
           <Link
@@ -249,10 +277,17 @@ function GearCard({ item }: { item: UserGear }) {
         )}
 
         <div className="min-w-0">
-          <Link href={`/gear/${item.id}`} className="block min-w-0">
-            <span className="block truncate text-base font-semibold text-ink">
-              {item.name}
+          <div className="flex min-w-0 items-start justify-between gap-2">
+            <Link href={`/gear/${item.id}`} className="block min-w-0">
+              <span className="block truncate text-base font-semibold text-ink">
+                {item.name}
+              </span>
+            </Link>
+            <span className="shrink-0 rounded-md bg-forest-50 px-2 py-1 text-[11px] font-semibold text-forest-700 sm:hidden">
+              {statusLabels[item.status]}
             </span>
+          </div>
+          <Link href={`/gear/${item.id}`} className="mt-0.5 block min-w-0">
             <span className="mt-0.5 block truncate text-sm text-stone-500">
               {[item.brand, item.model].filter(Boolean).join(" / ") || "ブランド未設定"}
             </span>
@@ -265,7 +300,7 @@ function GearCard({ item }: { item: UserGear }) {
               </span>
             ) : null}
             <span className="font-semibold text-stone-600">
-              {formatWeight(getGearWeightGrams(item))}
+              {weightLabel}
             </span>
             <span className="text-stone-400">/</span>
             <span className="font-semibold text-stone-600">{valueLabel}</span>
@@ -279,6 +314,12 @@ function GearCard({ item }: { item: UserGear }) {
           </div>
 
           <div className="mt-3 flex gap-2 sm:hidden">
+            <Link
+              href={`/gear/${item.id}`}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-forest-50 px-3 py-2 text-xs font-semibold text-forest-700"
+            >
+              詳細
+            </Link>
             <Link
               href={`/gear/${item.id}/edit`}
               className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-700"
@@ -308,10 +349,35 @@ function GearCard({ item }: { item: UserGear }) {
           >
             <Edit3 className="h-4 w-4" />
           </Link>
-          <ChevronRight className="h-5 w-5 text-stone-300" />
+          <Link
+            href={`/gear/${item.id}`}
+            className="rounded-lg p-2 text-stone-400 hover:bg-stone-100 hover:text-ink"
+            aria-label={`${item.name}の詳細`}
+          >
+            <ChevronRight className="h-5 w-5" />
+          </Link>
         </div>
       </div>
     </article>
+  );
+}
+
+function BrandLogoMark({ brand }: { brand: string }) {
+  const normalizedBrand = normalizeGearText(brand);
+  const label = getBrandLogoLabel(brand);
+
+  return (
+    <span
+      className={`inline-flex min-h-5 min-w-10 items-center justify-center rounded px-1.5 text-[13px] font-bold leading-none tracking-normal ${
+        normalizedBrand === "thenorthface"
+          ? "font-black uppercase"
+          : normalizedBrand === "montbell"
+            ? "font-semibold lowercase"
+            : "uppercase"
+      }`}
+    >
+      {label}
+    </span>
   );
 }
 
@@ -462,7 +528,5 @@ function groupGearByCategory(gear: UserGear[], categories: GearCategory[]) {
 }
 
 function getGearWeightGrams(item: UserGear) {
-  return Number(
-    item.measured_weight_grams ?? item.official_weight_grams ?? item.weight_grams
-  );
+  return getGearDisplayWeightGrams(item) ?? 0;
 }

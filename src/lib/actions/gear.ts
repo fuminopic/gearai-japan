@@ -23,7 +23,7 @@ export async function createGear(formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath("/gear");
   revalidatePath("/plan");
-  redirect("/gear");
+  redirect("/gear?saved=created");
 }
 
 export async function updateGear(id: string, formData: FormData) {
@@ -52,7 +52,7 @@ export async function updateGear(id: string, formData: FormData) {
   revalidatePath("/gear");
   revalidatePath("/plan");
   revalidatePath(`/gear/${id}/edit`);
-  redirect("/gear");
+  redirect("/gear?saved=updated");
 }
 
 export async function deleteGear(id: string) {
@@ -71,6 +71,7 @@ export async function deleteGear(id: string) {
   revalidatePath("/dashboard");
   revalidatePath("/gear");
   revalidatePath("/plan");
+  redirect("/gear?saved=deleted");
 }
 
 function getGearPayload(formData: FormData) {

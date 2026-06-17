@@ -13,6 +13,7 @@ type GearPageProps = {
     brand?: string;
     sort?: string;
     error?: string;
+    saved?: string;
   }>;
 };
 
@@ -31,6 +32,7 @@ export default async function GearPage({ searchParams }: GearPageProps) {
     getUserGearBrands(),
     getUserGear(filters)
   ]);
+  const savedMessage = getSavedMessage(params.saved);
 
   return (
     <div className="space-y-4">
@@ -54,6 +56,12 @@ export default async function GearPage({ searchParams }: GearPageProps) {
         </p>
       ) : null}
 
+      {savedMessage && !params.error ? (
+        <p className="rounded-lg border border-forest-100 bg-forest-50 px-4 py-3 text-sm font-semibold text-forest-800">
+          {savedMessage}
+        </p>
+      ) : null}
+
       <GearList gear={gear} categories={categories} brands={brands} filters={filters} />
     </div>
   );
@@ -65,4 +73,20 @@ function isGearStatus(value?: string): value is GearStatus | "all" {
 
 function isSort(value?: string): value is GearFilters["sort"] {
   return value === "newest" || value === "weight" || value === "price";
+}
+
+function getSavedMessage(value?: string) {
+  if (value === "created") {
+    return "装備を登録しました";
+  }
+
+  if (value === "updated") {
+    return "装備を更新しました";
+  }
+
+  if (value === "deleted") {
+    return "装備を削除しました";
+  }
+
+  return null;
 }

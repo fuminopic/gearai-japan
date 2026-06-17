@@ -14,6 +14,10 @@ const gearActionSource = readFileSync(
   new URL("../src/lib/actions/gear.ts", import.meta.url),
   "utf8"
 );
+const gearDisplaySource = readFileSync(
+  new URL("../src/lib/gear-display.ts", import.meta.url),
+  "utf8"
+);
 const gearImageStorageMigrationSource = readFileSync(
   new URL("../supabase/migrations/032_user_gear_private_image_storage.sql", import.meta.url),
   "utf8"
@@ -35,7 +39,8 @@ test("gear add form supports explicit search, suggestions, and logo-like brand c
   assert.match(gearFormSource, />\s*検索\s*<\/button>/);
   assert.match(gearFormSource, /getProductDisplayTitle\(product\)/);
   assert.match(gearFormSource, /BrandLogoMark/);
-  assert.match(gearFormSource, /brandLogoLabels/);
+  assert.match(gearDisplaySource, /brandLogoLabels/);
+  assert.match(gearFormSource, /getBrandLogoLabel/);
   assert.match(gearFormSource, /ariaLabel=\{`\$\{item\}を選択`\}/);
 });
 
@@ -76,11 +81,11 @@ test("gear add form separates brand results by product category", () => {
 });
 
 test("gear add form treats backpack liters as volume, not people capacity", () => {
-  assert.match(gearFormSource, /function getProductVolume/);
-  assert.match(gearFormSource, /function isBackpackProduct/);
+  assert.match(gearDisplaySource, /function getProductVolume/);
+  assert.match(gearDisplaySource, /function isBackpackProduct/);
   assert.match(gearFormSource, /setVolume\(productVolume \?\? ""\)/);
   assert.match(gearFormSource, /setCapacity\(isBackpackProduct\(product\) \? "" : product\.capacity \?\? ""\)/);
-  assert.match(gearFormSource, /`\$\{baseName\} \(\$\{productVolume\}\)`/);
+  assert.match(gearDisplaySource, /`\$\{baseName\} \(\$\{productVolume\}\)`/);
   assert.match(gearFormSource, /isBackpackProduct\(product\) \? null : product\.capacity/);
 });
 
@@ -95,8 +100,8 @@ test("gear add form keeps common Japanese outdoor brands at the top", () => {
     "Therm-a-Rest",
     "SOTO"
   ]) {
-    assert.match(gearFormSource, new RegExp(`"${brand}"`));
+    assert.match(gearDisplaySource, new RegExp(`"${brand}"`));
   }
 
-  assert.match(gearFormSource, /compareProductBrands/);
+  assert.match(gearDisplaySource, /compareGearBrands/);
 });

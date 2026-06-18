@@ -88,7 +88,7 @@ export function BrandLogo({ brand, className, compact = false }: BrandLogoProps)
       <img
         src={logo.src}
         alt={logo.alt}
-        className="max-h-full max-w-full object-contain"
+        className="max-h-full max-w-full scale-150 object-contain"
         loading="lazy"
       />
     </span>

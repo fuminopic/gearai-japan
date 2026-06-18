@@ -4,7 +4,7 @@ export const MAJOR_GEAR_CATEGORIES = [
   {
     id: "clothing",
     label: "ウェア",
-    color: "#14724e",
+    color: "#2E7D32",
     categoryAliases: ["clothing", "rainwear"],
     subcategoryAliases: [
       "rainwear",
@@ -31,7 +31,7 @@ export const MAJOR_GEAR_CATEGORIES = [
   {
     id: "backpack",
     label: "ザック",
-    color: "#4f7f5f",
+    color: "#1976D2",
     categoryAliases: ["backpack", "backpacking", "carry"],
     subcategoryAliases: ["backpack"],
     textHints: ["ザック", "バックパック", "パック", "ポーチ", "サコッシュ"]
@@ -39,7 +39,7 @@ export const MAJOR_GEAR_CATEGORIES = [
   {
     id: "shoes",
     label: "シューズ",
-    color: "#8a6f52",
+    color: "#F57C00",
     categoryAliases: [],
     subcategoryAliases: ["footwear", "gaiters", "socks", "insole"],
     textHints: [
@@ -55,7 +55,7 @@ export const MAJOR_GEAR_CATEGORIES = [
   {
     id: "tentSleep",
     label: "テント・シュラフ",
-    color: "#6b7f45",
+    color: "#7E57C2",
     categoryAliases: ["shelter", "sleep", "sleeping"],
     subcategoryAliases: [
       "tent",
@@ -82,7 +82,7 @@ export const MAJOR_GEAR_CATEGORIES = [
   {
     id: "cooking",
     label: "クッキング",
-    color: "#b58a2a",
+    color: "#FBC02D",
     categoryAliases: ["cooking", "hydration"],
     subcategoryAliases: [
       "stove",
@@ -110,7 +110,7 @@ export const MAJOR_GEAR_CATEGORIES = [
   {
     id: "safetyNav",
     label: "安全・ナビ",
-    color: "#64748b",
+    color: "#0097A7",
     categoryAliases: ["electronics", "navigation", "first_aid", "safety", "bear_safety"],
     subcategoryAliases: [
       "gps",
@@ -213,12 +213,26 @@ export function getRetailGearCategory(item: GearCategoryLike) {
 
   for (const category of MAJOR_GEAR_CATEGORIES) {
     if (
-      category.categoryAliases.some((alias) =>
-        categoryCandidates.includes(normalizeCategoryKey(alias))
-      ) ||
       category.subcategoryAliases.some((alias) =>
         subcategoryCandidates.includes(normalizeCategoryKey(alias))
-      ) ||
+      )
+    ) {
+      return category;
+    }
+  }
+
+  for (const category of MAJOR_GEAR_CATEGORIES) {
+    if (
+      category.categoryAliases.some((alias) =>
+        categoryCandidates.includes(normalizeCategoryKey(alias))
+      )
+    ) {
+      return category;
+    }
+  }
+
+  for (const category of MAJOR_GEAR_CATEGORIES) {
+    if (
       category.textHints.some((hint) =>
         text.includes(hint.normalize("NFKC").toLowerCase())
       )

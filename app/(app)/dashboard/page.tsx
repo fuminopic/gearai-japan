@@ -315,15 +315,6 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
           label="主要カテゴリー"
         />
       </div>
-      {summary.majorCategoryMissingLabels.length > 0 ? (
-        <p className="rounded-lg bg-stone-50 px-3 py-2 text-xs font-semibold leading-5 text-stone-500">
-          未登録: {summary.majorCategoryMissingLabels.join("、")}
-        </p>
-      ) : (
-        <p className="rounded-lg bg-forest-50 px-3 py-2 text-xs font-semibold text-forest-700">
-          主要カテゴリーは登録済みです
-        </p>
-      )}
       <GearComposition summary={summary} />
     </section>
   );
@@ -387,9 +378,6 @@ function RecentGearSection({
 function GearComposition({ summary }: { summary: DashboardSummary }) {
   const distribution = buildGearComposition(summary);
   const activeDistribution = distribution.filter((item) => item.value > 0);
-  const topCategories = [...activeDistribution]
-    .sort((a, b) => b.percent - a.percent || b.value - a.value)
-    .slice(0, 3);
 
   return (
     <div className="border-t border-stone-100 pt-4">
@@ -401,24 +389,29 @@ function GearComposition({ summary }: { summary: DashboardSummary }) {
       </div>
       <div className="mt-3 flex h-3 overflow-hidden rounded-full bg-stone-100">
         {activeDistribution.length > 0 ? (
-          activeDistribution.map((item) => (
-            <span
-              key={item.id}
-              className="h-full"
-              style={{
-                width: `${Math.max(item.percent, 3)}%`,
-                backgroundColor: item.color
-              }}
-            />
-          ))
+          distribution
+            .filter((item) => item.value > 0)
+            .map((item) => (
+              <span
+                key={item.id}
+                className="h-full"
+                style={{
+                  width: `${Math.max(item.percent, 3)}%`,
+                  backgroundColor: item.color
+                }}
+              />
+            ))
         ) : (
           <span className="h-full w-full bg-stone-200" />
         )}
       </div>
-      <div className="mt-3 grid gap-2">
-        {(topCategories.length > 0 ? topCategories : distribution.slice(0, 3)).map((item) => (
-          <div key={item.id} className="flex items-center justify-between text-xs">
-            <span className="flex min-w-0 items-center gap-2 text-stone-600">
+      <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
+        {distribution.map((item) => (
+          <div
+            key={item.id}
+            className="flex min-w-0 items-center justify-between gap-2 text-[11px]"
+          >
+            <span className="flex min-w-0 items-center gap-1.5 text-stone-600">
               <span
                 className="h-2 w-2 shrink-0 rounded-full"
                 style={{ backgroundColor: item.color }}
@@ -493,16 +486,19 @@ function buildGearComposition(summary: DashboardSummary) {
     (sum, item) => sum + (useWeight ? item.weightG : item.count),
     0
   );
-  const source = summary.categoryWeights.length > 0 ? summary.categoryWeights : [];
+  const weightsByCategory = new Map(
+    summary.categoryWeights.map((item) => [item.categoryId, item])
+  );
 
-  return source.map((item) => {
-    const value = useWeight ? item.weightG : item.count;
+  return MAJOR_GEAR_CATEGORIES.map((category) => {
+    const item = weightsByCategory.get(category.id);
+    const value = item ? (useWeight ? item.weightG : item.count) : 0;
     return {
-      id: item.categoryId,
-      label: item.nameJa,
+      id: category.id,
+      label: category.label,
       value,
       percent: total > 0 ? Math.round((value / total) * 100) : 0,
-      color: categoryColorById.get(item.categoryId) ?? "#d1d5db"
+      color: categoryColorById.get(category.id) ?? "#d1d5db"
     };
   });
 }

@@ -179,6 +179,9 @@ test("home gear summary uses the retail category composition bar", () => {
   assert.match(dashboardSource, /MAJOR_GEAR_CATEGORIES/);
   assert.match(dashboardSource, /装備構成/);
   assert.match(dashboardSource, /flex h-3 overflow-hidden rounded-full bg-stone-100/);
+  assert.match(dashboardSource, /grid grid-cols-2 gap-x-4 gap-y-2/);
+  assert.match(dashboardSource, /MAJOR_GEAR_CATEGORIES\.map/);
+  assert.doesNotMatch(dashboardSource, /topCategories/);
   assert.doesNotMatch(dashboardSource, /CategoryDistribution/);
   assert.doesNotMatch(dashboardSource, /DonutChart/);
   assert.doesNotMatch(dashboardSource, /カテゴリー分布/);
@@ -190,8 +193,9 @@ test("home redesign exposes only allowed gear summary metrics", () => {
   for (const copy of ["マイ装備", "所有装備数", "総重量", "主要カテゴリー"]) {
     assert.match(dashboardSource, new RegExp(copy));
   }
-  assert.match(dashboardSource, /majorCategoryMissingLabels/);
   assert.match(dashboardDataSource, /getMajorGearCategoryCoverage/);
+  assert.match(dashboardDataSource, /majorCategoryMissingLabels/);
+  assert.doesNotMatch(dashboardSource, /majorCategoryMissingLabels/);
 
   for (const forbidden of [
     "私の装備",
@@ -210,11 +214,12 @@ test("home redesign includes gear empty and category empty states", () => {
   for (const copy of [
     "まだ装備がありません",
     "最初の装備を追加して、",
-    "装備を追加する",
-    "主要カテゴリーは登録済みです"
+    "装備を追加する"
   ]) {
     assert.match(dashboardSource, new RegExp(copy));
   }
+  assert.doesNotMatch(dashboardSource, /未登録:/);
+  assert.doesNotMatch(dashboardSource, /主要カテゴリーは登録済みです/);
   assert.doesNotMatch(dashboardSource, /バランスの良い構成です！/);
   assert.doesNotMatch(dashboardSource, /装備を追加すると、分布とバランスを確認できます/);
 });

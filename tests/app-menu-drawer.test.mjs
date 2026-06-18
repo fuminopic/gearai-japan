@@ -10,6 +10,9 @@ test("app menu drawer exposes the basic mobile menu structure", () => {
   assert.match(drawerSource, /role="dialog"/);
   assert.match(drawerSource, /aria-modal="true"/);
   assert.match(drawerSource, /createPortal\(drawerLayer, document\.body\)/);
+  assert.match(drawerSource, /shouldRenderDrawer/);
+  assert.match(drawerSource, /setShouldRenderDrawer\(false\)/);
+  assert.match(drawerSource, /requestAnimationFrame/);
   assert.match(drawerSource, /translate-x-full/);
   assert.match(drawerSource, /z-\[9998\]/);
   assert.match(drawerSource, /z-\[9999\]/);

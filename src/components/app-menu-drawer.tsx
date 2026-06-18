@@ -51,6 +51,7 @@ export function AppMenuDrawer({ userEmail, buttonClassName }: AppMenuDrawerProps
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [shouldRenderDrawer, setShouldRenderDrawer] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -79,6 +80,21 @@ export function AppMenuDrawer({ userEmail, buttonClassName }: AppMenuDrawerProps
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRenderDrawer(true);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setShouldRenderDrawer(false);
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [isOpen]);
 
   const drawerLayer = (
     <>
@@ -159,7 +175,10 @@ export function AppMenuDrawer({ userEmail, buttonClassName }: AppMenuDrawerProps
         type="button"
         aria-label="メニュー"
         aria-expanded={isOpen}
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setShouldRenderDrawer(true);
+          window.requestAnimationFrame(() => setIsOpen(true));
+        }}
         className={
           buttonClassName ??
           "-mr-2 inline-flex h-10 w-10 items-center justify-center rounded-xl text-gray-700 transition active:scale-95"
@@ -167,7 +186,9 @@ export function AppMenuDrawer({ userEmail, buttonClassName }: AppMenuDrawerProps
       >
         <Menu aria-hidden className="h-6 w-6" />
       </button>
-      {isMounted ? createPortal(drawerLayer, document.body) : null}
+      {isMounted && shouldRenderDrawer
+        ? createPortal(drawerLayer, document.body)
+        : null}
     </>
   );
 }

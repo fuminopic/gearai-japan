@@ -10,6 +10,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { AppLogo } from "@/components/app-logo";
+import { AppMenuDrawer } from "@/components/app-menu-drawer";
 import { DashboardPlanMeta } from "@/components/dashboard-plan-meta";
 import { DashboardPlanChecklistSummary } from "@/components/dashboard-plan-checklist-summary";
 import { getOwnedGearForPlanning } from "@/lib/data/gear";
@@ -96,25 +97,7 @@ function HomePageContent({
 
       <header className="sticky top-0 z-50 flex w-full items-center justify-between border-b border-gray-100/50 bg-[#FAFAFA]/90 px-4 pb-3 pt-[max(env(safe-area-inset-top),20px)] backdrop-blur-md">
         <AppLogo className="h-12" />
-        <button
-          type="button"
-          aria-label="メニュー"
-          className="-mr-2 p-2 text-gray-700 transition-transform active:scale-95"
-        >
-          <svg
-            className="h-6 w-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
+        <AppMenuDrawer buttonClassName="-mr-2 inline-flex h-10 w-10 items-center justify-center rounded-xl text-gray-700 transition-transform active:scale-95" />
       </header>
 
       <div className="mt-6 space-y-6 px-4">

@@ -4,9 +4,9 @@ import Link from "next/link";
 
 import { AppBottomNav } from "@/components/app-bottom-nav";
 import { AppLogo } from "@/components/app-logo";
+import { AppMenuDrawer } from "@/components/app-menu-drawer";
 import { AppRoutePrefetcher } from "@/components/app-route-prefetcher";
 import { NavigationFeedback } from "@/components/navigation-feedback";
-import { signOut } from "@/lib/actions/auth";
 
 const navItems = [
   { href: "/dashboard", label: "ホーム", icon: Home },
@@ -30,11 +30,7 @@ export function AppNav() {
           <Link href="/dashboard" className="inline-flex items-center">
             <AppLogo className="h-12" />
           </Link>
-          <form action={signOut}>
-            <button className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-stone-700 shadow-sm transition active:scale-95">
-              ログアウト
-            </button>
-          </form>
+          <AppMenuDrawer />
         </div>
       </header>
 

@@ -124,8 +124,8 @@ test("home redesign uses the requested YAMAJITAKU header and trip states", () =>
 test("home redesign v2 removes hero secondary actions and replaces bell with menu", () => {
   assert.match(dashboardSource, /sticky top-0 z-50/);
   assert.match(dashboardSource, /pt-\[max\(env\(safe-area-inset-top\),20px\)\]/);
-  assert.match(dashboardSource, /aria-label="メニュー"/);
-  assert.match(dashboardSource, /M4 6h16M4 12h16M4 18h16/);
+  assert.match(dashboardSource, /AppMenuDrawer/);
+  assert.doesNotMatch(dashboardSource, /M4 6h16M4 12h16M4 18h16/);
   assert.doesNotMatch(dashboardSource, /Bell/);
   assert.doesNotMatch(dashboardSource, /<details/);
   assert.doesNotMatch(dashboardSource, /CalendarDays/);

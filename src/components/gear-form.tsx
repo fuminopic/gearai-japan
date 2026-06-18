@@ -442,6 +442,7 @@ export function GearForm({
             <ProductFilterChip
               active={brandFilter === "all"}
               onClick={() => handleBrandFilter("all")}
+              fixedWidth
             >
               すべて
             </ProductFilterChip>
@@ -451,6 +452,8 @@ export function GearForm({
                 active={brandFilter === item}
                 onClick={() => handleBrandFilter(item)}
                 ariaLabel={`${item}を選択`}
+                fixedWidth
+                logoSurface
               >
                 <BrandLogo brand={item} compact />
               </ProductFilterChip>
@@ -851,24 +854,34 @@ function ProductFilterChip({
   active,
   onClick,
   children,
-  ariaLabel
+  ariaLabel,
+  fixedWidth = false,
+  logoSurface = false
 }: {
   active: boolean;
   onClick: () => void;
   children: ReactNode;
   ariaLabel?: string;
+  fixedWidth?: boolean;
+  logoSurface?: boolean;
 }) {
+  const stateClass = logoSurface
+    ? active
+      ? "border-forest-700 bg-white text-stone-900 ring-1 ring-forest-700"
+      : "border-stone-200 bg-white text-stone-700 hover:border-forest-200 hover:bg-forest-50 hover:text-forest-800"
+    : active
+      ? "border-forest-700 bg-forest-700 text-white"
+      : "border-stone-200 bg-white text-stone-700 hover:border-forest-200 hover:bg-forest-50 hover:text-forest-800";
+
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
       title={ariaLabel}
-      className={`inline-flex h-10 shrink-0 items-center justify-center rounded-lg border px-3 text-sm font-semibold leading-none transition ${
-        active
-          ? "border-forest-700 bg-forest-700 text-white"
-          : "border-stone-200 bg-white text-stone-700 hover:border-forest-200 hover:bg-forest-50 hover:text-forest-800"
-      }`}
+      className={`inline-flex h-10 shrink-0 items-center justify-center rounded-lg border text-sm font-semibold leading-none transition ${
+        fixedWidth ? "w-[7.75rem] px-2" : "px-3"
+      } ${stateClass}`}
     >
       {children}
     </button>

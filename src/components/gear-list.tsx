@@ -123,6 +123,7 @@ export function GearList({
             <FilterChip
               href={buildGearHref(filters, { brand: undefined, category: undefined })}
               active={!selectedBrand}
+              fixedWidth
             >
               すべて
             </FilterChip>
@@ -131,6 +132,8 @@ export function GearList({
                 key={brand}
                 href={buildGearHref(filters, { brand, category: undefined })}
                 active={selectedBrand === brand}
+                fixedWidth
+                logoSurface
               >
                 <BrandLogo brand={brand} compact />
               </FilterChip>
@@ -344,20 +347,30 @@ function FilterLabel({ icon, label }: { icon: ReactNode; label: string }) {
 function FilterChip({
   href,
   active,
-  children
+  children,
+  fixedWidth = false,
+  logoSurface = false
 }: {
   href: Route;
   active: boolean;
   children: ReactNode;
+  fixedWidth?: boolean;
+  logoSurface?: boolean;
 }) {
+  const stateClass = logoSurface
+    ? active
+      ? "border-forest-700 bg-white text-stone-900 ring-1 ring-forest-700"
+      : "border-stone-200 bg-white text-stone-700 hover:border-forest-200 hover:bg-forest-50 hover:text-forest-800"
+    : active
+      ? "border-forest-700 bg-forest-700 text-white"
+      : "border-stone-200 bg-white text-stone-700 hover:border-forest-200 hover:bg-forest-50 hover:text-forest-800";
+
   return (
     <Link
       href={href}
-      className={`inline-flex h-10 shrink-0 items-center justify-center rounded-lg border px-3 text-sm font-semibold leading-none transition ${
-        active
-          ? "border-forest-700 bg-forest-700 text-white"
-          : "border-stone-200 bg-white text-stone-700 hover:border-forest-200 hover:bg-forest-50 hover:text-forest-800"
-      }`}
+      className={`inline-flex h-10 shrink-0 items-center justify-center rounded-lg border text-sm font-semibold leading-none transition ${
+        fixedWidth ? "w-[7.75rem] px-2" : "px-3"
+      } ${stateClass}`}
     >
       {children}
     </Link>

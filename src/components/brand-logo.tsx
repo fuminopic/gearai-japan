@@ -26,20 +26,24 @@ const officialBrandLogos: Record<
   },
   blackdiamond: {
     src: "/brand-logos/black-diamond.png",
-    alt: "Black Diamond"
+    alt: "Black Diamond",
+    className: "max-h-6 max-w-[4.75rem]"
   },
   nanga: {
     src: "/brand-logos/nanga.webp",
     alt: "NANGA",
-    wrapperClassName: "rounded-md bg-ink px-1"
+    className: "max-h-4 max-w-[4.75rem]",
+    wrapperClassName: "rounded-md bg-ink px-2"
   },
   isuka: {
     src: "/brand-logos/isuka.gif",
-    alt: "ISUKA"
+    alt: "ISUKA",
+    className: "max-h-6 max-w-[4.75rem]"
   },
   nemo: {
     src: "/brand-logos/nemo.png",
-    alt: "NEMO"
+    alt: "NEMO",
+    className: "max-h-6 max-w-[4.75rem]"
   },
   thermarest: {
     src: "/brand-logos/therm-a-rest.png",
@@ -55,7 +59,8 @@ const officialBrandLogos: Record<
   },
   petzl: {
     src: "/brand-logos/petzl.png",
-    alt: "Petzl"
+    alt: "Petzl",
+    className: "max-h-6 max-w-[4.75rem]"
   },
   caravan: {
     src: "/brand-logos/logo-open.png",
@@ -76,7 +81,7 @@ export function BrandLogo({ brand, className, compact = false }: BrandLogoProps)
       aria-label={logo.alt}
       className={cn(
         "inline-flex shrink-0 items-center justify-center overflow-hidden",
-        compact ? "h-6 w-18" : "h-7 w-32",
+        compact ? "h-7 w-[5.75rem]" : "h-8 w-[8.25rem]",
         logo.wrapperClassName,
         className
       )}
@@ -84,7 +89,7 @@ export function BrandLogo({ brand, className, compact = false }: BrandLogoProps)
       <img
         src={logo.src}
         alt={logo.alt}
-        className={cn("h-full w-full object-contain", logo.className)}
+        className={cn("max-h-full max-w-full object-contain", logo.className)}
         loading="lazy"
       />
     </span>
@@ -106,7 +111,7 @@ function BrandName({
       aria-label={brand}
       className={cn(
         "inline-flex h-6 shrink-0 items-center justify-center whitespace-nowrap text-sm font-semibold leading-none tracking-normal",
-        compact ? "max-w-28" : "max-w-36",
+        compact ? "w-[5.75rem]" : "w-[8.25rem]",
         className
       )}
     >

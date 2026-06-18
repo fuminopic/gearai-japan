@@ -186,11 +186,11 @@ function HeroCard({
       <div className="relative z-20 flex min-h-[252px] flex-col justify-between gap-3 p-5">
         <div>
           <HeroTitle trip={trip} />
-          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-3">
+          <div className="mt-5 flex flex-wrap items-end gap-x-4 gap-y-3">
             <h2 className="font-maru text-[45px] font-normal leading-none tracking-[0.04em] text-black">
               {trip.mountain_name}
             </h2>
-            <div className="flex flex-wrap gap-2 font-maru">
+            <div className="flex flex-wrap gap-2 pb-1 font-maru">
               <PlanPill>{seasonLabel(trip.season)}</PlanPill>
               <PlanPill>{styleLabel(trip.style)}</PlanPill>
             </div>
@@ -259,9 +259,9 @@ function EmptyTripHero() {
 
 function HeroTitle({ trip }: { trip?: SavedTripPlan }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-sans text-[#14724e]">
-      <Mountain className="h-5 w-5 fill-[#14724e] text-[#14724e]" />
-      <span className="text-sm font-bold">次回の山行</span>
+    <div className="flex flex-wrap items-end gap-x-3 gap-y-1 font-sans text-[#14724e]">
+      <Mountain className="mb-0.5 h-5 w-5 fill-[#14724e] text-[#14724e]" />
+      <span className="pb-0.5 text-sm font-bold leading-none">次回の山行</span>
       {trip ? (
         <DashboardPlanMeta
           planId={trip.id}

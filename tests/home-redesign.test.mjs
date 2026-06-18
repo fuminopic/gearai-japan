@@ -34,6 +34,14 @@ const supabaseMiddlewareSource = readFileSync(
   new URL("../src/lib/supabase/middleware.ts", import.meta.url),
   "utf8"
 );
+const tailwindConfigSource = readFileSync(
+  new URL("../tailwind.config.ts", import.meta.url),
+  "utf8"
+);
+const globalsSource = readFileSync(
+  new URL("../app/globals.css", import.meta.url),
+  "utf8"
+);
 
 test("home redesign keeps the required mobile-first section order", () => {
   const order = [
@@ -76,8 +84,8 @@ test("home redesign v2 uses shared bottom navigation", () => {
   assert.match(appBottomNavSource, /transition-all duration-150 ease-out/);
   assert.match(appBottomNavSource, /touch-manipulation/);
   assert.match(appBottomNavSource, /prefetch/);
-  assert.match(appBottomNavSource, /scale-110 text-\[#3A5A40\]/);
-  assert.match(appBottomNavSource, /text-\[#3A5A40\]/);
+  assert.match(appBottomNavSource, /scale-110 text-\[#14724e\]/);
+  assert.match(appBottomNavSource, /text-\[#14724e\]/);
   assert.match(appBottomNavSource, /text-gray-400/);
   assert.match(appBottomNavSource, /h-5 w-5/);
   assert.match(appBottomNavSource, /text-\[10px\]/);
@@ -121,14 +129,15 @@ test("home redesign v2 removes hero secondary actions and replaces bell with men
 });
 
 test("home hero shows the saved plan checklist summary over the static hills background", () => {
-  assert.match(dashboardSource, /relative min-h-\[300px\] w-full overflow-hidden rounded-\[28px\]/);
+  assert.match(dashboardSource, /relative min-h-\[252px\] w-full overflow-hidden rounded-\[28px\]/);
   assert.match(dashboardSource, /absolute inset-0 z-0/);
   assert.match(dashboardSource, /src="\/generic-hills\.jpg"/);
   assert.match(dashboardSource, /object-cover object-bottom opacity-80/);
   assert.match(dashboardSource, /absolute inset-0 z-10 bg-gradient-to-t from-\[#E8F0E8\]\/40 via-white\/90 to-white/);
-  assert.match(dashboardSource, /relative z-20 flex min-h-\[300px\] flex-col justify-between gap-5 p-5/);
-  assert.match(dashboardSource, /mt-3/);
-  assert.match(dashboardSource, /w-\[200px\].*rounded-2xl.*bg-\[#3B5B44\]/s);
+  assert.match(dashboardSource, /relative z-20 flex min-h-\[252px\] flex-col justify-between gap-3 p-5/);
+  assert.match(dashboardSource, /font-maru text-\[42px\]/);
+  assert.match(dashboardSource, /bg-\[#14724e\]/);
+  assert.match(dashboardSource, /w-\[184px\].*rounded-2xl.*bg-\[#14724e\]/s);
   assert.match(dashboardSource, /DashboardPlanChecklistSummary/);
   assert.match(dashboardSource, /getPackRequirementPlan/);
   assert.match(dashboardSource, /buildPlanChecklist/);
@@ -220,7 +229,23 @@ test("home hero can display saved trip date and memo without price information",
   assert.match(dashboardSource, /DashboardPlanMeta/);
   assert.match(dashboardSource, /plannedDate=\{trip\.planned_date\}/);
   assert.match(dashboardSource, /tripMemo=\{trip\.trip_memo\}/);
+  assert.match(dashboardSource, /style=\{trip\.style\}/);
+  assert.match(dashboardSource, /variant="memo"/);
   assert.match(dashboardPlanMetaSource, /readTripPlanLocalMeta/);
-  assert.match(dashboardPlanMetaSource, /formatPlanDate\(displayDate\)/);
-  assert.match(dashboardPlanMetaSource, /truncate text-xs font-medium text-stone-500/);
+  assert.match(dashboardPlanMetaSource, /formatPlanDate\(displayDate, style\)/);
+  assert.match(dashboardPlanMetaSource, /style === "DAY_HIKE"/);
+  assert.match(dashboardPlanMetaSource, /endDate\.setDate\(date\.getDate\(\) \+ 1\)/);
+  assert.match(dashboardPlanMetaSource, /truncate text-\[11px\] font-medium text-stone-500/);
+});
+
+test("home typography and green palette follow the latest visual direction", () => {
+  assert.match(globalsSource, /font-family: Helvetica, Arial/);
+  assert.match(tailwindConfigSource, /700: "#14724e"/);
+  assert.match(tailwindConfigSource, /fontFamily/);
+  assert.match(tailwindConfigSource, /maru/);
+  assert.match(dashboardSource, /font-sans text-\[#14724e\]/);
+  assert.match(dashboardSource, /font-maru/);
+  assert.doesNotMatch(dashboardSource, /#3B5B44|#3A5A40/);
+  assert.doesNotMatch(appBottomNavSource, /#3B5B44|#3A5A40/);
+  assert.doesNotMatch(dashboardPlanChecklistSummarySource, /#3B5B44|#3A5A40/);
 });

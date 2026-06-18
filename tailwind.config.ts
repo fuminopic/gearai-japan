@@ -13,7 +13,7 @@ const config: Config = {
           100: "#e5eee5",
           200: "#cbdcca",
           500: "#5f8e65",
-          700: "#37603e",
+          700: "#14724e",
           900: "#1e3824"
         },
         trail: {
@@ -30,12 +30,22 @@ const config: Config = {
       },
       fontFamily: {
         sans: [
-          "Inter",
+          "Helvetica",
+          "Arial",
           "ui-sans-serif",
           "system-ui",
           "-apple-system",
           "BlinkMacSystemFont",
           "Segoe UI",
+          "sans-serif"
+        ],
+        maru: [
+          "\"Morisawa UD Shin Maru Pr6N L\"",
+          "\"Morisawa UD Shin Maru Pr6N\"",
+          "\"Morisawa UD新丸 Pr6N L\"",
+          "\"Morisawa UD新丸 Pr6NL\"",
+          "\"Hiragino Maru Gothic ProN\"",
+          "\"Yu Gothic\"",
           "sans-serif"
         ]
       }
@@ -45,4 +55,3 @@ const config: Config = {
 };
 
 export default config;
-

@@ -10,8 +10,8 @@ import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import { DashboardPlanChecklistSummary } from "@/components/dashboard-plan-checklist-summary";
 import { DashboardPlanMeta } from "@/components/dashboard-plan-meta";
+import { DashboardPlanChecklistSummary } from "@/components/dashboard-plan-checklist-summary";
 import { getOwnedGearForPlanning } from "@/lib/data/gear";
 import { getPackRequirementPlan } from "@/lib/data/pack-requirements";
 import { getDashboardSummary } from "@/lib/data/dashboard";
@@ -196,7 +196,7 @@ function HeroCard({
   const coveragePercent = tripChecklist?.summary.percent ?? getSavedProgressFallback(trip);
   const planHref = `/plan?id=${trip.id}` as Route;
   return (
-    <section className="relative min-h-[300px] w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7] shadow-sm">
+    <section className="relative min-h-[252px] w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7] shadow-sm">
       <div className="absolute inset-0 z-0">
         <Image
           src="/generic-hills.jpg"
@@ -207,24 +207,27 @@ function HeroCard({
         />
       </div>
       <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#E8F0E8]/40 via-white/90 to-white" />
-      <div className="relative z-20 flex min-h-[300px] flex-col justify-between gap-5 p-5">
+      <div className="relative z-20 flex min-h-[252px] flex-col justify-between gap-3 p-5">
         <div>
-          <HeroTitle />
-          <div className="mt-3">
-            <h2 className="text-2xl font-bold leading-none tracking-normal">
+          <HeroTitle trip={trip} />
+          <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-2">
+            <h2 className="font-maru text-[42px] font-normal leading-none tracking-normal text-black">
               {trip.mountain_name}
             </h2>
+            <div className="mb-1 flex flex-wrap gap-2 font-maru">
+              <PlanPill>{seasonLabel(trip.season)}</PlanPill>
+              <PlanPill>{styleLabel(trip.style)}</PlanPill>
+            </div>
           </div>
           <DashboardPlanMeta
             planId={trip.id}
             plannedDate={trip.planned_date}
             tripMemo={trip.trip_memo}
-            seasonLabel={seasonLabel(trip.season)}
-            styleLabel={styleLabel(trip.style)}
+            variant="memo"
           />
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <DashboardPlanChecklistSummary
             planId={trip.id}
             checklist={tripChecklist}
@@ -232,7 +235,7 @@ function HeroCard({
           />
           <Link
             href={planHref}
-            className="inline-flex w-[200px] items-center justify-center rounded-2xl bg-[#3B5B44] py-3 text-xs font-bold text-white shadow-sm transition active:scale-95"
+            className="inline-flex w-[184px] items-center justify-center rounded-2xl bg-[#14724e] py-3 text-xs font-bold text-white shadow-sm transition active:scale-95"
           >
             装備チェックを続ける
           </Link>
@@ -269,7 +272,7 @@ function EmptyTripHero() {
 
         <Link
           href={planRoute}
-          className="inline-flex w-[200px] items-center justify-center rounded-2xl bg-[#3B5B44] py-3 text-xs font-bold text-white shadow-sm transition active:scale-95"
+          className="inline-flex w-[200px] items-center justify-center rounded-2xl bg-[#14724e] py-3 text-xs font-bold text-white shadow-sm transition active:scale-95"
         >
           山行計画を作成
         </Link>
@@ -278,12 +281,28 @@ function EmptyTripHero() {
   );
 }
 
-function HeroTitle() {
+function HeroTitle({ trip }: { trip?: SavedTripPlan }) {
   return (
-    <div className="flex items-center gap-3">
-      <Mountain className="h-4 w-4 fill-[#3B5B44] text-[#3B5B44]" />
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-sans text-[#14724e]">
+      <Mountain className="h-5 w-5 fill-[#14724e] text-[#14724e]" />
       <span className="text-sm font-bold">次回の山行</span>
+      {trip ? (
+        <DashboardPlanMeta
+          planId={trip.id}
+          plannedDate={trip.planned_date}
+          tripMemo={trip.trip_memo}
+          style={trip.style}
+        />
+      ) : null}
     </div>
+  );
+}
+
+function PlanPill({ children }: { children: string }) {
+  return (
+    <span className="inline-flex min-w-[72px] items-center justify-center rounded-md bg-[#14724e] px-3 py-1 text-sm font-normal leading-none text-white">
+      {children}
+    </span>
   );
 }
 
@@ -294,7 +313,7 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
         <h2 className="text-base font-bold">マイ装備</h2>
         <Link
           href="/gear/new"
-          className="inline-flex items-center gap-1 text-xs font-bold text-[#3B5B44]"
+          className="inline-flex items-center gap-1 text-xs font-bold text-[#14724e]"
         >
           <PlusText />
           装備を追加
@@ -344,7 +363,7 @@ function RecentGearSection({
     <section>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-bold text-gray-900">最近追加した装備</h2>
-        <Link href="/gear" className="text-xs font-medium text-[#3A5A40]">
+        <Link href="/gear" className="text-xs font-medium text-[#14724e]">
           すべて見る &gt;
         </Link>
       </div>
@@ -378,7 +397,7 @@ function RecentGearSection({
           </p>
           <Link
             href="/gear/new"
-            className="mt-5 rounded-full border border-[#3B5B44] px-6 py-2 text-xs font-bold text-[#3B5B44]"
+            className="mt-5 rounded-full border border-[#14724e] px-6 py-2 text-xs font-bold text-[#14724e]"
           >
             装備を追加する
           </Link>
@@ -420,7 +439,7 @@ function CategoryDistribution({
           ))}
         </div>
       </div>
-      <div className="rounded-xl bg-[#F0F5F2] p-3 text-center text-xs font-medium text-[#3B5B44]">
+      <div className="rounded-xl bg-[#F0F5F2] p-3 text-center text-xs font-medium text-[#14724e]">
         {hasGear
           ? "バランスの良い構成です！"
           : "装備を追加すると、分布とバランスを確認できます"}
@@ -435,7 +454,7 @@ function SectionHeader({ title, href }: { title: string; href: Route }) {
       <h2 className="text-base font-bold tracking-normal">{title}</h2>
       <Link
         href={href}
-        className="inline-flex items-center gap-1 text-xs font-bold text-[#3B5B44]"
+        className="inline-flex items-center gap-1 text-xs font-bold text-[#14724e]"
       >
         すべて見る
         <ChevronRight className="h-4 w-4" />
@@ -461,7 +480,7 @@ function SummaryMetric({
         divided ? "border-r border-gray-100" : ""
       }`}
     >
-      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E8F1E8] text-[#3B5B44]">
+      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E8F1E8] text-[#14724e]">
         <Icon className="h-5 w-5 stroke-[1.8]" />
       </div>
       <p className="text-lg font-bold leading-tight tracking-normal">{value}</p>

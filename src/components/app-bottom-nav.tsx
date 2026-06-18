@@ -31,12 +31,12 @@ export function AppBottomNav() {
             href={item.href}
             prefetch
             className={`flex touch-manipulation flex-col items-center transition-all duration-150 ease-out active:scale-95 ${
-              active ? "scale-110 text-[#3A5A40]" : "text-gray-400"
+              active ? "scale-110 text-[#14724e]" : "text-gray-400"
             }`}
           >
             <Icon
               aria-hidden
-              className={`h-5 w-5 stroke-[1.8] ${active ? "fill-[#3A5A40]" : ""}`}
+              className={`h-5 w-5 stroke-[1.8] ${active ? "fill-[#14724e]" : ""}`}
             />
             <span className="mt-1 text-[10px] font-medium leading-none">
               {item.label}

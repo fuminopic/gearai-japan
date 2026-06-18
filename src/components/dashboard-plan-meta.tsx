@@ -8,16 +8,16 @@ type DashboardPlanMetaProps = {
   planId: string;
   plannedDate: string | null;
   tripMemo: string | null;
-  seasonLabel: string;
-  styleLabel: string;
+  style?: string;
+  variant?: "date" | "memo";
 };
 
 export function DashboardPlanMeta({
   planId,
   plannedDate,
   tripMemo,
-  seasonLabel,
-  styleLabel
+  style,
+  variant = "date"
 }: DashboardPlanMetaProps) {
   const [localMeta, setLocalMeta] = useState<{
     plannedDate: string;
@@ -25,37 +25,28 @@ export function DashboardPlanMeta({
   } | null>(null);
   const displayDate = localMeta?.plannedDate || plannedDate || "";
   const displayMemo = localMeta?.tripMemo || tripMemo?.trim() || "";
-  const plannedDateLabel = formatPlanDate(displayDate);
+  const plannedDateLabel = formatPlanDate(displayDate, style);
 
   useEffect(() => {
     setLocalMeta(readTripPlanLocalMeta(planId));
   }, [planId, plannedDate, tripMemo]);
 
-  return (
-    <>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {plannedDateLabel ? <PlanTag>{plannedDateLabel}</PlanTag> : null}
-        <PlanTag>{seasonLabel}</PlanTag>
-        <PlanTag>{styleLabel}</PlanTag>
-      </div>
-      {displayMemo ? (
-        <p className="mt-2 truncate text-xs font-medium text-stone-500">
-          {displayMemo}
-        </p>
-      ) : null}
-    </>
-  );
-}
+  if (variant === "memo") {
+    return displayMemo ? (
+      <p className="mt-1 truncate text-[11px] font-medium text-stone-500">
+        {displayMemo}
+      </p>
+    ) : null;
+  }
 
-function PlanTag({ children }: { children: string }) {
-  return (
-    <span className="rounded-lg bg-[#E8F0E8] px-3 py-1.5 text-xs font-bold text-[#3B5B44]">
-      {children}
+  return plannedDateLabel ? (
+    <span className="text-xs font-bold tracking-normal text-stone-900">
+      {plannedDateLabel}
     </span>
-  );
+  ) : null;
 }
 
-function formatPlanDate(value: string) {
+function formatPlanDate(value: string, style?: string) {
   if (!value) {
     return "";
   }
@@ -66,9 +57,20 @@ function formatPlanDate(value: string) {
     return "";
   }
 
-  return new Intl.DateTimeFormat("ja-JP", {
-    month: "numeric",
-    day: "numeric",
-    weekday: "short"
-  }).format(date);
+  if (style === "DAY_HIKE") {
+    return formatSingleDate(date, true);
+  }
+
+  const endDate = new Date(date);
+  endDate.setDate(date.getDate() + 1);
+
+  return `${formatSingleDate(date, true)} → ${formatSingleDate(endDate, false)}`;
+}
+
+function formatSingleDate(date: Date, includeYear: boolean) {
+  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+  const prefix = includeYear ? `${date.getFullYear()}. ` : "";
+  return (
+    `${prefix}${date.getMonth() + 1}.${date.getDate()} ` + weekdays[date.getDay()]
+  );
 }

@@ -328,8 +328,6 @@ export function TripPlanningUI({
         selectedStyle={effectiveStyle}
         selectedPlannedDate={planDetailsDraft.plannedDate}
         selectedTripMemo={planDetailsDraft.tripMemo}
-        selectedBringCash={planDetailsDraft.bringCash}
-        selectedHasMountainInsurance={planDetailsDraft.hasMountainInsurance}
         onPlanDetailsChange={(details) =>
           setPlanDetailsDraft((current) => ({ ...current, ...details }))
         }

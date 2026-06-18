@@ -473,14 +473,18 @@ test("saving and updating a plan writes progress payload and redirects home", ()
   assert.match(tripPlansDetailsMigrationSource, /add column if not exists has_mountain_insurance boolean/);
 });
 
-test("trip planning form captures date, memo, cash, and insurance without touching the engine", () => {
+test("trip planning form captures date and memo while moving insurance out of the plan flow", () => {
   assert.match(tripPlanningFormSource, /name="date"/);
   assert.match(tripPlanningFormSource, /予定日/);
   assert.match(tripPlanningFormSource, /type="date"/);
   assert.match(tripPlanningFormSource, /name="memo"/);
   assert.match(tripPlanningFormSource, /集合時間、登山口、同行者など/);
-  assert.match(tripPlanningFormSource, /現金を持参/);
-  assert.match(tripPlanningFormSource, /山岳保険に加入済み/);
+  assert.match(tripPlanningFormSource, /grid grid-cols-3/);
+  assert.doesNotMatch(tripPlanningFormSource, /山行オプション/);
+  assert.doesNotMatch(tripPlanningFormSource, /現金を持参/);
+  assert.doesNotMatch(tripPlanningFormSource, /山岳保険に加入済み/);
+  assert.doesNotMatch(tripPlanningFormSource, /name="cash"/);
+  assert.doesNotMatch(tripPlanningFormSource, /name="insurance"/);
   assert.match(tripPlanningUiSource, /name="planned_date"/);
   assert.match(tripPlanningUiSource, /name="trip_memo"/);
   assert.match(tripPlanningUiSource, /name="bring_cash"/);
@@ -491,6 +495,14 @@ test("trip planning form captures date, memo, cash, and insurance without touchi
   assert.match(tripPlanningUiSource, /scrollIntoView/);
   assert.doesNotMatch(planChecklistSource, /山岳保険に加入済み/);
   assert.doesNotMatch(planChecklistSource, /現金を持参/);
+});
+
+test("mountain picker starts from Japan Hyakumeizan and avoids a nested scroll trap", () => {
+  assert.match(tripPlanningFormSource, /useState<MountainListFilter>\("HYAKUMEIZAN"\)/);
+  assert.match(tripPlanningFormSource, /visibleMountainCount/);
+  assert.match(tripPlanningFormSource, /もっと表示/);
+  assert.match(tripPlanningFormSource, /setVisibleMountainCount\(\(count\) => count \+ 8\)/);
+  assert.doesNotMatch(tripPlanningFormSource, /max-h-72/);
 });
 
 test("plan id hydration links home and history to the exact saved plan", () => {

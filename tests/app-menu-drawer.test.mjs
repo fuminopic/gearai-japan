@@ -24,7 +24,7 @@ test("app menu drawer exposes the basic mobile menu structure", () => {
     "ホーム",
     "山行計画",
     "マイ装備",
-    "プロフィール",
+    "マイページ",
     "ヘルプ",
     "利用規約",
     "プライバシーポリシー"

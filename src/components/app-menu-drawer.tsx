@@ -25,7 +25,7 @@ const primaryItems = [
   { href: "/dashboard", label: "ホーム", icon: Home },
   { href: "/plan" as Route, label: "山行計画", icon: ClipboardCheck },
   { href: "/gear", label: "マイ装備", icon: Backpack },
-  { href: "/profile", label: "プロフィール", icon: UserRound }
+  { href: "/profile", label: "マイページ", icon: UserRound }
 ] satisfies Array<{
   href: Route;
   label: string;

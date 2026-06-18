@@ -95,7 +95,7 @@ test("home redesign v2 uses shared bottom navigation", () => {
   assert.match(appNavSource, /ホーム/);
   assert.match(appNavSource, /装備/);
   assert.match(appNavSource, /計画/);
-  assert.match(appNavSource, /自分/);
+  assert.match(appNavSource, /マイページ/);
   assert.doesNotMatch(dashboardSource, /function BottomNavigation/);
   assert.doesNotMatch(dashboardSource, /bottomNavItems/);
 });

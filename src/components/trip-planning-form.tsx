@@ -23,8 +23,6 @@ type TripPlanningFormProps = {
   selectedStyle: MountainFoundationStyle;
   selectedPlannedDate?: string;
   selectedTripMemo?: string;
-  selectedBringCash?: boolean;
-  selectedHasMountainInsurance?: boolean;
   onPlanDetailsChange?: (details: Partial<PlanDetailsDraft>) => void;
   planId?: string | null;
   error?: string;
@@ -33,8 +31,6 @@ type TripPlanningFormProps = {
 type PlanDetailsDraft = {
   plannedDate: string;
   tripMemo: string;
-  bringCash: boolean;
-  hasMountainInsurance: boolean;
 };
 
 type MountainListFilter = "HYAKUMEIZAN" | "NIHYAKUMEIZAN_EXTRA" | "AREA" | "ALL";
@@ -122,8 +118,6 @@ export function TripPlanningForm({
   selectedStyle,
   selectedPlannedDate = "",
   selectedTripMemo = "",
-  selectedBringCash = false,
-  selectedHasMountainInsurance = false,
   onPlanDetailsChange,
   planId,
   error
@@ -138,10 +132,9 @@ export function TripPlanningForm({
   const [mountainSlug, setMountainSlug] = useState(initialMountainSlug);
   const [mountainQuery, setMountainQuery] = useState("");
   const [mountainListFilter, setMountainListFilter] =
-    useState<MountainListFilter>(() =>
-      getDefaultMountainListFilter(getMountainBySlug(initialMountainSlug, selectableMountains))
-    );
+    useState<MountainListFilter>("HYAKUMEIZAN");
   const [selectedArea, setSelectedArea] = useState<MountainAreaFilter>("ALL");
+  const [visibleMountainCount, setVisibleMountainCount] = useState(6);
   const selectedMountain = useMemo(() => {
     return (
       selectableMountains.find((mountain) => mountain.slug === mountainSlug) ??
@@ -156,6 +149,7 @@ export function TripPlanningForm({
       selectedArea
     );
   }, [selectableMountains, mountainListFilter, mountainQuery, selectedArea]);
+  const visibleMountains = filteredMountains.slice(0, visibleMountainCount);
   const mountainCounts = useMemo(
     () => getMountainListCounts(selectableMountains),
     [selectableMountains]
@@ -199,10 +193,11 @@ export function TripPlanningForm({
       selectableMountains
     );
     setMountainSlug(nextMountainSlug);
-    setMountainListFilter(
-      getDefaultMountainListFilter(getMountainBySlug(nextMountainSlug, selectableMountains))
-    );
   }, [selectedMountainSlug, selectableMountains]);
+
+  useEffect(() => {
+    setVisibleMountainCount(6);
+  }, [mountainListFilter, mountainQuery, selectedArea]);
 
   useEffect(() => {
     if (!prefetchedPlanHref) {
@@ -236,8 +231,6 @@ export function TripPlanningForm({
       }
     }
 
-    params.set("cash", formData.get("cash") === "1" ? "1" : "0");
-    params.set("insurance", formData.get("insurance") === "1" ? "1" : "0");
     params.set("focus", "checklist");
 
     startTransition(() => {
@@ -347,9 +340,9 @@ export function TripPlanningForm({
             </span>
           </div>
 
-          <div className="mt-2 max-h-72 space-y-2 overflow-y-auto pr-1">
+          <div className="mt-2 space-y-2">
             {filteredMountains.length > 0 ? (
-              filteredMountains.map((mountain) => (
+              visibleMountains.map((mountain) => (
                 <button
                   key={mountain.slug}
                   type="button"
@@ -387,19 +380,29 @@ export function TripPlanningForm({
               </div>
             )}
           </div>
+
+          {filteredMountains.length > visibleMountains.length ? (
+            <button
+              type="button"
+              onClick={() => setVisibleMountainCount((count) => count + 8)}
+              className="mt-2 inline-flex h-10 w-full items-center justify-center rounded-lg border border-stone-200 bg-white text-sm font-semibold text-forest-700 transition hover:bg-forest-50"
+            >
+              もっと表示
+            </button>
+          ) : null}
         </section>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
-        <label className="block">
-          <span className="text-sm font-medium text-stone-700">季節</span>
+      <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
+        <label className="block min-w-0">
+          <span className="text-xs font-bold text-stone-700">季節</span>
           <select
             key={`${mountainSlug}-season`}
             name="season"
             defaultValue={effectiveSeason}
             required
             disabled={seasonOptions.length === 0}
-            className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-base outline-none focus:border-forest-500 focus:bg-white disabled:opacity-60 sm:mt-2 sm:py-3"
+            className="mt-1.5 w-full min-w-0 rounded-lg border border-stone-200 bg-stone-50 px-2 py-2.5 text-sm font-semibold outline-none focus:border-forest-500 focus:bg-white disabled:opacity-60 sm:px-3"
           >
             {seasonOptions.map((season) => (
               <option key={season} value={season}>
@@ -409,15 +412,15 @@ export function TripPlanningForm({
           </select>
         </label>
 
-        <label className="block">
-          <span className="text-sm font-medium text-stone-700">スタイル</span>
+        <label className="block min-w-0">
+          <span className="text-xs font-bold text-stone-700">スタイル</span>
           <select
             key={`${mountainSlug}-style`}
             name="style"
             defaultValue={effectiveStyle}
             required
             disabled={styleOptions.length === 0}
-            className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-base outline-none focus:border-forest-500 focus:bg-white disabled:opacity-60 sm:mt-2 sm:py-3"
+            className="mt-1.5 w-full min-w-0 rounded-lg border border-stone-200 bg-stone-50 px-2 py-2.5 text-sm font-semibold outline-none focus:border-forest-500 focus:bg-white disabled:opacity-60 sm:px-3"
           >
             {styleOptions.map((style) => (
               <option key={style} value={style}>
@@ -426,11 +429,9 @@ export function TripPlanningForm({
             ))}
           </select>
         </label>
-      </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
-        <label className="block">
-          <span className="text-sm font-medium text-stone-700">予定日</span>
+        <label className="block min-w-0">
+          <span className="text-xs font-bold text-stone-700">予定日</span>
           <input
             type="date"
             name="date"
@@ -438,43 +439,9 @@ export function TripPlanningForm({
             onChange={(event) =>
               onPlanDetailsChange?.({ plannedDate: event.target.value })
             }
-            className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-base outline-none focus:border-forest-500 focus:bg-white sm:mt-2 sm:py-3"
+            className="mt-1.5 w-full min-w-0 rounded-lg border border-stone-200 bg-stone-50 px-2 py-2.5 text-sm font-semibold outline-none focus:border-forest-500 focus:bg-white sm:px-3"
           />
         </label>
-
-        <div>
-          <span className="text-sm font-medium text-stone-700">山行オプション</span>
-          <div className="mt-1.5 grid gap-2 sm:mt-2">
-            <label className="flex items-center justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm font-semibold text-ink">
-              <span>現金を持参</span>
-              <input
-                type="checkbox"
-                name="cash"
-                value="1"
-                checked={selectedBringCash}
-                onChange={(event) =>
-                  onPlanDetailsChange?.({ bringCash: event.target.checked })
-                }
-                className="h-5 w-5 accent-forest-700"
-              />
-            </label>
-            <label className="flex items-center justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm font-semibold text-ink">
-              <span>山岳保険に加入済み</span>
-              <input
-                type="checkbox"
-                name="insurance"
-                value="1"
-                checked={selectedHasMountainInsurance}
-                onChange={(event) =>
-                  onPlanDetailsChange?.({
-                    hasMountainInsurance: event.target.checked
-                  })
-                }
-                className="h-5 w-5 accent-forest-700"
-              />
-            </label>
-          </div>
-        </div>
       </div>
 
       <label className="mt-4 block">
@@ -522,27 +489,6 @@ function getOfficialMeizanMountains(
       mountain.meizan_list === "JAPAN_NIHYAKUMEIZAN_EXTRA"
     );
   });
-}
-
-function getMountainBySlug(
-  slug: string,
-  mountains: readonly MountainFoundationProfile[]
-) {
-  return mountains.find((mountain) => mountain.slug === slug) ?? null;
-}
-
-function getDefaultMountainListFilter(
-  mountain: MountainFoundationProfile | null
-): MountainListFilter {
-  if (mountain?.meizan_list === "JAPAN_HYAKUMEIZAN") {
-    return "HYAKUMEIZAN";
-  }
-
-  if (mountain?.meizan_list === "JAPAN_NIHYAKUMEIZAN_EXTRA") {
-    return "NIHYAKUMEIZAN_EXTRA";
-  }
-
-  return "ALL";
 }
 
 function getFilteredMountains(

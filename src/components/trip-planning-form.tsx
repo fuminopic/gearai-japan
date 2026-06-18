@@ -256,7 +256,7 @@ export function TripPlanningForm({
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(300px,0.95fr)]">
         <section>
-          <h1 className="text-[24px] font-bold leading-tight tracking-normal text-ink sm:text-[28px]">
+          <h1 className="text-[18px] font-bold leading-tight tracking-normal text-ink sm:text-[20px]">
             次の山行、どこにする？
           </h1>
           <div className="relative mt-1.5 sm:mt-2">
@@ -432,16 +432,19 @@ export function TripPlanningForm({
 
         <label className="block min-w-0">
           <span className="text-xs font-bold text-stone-700">予定日</span>
-          <input
-            type="date"
-            name="date"
-            value={plannedDateValue}
-            onChange={(event) =>
-              onPlanDetailsChange?.({ plannedDate: event.target.value })
-            }
-            aria-label="予定日"
-            className="mt-1.5 w-full min-w-0 rounded-lg border border-stone-200 bg-stone-50 px-2 py-2.5 text-sm font-semibold outline-none focus:border-forest-500 focus:bg-white sm:px-3"
-          />
+          <span className="relative mt-1.5 flex h-[42px] w-full min-w-0 items-center justify-center overflow-hidden rounded-lg border border-stone-200 bg-stone-50 px-2 text-sm font-semibold text-ink focus-within:border-forest-500 focus-within:bg-white sm:px-3">
+            <span aria-hidden="true">{formatDateDisplay(plannedDateValue)}</span>
+            <input
+              type="date"
+              name="date"
+              value={plannedDateValue}
+              onChange={(event) =>
+                onPlanDetailsChange?.({ plannedDate: event.target.value })
+              }
+              aria-label="予定日"
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            />
+          </span>
         </label>
       </div>
 
@@ -636,6 +639,10 @@ function getTodayDateValue() {
   const day = String(today.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+}
+
+function formatDateDisplay(value: string) {
+  return value.replaceAll("-", "/");
 }
 
 function sortMountainsByElevation(

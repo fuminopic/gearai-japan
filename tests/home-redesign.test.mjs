@@ -51,8 +51,7 @@ test("home redesign keeps the required mobile-first section order", () => {
   const order = [
     "HeroCard",
     "GearSummaryCard",
-    "RecentGearSection",
-    "CategoryDistribution"
+    "RecentGearSection"
   ];
   const indexes = order.map((name) => dashboardSource.indexOf(`<${name}`));
 
@@ -174,14 +173,16 @@ test("home rebuild follows the requested recent gear image layout", () => {
   assert.doesNotMatch(dashboardSource, /gearFallbackGradient/);
 });
 
-test("home category distribution prevents legend overflow", () => {
-  assert.match(dashboardSource, /flex flex-col items-center gap-5/);
-  assert.match(dashboardSource, /h-32 w-32/);
-  assert.match(dashboardSource, /grid w-full gap-2 text-xs/);
-  assert.match(dashboardSource, /rounded-xl bg-stone-50 px-3 py-2/);
-  assert.doesNotMatch(dashboardSource, /w-16 max-w-\[70px\] truncate/);
-  assert.doesNotMatch(dashboardSource, /grid-cols-\[10px_1fr_auto\]/);
-  assert.doesNotMatch(dashboardSource, /grid-cols-2/);
+test("home gear summary uses the retail category composition bar", () => {
+  assert.match(dashboardSource, /GearComposition/);
+  assert.match(dashboardSource, /buildGearComposition/);
+  assert.match(dashboardSource, /MAJOR_GEAR_CATEGORIES/);
+  assert.match(dashboardSource, /装備構成/);
+  assert.match(dashboardSource, /flex h-3 overflow-hidden rounded-full bg-stone-100/);
+  assert.doesNotMatch(dashboardSource, /CategoryDistribution/);
+  assert.doesNotMatch(dashboardSource, /DonutChart/);
+  assert.doesNotMatch(dashboardSource, /カテゴリー分布/);
+  assert.doesNotMatch(dashboardSource, /h-32 w-32/);
   assert.doesNotMatch(dashboardSource, /highway/i);
 });
 
@@ -210,11 +211,12 @@ test("home redesign includes gear empty and category empty states", () => {
     "まだ装備がありません",
     "最初の装備を追加して、",
     "装備を追加する",
-    "バランスの良い構成です！",
-    "装備を追加すると、分布とバランスを確認できます"
+    "主要カテゴリーは登録済みです"
   ]) {
     assert.match(dashboardSource, new RegExp(copy));
   }
+  assert.doesNotMatch(dashboardSource, /バランスの良い構成です！/);
+  assert.doesNotMatch(dashboardSource, /装備を追加すると、分布とバランスを確認できます/);
 });
 
 test("home redesign syncs latest saved trip plan from Supabase", () => {

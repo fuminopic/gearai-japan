@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 
 import { GearList } from "@/components/gear-list";
-import { getGearCategories, getUserGear, getUserGearBrands } from "@/lib/data/gear";
+import { getUserGear, getUserGearBrands } from "@/lib/data/gear";
 import type { GearFilters, GearStatus } from "@/lib/types";
 
 type GearPageProps = {
@@ -27,8 +27,7 @@ export default async function GearPage({ searchParams }: GearPageProps) {
     sort: isSort(params.sort) ? params.sort : "newest"
   };
 
-  const [categories, brands, gear, summaryGear] = await Promise.all([
-    getGearCategories(),
+  const [brands, gear, summaryGear] = await Promise.all([
     getUserGearBrands(),
     getUserGear(filters),
     getUserGear({ status: "owned" })
@@ -69,7 +68,6 @@ export default async function GearPage({ searchParams }: GearPageProps) {
       <GearList
         gear={gear}
         summaryGear={summaryGear}
-        categories={categories}
         brands={brands}
         filters={filters}
       />

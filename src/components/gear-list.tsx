@@ -17,16 +17,17 @@ import {
   getGearDisplayWeightLabel
 } from "@/lib/gear-display";
 import {
-  getMajorGearCategoryCoverage
+  getMajorGearCategoryCoverage,
+  getRetailGearCategory,
+  MAJOR_GEAR_CATEGORIES
 } from "@/lib/gear-major-categories";
 import { statusLabels, weightTypeLabels } from "@/lib/i18n/labels";
-import type { GearCategory, GearFilters, UserGear } from "@/lib/types";
+import type { GearFilters, UserGear } from "@/lib/types";
 import { formatWeight } from "@/lib/utils/format";
 
 type GearListProps = {
   gear: UserGear[];
   summaryGear: UserGear[];
-  categories: GearCategory[];
   brands: string[];
   filters: GearFilters;
 };
@@ -34,11 +35,10 @@ type GearListProps = {
 export function GearList({
   gear,
   summaryGear,
-  categories,
   brands,
   filters
 }: GearListProps) {
-  const gearGroups = groupGearByCategory(gear, categories);
+  const gearGroups = groupGearByCategory(gear);
   const totalWeightGrams = summaryGear.reduce(
     (sum, item) => sum + getGearWeightGrams(item),
     0
@@ -153,13 +153,13 @@ export function GearList({
             >
               すべて
             </FilterChip>
-            {categories.map((category) => (
+            {MAJOR_GEAR_CATEGORIES.map((category) => (
               <FilterChip
                 key={category.id}
                 href={buildGearHref(filters, { category: category.id })}
                 active={filters.category === category.id}
               >
-                {category.name_ja}
+                {category.label}
               </FilterChip>
             ))}
           </div>
@@ -255,7 +255,9 @@ export function GearList({
 }
 
 function GearCard({ item }: { item: UserGear }) {
-  const categoryLabel = item.gear_subcategories?.name_ja ?? item.gear_categories?.name_ja;
+  const retailCategory = getRetailGearCategory(item);
+  const categoryLabel =
+    retailCategory?.label ?? item.gear_subcategories?.name_ja ?? item.gear_categories?.name_ja;
   const weightLabel = getGearDisplayWeightLabel(item);
 
   return (
@@ -429,9 +431,9 @@ function buildGearHref(
   return (query ? `/gear?${query}` : "/gear") as Route;
 }
 
-function groupGearByCategory(gear: UserGear[], categories: GearCategory[]) {
-  const categoryOrder = new Map(
-    categories.map((category, index) => [category.id, category.sort_order ?? index])
+function groupGearByCategory(gear: UserGear[]) {
+  const categoryOrder = new Map<string, number>(
+    MAJOR_GEAR_CATEGORIES.map((category, index) => [category.id, index])
   );
   const groups = new Map<
     string,
@@ -446,10 +448,11 @@ function groupGearByCategory(gear: UserGear[], categories: GearCategory[]) {
   >();
 
   for (const item of gear) {
-    const groupId = item.category_id || "other";
+    const retailCategory = getRetailGearCategory(item);
+    const groupId = retailCategory?.id ?? item.category_id ?? "other";
     const current = groups.get(groupId) ?? {
       id: groupId,
-      name: item.gear_categories?.name_ja ?? "その他",
+      name: retailCategory?.label ?? item.gear_categories?.name_ja ?? "その他",
       sortOrder: categoryOrder.get(groupId) ?? Number.MAX_SAFE_INTEGER,
       items: [],
       count: 0,

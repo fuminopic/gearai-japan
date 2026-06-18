@@ -26,6 +26,10 @@ const gearDisplaySource = readFileSync(
   new URL("../src/lib/gear-display.ts", import.meta.url),
   "utf8"
 );
+const gearMajorCategoriesSource = readFileSync(
+  new URL("../src/lib/gear-major-categories.ts", import.meta.url),
+  "utf8"
+);
 const brandLogoSource = readFileSync(
   new URL("../src/components/brand-logo.tsx", import.meta.url),
   "utf8"
@@ -48,6 +52,17 @@ test("gear list exposes brand and category-oriented list controls", () => {
   assert.match(gearListSource, /buildGearHref/);
   assert.match(gearListSource, /label="ブランド"/);
   assert.match(gearListSource, /のカテゴリー/);
+  assert.match(gearListSource, /MAJOR_GEAR_CATEGORIES\.map/);
+  for (const label of [
+    "ウェア",
+    "ザック",
+    "シューズ",
+    "テント・シュラフ",
+    "クッキング",
+    "安全・ナビ"
+  ]) {
+    assert.match(gearMajorCategoriesSource, new RegExp(label));
+  }
   assert.match(gearListSource, /BrandLogo/);
   assert.match(gearListSource, /<BrandLogo brand=\{brand\} compact/);
   assert.match(brandLogoSource, /role="img"/);
@@ -59,6 +74,7 @@ test("gear list exposes brand and category-oriented list controls", () => {
 
 test("gear list groups registered gear by category without changing cards", () => {
   assert.match(gearListSource, /groupGearByCategory/);
+  assert.match(gearListSource, /getRetailGearCategory\(item\)/);
   assert.match(gearListSource, /gearGroups\.map/);
   assert.match(gearListSource, /group\.items\.map/);
   assert.match(gearListSource, /GearCard/);
@@ -71,6 +87,8 @@ test("gear list groups registered gear by category without changing cards", () =
   assert.match(gearPageSource, /summaryGear/);
   assert.match(gearListSource, /装備庫/);
   assert.match(gearListSource, /grid gap-2/);
+  assert.match(gearDataSource, /isRetailGearCategoryId/);
+  assert.match(gearDataSource, /getRetailGearCategory\(item\)\?\.id === filters\.category/);
   assert.doesNotMatch(gearListSource, /総額/);
   assert.doesNotMatch(gearListSource, /高い順/);
   assert.doesNotMatch(gearListSource, /節約/);

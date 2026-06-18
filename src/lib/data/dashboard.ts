@@ -1,33 +1,18 @@
 import { requireUser } from "@/lib/data/gear";
-import { getMajorGearCategoryCoverage } from "@/lib/gear-major-categories";
+import {
+  getMajorGearCategoryCoverage,
+  getRetailGearCategory
+} from "@/lib/gear-major-categories";
 import type { DashboardRecentGear, DashboardSummary, UserGear } from "@/lib/types";
 
 const DASHBOARD_GEAR_SELECT =
-  "id,name,image_url,image_storage_path,status,category_id,weight_grams,weight_type,created_at,gear_categories:category_id(id,name_ja,name_en)";
+  "id,name,brand,model,image_url,image_storage_path,status,category_id,subcategory_id,weight_grams,weight_type,created_at,gear_categories:category_id(id,name_ja,name_en),gear_subcategories:subcategory_id(id,name_ja,name_en)";
 
 type DashboardGear = DashboardRecentGear &
-  Pick<UserGear, "status" | "weight_type" | "category_id"> & {
+  Pick<UserGear, "brand" | "model" | "status" | "weight_type" | "category_id" | "subcategory_id"> & {
     gear_categories?: UserGear["gear_categories"];
+    gear_subcategories?: UserGear["gear_subcategories"];
   };
-
-const CATEGORY_ARCHITECTURE = {
-  backpack: { categoryId: "backpack", nameJa: "背負システム", sortOrder: 10 },
-  backpacking: { categoryId: "backpack", nameJa: "背負システム", sortOrder: 10 },
-  carry: { categoryId: "backpack", nameJa: "背負システム", sortOrder: 10 },
-  shelter: { categoryId: "shelter", nameJa: "シェルター", sortOrder: 20 },
-  sleep: { categoryId: "sleep", nameJa: "睡眠システム", sortOrder: 30 },
-  sleeping: { categoryId: "sleep", nameJa: "睡眠システム", sortOrder: 30 },
-  cooking: { categoryId: "cooking", nameJa: "クッキング", sortOrder: 40 },
-  clothing: { categoryId: "clothing", nameJa: "ウェア", sortOrder: 50 },
-  rainwear: { categoryId: "clothing", nameJa: "ウェア", sortOrder: 50 },
-  electronics: { categoryId: "electronics", nameJa: "電子機器", sortOrder: 60 },
-  navigation: { categoryId: "electronics", nameJa: "電子機器", sortOrder: 60 },
-  first_aid: { categoryId: "first_aid", nameJa: "応急処置", sortOrder: 70 },
-  safety: { categoryId: "first_aid", nameJa: "応急処置", sortOrder: 70 },
-  bear_safety: { categoryId: "bear_safety", nameJa: "熊対策", sortOrder: 80 },
-  hydration: { categoryId: "other", nameJa: "その他", sortOrder: 90 },
-  other: { categoryId: "other", nameJa: "その他", sortOrder: 90 }
-} as const;
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
   const gear = await getDashboardGear();
@@ -45,14 +30,14 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   >();
 
   for (const item of ownedGear) {
-    const architecture = getCategoryArchitecture(item);
-    const categoryId = architecture.categoryId;
+    const architecture = getRetailGearCategory(item);
+    const categoryId = architecture?.id ?? "other";
     const current = categoryWeights.get(categoryId) ?? {
       categoryId,
-      nameJa: architecture.nameJa,
+      nameJa: architecture?.label ?? "その他",
       weightG: 0,
       count: 0,
-      sortOrder: architecture.sortOrder
+      sortOrder: architecture ? getCategorySortOrder(architecture.id) : Number.MAX_SAFE_INTEGER
     };
 
     current.weightG += Number(item.weight_grams ?? 0);
@@ -138,11 +123,9 @@ function sumWeight(items: DashboardGear[]) {
   return items.reduce((total, item) => total + Number(item.weight_grams ?? 0), 0);
 }
 
-function getCategoryArchitecture(item: DashboardGear) {
-  const key = item.gear_categories?.name_en ?? "other";
+function getCategorySortOrder(id: string) {
+  const order = ["clothing", "backpack", "shoes", "tentSleep", "cooking", "safetyNav"];
+  const index = order.indexOf(id);
 
-  return (
-    CATEGORY_ARCHITECTURE[key as keyof typeof CATEGORY_ARCHITECTURE] ??
-    CATEGORY_ARCHITECTURE.other
-  );
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }

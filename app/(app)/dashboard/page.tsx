@@ -1,6 +1,5 @@
 import {
   Backpack,
-  ChevronRight,
   Mountain,
   Package,
   Weight,
@@ -17,31 +16,18 @@ import { getOwnedGearForPlanning } from "@/lib/data/gear";
 import { getPackRequirementPlan } from "@/lib/data/pack-requirements";
 import { getDashboardSummary } from "@/lib/data/dashboard";
 import { getLatestTripPlan } from "@/lib/data/trip-plans";
+import { MAJOR_GEAR_CATEGORIES } from "@/lib/gear-major-categories";
 import { buildPlanChecklist } from "@/lib/plan-checklist";
 import type { DashboardRecentGear, DashboardSummary, SavedTripPlan } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const categoryColors = [
-  "#2f80ed",
-  "#9b6be8",
-  "#ff7a1a",
-  "#f4b91f",
-  "#72bf7b",
-  "#c8c8c8"
-];
-
-const categoryLabels = [
-  "背負うシステム",
-  "睡眠システム",
-  "シェルター",
-  "クッキング",
-  "電子機器",
-  "その他"
-];
 const planRoute = "/plan" as Route;
 type DashboardTripChecklist = ReturnType<typeof buildPlanChecklist>;
+const categoryColorById = new Map<string, string>(
+  MAJOR_GEAR_CATEGORIES.map((category) => [category.id, category.color])
+);
 
 export default async function DashboardPage() {
   const [summary, nextTrip] = await Promise.all([
@@ -141,10 +127,6 @@ function HomePageContent({
         </section>
 
         <RecentGearSection gear={summary.recentGear} hasGear={hasGear} />
-
-        <section>
-          <CategoryDistribution summary={summary} hasGear={hasGear} />
-        </section>
       </div>
     </main>
   );
@@ -342,6 +324,7 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
           主要カテゴリーは登録済みです
         </p>
       )}
+      <GearComposition summary={summary} />
     </section>
   );
 }
@@ -401,58 +384,51 @@ function RecentGearSection({
   );
 }
 
-function CategoryDistribution({
-  summary,
-  hasGear
-}: {
-  summary: DashboardSummary;
-  hasGear: boolean;
-}) {
-  const distribution = buildDistribution(summary, hasGear);
+function GearComposition({ summary }: { summary: DashboardSummary }) {
+  const distribution = buildGearComposition(summary);
+  const activeDistribution = distribution.filter((item) => item.value > 0);
+  const topCategories = [...activeDistribution]
+    .sort((a, b) => b.percent - a.percent || b.value - a.value)
+    .slice(0, 3);
 
   return (
-    <section className="flex flex-col gap-5 rounded-[28px] bg-white p-5 shadow-sm">
-      <SectionHeader title="カテゴリー分布" href="/gear" />
-      <div className="flex flex-col items-center gap-5">
-        <DonutChart distribution={distribution} hasGear={hasGear} />
-        <div className="grid w-full gap-2 text-xs">
-          {distribution.map((item) => (
-            <div
-              key={item.label}
-              className="flex items-center justify-between gap-3 rounded-xl bg-stone-50 px-3 py-2"
-            >
-              <span className="flex min-w-0 items-center gap-2">
-                <span
-                  className="h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: item.color }}
-                />
-                <span className="font-medium text-stone-700">{item.label}</span>
-              </span>
-              <span className="shrink-0 font-bold text-stone-900">{item.percent}%</span>
-            </div>
-          ))}
-        </div>
+    <div className="border-t border-stone-100 pt-4">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-bold text-stone-500">装備構成</p>
+        <Link href="/gear" className="text-xs font-bold text-[#14724e]">
+          すべて見る &gt;
+        </Link>
       </div>
-      <div className="rounded-xl bg-[#F0F5F2] p-3 text-center text-xs font-medium text-[#14724e]">
-        {hasGear
-          ? "バランスの良い構成です！"
-          : "装備を追加すると、分布とバランスを確認できます"}
+      <div className="mt-3 flex h-3 overflow-hidden rounded-full bg-stone-100">
+        {activeDistribution.length > 0 ? (
+          activeDistribution.map((item) => (
+            <span
+              key={item.id}
+              className="h-full"
+              style={{
+                width: `${Math.max(item.percent, 3)}%`,
+                backgroundColor: item.color
+              }}
+            />
+          ))
+        ) : (
+          <span className="h-full w-full bg-stone-200" />
+        )}
       </div>
-    </section>
-  );
-}
-
-function SectionHeader({ title, href }: { title: string; href: Route }) {
-  return (
-    <div className="flex items-center justify-between">
-      <h2 className="text-base font-bold tracking-normal">{title}</h2>
-      <Link
-        href={href}
-        className="inline-flex items-center gap-1 text-xs font-bold text-[#14724e]"
-      >
-        すべて見る
-        <ChevronRight className="h-4 w-4" />
-      </Link>
+      <div className="mt-3 grid gap-2">
+        {(topCategories.length > 0 ? topCategories : distribution.slice(0, 3)).map((item) => (
+          <div key={item.id} className="flex items-center justify-between text-xs">
+            <span className="flex min-w-0 items-center gap-2 text-stone-600">
+              <span
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ backgroundColor: item.color }}
+              />
+              <span className="truncate font-semibold">{item.label}</span>
+            </span>
+            <span className="shrink-0 font-bold text-stone-800">{item.percent}%</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -511,64 +487,24 @@ function GearImage({ item }: { item: DashboardRecentGear }) {
   );
 }
 
-function DonutChart({
-  distribution,
-  hasGear
-}: {
-  distribution: Array<{ label: string; percent: number; color: string }>;
-  hasGear: boolean;
-}) {
-  const background = hasGear
-    ? `conic-gradient(${distribution
-        .map((item, index) => {
-          const start = distribution
-            .slice(0, index)
-            .reduce((total, current) => total + current.percent, 0);
-          const end = start + item.percent;
-          return `${item.color} ${start}% ${end}%`;
-        })
-        .join(", ")})`
-    : "conic-gradient(#e5e7eb 0% 100%)";
-
-  return (
-    <div
-      className="relative h-32 w-32 shrink-0 rounded-full"
-      style={{ background }}
-    >
-      <div className="absolute inset-10 rounded-full bg-white" />
-    </div>
+function buildGearComposition(summary: DashboardSummary) {
+  const useWeight = summary.totalWeightG > 0;
+  const total = summary.categoryWeights.reduce(
+    (sum, item) => sum + (useWeight ? item.weightG : item.count),
+    0
   );
-}
+  const source = summary.categoryWeights.length > 0 ? summary.categoryWeights : [];
 
-function buildDistribution(summary: DashboardSummary, hasGear: boolean) {
-  if (!hasGear || summary.totalWeightG <= 0 || summary.categoryWeights.length === 0) {
-    return categoryLabels.map((label, index) => ({
-      label,
-      percent: 0,
-      color: index === categoryLabels.length - 1 ? "#d1d5db" : categoryColors[index]
-    }));
-  }
-
-  const mapped = categoryLabels.map((label, index) => {
-    const category = summary.categoryWeights.find((item) => item.nameJa === label);
+  return source.map((item) => {
+    const value = useWeight ? item.weightG : item.count;
     return {
-      label,
-      percent: category
-        ? Math.round((category.weightG / Math.max(summary.totalWeightG, 1)) * 100)
-        : 0,
-      color: categoryColors[index]
+      id: item.categoryId,
+      label: item.nameJa,
+      value,
+      percent: total > 0 ? Math.round((value / total) * 100) : 0,
+      color: categoryColorById.get(item.categoryId) ?? "#d1d5db"
     };
   });
-  const otherWeight = summary.categoryWeights
-    .filter((item) => !categoryLabels.includes(item.nameJa))
-    .reduce((total, item) => total + item.weightG, 0);
-  mapped[mapped.length - 1] = {
-    label: "その他",
-    percent: Math.round((otherWeight / Math.max(summary.totalWeightG, 1)) * 100),
-    color: categoryColors[categoryColors.length - 1]
-  };
-
-  return mapped;
 }
 
 function getSavedProgressFallback(trip: SavedTripPlan) {

@@ -1,6 +1,10 @@
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+import {
+  getRetailGearCategory,
+  isRetailGearCategoryId
+} from "@/lib/gear-major-categories";
 import { createClient } from "@/lib/supabase/server";
 import type {
   GearCategory,
@@ -108,7 +112,7 @@ export async function getUserGear(filters: GearFilters = {}) {
     query = query.eq("status", filters.status);
   }
 
-  if (filters.category) {
+  if (filters.category && !isRetailGearCategoryId(filters.category)) {
     query = query.eq("category_id", filters.category);
   }
 
@@ -128,7 +132,13 @@ export async function getUserGear(filters: GearFilters = {}) {
     throw new Error(error.message);
   }
 
-  return signGearImageUrls(supabase, data as unknown as UserGear[]);
+  const signedGear = await signGearImageUrls(supabase, data as unknown as UserGear[]);
+
+  if (filters.category && isRetailGearCategoryId(filters.category)) {
+    return signedGear.filter((item) => getRetailGearCategory(item)?.id === filters.category);
+  }
+
+  return signedGear;
 }
 
 export async function getUserGearBrands() {

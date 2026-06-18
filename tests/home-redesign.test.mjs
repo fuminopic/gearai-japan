@@ -148,8 +148,7 @@ test("home hero shows the saved plan checklist summary over the static hills bac
 
 test("home rebuild follows the requested recent gear image layout", () => {
   assert.match(dashboardSource, /<section>\s*<div className="mb-4 flex items-center justify-between">/);
-  assert.match(dashboardSource, /<div className="-mx-4">/);
-  assert.match(dashboardSource, /hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4/);
+  assert.match(dashboardSource, /hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4/);
   assert.match(dashboardSource, /w-\[100px\] flex-none snap-start flex-col/);
   assert.match(dashboardSource, /aspect-square w-full.*rounded-2xl.*border border-gray-100 bg-white p-3 shadow-sm/s);
   assert.match(dashboardSource, /truncate text-xs font-bold text-gray-800/);
@@ -161,11 +160,13 @@ test("home rebuild follows the requested recent gear image layout", () => {
 });
 
 test("home category distribution prevents legend overflow", () => {
-  assert.match(dashboardSource, /h-20 w-20/);
-  assert.match(dashboardSource, /text-\[10px\]/);
-  assert.match(dashboardSource, /w-16 max-w-\[70px\] truncate/);
-  assert.match(dashboardSource, /grid-cols-\[10px_1fr_auto\]/);
-  assert.doesNotMatch(dashboardSource, /text-xs">\s*\{distribution\.map/s);
+  assert.match(dashboardSource, /flex flex-col items-center gap-5/);
+  assert.match(dashboardSource, /h-32 w-32/);
+  assert.match(dashboardSource, /grid w-full gap-2 text-xs/);
+  assert.match(dashboardSource, /rounded-xl bg-stone-50 px-3 py-2/);
+  assert.doesNotMatch(dashboardSource, /w-16 max-w-\[70px\] truncate/);
+  assert.doesNotMatch(dashboardSource, /grid-cols-\[10px_1fr_auto\]/);
+  assert.doesNotMatch(dashboardSource, /grid-cols-2/);
   assert.doesNotMatch(dashboardSource, /highway/i);
 });
 

@@ -349,25 +349,23 @@ function RecentGearSection({
         </Link>
       </div>
       {hasGear ? (
-        <div className="-mx-4">
-          <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4">
-            {gear.slice(0, 8).map((item) => (
-              <div
-                key={item.id}
-                className="flex w-[100px] flex-none snap-start flex-col"
-              >
-                <div className="mb-2 flex aspect-square w-full items-center justify-center rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
-                  <GearImage item={item} />
-                </div>
-                <p className="truncate text-xs font-bold text-gray-800">
-                  {item.name}
-                </p>
-                <p className="mt-0.5 text-[10px] font-medium text-gray-400">
-                  {Number(item.weight_grams)} g
-                </p>
+        <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4">
+          {gear.slice(0, 8).map((item) => (
+            <div
+              key={item.id}
+              className="flex w-[100px] flex-none snap-start flex-col"
+            >
+              <div className="mb-2 flex aspect-square w-full items-center justify-center rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+                <GearImage item={item} />
               </div>
-            ))}
-          </div>
+              <p className="truncate text-xs font-bold text-gray-800">
+                {item.name}
+              </p>
+              <p className="mt-0.5 text-[10px] font-medium text-gray-400">
+                {Number(item.weight_grams)} g
+              </p>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center rounded-[28px] bg-white px-5 py-6 text-center shadow-sm">
@@ -402,17 +400,22 @@ function CategoryDistribution({
   return (
     <section className="flex flex-col gap-5 rounded-[28px] bg-white p-5 shadow-sm">
       <SectionHeader title="カテゴリー分布" href="/gear" />
-      <div className="flex flex-row items-center justify-between gap-4">
+      <div className="flex flex-col items-center gap-5">
         <DonutChart distribution={distribution} hasGear={hasGear} />
-        <div className="grid flex-1 grid-cols-2 gap-x-2 gap-y-3 text-[10px]">
+        <div className="grid w-full gap-2 text-xs">
           {distribution.map((item) => (
-            <div key={item.label} className="grid grid-cols-[10px_1fr_auto] items-center gap-1.5">
-              <span
-                className="h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: item.color }}
-              />
-              <span className="w-16 max-w-[70px] truncate font-medium">{item.label}</span>
-              <span className="font-bold">{item.percent}%</span>
+            <div
+              key={item.label}
+              className="flex items-center justify-between gap-3 rounded-xl bg-stone-50 px-3 py-2"
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                <span
+                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span className="font-medium text-stone-700">{item.label}</span>
+              </span>
+              <span className="shrink-0 font-bold text-stone-900">{item.percent}%</span>
             </div>
           ))}
         </div>
@@ -516,10 +519,10 @@ function DonutChart({
 
   return (
     <div
-      className="relative h-20 w-20 shrink-0 rounded-full"
+      className="relative h-32 w-32 shrink-0 rounded-full"
       style={{ background }}
     >
-      <div className="absolute inset-6 rounded-full bg-white" />
+      <div className="absolute inset-10 rounded-full bg-white" />
     </div>
   );
 }

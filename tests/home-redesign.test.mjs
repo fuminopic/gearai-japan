@@ -140,7 +140,8 @@ test("home hero shows the saved plan checklist summary over the static hills bac
   assert.match(dashboardSource, /object-cover object-bottom opacity-80/);
   assert.match(dashboardSource, /absolute inset-0 z-10 bg-gradient-to-t from-\[#E8F0E8\]\/40 via-white\/90 to-white/);
   assert.match(dashboardSource, /relative z-20 flex min-h-\[252px\] flex-col justify-between gap-3 p-5/);
-  assert.match(dashboardSource, /font-maru text-\[42px\]/);
+  assert.match(dashboardSource, /font-maru text-\[45px\]/);
+  assert.match(dashboardSource, /tracking-\[0\.04em\]/);
   assert.match(dashboardSource, /bg-\[#14724e\]/);
   assert.match(dashboardSource, /w-\[184px\].*rounded-2xl.*bg-\[#14724e\]/s);
   assert.match(dashboardSource, /DashboardPlanChecklistSummary/);
@@ -246,6 +247,9 @@ test("home hero can display saved trip date and memo without price information",
   assert.match(dashboardSource, /variant="memo"/);
   assert.match(dashboardPlanMetaSource, /readTripPlanLocalMeta/);
   assert.match(dashboardPlanMetaSource, /formatPlanDate\(displayDate, style\)/);
+  assert.match(dashboardPlanMetaSource, /function PlanDatePart/);
+  assert.match(dashboardPlanMetaSource, /text-\[40px\]/);
+  assert.match(dashboardPlanMetaSource, /rounded-full border-\[3px\] border-stone-950/);
   assert.match(dashboardPlanMetaSource, /style === "DAY_HIKE"/);
   assert.match(dashboardPlanMetaSource, /endDate\.setDate\(date\.getDate\(\) \+ 1\)/);
   assert.match(dashboardPlanMetaSource, /truncate text-\[11px\] font-medium text-stone-500/);

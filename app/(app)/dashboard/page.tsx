@@ -186,11 +186,11 @@ function HeroCard({
       <div className="relative z-20 flex min-h-[252px] flex-col justify-between gap-3 p-5">
         <div>
           <HeroTitle trip={trip} />
-          <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-2">
-            <h2 className="font-maru text-[42px] font-normal leading-none tracking-normal text-black">
+          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-3">
+            <h2 className="font-maru text-[45px] font-normal leading-none tracking-[0.04em] text-black">
               {trip.mountain_name}
             </h2>
-            <div className="mb-1 flex flex-wrap gap-2 font-maru">
+            <div className="flex flex-wrap gap-2 font-maru">
               <PlanPill>{seasonLabel(trip.season)}</PlanPill>
               <PlanPill>{styleLabel(trip.style)}</PlanPill>
             </div>

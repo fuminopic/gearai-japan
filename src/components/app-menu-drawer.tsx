@@ -16,6 +16,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { AppLogo } from "@/components/app-logo";
 import { signOut } from "@/lib/actions/auth";
@@ -49,6 +50,11 @@ type AppMenuDrawerProps = {
 export function AppMenuDrawer({ userEmail, buttonClassName }: AppMenuDrawerProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) {
@@ -74,23 +80,10 @@ export function AppMenuDrawer({ userEmail, buttonClassName }: AppMenuDrawerProps
     setIsOpen(false);
   }, [pathname]);
 
-  return (
+  const drawerLayer = (
     <>
-      <button
-        type="button"
-        aria-label="メニュー"
-        aria-expanded={isOpen}
-        onClick={() => setIsOpen(true)}
-        className={
-          buttonClassName ??
-          "-mr-2 inline-flex h-10 w-10 items-center justify-center rounded-xl text-gray-700 transition active:scale-95"
-        }
-      >
-        <Menu aria-hidden className="h-6 w-6" />
-      </button>
-
       <div
-        className={`fixed inset-0 z-[90] bg-black/30 transition-opacity duration-200 ${
+        className={`fixed inset-0 z-[9998] bg-black/35 transition-opacity duration-200 ${
           isOpen ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
         aria-hidden="true"
@@ -101,7 +94,7 @@ export function AppMenuDrawer({ userEmail, buttonClassName }: AppMenuDrawerProps
         role="dialog"
         aria-modal="true"
         aria-label="アプリメニュー"
-        className={`fixed inset-y-0 right-0 z-[100] flex w-[86vw] max-w-[360px] flex-col bg-[#FAFAFA] px-5 pb-[max(env(safe-area-inset-bottom),20px)] pt-[max(env(safe-area-inset-top),20px)] shadow-[-20px_0_50px_rgba(0,0,0,0.16)] transition-transform duration-300 ease-out ${
+        className={`fixed inset-y-0 right-0 z-[9999] flex w-[86vw] max-w-[360px] flex-col bg-[#FAFAFA] px-5 pb-[max(env(safe-area-inset-bottom),20px)] pt-[max(env(safe-area-inset-top),20px)] shadow-[-20px_0_50px_rgba(0,0,0,0.16)] transition-transform duration-300 ease-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -157,6 +150,24 @@ export function AppMenuDrawer({ userEmail, buttonClassName }: AppMenuDrawerProps
           YAMAJITAKU v0.1
         </p>
       </aside>
+    </>
+  );
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="メニュー"
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen(true)}
+        className={
+          buttonClassName ??
+          "-mr-2 inline-flex h-10 w-10 items-center justify-center rounded-xl text-gray-700 transition active:scale-95"
+        }
+      >
+        <Menu aria-hidden className="h-6 w-6" />
+      </button>
+      {isMounted ? createPortal(drawerLayer, document.body) : null}
     </>
   );
 }

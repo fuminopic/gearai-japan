@@ -9,8 +9,11 @@ const dashboardSource = readFileSync("app/(app)/dashboard/page.tsx", "utf8");
 test("app menu drawer exposes the basic mobile menu structure", () => {
   assert.match(drawerSource, /role="dialog"/);
   assert.match(drawerSource, /aria-modal="true"/);
+  assert.match(drawerSource, /createPortal\(drawerLayer, document\.body\)/);
   assert.match(drawerSource, /translate-x-full/);
-  assert.match(drawerSource, /bg-black\/30/);
+  assert.match(drawerSource, /z-\[9998\]/);
+  assert.match(drawerSource, /z-\[9999\]/);
+  assert.match(drawerSource, /bg-black\/35/);
   assert.match(drawerSource, /YAMAJITAKU v0\.1/);
   assert.match(drawerSource, /ログアウト/);
 

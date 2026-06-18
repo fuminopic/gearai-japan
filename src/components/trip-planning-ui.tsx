@@ -312,15 +312,6 @@ export function TripPlanningUI({
 
   return (
     <div className="space-y-5 pb-24">
-      <section className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-forest-700">山行計画</p>
-          <h1 className="mt-1 text-[34px] font-bold leading-tight tracking-normal text-ink">
-            パック計画
-          </h1>
-        </div>
-      </section>
-
       <TripPlanningForm
         mountains={mountains}
         selectedMountainSlug={effectiveMountainSlug}

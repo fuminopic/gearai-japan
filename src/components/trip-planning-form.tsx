@@ -3,7 +3,7 @@
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useMemo, useState, useTransition } from "react";
-import { ChevronRight, ClipboardCheck, Mountain, Search } from "lucide-react";
+import { Check, ClipboardCheck, Mountain, Search } from "lucide-react";
 
 import {
   mountainFoundationSeasonLabels,
@@ -134,7 +134,7 @@ export function TripPlanningForm({
   const [mountainListFilter, setMountainListFilter] =
     useState<MountainListFilter>("HYAKUMEIZAN");
   const [selectedArea, setSelectedArea] = useState<MountainAreaFilter>("ALL");
-  const [visibleMountainCount, setVisibleMountainCount] = useState(6);
+  const [visibleMountainCount, setVisibleMountainCount] = useState(3);
   const selectedMountain = useMemo(() => {
     return (
       selectableMountains.find((mountain) => mountain.slug === mountainSlug) ??
@@ -163,6 +163,7 @@ export function TripPlanningForm({
     : getMountainListFilterTitle(mountainListFilter, selectedArea);
   const seasonOptions = selectedMountain?.supported_seasons ?? [];
   const styleOptions = selectedMountain?.supported_styles ?? [];
+  const plannedDateValue = selectedPlannedDate || getTodayDateValue();
   const effectiveSeason = seasonOptions.includes(selectedSeason)
     ? selectedSeason
     : seasonOptions[0];
@@ -196,7 +197,7 @@ export function TripPlanningForm({
   }, [selectedMountainSlug, selectableMountains]);
 
   useEffect(() => {
-    setVisibleMountainCount(6);
+    setVisibleMountainCount(3);
   }, [mountainListFilter, mountainQuery, selectedArea]);
 
   useEffect(() => {
@@ -255,7 +256,9 @@ export function TripPlanningForm({
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(300px,0.95fr)]">
         <section>
-          <span className="text-sm font-medium text-stone-700">山</span>
+          <h1 className="text-[24px] font-bold leading-tight tracking-normal text-ink sm:text-[28px]">
+            次の山行、どこにする？
+          </h1>
           <div className="relative mt-1.5 sm:mt-2">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
             <input
@@ -267,7 +270,7 @@ export function TripPlanningForm({
             />
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="-mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {mountainListFilters.map((filter) => (
               <button
                 key={filter.value}
@@ -278,7 +281,7 @@ export function TripPlanningForm({
                     setSelectedArea(selectedMountain.primary_region);
                   }
                 }}
-                className={`inline-flex h-8 items-center justify-center rounded-lg px-3 text-xs font-semibold leading-none transition ${
+                className={`inline-flex h-9 shrink-0 items-center justify-center rounded-lg px-3.5 text-xs font-semibold leading-none transition ${
                   mountainListFilter === filter.value
                     ? "bg-forest-700 text-white"
                     : "bg-forest-50 text-forest-800 hover:bg-forest-100"
@@ -314,20 +317,6 @@ export function TripPlanningForm({
             </div>
           ) : null}
 
-          {selectedMountain ? (
-            <div className="mt-3 rounded-lg border border-forest-100 bg-forest-50 px-3 py-2">
-              <p className="text-xs font-semibold text-forest-800">選択中</p>
-              <div className="mt-1 flex flex-wrap items-center gap-2">
-                <span className="text-base font-semibold text-ink">
-                  {selectedMountain.name_ja}
-                </span>
-                <span className="text-xs font-semibold text-stone-600">
-                  {selectedMountain.elevation_m.toLocaleString("ja-JP")}m
-                </span>
-                <MountainListBadge mountain={selectedMountain} />
-              </div>
-            </div>
-          ) : null}
         </section>
 
         <section>
@@ -371,7 +360,18 @@ export function TripPlanningForm({
                       <MountainListBadge mountain={mountain} />
                     </span>
                   </span>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-stone-400" />
+                  <span
+                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition ${
+                      mountain.slug === mountainSlug
+                        ? "border-forest-700 bg-forest-700 text-white"
+                        : "border-stone-300 bg-white"
+                    }`}
+                    aria-hidden="true"
+                  >
+                    {mountain.slug === mountainSlug ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : null}
+                  </span>
                 </button>
               ))
             ) : (
@@ -384,7 +384,7 @@ export function TripPlanningForm({
           {filteredMountains.length > visibleMountains.length ? (
             <button
               type="button"
-              onClick={() => setVisibleMountainCount((count) => count + 8)}
+              onClick={() => setVisibleMountainCount((count) => count + 20)}
               className="mt-2 inline-flex h-10 w-full items-center justify-center rounded-lg border border-stone-200 bg-white text-sm font-semibold text-forest-700 transition hover:bg-forest-50"
             >
               もっと表示
@@ -435,10 +435,11 @@ export function TripPlanningForm({
           <input
             type="date"
             name="date"
-            value={selectedPlannedDate}
+            value={plannedDateValue}
             onChange={(event) =>
               onPlanDetailsChange?.({ plannedDate: event.target.value })
             }
+            aria-label="予定日"
             className="mt-1.5 w-full min-w-0 rounded-lg border border-stone-200 bg-stone-50 px-2 py-2.5 text-sm font-semibold outline-none focus:border-forest-500 focus:bg-white sm:px-3"
           />
         </label>
@@ -626,6 +627,15 @@ function getMountainSearchFields(mountain: MountainFoundationProfile) {
 
 function normalizeMountainQuery(value: string) {
   return value.toLowerCase().replace(/\s+/g, "").trim();
+}
+
+function getTodayDateValue() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
 function sortMountainsByElevation(

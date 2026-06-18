@@ -16,7 +16,9 @@ test("splash screen uses the supplied artwork with a short one-time fade", () =>
   assert.match(splashSource, /SPLASH_VISIBLE_MS = 1000/);
   assert.match(splashSource, /SPLASH_FADE_MS = 260/);
   assert.match(splashSource, /sessionStorage/);
-  assert.match(splashSource, /yamajitaku:splash-seen/);
+  assert.match(splashSource, /yamajitaku:splash-seen:v2/);
   assert.match(splashSource, /object-cover/);
-  assert.match(splashSource, /priority/);
+  assert.match(splashSource, /fetchPriority="high"/);
+  assert.match(splashSource, /isArtworkReady/);
+  assert.match(splashSource, /imageRef\.current\?\.complete/);
 });

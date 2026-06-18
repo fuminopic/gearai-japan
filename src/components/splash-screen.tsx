@@ -1,24 +1,35 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-const SPLASH_STORAGE_KEY = "yamajitaku:splash-seen";
+const SPLASH_STORAGE_KEY = "yamajitaku:splash-seen:v2";
 const SPLASH_VISIBLE_MS = 1000;
 const SPLASH_FADE_MS = 260;
 
+type SplashPhase = "visible" | "leaving" | "hidden";
+
 export function SplashScreen() {
-  const [phase, setPhase] = useState<"hidden" | "visible" | "leaving">(
-    "hidden"
-  );
+  const imageRef = useRef<HTMLImageElement>(null);
+  const [phase, setPhase] = useState<SplashPhase>("visible");
+  const [isArtworkReady, setIsArtworkReady] = useState(false);
 
   useEffect(() => {
     if (window.sessionStorage.getItem(SPLASH_STORAGE_KEY) === "true") {
+      setPhase("hidden");
+      return;
+    }
+
+    if (imageRef.current?.complete) {
+      setIsArtworkReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (phase === "hidden" || !isArtworkReady) {
       return;
     }
 
     window.sessionStorage.setItem(SPLASH_STORAGE_KEY, "true");
-    setPhase("visible");
 
     const leaveTimer = window.setTimeout(() => {
       setPhase("leaving");
@@ -32,7 +43,7 @@ export function SplashScreen() {
       window.clearTimeout(leaveTimer);
       window.clearTimeout(hideTimer);
     };
-  }, []);
+  }, [isArtworkReady, phase]);
 
   if (phase === "hidden") {
     return null;
@@ -45,13 +56,15 @@ export function SplashScreen() {
         phase === "leaving" ? "opacity-0" : "opacity-100"
       }`}
     >
-      <Image
+      <img
+        ref={imageRef}
         src="/splash-screen.png"
         alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover"
+        className="h-full w-full object-cover"
+        decoding="async"
+        fetchPriority="high"
+        onError={() => setIsArtworkReady(true)}
+        onLoad={() => setIsArtworkReady(true)}
       />
     </div>
   );

@@ -483,6 +483,7 @@ test("trip planning form captures date and memo while moving insurance out of th
   assert.match(tripPlanningFormSource, /getTodayDateValue/);
   assert.match(tripPlanningFormSource, /formatDateDisplay/);
   assert.match(tripPlanningFormSource, /h-\[42px\]/);
+  assert.match(tripPlanningFormSource, /ChevronsUpDown/);
   assert.match(tripPlanningFormSource, /opacity-0/);
   assert.match(tripPlanningFormSource, /aria-label="予定日"/);
   assert.doesNotMatch(tripPlanningFormSource, /山行オプション/);
@@ -506,7 +507,9 @@ test("mountain picker starts from Japan Hyakumeizan and avoids a nested scroll t
   assert.match(tripPlanningFormSource, /useState<MountainListFilter>\("HYAKUMEIZAN"\)/);
   assert.match(tripPlanningFormSource, /useState\(3\)/);
   assert.match(tripPlanningFormSource, /もっと表示/);
+  assert.match(tripPlanningFormSource, /閉じる/);
   assert.match(tripPlanningFormSource, /setVisibleMountainCount\(\(count\) => count \+ 20\)/);
+  assert.match(tripPlanningFormSource, /setVisibleMountainCount\(3\)/);
   assert.match(tripPlanningFormSource, /overflow-x-auto/);
   assert.match(tripPlanningFormSource, /次の山行、どこにする？/);
   assert.match(tripPlanningFormSource, /text-\[18px\]/);

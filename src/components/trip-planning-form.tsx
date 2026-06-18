@@ -3,7 +3,7 @@
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useMemo, useState, useTransition } from "react";
-import { Check, ClipboardCheck, Mountain, Search } from "lucide-react";
+import { Check, ChevronsUpDown, ClipboardCheck, Mountain, Search } from "lucide-react";
 
 import {
   mountainFoundationSeasonLabels,
@@ -381,14 +381,27 @@ export function TripPlanningForm({
             )}
           </div>
 
-          {filteredMountains.length > visibleMountains.length ? (
-            <button
-              type="button"
-              onClick={() => setVisibleMountainCount((count) => count + 20)}
-              className="mt-2 inline-flex h-10 w-full items-center justify-center rounded-lg border border-stone-200 bg-white text-sm font-semibold text-forest-700 transition hover:bg-forest-50"
-            >
-              もっと表示
-            </button>
+          {filteredMountains.length > visibleMountains.length || visibleMountainCount > 3 ? (
+            <div className="mt-2 flex items-center gap-2">
+              {filteredMountains.length > visibleMountains.length ? (
+                <button
+                  type="button"
+                  onClick={() => setVisibleMountainCount((count) => count + 20)}
+                  className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-stone-200 bg-white text-sm font-semibold text-forest-700 transition hover:bg-forest-50"
+                >
+                  もっと表示
+                </button>
+              ) : null}
+              {visibleMountainCount > 3 ? (
+                <button
+                  type="button"
+                  onClick={() => setVisibleMountainCount(3)}
+                  className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg bg-stone-100 px-3 text-xs font-bold text-stone-600 transition hover:bg-stone-200"
+                >
+                  閉じる
+                </button>
+              ) : null}
+            </div>
           ) : null}
         </section>
       </div>
@@ -396,44 +409,58 @@ export function TripPlanningForm({
       <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
         <label className="block min-w-0">
           <span className="text-xs font-bold text-stone-700">季節</span>
-          <select
-            key={`${mountainSlug}-season`}
-            name="season"
-            defaultValue={effectiveSeason}
-            required
-            disabled={seasonOptions.length === 0}
-            className="mt-1.5 w-full min-w-0 rounded-lg border border-stone-200 bg-stone-50 px-2 py-2.5 text-sm font-semibold outline-none focus:border-forest-500 focus:bg-white disabled:opacity-60 sm:px-3"
-          >
-            {seasonOptions.map((season) => (
-              <option key={season} value={season}>
-                {mountainFoundationSeasonLabels[season]}
-              </option>
-            ))}
-          </select>
+          <span className="relative mt-1.5 block">
+            <select
+              key={`${mountainSlug}-season`}
+              name="season"
+              defaultValue={effectiveSeason}
+              required
+              disabled={seasonOptions.length === 0}
+              className="h-[42px] w-full min-w-0 appearance-none rounded-lg border border-stone-200 bg-stone-50 px-2 pr-7 text-left text-sm font-semibold leading-none text-ink outline-none focus:border-forest-500 focus:bg-white disabled:opacity-60 sm:px-3 sm:pr-8"
+            >
+              {seasonOptions.map((season) => (
+                <option key={season} value={season}>
+                  {mountainFoundationSeasonLabels[season]}
+                </option>
+              ))}
+            </select>
+            <ChevronsUpDown
+              aria-hidden="true"
+              className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-ink sm:right-2.5"
+            />
+          </span>
         </label>
 
         <label className="block min-w-0">
           <span className="text-xs font-bold text-stone-700">スタイル</span>
-          <select
-            key={`${mountainSlug}-style`}
-            name="style"
-            defaultValue={effectiveStyle}
-            required
-            disabled={styleOptions.length === 0}
-            className="mt-1.5 w-full min-w-0 rounded-lg border border-stone-200 bg-stone-50 px-2 py-2.5 text-sm font-semibold outline-none focus:border-forest-500 focus:bg-white disabled:opacity-60 sm:px-3"
-          >
-            {styleOptions.map((style) => (
-              <option key={style} value={style}>
-                {mountainFoundationStyleLabels[style]}
-              </option>
-            ))}
-          </select>
+          <span className="relative mt-1.5 block">
+            <select
+              key={`${mountainSlug}-style`}
+              name="style"
+              defaultValue={effectiveStyle}
+              required
+              disabled={styleOptions.length === 0}
+              className="h-[42px] w-full min-w-0 appearance-none rounded-lg border border-stone-200 bg-stone-50 px-2 pr-7 text-left text-sm font-semibold leading-none text-ink outline-none focus:border-forest-500 focus:bg-white disabled:opacity-60 sm:px-3 sm:pr-8"
+            >
+              {styleOptions.map((style) => (
+                <option key={style} value={style}>
+                  {mountainFoundationStyleLabels[style]}
+                </option>
+              ))}
+            </select>
+            <ChevronsUpDown
+              aria-hidden="true"
+              className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-ink sm:right-2.5"
+            />
+          </span>
         </label>
 
         <label className="block min-w-0">
           <span className="text-xs font-bold text-stone-700">予定日</span>
-          <span className="relative mt-1.5 flex h-[42px] w-full min-w-0 items-center justify-center overflow-hidden rounded-lg border border-stone-200 bg-stone-50 px-2 text-sm font-semibold text-ink focus-within:border-forest-500 focus-within:bg-white sm:px-3">
-            <span aria-hidden="true">{formatDateDisplay(plannedDateValue)}</span>
+          <span className="relative mt-1.5 flex h-[42px] w-full min-w-0 items-center overflow-hidden rounded-lg border border-stone-200 bg-stone-50 px-2 pr-7 text-left text-sm font-semibold leading-none text-ink focus-within:border-forest-500 focus-within:bg-white sm:px-3 sm:pr-8">
+            <span className="block min-w-0 truncate" aria-hidden="true">
+              {formatDateDisplay(plannedDateValue)}
+            </span>
             <input
               type="date"
               name="date"
@@ -443,6 +470,10 @@ export function TripPlanningForm({
               }
               aria-label="予定日"
               className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            />
+            <ChevronsUpDown
+              aria-hidden="true"
+              className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-ink sm:right-2.5"
             />
           </span>
         </label>

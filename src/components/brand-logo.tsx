@@ -27,11 +27,11 @@ const officialBrandLogos: Record<
     alt: "Black Diamond"
   },
   nanga: {
-    src: "/brand-logos/nanga-clean.png",
+    src: "/brand-logos/nanga.png",
     alt: "NANGA"
   },
   isuka: {
-    src: "/brand-logos/isuka.gif",
+    src: "/brand-logos/isuka.png",
     alt: "ISUKA"
   },
   nemo: {
@@ -57,6 +57,14 @@ const officialBrandLogos: Record<
   caravan: {
     src: "/brand-logos/logo-open.png",
     alt: "Caravan"
+  },
+  osprey: {
+    src: "/brand-logos/osprey.png",
+    alt: "Osprey"
+  },
+  yamatomichi: {
+    src: "/brand-logos/yamatomichi.png",
+    alt: "山と道"
   }
 };
 

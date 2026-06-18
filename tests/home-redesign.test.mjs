@@ -18,6 +18,10 @@ const appNavSource = readFileSync(
   new URL("../src/components/app-nav.tsx", import.meta.url),
   "utf8"
 );
+const appLogoSource = readFileSync(
+  new URL("../src/components/app-logo.tsx", import.meta.url),
+  "utf8"
+);
 const appBottomNavSource = readFileSync(
   new URL("../src/components/app-bottom-nav.tsx", import.meta.url),
   "utf8"
@@ -105,8 +109,6 @@ test("app middleware keeps navigation lightweight", () => {
 
 test("home redesign uses the requested YAMAJITAKU header and trip states", () => {
   for (const copy of [
-    "山支度",
-    "YAMAJITAKU",
     "次回の山行",
     "装備チェックを続ける",
     "まだ計画はありません",
@@ -114,6 +116,10 @@ test("home redesign uses the requested YAMAJITAKU header and trip states", () =>
   ]) {
     assert.match(dashboardSource, new RegExp(copy));
   }
+  assert.match(dashboardSource, /AppLogo/);
+  assert.match(appNavSource, /AppLogo/);
+  assert.match(appLogoSource, /\/yamajitaku-logo\.png/);
+  assert.match(appLogoSource, /alt="山支度 YAMAJITAKU"/);
 });
 
 test("home redesign v2 removes hero secondary actions and replaces bell with menu", () => {

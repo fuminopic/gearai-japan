@@ -30,6 +30,10 @@ const appNavSource = readFileSync(
   new URL("../src/components/app-nav.tsx", import.meta.url),
   "utf8"
 );
+const appLogoSource = readFileSync(
+  new URL("../src/components/app-logo.tsx", import.meta.url),
+  "utf8"
+);
 const navigationFeedbackSource = readFileSync(
   new URL("../src/components/navigation-feedback.tsx", import.meta.url),
   "utf8"
@@ -507,15 +511,17 @@ test("plan id hydration links home and history to the exact saved plan", () => {
 test("user-facing branding uses YAMAJITAKU hierarchy", () => {
   for (const source of [
     rootLayoutSource,
-    appNavSource,
     authFormSource,
-    dashboardPageSource
+    appLogoSource
   ]) {
     assert.match(source, /山支度/);
     assert.match(source, /YAMAJITAKU/);
     assert.doesNotMatch(source, /GearAI/);
   }
 
+  assert.match(appNavSource, /AppLogo/);
+  assert.match(dashboardPageSource, /AppLogo/);
+  assert.match(appLogoSource, /\/yamajitaku-logo\.png/);
   assert.match(rootLayoutSource, /登山前の装備確認を10秒で。/);
   assert.match(rootLayoutSource, /openGraph/);
   assert.match(rootLayoutSource, /siteName: "山支度"/);

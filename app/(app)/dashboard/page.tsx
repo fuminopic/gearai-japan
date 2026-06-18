@@ -10,6 +10,7 @@ import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import { AppLogo } from "@/components/app-logo";
 import { DashboardPlanMeta } from "@/components/dashboard-plan-meta";
 import { DashboardPlanChecklistSummary } from "@/components/dashboard-plan-checklist-summary";
 import { getOwnedGearForPlanning } from "@/lib/data/gear";
@@ -107,15 +108,8 @@ function HomePageContent({
     <main className="home-redesign min-h-screen bg-[#FAFAFA] pb-32 text-ink">
       <HomeShellCss />
 
-      <header className="sticky top-0 z-50 flex w-full items-end justify-between border-b border-gray-100/50 bg-[#FAFAFA]/90 px-4 pb-3 pt-[max(env(safe-area-inset-top),20px)] backdrop-blur-md">
-        <div className="flex flex-col">
-          <h1 className="text-[28px] font-bold leading-none tracking-tight text-gray-900">
-            山支度
-          </h1>
-          <span className="mt-1 text-[10px] font-medium tracking-widest text-gray-400">
-            YAMAJITAKU
-          </span>
-        </div>
+      <header className="sticky top-0 z-50 flex w-full items-center justify-between border-b border-gray-100/50 bg-[#FAFAFA]/90 px-4 pb-3 pt-[max(env(safe-area-inset-top),20px)] backdrop-blur-md">
+        <AppLogo className="h-12" />
         <button
           type="button"
           aria-label="メニュー"

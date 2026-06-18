@@ -12,8 +12,6 @@ const officialBrandLogos: Record<
   {
     src: string;
     alt: string;
-    className?: string;
-    wrapperClassName?: string;
   }
 > = {
   montbell: {
@@ -26,24 +24,19 @@ const officialBrandLogos: Record<
   },
   blackdiamond: {
     src: "/brand-logos/black-diamond.png",
-    alt: "Black Diamond",
-    className: "max-h-6 max-w-[4.75rem]"
+    alt: "Black Diamond"
   },
   nanga: {
-    src: "/brand-logos/nanga.webp",
-    alt: "NANGA",
-    className: "max-h-4 max-w-[4.75rem]",
-    wrapperClassName: "rounded-md bg-ink px-2"
+    src: "/brand-logos/nanga-clean.png",
+    alt: "NANGA"
   },
   isuka: {
     src: "/brand-logos/isuka.gif",
-    alt: "ISUKA",
-    className: "max-h-6 max-w-[4.75rem]"
+    alt: "ISUKA"
   },
   nemo: {
     src: "/brand-logos/nemo.png",
-    alt: "NEMO",
-    className: "max-h-6 max-w-[4.75rem]"
+    alt: "NEMO"
   },
   thermarest: {
     src: "/brand-logos/therm-a-rest.png",
@@ -59,8 +52,7 @@ const officialBrandLogos: Record<
   },
   petzl: {
     src: "/brand-logos/petzl.png",
-    alt: "Petzl",
-    className: "max-h-6 max-w-[4.75rem]"
+    alt: "Petzl"
   },
   caravan: {
     src: "/brand-logos/logo-open.png",
@@ -82,14 +74,13 @@ export function BrandLogo({ brand, className, compact = false }: BrandLogoProps)
       className={cn(
         "inline-flex shrink-0 items-center justify-center overflow-hidden",
         compact ? "h-7 w-[5.75rem]" : "h-8 w-[8.25rem]",
-        logo.wrapperClassName,
         className
       )}
     >
       <img
         src={logo.src}
         alt={logo.alt}
-        className={cn("max-h-full max-w-full object-contain", logo.className)}
+        className="max-h-full max-w-full object-contain"
         loading="lazy"
       />
     </span>

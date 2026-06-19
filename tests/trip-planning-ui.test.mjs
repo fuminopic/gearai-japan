@@ -248,7 +248,7 @@ test("trip planning UI presents a professional gear checklist", () => {
   assert.match(tripPlanningUiSource, /判定の確かさ/);
   assert.match(tripPlanningUiSource, /<details/);
   assert.match(tripPlanningUiSource, /<summary/);
-  assert.doesNotMatch(`${tripPlanningUiSource}\n${planChecklistSource}`, /要確認/);
+  assert.doesNotMatch(`${tripPlanningUiSource}\n${planChecklistSource}`, /(^|[^重])要確認/);
   assert.doesNotMatch(tripPlanningUiSource, /装備庫との照合詳細/);
   assert.doesNotMatch(tripPlanningUiSource, /照合精度/);
   assert.doesNotMatch(tripPlanningUiSource, /必要システム/);
@@ -258,11 +258,14 @@ test("trip planning UI presents a professional gear checklist", () => {
 });
 
 test("pack planning checklist prioritizes readiness before gear-backed details", () => {
-  const heroIndex = tripPlanningUiSource.indexOf("HeroReadinessCard");
+  const heroIndex = tripPlanningUiSource.indexOf("<HeroReadinessCard");
+  const preDepartureIndex = tripPlanningUiSource.indexOf("<PreDepartureConfirmationPanel");
   const checklistIndex = tripPlanningUiSource.indexOf("装備チェックリスト");
   const matchingIndex = tripPlanningUiSource.indexOf("所持済みの判定理由");
 
   assert.ok(heroIndex > -1);
+  assert.ok(preDepartureIndex > heroIndex);
+  assert.ok(checklistIndex > preDepartureIndex);
   assert.ok(checklistIndex > heroIndex);
   assert.ok(matchingIndex > checklistIndex);
 
@@ -279,6 +282,44 @@ test("pack planning checklist prioritizes readiness before gear-backed details",
 
   assert.match(tripPlanningUiSource, /sm:hidden/);
   assert.match(tripPlanningUiSource, /missingCount\.toLocaleString\("ja-JP"\)/);
+});
+
+test("M2 pre-departure confirmation reuses checklist-derived counts", () => {
+  assert.match(planChecklistSource, /export function buildPreDepartureSummary/);
+  assert.match(planChecklistSource, /getPreDepartureItemActionStatus/);
+  assert.match(planChecklistSource, /isImportantPreDepartureItem/);
+  assert.match(planChecklistSource, /NEEDS_ACTION/);
+  assert.match(planChecklistSource, /ALMOST_READY/);
+  assert.match(planChecklistSource, /CONFIRMED/);
+  assert.match(planChecklistSource, /出発前確認が必要です/);
+  assert.match(planChecklistSource, /準備はほぼ完了/);
+  assert.match(planChecklistSource, /出発前確認済み/);
+  assert.match(planChecklistSource, /missingItems\.length === 0/);
+  assert.match(planChecklistSource, /importantConfirmationItems\.length === 0/);
+  assert.match(planChecklistSource, /item\.source === "GEAR_BACKED" \? "MISSING" : "CONFIRM"/);
+
+  assert.match(dashboardPageSource, /buildPlanChecklist/);
+  assert.match(dashboardPlanChecklistSummarySource, /buildPreDepartureSummary/);
+  assert.match(dashboardPlanChecklistSummarySource, /出発前確認/);
+  assert.match(dashboardPlanChecklistSummarySource, /不足/);
+  assert.match(dashboardPlanChecklistSummarySource, /未確認/);
+  assert.match(dashboardPlanChecklistSummarySource, /重要確認/);
+  assert.match(dashboardPageSource, /focus=predeparture/);
+  assert.match(dashboardPageSource, /出発前確認へ/);
+
+  assert.match(tripPlanningUiSource, /PreDepartureConfirmationPanel/);
+  assert.match(tripPlanningUiSource, /ChecklistScanControls/);
+  assert.match(tripPlanningUiSource, /filterChecklistCategoriesForScan/);
+  assert.match(tripPlanningUiSource, /出発前の最終確認/);
+  assert.match(tripPlanningUiSource, /不足しているもの/);
+  assert.match(tripPlanningUiSource, /出発前に確認するもの/);
+  assert.match(tripPlanningUiSource, /安全に関わる確認/);
+  assert.match(tripPlanningUiSource, /臨行前スキャン/);
+  assert.match(tripPlanningUiSource, /要対応/);
+  assert.match(tripPlanningUiSource, /出発前確認を完了/);
+  assert.match(tripPlanningUiSource, /出発前確認が完了しました/);
+  assert.match(tripPlanningUiSource, /不足または未確認の項目があります/);
+  assert.doesNotMatch(tripPlanningUiSource, /購入する/);
 });
 
 test("pack planning checklist keeps special and overnight equipment dynamic", () => {
@@ -553,7 +594,7 @@ test("plan id hydration links home and history to the exact saved plan", () => {
   assert.match(tripPlanningUiSource, /\.single\(\)/);
   assert.match(tripPlanningUiSource, /router\.replace\(`\/plan\?\$\{nextParams\.toString\(\)\}`\)/);
   assert.match(tripPlanningUiSource, /href=\{`\/plan\?id=\$\{record\.id\}` as Route\}/);
-  assert.match(dashboardPageSource, /`\/plan\?id=\$\{trip\.id\}`/);
+  assert.match(dashboardPageSource, /`\/plan\?id=\$\{trip\.id\}&focus=predeparture`/);
 });
 
 test("user-facing branding uses YAMAJITAKU hierarchy", () => {

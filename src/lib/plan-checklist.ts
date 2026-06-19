@@ -99,6 +99,38 @@ export type ChecklistView = {
   summary: ChecklistProgress;
 };
 
+export type PreDepartureActionStatus = "MISSING" | "CONFIRM" | "DONE";
+
+export type PreDepartureSummaryStatus =
+  | "NEEDS_ACTION"
+  | "ALMOST_READY"
+  | "CONFIRMED";
+
+export type PreDepartureSummaryItem = {
+  id: string;
+  label: string;
+  categoryId: ChecklistCategoryId;
+  categoryLabel: string;
+  priority: ChecklistPriority;
+  reason: string;
+  status: PreDepartureActionStatus;
+};
+
+export type PreDepartureSummary = {
+  status: PreDepartureSummaryStatus;
+  statusLabel: string;
+  statusDescription: string;
+  canComplete: boolean;
+  missingItems: PreDepartureSummaryItem[];
+  confirmationItems: PreDepartureSummaryItem[];
+  importantItems: PreDepartureSummaryItem[];
+  importantConfirmationItems: PreDepartureSummaryItem[];
+  missingCount: number;
+  confirmationCount: number;
+  importantCount: number;
+  importantConfirmationCount: number;
+};
+
 export type PlanDecisionChip = {
   label: string;
   reason: string;
@@ -429,6 +461,132 @@ export function buildPlanChecklist({
     categories,
     summary: calculateProgress(categories.flatMap((category) => category.items))
   };
+}
+
+const importantPreDepartureItemIds = new Set<string>([
+  "nav-headlamp",
+  "nav-power-bank",
+  "safety-first-aid",
+  "safety-insurance-card",
+  "safety-whistle",
+  "safety-emergency-sheet",
+  "special-helmet",
+  "special-chain-spikes",
+  "special-crampons",
+  "special-ice-axe",
+  "special-bear-protection",
+  "special-river-crossing-shoes",
+  "special-portable-toilet"
+]);
+
+export function buildPreDepartureSummary(
+  checklist: ChecklistView
+): PreDepartureSummary {
+  const actionItems = checklist.categories.flatMap((category) => {
+    return category.items
+      .map((item) => {
+        const status = getPreDepartureItemActionStatus(item);
+
+        return {
+          id: item.id,
+          label: item.label,
+          categoryId: category.id,
+          categoryLabel: category.label,
+          priority: item.priority,
+          reason: item.reason,
+          status,
+          important: isImportantPreDepartureItem(category, item)
+        };
+      })
+      .filter((item) => item.status !== "DONE");
+  });
+  const missingItems = actionItems.filter((item) => item.status === "MISSING");
+  const confirmationItems = actionItems.filter((item) => item.status === "CONFIRM");
+  const importantItems = actionItems.filter((item) => item.important);
+  const importantConfirmationItems = importantItems.filter(
+    (item) => item.status === "CONFIRM"
+  );
+  const canComplete =
+    missingItems.length === 0 && importantConfirmationItems.length === 0;
+  const status = getPreDepartureSummaryStatus({
+    missingCount: missingItems.length,
+    importantConfirmationCount: importantConfirmationItems.length
+  });
+
+  return {
+    status,
+    statusLabel: preDepartureStatusLabels[status],
+    statusDescription: preDepartureStatusDescriptions[status],
+    canComplete,
+    missingItems: missingItems.map(toPreDepartureSummaryItem),
+    confirmationItems: confirmationItems.map(toPreDepartureSummaryItem),
+    importantItems: importantItems.map(toPreDepartureSummaryItem),
+    importantConfirmationItems: importantConfirmationItems.map(
+      toPreDepartureSummaryItem
+    ),
+    missingCount: missingItems.length,
+    confirmationCount: confirmationItems.length,
+    importantCount: importantItems.length,
+    importantConfirmationCount: importantConfirmationItems.length
+  };
+}
+
+export function getPreDepartureItemActionStatus(
+  item: ChecklistItem
+): PreDepartureActionStatus {
+  if (item.matchingOwnedGear.length > 0 || item.checked) {
+    return "DONE";
+  }
+
+  return item.source === "GEAR_BACKED" ? "MISSING" : "CONFIRM";
+}
+
+export function isImportantPreDepartureItem(
+  category: Pick<ChecklistCategory, "id">,
+  item: Pick<ChecklistItem, "id">
+) {
+  return (
+    category.id === "SAFETY_FIRST_AID" ||
+    category.id === "SPECIAL_GEAR" ||
+    importantPreDepartureItemIds.has(item.id)
+  );
+}
+
+function getPreDepartureSummaryStatus({
+  missingCount,
+  importantConfirmationCount
+}: {
+  missingCount: number;
+  importantConfirmationCount: number;
+}): PreDepartureSummaryStatus {
+  if (missingCount === 0 && importantConfirmationCount === 0) {
+    return "CONFIRMED";
+  }
+
+  if (missingCount === 0) {
+    return "ALMOST_READY";
+  }
+
+  return "NEEDS_ACTION";
+}
+
+const preDepartureStatusLabels: Record<PreDepartureSummaryStatus, string> = {
+  NEEDS_ACTION: "出発前確認が必要です",
+  ALMOST_READY: "準備はほぼ完了",
+  CONFIRMED: "出発前確認済み"
+};
+
+const preDepartureStatusDescriptions: Record<PreDepartureSummaryStatus, string> = {
+  NEEDS_ACTION: "不足と未確認の項目を確認してから出発準備を完了してください。",
+  ALMOST_READY: "不足はありません。安全に関わる確認を済ませると出発前確認を完了できます。",
+  CONFIRMED: "不足と重要な未確認項目はありません。出発前の最終確認は完了しています。"
+};
+
+function toPreDepartureSummaryItem({
+  important: _important,
+  ...item
+}: PreDepartureSummaryItem & { important: boolean }) {
+  return item;
 }
 
 function buildChecklistItem({

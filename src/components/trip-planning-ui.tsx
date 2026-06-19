@@ -66,17 +66,21 @@ import {
   buildPlanChecklist,
   buildPlanDecisionChips,
   buildPlanNotNeededItems,
+  buildPreDepartureSummary,
   calculateChecklistProgress,
   checklistPriorityLabels,
   getChecklistOnlyStorageKey,
   getCheckedSlotsStorageKey,
+  getPreDepartureItemActionStatus,
+  isImportantPreDepartureItem,
   isSupportedChecklistOnlyId,
   isSupportedRequirementSlot,
   type ChecklistCategory,
   type ChecklistItemIcon,
   type ChecklistItem,
   type PlanDecisionChip,
-  type PlanNotNeededItem
+  type PlanNotNeededItem,
+  type PreDepartureSummary
 } from "@/lib/plan-checklist";
 import { createClient } from "@/lib/supabase/client";
 import { writeTripPlanLocalMeta } from "@/lib/trip-plan-local-meta";
@@ -122,6 +126,7 @@ type DisplayGearMatchingResult = Omit<GearMatchingResult, "slot"> & {
 
 const emptyCheckedSlots: RequirementSlot[] = [];
 const emptyChecklistOnlyIds: string[] = [];
+type ChecklistScanFilter = "ACTION" | "MISSING" | "CONFIRM" | "IMPORTANT" | "ALL";
 
 export function TripPlanningUI({
   mountains,
@@ -141,6 +146,7 @@ export function TripPlanningUI({
   const searchParams = useSearchParams();
   const planId = searchParams.get("id") ?? selectedPlanId ?? null;
   const shouldFocusChecklist = searchParams.get("focus") === "checklist";
+  const shouldFocusPreDeparture = searchParams.get("focus") === "predeparture";
   const resultSectionRef = useRef<HTMLDivElement>(null);
   const initialSavedPlan =
     selectedSavedPlan ?? savedPlans.find((record) => record.id === planId) ?? null;
@@ -298,7 +304,7 @@ export function TripPlanningUI({
   ]);
 
   useEffect(() => {
-    if (!plan || !shouldFocusChecklist) {
+    if (!plan || (!shouldFocusChecklist && !shouldFocusPreDeparture)) {
       return;
     }
 
@@ -312,7 +318,7 @@ export function TripPlanningUI({
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [plan, planStateKey, shouldFocusChecklist]);
+  }, [plan, planStateKey, shouldFocusChecklist, shouldFocusPreDeparture]);
 
   return (
     <div className="space-y-5 pb-24">
@@ -741,8 +747,16 @@ function TripPlanningResult({
     checkedChecklistOnlyIds: checklistOnlyIds,
     ownedGear
   });
+  const preDepartureSummary = buildPreDepartureSummary(checklist);
   const decisionChips = buildPlanDecisionChips(plan);
   const notNeededItems = buildPlanNotNeededItems(plan);
+  const [scanFilter, setScanFilter] = useState<ChecklistScanFilter>("ACTION");
+  const visibleCategories = filterChecklistCategoriesForScan(
+    checklist.categories,
+    scanFilter
+  );
+  const actionCategoryLabel =
+    scanFilter === "ALL" ? "すべて" : getChecklistScanFilterLabel(scanFilter);
   const displaySlots = dedupeDisplaySlots(plan.required_slots);
   const compatibleSlots = displaySlots
     .map((slotPlan) => ({
@@ -842,6 +856,11 @@ function TripPlanningResult({
         progressPercent={checklist.summary.percent}
       />
 
+      <PreDepartureConfirmationPanel
+        summary={preDepartureSummary}
+        progressPercent={checklist.summary.percent}
+      />
+
       {decisionChips.length > 0 ? (
         <DecisionChipsSection chips={decisionChips} />
       ) : null}
@@ -868,15 +887,27 @@ function TripPlanningResult({
           </div>
         </div>
 
+        <ChecklistScanControls
+          activeFilter={scanFilter}
+          summary={preDepartureSummary}
+          onFilterChange={setScanFilter}
+        />
+
         <div className="grid gap-4 xl:grid-cols-2">
-          {checklist.categories.map((category) => (
+          {visibleCategories.length > 0 ? (
+            visibleCategories.map((category) => (
             <ChecklistCategoryCard
               key={category.id}
               category={category}
               compatibilityBySlot={compatibilityBySlot}
               onToggle={handleToggleChecklistItem}
             />
-          ))}
+            ))
+          ) : (
+            <div className="rounded-lg bg-white p-5 text-sm font-semibold text-stone-500 shadow-soft xl:col-span-2">
+              {actionCategoryLabel}の項目はありません。
+            </div>
+          )}
         </div>
       </section>
 
@@ -1071,6 +1102,291 @@ function mergeGearMatchingConfidence(matches: GearMatchingResult[]) {
   }
 
   return "HIGH";
+}
+
+function PreDepartureConfirmationPanel({
+  summary,
+  progressPercent
+}: {
+  summary: PreDepartureSummary;
+  progressPercent: number;
+}) {
+  const [completionMessage, setCompletionMessage] = useState<string | null>(null);
+
+  function handleComplete() {
+    setCompletionMessage(
+      summary.canComplete
+        ? "出発前確認が完了しました"
+        : "不足または未確認の項目があります"
+    );
+  }
+
+  return (
+    <section className="rounded-lg border border-forest-100 bg-white p-4 shadow-soft sm:p-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-sm font-bold text-forest-700">出発前の最終確認</p>
+          <h2 className="mt-1 text-2xl font-semibold tracking-normal text-ink">
+            {summary.statusLabel}
+          </h2>
+          <p className="mt-2 text-sm font-medium leading-6 text-stone-600">
+            {summary.statusDescription}
+          </p>
+        </div>
+        <div className="rounded-lg bg-stone-50 px-4 py-3 text-right">
+          <p className="text-xs font-bold text-stone-500">準備進捗</p>
+          <p className="mt-1 text-2xl font-semibold text-ink">{progressPercent}%</p>
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        <PreDepartureMetric
+          label="不足"
+          value={summary.missingCount}
+          tone={summary.missingCount > 0 ? "missing" : "ok"}
+        />
+        <PreDepartureMetric
+          label="未確認"
+          value={summary.confirmationCount}
+          tone={summary.confirmationCount > 0 ? "confirm" : "ok"}
+        />
+        <PreDepartureMetric
+          label="重要確認"
+          value={summary.importantConfirmationCount}
+          tone={summary.importantConfirmationCount > 0 ? "confirm" : "ok"}
+        />
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-3">
+        <PreDepartureSummaryGroup
+          title="不足しているもの"
+          emptyLabel="不足はありません"
+          items={summary.missingItems}
+          tone="missing"
+        />
+        <PreDepartureSummaryGroup
+          title="出発前に確認するもの"
+          emptyLabel="未確認はありません"
+          items={summary.confirmationItems}
+          tone="confirm"
+        />
+        <PreDepartureSummaryGroup
+          title="安全に関わる確認"
+          emptyLabel="安全確認はありません"
+          items={summary.importantItems}
+          tone="important"
+        />
+      </div>
+
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        {completionMessage ? (
+          <p
+            className={`rounded-lg px-3 py-2 text-sm font-bold ${
+              summary.canComplete
+                ? "bg-forest-50 text-forest-800"
+                : "bg-amber-50 text-amber-800"
+            }`}
+          >
+            {completionMessage}
+          </p>
+        ) : (
+          <p className="text-xs font-semibold leading-5 text-stone-500">
+            不足がなく、安全に関わる未確認がない場合に完了できます。
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={handleComplete}
+          className="inline-flex h-11 items-center justify-center rounded-lg bg-forest-700 px-5 text-sm font-bold text-white shadow-sm transition active:scale-[0.99]"
+        >
+          出発前確認を完了
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function PreDepartureMetric({
+  label,
+  value,
+  tone
+}: {
+  label: string;
+  value: number;
+  tone: "missing" | "confirm" | "ok";
+}) {
+  const toneClass =
+    tone === "missing"
+      ? "bg-red-50 text-red-700"
+      : tone === "confirm"
+        ? "bg-amber-50 text-amber-800"
+        : "bg-forest-50 text-forest-800";
+
+  return (
+    <div className={`rounded-lg px-3 py-2 text-center ${toneClass}`}>
+      <p className="text-[11px] font-bold">{label}</p>
+      <p className="mt-1 text-xl font-semibold">{value.toLocaleString("ja-JP")}</p>
+    </div>
+  );
+}
+
+function PreDepartureSummaryGroup({
+  title,
+  emptyLabel,
+  items,
+  tone
+}: {
+  title: string;
+  emptyLabel: string;
+  items: PreDepartureSummary["missingItems"];
+  tone: "missing" | "confirm" | "important";
+}) {
+  const visibleItems = items.slice(0, 3);
+  const remainingCount = items.length - visibleItems.length;
+  const dotClass =
+    tone === "missing"
+      ? "bg-red-500"
+      : tone === "confirm"
+        ? "bg-amber-500"
+        : "bg-forest-700";
+
+  return (
+    <div className="rounded-lg border border-stone-100 bg-stone-50 p-3">
+      <h3 className="text-sm font-bold text-ink">{title}</h3>
+      {visibleItems.length > 0 ? (
+        <div className="mt-2 space-y-2">
+          {visibleItems.map((item) => (
+            <div key={`${title}-${item.id}`} className="flex items-start gap-2">
+              <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dotClass}`} />
+              <div className="min-w-0">
+                <p className="truncate text-xs font-bold text-ink">{item.label}</p>
+                <p className="text-[11px] font-semibold text-stone-500">
+                  {item.categoryLabel}
+                </p>
+              </div>
+            </div>
+          ))}
+          {remainingCount > 0 ? (
+            <p className="text-xs font-bold text-stone-500">
+              ほか {remainingCount.toLocaleString("ja-JP")} 件を確認
+            </p>
+          ) : null}
+        </div>
+      ) : (
+        <p className="mt-2 text-xs font-semibold text-stone-500">{emptyLabel}</p>
+      )}
+    </div>
+  );
+}
+
+function ChecklistScanControls({
+  activeFilter,
+  summary,
+  onFilterChange
+}: {
+  activeFilter: ChecklistScanFilter;
+  summary: PreDepartureSummary;
+  onFilterChange: (filter: ChecklistScanFilter) => void;
+}) {
+  const filters: Array<{
+    value: ChecklistScanFilter;
+    label: string;
+    count?: number;
+  }> = [
+    {
+      value: "ACTION",
+      label: "要対応",
+      count: summary.missingCount + summary.confirmationCount
+    },
+    { value: "MISSING", label: "不足", count: summary.missingCount },
+    { value: "CONFIRM", label: "未確認", count: summary.confirmationCount },
+    { value: "IMPORTANT", label: "重要", count: summary.importantConfirmationCount },
+    { value: "ALL", label: "すべて" }
+  ];
+
+  return (
+    <div className="rounded-lg bg-white p-3 shadow-soft">
+      <p className="text-xs font-bold text-forest-700">臨行前スキャン</p>
+      <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+        {filters.map((filter) => {
+          const isActive = activeFilter === filter.value;
+
+          return (
+            <button
+              key={filter.value}
+              type="button"
+              onClick={() => onFilterChange(filter.value)}
+              className={`shrink-0 rounded-full px-3 py-2 text-xs font-bold transition ${
+                isActive
+                  ? "bg-forest-700 text-white"
+                  : "bg-stone-100 text-stone-700"
+              }`}
+            >
+              {filter.label}
+              {typeof filter.count === "number" ? (
+                <span className="ml-1">{filter.count.toLocaleString("ja-JP")}</span>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function filterChecklistCategoriesForScan(
+  categories: ChecklistCategory[],
+  filter: ChecklistScanFilter
+): ChecklistCategory[] {
+  if (filter === "ALL") {
+    return categories;
+  }
+
+  return categories
+    .map((category) => {
+      const filteredItems = category.items.filter((item) => {
+        const actionStatus = getPreDepartureItemActionStatus(item);
+        const isImportant = isImportantPreDepartureItem(category, item);
+
+        if (filter === "ACTION") {
+          return actionStatus !== "DONE";
+        }
+
+        if (filter === "MISSING") {
+          return actionStatus === "MISSING";
+        }
+
+        if (filter === "CONFIRM") {
+          return actionStatus === "CONFIRM";
+        }
+
+        return isImportant && actionStatus !== "DONE";
+      });
+
+      return {
+        ...category,
+        priorityGroups: category.priorityGroups
+          .map((group) => ({
+            ...group,
+            items: group.items.filter((item) => filteredItems.includes(item))
+          }))
+          .filter((group) => group.items.length > 0),
+        items: filteredItems
+      };
+    })
+    .filter((category) => category.items.length > 0);
+}
+
+function getChecklistScanFilterLabel(filter: ChecklistScanFilter) {
+  const labels: Record<ChecklistScanFilter, string> = {
+    ACTION: "要対応",
+    MISSING: "不足",
+    CONFIRM: "未確認",
+    IMPORTANT: "重要",
+    ALL: "すべて"
+  };
+
+  return labels[filter];
 }
 
 function HeroReadinessCard({

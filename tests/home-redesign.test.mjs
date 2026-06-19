@@ -109,7 +109,7 @@ test("app middleware keeps navigation lightweight", () => {
 test("home redesign uses the requested YAMAJITAKU header and trip states", () => {
   for (const copy of [
     "次回の山行",
-    "装備チェックを続ける",
+    "出発前確認へ",
     "まだ計画はありません",
     "山行計画を作成"
   ]) {
@@ -150,10 +150,14 @@ test("home hero shows the saved plan checklist summary over the static hills bac
   assert.match(dashboardPlanChecklistSummarySource, /getChecklistOnlyStorageKey/);
   assert.match(dashboardPlanChecklistSummarySource, /getCheckedSlotsStorageKey/);
   assert.match(dashboardPlanChecklistSummarySource, /applyChecklistStateToChecklist/);
+  assert.match(dashboardPlanChecklistSummarySource, /buildPreDepartureSummary/);
   assert.match(dashboardPlanChecklistSummarySource, /PlanCategorySummary/);
-  assert.match(dashboardPlanChecklistSummarySource, /未完了/);
+  assert.match(dashboardPlanChecklistSummarySource, /不足/);
+  assert.match(dashboardPlanChecklistSummarySource, /未確認/);
+  assert.match(dashboardPlanChecklistSummarySource, /重要確認/);
   assert.match(dashboardPlanChecklistSummarySource, /category\.progress\.percent/);
-  assert.match(dashboardSource, /`\/plan\?id=\$\{trip\.id\}`/);
+  assert.match(dashboardSource, /`\/plan\?id=\$\{trip\.id\}&focus=predeparture`/);
+  assert.match(dashboardSource, /出発前確認へ/);
   assert.match(dashboardSource, /trip\.progress/);
   assert.match(dashboardSource, /trip\.mountain_name/);
   assert.doesNotMatch(dashboardSource, /getTripMountainImageUrl/);

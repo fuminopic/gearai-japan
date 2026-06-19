@@ -85,7 +85,10 @@ test("insurance page mirrors the insurance-only entry flow", () => {
   assert.match(insurancePageSource, /name="mountain_insurance_starts_on"/);
   assert.match(insurancePageSource, /name="mountain_insurance_expires_on"/);
   assert.match(insurancePageSource, /name="mountain_insurance_policy_number"/);
+  assert.match(insurancePageSource, /accent-\[#14724e\]/);
+  assert.match(insurancePageSource, /min-w-0 max-w-full/);
   assert.doesNotMatch(insurancePageSource, /遭難対策サービス/);
+  assert.doesNotMatch(insurancePageSource, /sticky bottom-24/);
 });
 
 test("profile and insurance updates store user metadata without adding a new table", () => {

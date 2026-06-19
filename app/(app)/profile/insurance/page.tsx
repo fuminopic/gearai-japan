@@ -17,19 +17,22 @@ export default async function InsurancePage({ searchParams }: InsurancePageProps
     getMetadataString(metadata, "mountain_insurance_status") || "none";
 
   return (
-    <form action={updateInsurance} className="mx-auto max-w-2xl space-y-5 pb-24">
+    <form action={updateInsurance} className="mx-auto max-w-2xl space-y-4 pb-24">
       <section className="flex items-center gap-3">
         <Link
           href="/profile"
           aria-label="マイページへ戻る"
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-stone-800 shadow-sm transition active:scale-95"
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-stone-800 shadow-sm transition active:scale-95"
         >
           <ArrowLeft aria-hidden className="h-5 w-5" />
         </Link>
-        <h1 className="min-w-0 flex-1 text-[30px] font-bold leading-tight tracking-normal text-ink">
-          保険のご加入
-        </h1>
-        <button className="h-11 shrink-0 rounded-xl bg-[#14724e] px-4 text-sm font-bold text-white shadow-sm transition active:scale-95">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold leading-none text-[#14724e]">マイページ</p>
+          <h1 className="mt-1 text-[26px] font-bold leading-tight tracking-normal text-ink">
+            保険のご加入
+          </h1>
+        </div>
+        <button className="h-10 shrink-0 rounded-xl bg-[#14724e] px-4 text-sm font-bold text-white shadow-sm transition active:scale-95">
           保存
         </button>
       </section>
@@ -40,15 +43,20 @@ export default async function InsurancePage({ searchParams }: InsurancePageProps
         </p>
       ) : null}
 
-      <section className="rounded-[22px] bg-white p-5 shadow-soft">
+      <section className="overflow-hidden rounded-[20px] bg-white p-4 shadow-soft sm:p-5">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-forest-50 text-[#14724e]">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-forest-50 text-[#14724e]">
             <ShieldCheck aria-hidden className="h-5 w-5" />
           </span>
-          <h2 className="text-2xl font-bold tracking-normal text-ink">保険</h2>
+          <div>
+            <h2 className="text-lg font-bold tracking-normal text-ink">保険</h2>
+            <p className="mt-0.5 text-xs font-semibold text-stone-500">
+              山岳保険の加入状況と証券番号を登録します。
+            </p>
+          </div>
         </div>
 
-        <fieldset className="mt-6 space-y-4">
+        <fieldset className="mt-5 grid grid-cols-2 gap-2">
           <legend className="sr-only">保険の加入状況</legend>
           <InsuranceRadio
             label="未加入"
@@ -62,7 +70,7 @@ export default async function InsurancePage({ searchParams }: InsurancePageProps
           />
         </fieldset>
 
-        <div className="mt-8 space-y-5">
+        <div className="mt-5 space-y-4">
           <InsuranceField
             label="保険名"
             name="mountain_insurance_provider"
@@ -80,7 +88,7 @@ export default async function InsurancePage({ searchParams }: InsurancePageProps
             defaultValue={getMetadataString(metadata, "mountain_insurance_expires_on")}
           />
           <label className="block">
-            <span className="block text-sm font-bold text-stone-500">
+            <span className="block text-sm font-bold text-ink">
               証券番号などを入力してください
             </span>
             <input
@@ -90,13 +98,13 @@ export default async function InsurancePage({ searchParams }: InsurancePageProps
                 "mountain_insurance_policy_number"
               )}
               inputMode="text"
-              className="mt-2 h-12 w-full rounded-xl border border-stone-200 bg-white px-3 text-base font-semibold text-ink outline-none focus:border-[#14724e]"
+              className="mt-2 block h-11 w-full min-w-0 max-w-full rounded-xl border border-stone-200 bg-white px-3 text-sm font-semibold text-ink outline-none placeholder:text-stone-300 focus:border-[#14724e]"
             />
           </label>
         </div>
       </section>
 
-      <button className="sticky bottom-24 z-20 inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#14724e] text-base font-bold text-white shadow-lg shadow-forest-900/10 transition active:scale-[0.99] md:static">
+      <button className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-[#14724e] text-sm font-bold text-white shadow-sm transition active:scale-[0.99]">
         保存する
       </button>
     </form>
@@ -113,13 +121,13 @@ function InsuranceRadio({
   defaultChecked: boolean;
 }) {
   return (
-    <label className="flex items-center gap-4 text-xl font-bold text-ink">
+    <label className="flex h-12 items-center gap-3 rounded-xl border border-stone-200 bg-stone-50 px-3 text-sm font-bold text-ink">
       <input
         type="radio"
         name="mountain_insurance_status"
         value={value}
         defaultChecked={defaultChecked}
-        className="h-8 w-8 accent-black"
+        className="h-5 w-5 accent-[#14724e]"
       />
       {label}
     </label>
@@ -138,13 +146,13 @@ function InsuranceField({
   placeholder?: string;
 }) {
   return (
-    <label className="grid gap-2 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-center">
-      <span className="text-lg font-bold text-ink">{label}</span>
+    <label className="block">
+      <span className="block text-sm font-bold text-ink">{label}</span>
       <input
         name={name}
         defaultValue={defaultValue}
         placeholder={placeholder}
-        className="h-12 w-full rounded-xl border border-stone-200 bg-white px-3 text-base font-semibold text-ink outline-none placeholder:text-stone-300 focus:border-[#14724e]"
+        className="mt-2 block h-11 w-full min-w-0 max-w-full rounded-xl border border-stone-200 bg-white px-3 text-sm font-semibold text-ink outline-none placeholder:text-stone-300 focus:border-[#14724e]"
       />
     </label>
   );
@@ -160,14 +168,14 @@ function InsuranceDateField({
   defaultValue: string;
 }) {
   return (
-    <label className="grid gap-2 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-center">
-      <span className="text-lg font-bold text-ink">{label}</span>
-      <span className="relative block">
+    <label className="block">
+      <span className="block text-sm font-bold text-ink">{label}</span>
+      <span className="relative mt-2 block min-w-0">
         <input
           type="date"
           name={name}
           defaultValue={defaultValue}
-          className="h-12 w-full rounded-xl border border-stone-200 bg-white px-3 pr-10 text-base font-semibold text-ink outline-none focus:border-[#14724e]"
+          className="block h-11 w-full min-w-0 max-w-full appearance-none rounded-xl border border-stone-200 bg-white px-3 pr-10 text-sm font-semibold text-ink outline-none [color-scheme:light] focus:border-[#14724e] [&::-webkit-date-and-time-value]:text-left"
         />
         <CalendarDays
           aria-hidden

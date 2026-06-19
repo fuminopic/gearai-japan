@@ -13,6 +13,7 @@ import {
   ChevronDown,
   CircleAlert,
   CircleDashed,
+  ClipboardList,
   CloudRain,
   Compass,
   Cookie,
@@ -39,6 +40,7 @@ import {
   Toilet,
   Utensils,
   Volume2,
+  X,
   Zap,
   type LucideIcon
 } from "lucide-react";
@@ -343,6 +345,7 @@ export function TripPlanningUI({
               plan={plan}
               compatibilityBySlot={compatibilityBySlot}
               ownedGear={ownedGear}
+              plannedDate={planDetailsDraft.plannedDate}
               initialCheckedSlots={currentCheckedSlots}
               initialChecklistOnlyIds={currentChecklistOnlyIds}
               onProgressChange={setInteractiveProgress}
@@ -716,6 +719,7 @@ function TripPlanningResult({
   plan,
   compatibilityBySlot,
   ownedGear,
+  plannedDate,
   planId,
   initialCheckedSlots = emptyCheckedSlots,
   initialChecklistOnlyIds = emptyChecklistOnlyIds,
@@ -726,6 +730,7 @@ function TripPlanningResult({
   plan: PackRequirementPlan;
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
   ownedGear: UserGear[];
+  plannedDate: string;
   planId: string | null;
   initialCheckedSlots?: RequirementSlot[];
   initialChecklistOnlyIds?: string[];
@@ -751,12 +756,12 @@ function TripPlanningResult({
   const decisionChips = buildPlanDecisionChips(plan);
   const notNeededItems = buildPlanNotNeededItems(plan);
   const [scanFilter, setScanFilter] = useState<ChecklistScanFilter>("ACTION");
+  const [isChecklistSheetOpen, setIsChecklistSheetOpen] = useState(false);
   const visibleCategories = filterChecklistCategoriesForScan(
     checklist.categories,
     scanFilter
   );
-  const actionCategoryLabel =
-    scanFilter === "ALL" ? "すべて" : getChecklistScanFilterLabel(scanFilter);
+  const actionCategoryLabel = getChecklistScanFilterLabel(scanFilter);
   const displaySlots = dedupeDisplaySlots(plan.required_slots);
   const compatibleSlots = displaySlots
     .map((slotPlan) => ({
@@ -859,6 +864,8 @@ function TripPlanningResult({
       <PreDepartureConfirmationPanel
         summary={preDepartureSummary}
         progressPercent={checklist.summary.percent}
+        onShowAllItems={() => setScanFilter("ALL")}
+        onOpenChecklistSheet={() => setIsChecklistSheetOpen(true)}
       />
 
       {decisionChips.length > 0 ? (
@@ -946,8 +953,277 @@ function TripPlanningResult({
           compatibilityBySlot={compatibilityBySlot}
         />
       </section>
+
+      <ChecklistSheetModal
+        isOpen={isChecklistSheetOpen}
+        onClose={() => setIsChecklistSheetOpen(false)}
+        plan={plan}
+        plannedDate={plannedDate}
+        checklist={checklist}
+        summary={preDepartureSummary}
+      />
     </div>
   );
+}
+
+function ChecklistSheetModal({
+  isOpen,
+  onClose,
+  plan,
+  plannedDate,
+  checklist,
+  summary
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  plan: PackRequirementPlan;
+  plannedDate: string;
+  checklist: ReturnType<typeof buildPlanChecklist>;
+  summary: PreDepartureSummary;
+}) {
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  const sheetCounts = getChecklistSheetCounts(checklist);
+
+  return (
+    <div
+      className="fixed inset-0 z-[80] bg-black/40 sm:px-6 sm:py-6"
+      role="dialog"
+      aria-modal="true"
+      aria-label="チェック表"
+    >
+      <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#FAFAFA] shadow-2xl sm:mx-auto sm:h-[calc(100dvh-3rem)] sm:max-w-3xl sm:rounded-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-stone-100 bg-white px-4 pb-3 pt-[max(env(safe-area-inset-top),16px)] sm:px-6 sm:pt-5">
+          <div>
+            <p className="text-xs font-bold text-forest-700">出発前確認</p>
+            <h2 className="mt-1 text-xl font-semibold tracking-normal text-ink">
+              チェック表
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-stone-100 text-stone-700 transition active:scale-95"
+            aria-label="チェック表を閉じる"
+          >
+            <X className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
+          <section className="rounded-lg bg-white p-4 shadow-soft">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-bold text-stone-500">
+                  {formatChecklistSheetDate(plannedDate)}
+                </p>
+                <h3 className="mt-1 text-2xl font-semibold tracking-normal text-ink">
+                  {plan.mountain.name_ja}
+                </h3>
+                <p className="mt-1 text-sm font-semibold text-stone-600">
+                  {mountainFoundationSeasonLabels[plan.season]} / {mountainFoundationStyleLabels[plan.style]}
+                </p>
+              </div>
+              <span className="inline-flex w-fit rounded-lg bg-forest-50 px-3 py-2 text-xs font-bold text-forest-800">
+                {summary.statusLabel}
+              </span>
+            </div>
+
+            <div className="mt-4 grid grid-cols-4 gap-2 text-center">
+              <ChecklistSheetMetric label="不足" value={sheetCounts.missing} tone="missing" />
+              <ChecklistSheetMetric label="確認する" value={sheetCounts.confirm} tone="confirm" />
+              <ChecklistSheetMetric label="所持済み" value={sheetCounts.owned} tone="owned" />
+              <ChecklistSheetMetric label="確認済み" value={sheetCounts.checked} tone="checked" />
+            </div>
+          </section>
+
+          <div className="mt-4 space-y-4">
+            {checklist.categories.map((category) => (
+              <ChecklistSheetCategory
+                key={category.id}
+                category={category}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChecklistSheetMetric({
+  label,
+  value,
+  tone
+}: {
+  label: string;
+  value: number;
+  tone: "missing" | "confirm" | "owned" | "checked";
+}) {
+  const toneClass =
+    tone === "missing"
+      ? "bg-red-50 text-red-700"
+      : tone === "confirm"
+        ? "bg-amber-50 text-amber-800"
+        : tone === "owned"
+          ? "bg-forest-50 text-forest-800"
+          : "bg-blue-50 text-blue-700";
+
+  return (
+    <div className={`rounded-lg px-2 py-2 ${toneClass}`}>
+      <p className="text-[10px] font-bold leading-none">{label}</p>
+      <p className="mt-1 text-lg font-semibold">{value.toLocaleString("ja-JP")}</p>
+    </div>
+  );
+}
+
+function ChecklistSheetCategory({ category }: { category: ChecklistCategory }) {
+  return (
+    <section className="overflow-hidden rounded-lg bg-white shadow-soft">
+      <div className="flex items-center justify-between border-b border-stone-100 px-4 py-3">
+        <h3 className="text-sm font-bold text-ink">{category.label}</h3>
+        <span className="text-xs font-bold text-stone-500">
+          {category.items.length.toLocaleString("ja-JP")} 件
+        </span>
+      </div>
+      <div className="divide-y divide-stone-100">
+        {category.items.map((item) => (
+          <ChecklistSheetRow
+            key={`${category.id}-${item.id}`}
+            item={item}
+            categoryLabel={category.label}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ChecklistSheetRow({
+  item,
+  categoryLabel
+}: {
+  item: ChecklistItem;
+  categoryLabel: string;
+}) {
+  const status = getChecklistSheetItemStatus(item);
+
+  return (
+    <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-4 py-3">
+      <span
+        className={`flex h-5 w-5 items-center justify-center rounded border ${
+          status.checked
+            ? "border-forest-700 bg-forest-700 text-white"
+            : "border-stone-300 bg-white text-stone-300"
+        }`}
+        aria-hidden="true"
+      >
+        {status.checked ? <Check className="h-3.5 w-3.5" /> : null}
+      </span>
+      <div className="min-w-0">
+        <p className="truncate text-sm font-semibold text-ink">{item.label}</p>
+        <p className="mt-0.5 text-[11px] font-semibold text-stone-500">
+          {categoryLabel}
+        </p>
+      </div>
+      <span className={`rounded px-2 py-1 text-[11px] font-bold ${status.className}`}>
+        {status.label}
+      </span>
+    </div>
+  );
+}
+
+function getChecklistSheetCounts(checklist: ReturnType<typeof buildPlanChecklist>) {
+  const counts = {
+    missing: 0,
+    confirm: 0,
+    owned: 0,
+    checked: 0
+  };
+
+  for (const category of checklist.categories) {
+    for (const item of category.items) {
+      const status = getChecklistSheetItemStatus(item);
+
+      if (status.kind === "MISSING") {
+        counts.missing += 1;
+      } else if (status.kind === "CONFIRM") {
+        counts.confirm += 1;
+      } else if (status.kind === "OWNED") {
+        counts.owned += 1;
+      } else {
+        counts.checked += 1;
+      }
+    }
+  }
+
+  return counts;
+}
+
+function getChecklistSheetItemStatus(item: ChecklistItem) {
+  if (item.matchingOwnedGear.length > 0) {
+    return {
+      kind: "OWNED" as const,
+      label: "所持済み",
+      checked: true,
+      className: "bg-forest-50 text-forest-800"
+    };
+  }
+
+  if (item.checked) {
+    return {
+      kind: "CHECKED" as const,
+      label: "確認済み",
+      checked: true,
+      className: "bg-blue-50 text-blue-700"
+    };
+  }
+
+  const actionStatus = getPreDepartureItemActionStatus(item);
+
+  if (actionStatus === "MISSING") {
+    return {
+      kind: "MISSING" as const,
+      label: "不足",
+      checked: false,
+      className: "bg-red-50 text-red-700"
+    };
+  }
+
+  return {
+    kind: "CONFIRM" as const,
+    label: "確認する",
+    checked: false,
+    className: "bg-stone-100 text-stone-600"
+  };
+}
+
+function formatChecklistSheetDate(value: string) {
+  return value ? value.replaceAll("-", "/") : "予定日未設定";
 }
 
 function filterCheckedSlotsForPlan(
@@ -1106,10 +1382,14 @@ function mergeGearMatchingConfidence(matches: GearMatchingResult[]) {
 
 function PreDepartureConfirmationPanel({
   summary,
-  progressPercent
+  progressPercent,
+  onShowAllItems,
+  onOpenChecklistSheet
 }: {
   summary: PreDepartureSummary;
   progressPercent: number;
+  onShowAllItems: () => void;
+  onOpenChecklistSheet: () => void;
 }) {
   const [completionMessage, setCompletionMessage] = useState<string | null>(null);
 
@@ -1194,13 +1474,30 @@ function PreDepartureConfirmationPanel({
             不足がなく、安全に関わる未確認がない場合に完了できます。
           </p>
         )}
-        <button
-          type="button"
-          onClick={handleComplete}
-          className="inline-flex h-11 items-center justify-center rounded-lg bg-forest-700 px-5 text-sm font-bold text-white shadow-sm transition active:scale-[0.99]"
-        >
-          出発前確認を完了
-        </button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            onClick={onOpenChecklistSheet}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-stone-200 bg-stone-50 px-5 text-sm font-bold text-ink transition active:scale-[0.99]"
+          >
+            <ClipboardList className="h-4 w-4" aria-hidden="true" />
+            チェック表を見る
+          </button>
+          <button
+            type="button"
+            onClick={onShowAllItems}
+            className="inline-flex h-11 items-center justify-center rounded-lg border border-forest-200 bg-white px-5 text-sm font-bold text-forest-700 transition active:scale-[0.99]"
+          >
+            すべての持ち物を見る
+          </button>
+          <button
+            type="button"
+            onClick={handleComplete}
+            className="inline-flex h-11 items-center justify-center rounded-lg bg-forest-700 px-5 text-sm font-bold text-white shadow-sm transition active:scale-[0.99]"
+          >
+            出発前確認を完了
+          </button>
+        </div>
       </div>
     </section>
   );
@@ -1268,7 +1565,7 @@ function PreDepartureSummaryGroup({
           ))}
           {remainingCount > 0 ? (
             <p className="text-xs font-bold text-stone-500">
-              ほか {remainingCount.toLocaleString("ja-JP")} 件を確認
+              残り {remainingCount.toLocaleString("ja-JP")} 件
             </p>
           ) : null}
         </div>
@@ -1301,12 +1598,17 @@ function ChecklistScanControls({
     { value: "MISSING", label: "不足", count: summary.missingCount },
     { value: "CONFIRM", label: "未確認", count: summary.confirmationCount },
     { value: "IMPORTANT", label: "重要", count: summary.importantConfirmationCount },
-    { value: "ALL", label: "すべて" }
+    { value: "ALL", label: "すべての持ち物" }
   ];
 
   return (
     <div className="rounded-lg bg-white p-3 shadow-soft">
-      <p className="text-xs font-bold text-forest-700">臨行前スキャン</p>
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+        <p className="text-xs font-bold text-forest-700">臨行前スキャン</p>
+        <p className="text-[11px] font-semibold leading-5 text-stone-500">
+          すべての持ち物と確認状態を見られます
+        </p>
+      </div>
       <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
         {filters.map((filter) => {
           const isActive = activeFilter === filter.value;
@@ -1383,7 +1685,7 @@ function getChecklistScanFilterLabel(filter: ChecklistScanFilter) {
     MISSING: "不足",
     CONFIRM: "未確認",
     IMPORTANT: "重要",
-    ALL: "すべて"
+    ALL: "すべての持ち物"
   };
 
   return labels[filter];

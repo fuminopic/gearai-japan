@@ -316,6 +316,17 @@ test("M2 pre-departure confirmation reuses checklist-derived counts", () => {
   assert.match(tripPlanningUiSource, /安全に関わる確認/);
   assert.match(tripPlanningUiSource, /臨行前スキャン/);
   assert.match(tripPlanningUiSource, /要対応/);
+  assert.match(tripPlanningUiSource, /すべての持ち物/);
+  assert.match(tripPlanningUiSource, /すべての持ち物を見る/);
+  assert.match(tripPlanningUiSource, /すべての持ち物と確認状態を見られます/);
+  assert.match(tripPlanningUiSource, /チェック表を見る/);
+  assert.match(tripPlanningUiSource, /ChecklistSheetModal/);
+  assert.match(tripPlanningUiSource, /aria-label="チェック表"/);
+  assert.match(tripPlanningUiSource, /sheetCounts\.missing/);
+  assert.match(tripPlanningUiSource, /確認する/);
+  assert.match(tripPlanningUiSource, /予定日未設定/);
+  assert.match(tripPlanningUiSource, /残り \{remainingCount\.toLocaleString\("ja-JP"\)\} 件/);
+  assert.doesNotMatch(tripPlanningUiSource, /ほか \{remainingCount\.toLocaleString\("ja-JP"\)\} 件を確認/);
   assert.match(tripPlanningUiSource, /出発前確認を完了/);
   assert.match(tripPlanningUiSource, /出発前確認が完了しました/);
   assert.match(tripPlanningUiSource, /不足または未確認の項目があります/);

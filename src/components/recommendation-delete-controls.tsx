@@ -23,6 +23,10 @@ export function RecommendationDeleteButton({
       type="button"
       disabled={isPending}
       onClick={() => {
+        if (!window.confirm("この旧推薦履歴を削除しますか？")) {
+          return;
+        }
+
         startTransition(async () => {
           await deleteRecommendation(id);
           router.refresh();
@@ -44,6 +48,10 @@ export function RecommendationDeleteAllButton() {
       type="button"
       disabled={isPending}
       onClick={() => {
+        if (!window.confirm("旧推薦履歴をすべて削除しますか？")) {
+          return;
+        }
+
         startTransition(async () => {
           await deleteAllRecommendations();
           router.refresh();

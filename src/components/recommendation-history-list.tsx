@@ -21,15 +21,15 @@ export function RecommendationHistoryList({ records }: RecommendationHistoryList
   if (records.length === 0) {
     return (
       <section className="rounded-lg bg-white p-6 text-center shadow-soft">
-        <p className="text-lg font-semibold text-ink">推薦履歴はまだありません</p>
+        <p className="text-lg font-semibold text-ink">過去の推薦履歴はまだありません</p>
         <p className="mt-2 text-sm leading-6 text-stone-500">
-          山名と日数を入力して、最初の装備推薦を作成しましょう。
+          現在は山行計画のチェックリストを主に利用してください。
         </p>
         <Link
-          href="/ai"
+          href="/plan"
           className="mt-5 inline-flex rounded-lg bg-forest-700 px-5 py-3 text-sm font-semibold text-white"
         >
-          AI推薦へ
+          山行計画を作成
         </Link>
       </section>
     );

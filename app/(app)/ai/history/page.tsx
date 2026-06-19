@@ -19,16 +19,16 @@ export default async function RecommendationHistoryPage({
     <div className="space-y-5">
       <section className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-forest-700">推薦履歴</p>
+          <p className="text-sm font-semibold text-forest-700">過去の記録</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">
-            AI推薦履歴
+            過去の推薦履歴
           </h1>
         </div>
         <Link
-          href="/ai"
+          href="/plan"
           className="rounded-lg bg-forest-700 px-5 py-3 text-sm font-semibold text-white"
         >
-          新規作成
+          山行計画を作成
         </Link>
       </section>
       {params.error ? (

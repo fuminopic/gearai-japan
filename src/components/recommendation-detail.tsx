@@ -21,14 +21,21 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
   return (
     <div className="space-y-5">
       <section>
-        <p className="text-sm font-semibold text-forest-700">推薦結果</p>
+        <p className="text-sm font-semibold text-forest-700">過去の記録</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">
-          {record.input.mountain_region}
+          旧推薦の詳細
         </h1>
+        <p className="mt-2 text-lg font-semibold text-ink">
+          {record.input.mountain_region}
+        </p>
         <p className="mt-2 text-sm leading-6 text-stone-600">
           {accommodationStyleLabels[record.input.accommodation_style]} /{" "}
           {record.input.days}日
         </p>
+      </section>
+
+      <section className="rounded-lg border border-forest-100 bg-forest-50 p-4 text-sm leading-6 text-forest-900">
+        現在は山行計画のチェックリストを主に利用してください。新しい準備確認は山行計画から作成できます。
       </section>
 
       <section className="grid grid-cols-3 gap-3">
@@ -45,7 +52,7 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
           </p>
         </div>
         <div className="rounded-lg bg-white p-4 shadow-soft">
-          <p className="text-sm text-stone-500">推薦項目</p>
+          <p className="text-sm text-stone-500">記録項目</p>
           <p className="mt-2 text-2xl font-semibold text-ink">
             {getRecommendedItemCount(record).toLocaleString("ja-JP")} 点
           </p>
@@ -57,7 +64,7 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
       </section>
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
-        <h2 className="text-lg font-semibold text-ink">ルール</h2>
+        <h2 className="text-lg font-semibold text-ink">当時の判断メモ</h2>
         <div className="mt-4 grid gap-3">
           {[...record.output.mountain_rules, ...record.output.season_rules].map(
             (rule) => (
@@ -74,7 +81,7 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
       </section>
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
-        <h2 className="text-lg font-semibold text-ink">所有装備の分析</h2>
+        <h2 className="text-lg font-semibold text-ink">当時の所持装備照合</h2>
         {owned && (owned.owned_items.length > 0 || owned.maybe_owned_items.length > 0) ? (
           <div className="mt-4 space-y-3">
             {owned.owned_items.map((item) => (
@@ -124,9 +131,9 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
         )}
       </section>
 
-      <RecommendationItems title="必須装備" items={record.output.required_items} />
-      <RecommendationItems title="推奨装備" items={record.output.recommended_items} />
-      <RecommendationItems title="任意装備" items={record.output.optional_items} />
+      <RecommendationItems title="必須として記録" items={record.output.required_items} />
+      <RecommendationItems title="推奨として記録" items={record.output.recommended_items} />
+      <RecommendationItems title="任意として記録" items={record.output.optional_items} />
 
       <section className="rounded-lg bg-white p-5 shadow-soft">
         <h2 className="text-lg font-semibold text-ink">リスク注意</h2>
@@ -144,16 +151,16 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
 
       <div className="grid grid-cols-2 gap-3">
         <Link
-          href="/ai"
+          href="/plan"
           className="rounded-lg border border-stone-200 bg-white px-5 py-3 text-center text-sm font-semibold text-stone-700"
         >
-          新しく作成
+          山行計画を作成
         </Link>
         <Link
           href="/ai/history"
           className="rounded-lg bg-forest-700 px-5 py-3 text-center text-sm font-semibold text-white"
         >
-          履歴へ
+          過去の履歴へ
         </Link>
       </div>
     </div>

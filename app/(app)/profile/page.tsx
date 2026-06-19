@@ -5,6 +5,7 @@ import {
   ShieldCheck,
   UserRound
 } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 
 import { signOut } from "@/lib/actions/auth";
@@ -60,7 +61,7 @@ export default async function ProfilePage() {
       </section>
 
       <Link
-        href="/profile/edit#insurance"
+        href={"/profile/insurance" as Route}
         className="block rounded-[22px] bg-white p-5 shadow-soft transition active:scale-[0.99]"
       >
         <div className="flex items-start justify-between gap-4">
@@ -69,9 +70,9 @@ export default async function ProfilePage() {
               <ShieldCheck aria-hidden className="h-5 w-5" />
             </span>
             <div className="min-w-0">
-              <h2 className="text-lg font-bold tracking-normal text-ink">山岳保険</h2>
+              <h2 className="text-lg font-bold tracking-normal text-ink">保険</h2>
               <p className="mt-1 text-sm font-semibold leading-relaxed text-stone-500">
-                出発前に保険の加入状況を確認します。
+                山岳保険のご案内、保険情報の入力
               </p>
             </div>
           </div>
@@ -88,7 +89,7 @@ export default async function ProfilePage() {
                   : "bg-amber-100 text-amber-800"
               }`}
             >
-              {hasInsurance ? "加入済み" : "未登録"}
+              {hasInsurance ? "契約済み" : "未加入"}
             </span>
           </div>
           {hasInsurance ? (

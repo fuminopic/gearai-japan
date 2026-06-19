@@ -56,20 +56,11 @@ export async function updateProfile(formData: FormData) {
   const supabase = await createClient();
   const displayName = cleanText(formData.get("display_name"), 40);
   const selfIntroduction = cleanText(formData.get("self_introduction"), 220);
-  const mountainInsuranceStatus = cleanText(formData.get("mountain_insurance_status"), 16);
-  const mountainInsuranceProvider = cleanText(formData.get("mountain_insurance_provider"), 80);
-  const mountainInsuranceExpiresOn = cleanText(
-    formData.get("mountain_insurance_expires_on"),
-    10
-  );
 
   const { error } = await supabase.auth.updateUser({
     data: {
       display_name: displayName,
-      self_introduction: selfIntroduction,
-      mountain_insurance_status: mountainInsuranceStatus,
-      mountain_insurance_provider: mountainInsuranceProvider,
-      mountain_insurance_expires_on: mountainInsuranceExpiresOn
+      self_introduction: selfIntroduction
     }
   });
 
@@ -79,6 +70,42 @@ export async function updateProfile(formData: FormData) {
 
   revalidatePath("/profile");
   revalidatePath("/profile/edit");
+  redirect("/profile");
+}
+
+export async function updateInsurance(formData: FormData) {
+  const supabase = await createClient();
+  const mountainInsuranceStatus = cleanText(formData.get("mountain_insurance_status"), 16);
+  const mountainInsuranceProvider = cleanText(formData.get("mountain_insurance_provider"), 80);
+  const mountainInsuranceStartsOn = cleanText(
+    formData.get("mountain_insurance_starts_on"),
+    10
+  );
+  const mountainInsuranceExpiresOn = cleanText(
+    formData.get("mountain_insurance_expires_on"),
+    10
+  );
+  const mountainInsurancePolicyNumber = cleanText(
+    formData.get("mountain_insurance_policy_number"),
+    80
+  );
+
+  const { error } = await supabase.auth.updateUser({
+    data: {
+      mountain_insurance_status: mountainInsuranceStatus,
+      mountain_insurance_provider: mountainInsuranceProvider,
+      mountain_insurance_starts_on: mountainInsuranceStartsOn,
+      mountain_insurance_expires_on: mountainInsuranceExpiresOn,
+      mountain_insurance_policy_number: mountainInsurancePolicyNumber
+    }
+  });
+
+  if (error) {
+    redirect(`/profile/insurance?error=${encodeURIComponent(error.message)}` as Route);
+  }
+
+  revalidatePath("/profile");
+  revalidatePath("/profile/insurance");
   redirect("/profile");
 }
 

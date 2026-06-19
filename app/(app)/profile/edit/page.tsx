@@ -1,7 +1,5 @@
 import {
   ArrowLeft,
-  ChevronDown,
-  ShieldCheck,
   UserRound
 } from "lucide-react";
 import Link from "next/link";
@@ -14,12 +12,6 @@ type ProfileEditPageProps = {
     error?: string;
   }>;
 };
-
-const insuranceStatusOptions = [
-  { value: "unknown", label: "未登録" },
-  { value: "active", label: "加入済み" },
-  { value: "none", label: "未加入" }
-];
 
 export default async function ProfileEditPage({
   searchParams
@@ -73,32 +65,6 @@ export default async function ProfileEditPage({
           placeholder="準備時に残しておきたいメモ"
         />
         <ProfileStaticRow label="メールアドレス" value={user.email ?? ""} />
-      </ProfileSection>
-
-      <ProfileSection
-        id="insurance"
-        title="山岳保険"
-        description="出発前に確認する保険情報を登録します。"
-        icon={ShieldCheck}
-      >
-        <ProfileSelect
-          label="加入状況"
-          name="mountain_insurance_status"
-          defaultValue={getMetadataString(metadata, "mountain_insurance_status") || "unknown"}
-          options={insuranceStatusOptions}
-        />
-        <ProfileField
-          label="保険名"
-          name="mountain_insurance_provider"
-          defaultValue={getMetadataString(metadata, "mountain_insurance_provider")}
-          placeholder="例：やまきふ共済会 山岳保険"
-        />
-        <ProfileField
-          label="有効期限"
-          name="mountain_insurance_expires_on"
-          type="date"
-          defaultValue={getMetadataString(metadata, "mountain_insurance_expires_on")}
-        />
       </ProfileSection>
 
       <button className="sticky bottom-24 z-20 inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#14724e] text-base font-bold text-white shadow-lg shadow-forest-900/10 transition active:scale-[0.99] md:static">
@@ -162,41 +128,6 @@ function ProfileField({
         placeholder={placeholder}
         className="mt-2 h-11 w-full min-w-0 rounded-xl border border-stone-200 bg-stone-50 px-3 text-base font-semibold text-stone-800 outline-none placeholder:text-stone-300 focus:border-[#14724e] focus:bg-white sm:mt-0 sm:text-sm"
       />
-    </label>
-  );
-}
-
-function ProfileSelect({
-  label,
-  name,
-  defaultValue,
-  options
-}: {
-  label: string;
-  name: string;
-  defaultValue: string;
-  options: Array<{ value: string; label: string }>;
-}) {
-  return (
-    <label className="block px-4 py-4 sm:grid sm:grid-cols-[160px_minmax(0,1fr)] sm:items-center sm:gap-4">
-      <span className="text-sm font-bold text-ink">{label}</span>
-      <span className="relative mt-2 block sm:mt-0">
-        <select
-          name={name}
-          defaultValue={defaultValue}
-          className="h-11 w-full appearance-none rounded-xl border border-stone-200 bg-stone-50 px-3 pr-10 text-base font-semibold text-stone-800 outline-none focus:border-[#14724e] focus:bg-white sm:text-sm"
-        >
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <ChevronDown
-          aria-hidden
-          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-500"
-        />
-      </span>
     </label>
   );
 }

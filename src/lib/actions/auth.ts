@@ -56,27 +56,41 @@ export async function updateProfile(formData: FormData) {
   const supabase = await createClient();
   const displayName = cleanText(formData.get("display_name"), 40);
   const selfIntroduction = cleanText(formData.get("self_introduction"), 220);
-  const emergencyPhone = cleanText(formData.get("emergency_phone"), 32);
-  const residencePrefecture = cleanText(formData.get("residence_prefecture"), 40);
-  const residenceCity = cleanText(formData.get("residence_city"), 60);
-  const gender = cleanText(formData.get("gender"), 24);
-  const birthDate = cleanText(formData.get("birth_date"), 10);
-  const outdoorInterests = cleanText(formData.get("outdoor_interests"), 120);
-  const occupation = cleanText(formData.get("occupation"), 60);
-  const homepage = cleanText(formData.get("homepage"), 160);
+  const mobilePhone = cleanText(formData.get("mobile_phone"), 32);
+  const emergencyContactName = cleanText(formData.get("emergency_contact_name"), 40);
+  const emergencyContactPhone = cleanText(formData.get("emergency_contact_phone"), 32);
+  const mountainInsuranceStatus = cleanText(formData.get("mountain_insurance_status"), 16);
+  const mountainInsuranceProvider = cleanText(formData.get("mountain_insurance_provider"), 80);
+  const mountainInsuranceExpiresOn = cleanText(
+    formData.get("mountain_insurance_expires_on"),
+    10
+  );
+  const rescueServiceName = cleanText(formData.get("rescue_service_name"), 60);
+  const rescueServiceMemberId = cleanText(formData.get("rescue_service_member_id"), 60);
+  const homeArea = cleanText(formData.get("home_area"), 60);
+  const defaultTripStyle = cleanText(formData.get("default_trip_style"), 24);
+  const hikingExperience = cleanText(formData.get("hiking_experience"), 24);
+  const hikingPace = cleanText(formData.get("hiking_pace"), 24);
+  const gearPreferenceNote = cleanText(formData.get("gear_preference_note"), 180);
 
   const { error } = await supabase.auth.updateUser({
     data: {
       display_name: displayName,
       self_introduction: selfIntroduction,
-      emergency_phone: emergencyPhone,
-      residence_prefecture: residencePrefecture,
-      residence_city: residenceCity,
-      gender,
-      birth_date: birthDate,
-      outdoor_interests: outdoorInterests,
-      occupation,
-      homepage
+      mobile_phone: mobilePhone,
+      emergency_phone: mobilePhone,
+      emergency_contact_name: emergencyContactName,
+      emergency_contact_phone: emergencyContactPhone,
+      mountain_insurance_status: mountainInsuranceStatus,
+      mountain_insurance_provider: mountainInsuranceProvider,
+      mountain_insurance_expires_on: mountainInsuranceExpiresOn,
+      rescue_service_name: rescueServiceName,
+      rescue_service_member_id: rescueServiceMemberId,
+      home_area: homeArea,
+      default_trip_style: defaultTripStyle,
+      hiking_experience: hikingExperience,
+      hiking_pace: hikingPace,
+      gear_preference_note: gearPreferenceNote
     }
   });
 

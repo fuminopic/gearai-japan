@@ -114,12 +114,20 @@ test("gear delete action is kept on the detail page instead of the dense list", 
 });
 
 test("gear detail page uses user-facing Japanese labels instead of internal field names", () => {
+  assert.match(gearDetailSource, /データ確認/);
+  assert.match(gearDetailSource, /データ区分/);
+  assert.match(gearDetailSource, /製品カタログ/);
+  assert.match(gearDetailSource, /自分で登録/);
   assert.match(gearDetailSource, /カタログ確認/);
   assert.match(gearDetailSource, /確認日/);
-  assert.match(gearDetailSource, /価格ソース/);
+  assert.match(gearDetailSource, /参考情報/);
+  assert.match(gearDetailSource, /価格確認ページ/);
   assert.match(gearDetailSource, /写真未登録/);
-  assert.match(gearDetailSource, /価格・公式情報/);
-  assert.match(gearDetailSource, /公式情報/);
+  assert.match(gearDetailSource, /価格情報は登録データの参考として表示しています。/);
+  assert.doesNotMatch(gearDetailSource, /価格・公式情報/);
+  assert.doesNotMatch(gearDetailSource, /<InfoCard title="公式情報"/);
+  assert.doesNotMatch(gearDetailSource, /SummaryPill label="公式価格"/);
+  assert.doesNotMatch(gearDetailSource, /価格ソース/);
   assert.doesNotMatch(gearDetailSource, /購入価格/);
   assert.doesNotMatch(gearDetailSource, /購入日/);
   assert.doesNotMatch(gearDetailSource, /節約額/);

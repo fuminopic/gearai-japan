@@ -36,6 +36,10 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
   const priceLabel = formatNullableJpy(gear.msrp_jpy);
   const summaryCategoryLabel =
     subcategoryLabel !== "-" ? subcategoryLabel : categoryLabel;
+  const dataSourceLabel = gear.gear_products ? "製品カタログ" : "自分で登録";
+  const dataSourceDescription = gear.gear_products
+    ? "製品カタログの確認情報をもとに表示しています。"
+    : "自分で登録した情報をもとに表示しています。必要に応じて編集してください。";
 
   return (
     <div className="space-y-5">
@@ -58,12 +62,7 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
       <section className="overflow-hidden rounded-lg border border-white/70 bg-white/90 shadow-soft">
         <div className="grid gap-0 lg:grid-cols-[22rem_minmax(0,1fr)]">
           <div className="border-b border-stone-100 bg-stone-50/70 p-5 lg:border-b-0 lg:border-r">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <span
-                className={`inline-flex rounded-lg border px-3 py-1 text-xs font-semibold ${verification.className}`}
-              >
-                {verification.marker} {verification.label}
-              </span>
+            <div className="mb-3 flex items-center justify-end">
               <span className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-forest-700">
                 {statusLabels[gear.status]}
               </span>
@@ -98,7 +97,7 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
             <div className="mt-5 grid grid-cols-3 gap-2">
               <SummaryPill label="重量" value={weightLabel} />
               <SummaryPill label="カテゴリー" value={summaryCategoryLabel} />
-              <SummaryPill label="公式価格" value={priceLabel} />
+              <SummaryPill label="所有状態" value={statusLabels[gear.status]} />
             </div>
 
             <dl className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -121,21 +120,14 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <InfoCard title="価格・公式情報">
-          <DetailRow
-            label="メーカー希望小売価格"
-            value={formatNullableJpy(gear.msrp_jpy)}
-          />
-          <DetailRow label="所有状態" value={statusLabels[gear.status]} />
-        </InfoCard>
-
-        <InfoCard title="公式情報">
+        <InfoCard title="データ確認" description={dataSourceDescription}>
+          <DetailRow label="データ区分" value={dataSourceLabel} />
           <DetailRow label="カタログ確認" value={verification.label} />
           <DetailRow
             label="確認日"
             value={formatDateLabel(gear.gear_products?.last_verified_at)}
           />
-          <div className="pt-1">
+          <div className="pt-1 sm:col-span-2">
             <dt className="text-sm text-stone-500">公式ページ</dt>
             <dd className="mt-1">
               {officialUrl ? (
@@ -153,9 +145,19 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
               )}
             </dd>
           </div>
+        </InfoCard>
+
+        <InfoCard
+          title="参考情報"
+          description="価格情報は登録データの参考として表示しています。"
+        >
+          <DetailRow
+            label="メーカー希望小売価格"
+            value={priceLabel}
+          />
           {msrpSourceUrl ? (
             <div className="pt-1">
-              <dt className="text-sm text-stone-500">価格ソース</dt>
+              <dt className="text-sm text-stone-500">価格確認ページ</dt>
               <dd className="mt-1">
                 <a
                   href={msrpSourceUrl}
@@ -209,10 +211,21 @@ function SummaryPill({ label, value }: { label: string; value: string }) {
   );
 }
 
-function InfoCard({ title, children }: { title: string; children: ReactNode }) {
+function InfoCard({
+  title,
+  description,
+  children
+}: {
+  title: string;
+  description?: string;
+  children: ReactNode;
+}) {
   return (
     <section className="rounded-lg bg-white p-5 shadow-soft">
       <h2 className="text-lg font-semibold text-ink">{title}</h2>
+      {description ? (
+        <p className="mt-2 text-sm leading-6 text-stone-500">{description}</p>
+      ) : null}
       <dl className="mt-5 grid gap-4 sm:grid-cols-2">{children}</dl>
     </section>
   );

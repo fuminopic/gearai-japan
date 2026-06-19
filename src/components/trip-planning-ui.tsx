@@ -873,6 +873,7 @@ function TripPlanningResult({
             <ChecklistCategoryCard
               key={category.id}
               category={category}
+              compatibilityBySlot={compatibilityBySlot}
               onToggle={handleToggleChecklistItem}
             />
           ))}
@@ -887,8 +888,8 @@ function TripPlanningResult({
         <details className="group rounded-lg bg-white p-5 shadow-soft">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-stone-500">装備登録の確認</p>
-              <h2 className="mt-1 text-lg font-semibold text-ink">装備庫との照合詳細</h2>
+              <p className="text-sm font-semibold text-stone-500">登録装備との対応</p>
+              <h2 className="mt-1 text-lg font-semibold text-ink">所持済みの判定理由</h2>
             </div>
             <ChevronDown className="h-5 w-5 shrink-0 text-stone-500 transition group-open:rotate-180" />
           </summary>
@@ -1302,9 +1303,11 @@ function ChecklistStat({
 
 function ChecklistCategoryCard({
   category,
+  compatibilityBySlot,
   onToggle
 }: {
   category: ChecklistCategory;
+  compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
   onToggle: (item: ChecklistItem) => void;
 }) {
   return (
@@ -1353,6 +1356,7 @@ function ChecklistCategoryCard({
                 <ChecklistItemRow
                   key={item.id}
                   item={item}
+                  compatibilityBySlot={compatibilityBySlot}
                   onToggle={onToggle}
                 />
               ))}
@@ -1366,14 +1370,17 @@ function ChecklistCategoryCard({
 
 function ChecklistItemRow({
   item,
+  compatibilityBySlot,
   onToggle
 }: {
   item: ChecklistItem;
+  compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
   onToggle: (item: ChecklistItem) => void;
 }) {
   const canToggle = item.source === "CHECKLIST_ONLY" || item.toggleSlots.length > 0;
   const ItemIcon = checklistItemIcons[item.icon];
   const status = getChecklistItemStatus(item);
+  const matchingInsight = getChecklistItemMatchingInsight(item, compatibilityBySlot);
 
   return (
     <label
@@ -1416,6 +1423,16 @@ function ChecklistItemRow({
         {item.matchingOwnedGear.length > 0 ? (
           <span className="mt-1 block truncate text-xs font-medium text-stone-500">
             {item.matchingOwnedGear.map(formatOwnedGearName).join(" / ")}
+          </span>
+        ) : null}
+        {matchingInsight ? (
+          <span className="mt-1 block text-xs font-medium leading-5 text-forest-800">
+            {matchingInsight.coverage}
+          </span>
+        ) : null}
+        {matchingInsight?.caution ? (
+          <span className="mt-1 block rounded-lg bg-amber-50 px-2 py-1.5 text-xs font-medium leading-5 text-amber-800">
+            {matchingInsight.caution}
           </span>
         ) : null}
         <span className="mt-1 block text-xs font-medium leading-5 text-stone-500">
@@ -1503,6 +1520,40 @@ function getChecklistItemStatus(item: ChecklistItem) {
   };
 }
 
+function getChecklistItemMatchingInsight(
+  item: ChecklistItem,
+  compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>
+) {
+  if (item.matchingOwnedGear.length === 0) {
+    return null;
+  }
+
+  const matchedResults = item.slots
+    .map((slot) => compatibilityBySlot[slot])
+    .filter((match): match is GearMatchingResult => Boolean(match));
+  const confidence =
+    matchedResults.length > 0 ? mergeGearMatchingConfidence(matchedResults) : "HIGH";
+  const firstGear = item.matchingOwnedGear[0];
+  const classification =
+    firstGear.gear_subcategories?.name_ja ??
+    firstGear.gear_categories?.name_ja ??
+    "登録装備";
+  const coverage =
+    item.matchingOwnedGear.length > 1
+      ? `${classification}など ${item.matchingOwnedGear.length.toLocaleString("ja-JP")} 件の登録装備で、${item.label}をカバーしています。`
+      : `${classification}として登録されているため、${item.label}をカバーしています。`;
+  const hasAmbiguity = matchedResults.some((match) => match.ambiguous_cases.length > 0);
+  const caution =
+    confidence === "HIGH" && !hasAmbiguity
+      ? null
+      : "分類が近いため候補にしています。出発前に用途を確認してください。";
+
+  return {
+    coverage,
+    caution
+  };
+}
+
 function CompatibleGearSlot({
   slotPlan,
   match
@@ -1515,7 +1566,7 @@ function CompatibleGearSlot({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="font-semibold text-ink">{requirementSlotLabels[slotPlan.slot]}</h3>
         <span className="text-xs font-semibold text-stone-500">
-          照合精度: {gearMatchingConfidenceLabels[match.confidence]}
+          判定の確かさ: {gearMatchingConfidenceLabels[match.confidence]}
         </span>
       </div>
 

@@ -192,7 +192,7 @@ test("trip planning UI presents a professional gear checklist", () => {
     "装備チェックリスト",
     "総完成度",
     "未完了",
-    "装備庫との照合詳細",
+    "所持済みの判定理由",
     "確認メモ",
     "パック計画を作成",
     "計画履歴"
@@ -243,9 +243,14 @@ test("trip planning UI presents a professional gear checklist", () => {
   assert.match(tripPlanningUiSource, /PlanHistorySection/);
   assert.match(tripPlanningUiSource, /SavePlanButton/);
   assert.match(tripPlanningUiSource, /item\.reason/);
+  assert.match(tripPlanningUiSource, /カバーしています/);
+  assert.match(tripPlanningUiSource, /分類が近いため候補にしています。出発前に用途を確認してください。/);
+  assert.match(tripPlanningUiSource, /判定の確かさ/);
   assert.match(tripPlanningUiSource, /<details/);
   assert.match(tripPlanningUiSource, /<summary/);
   assert.doesNotMatch(`${tripPlanningUiSource}\n${planChecklistSource}`, /要確認/);
+  assert.doesNotMatch(tripPlanningUiSource, /装備庫との照合詳細/);
+  assert.doesNotMatch(tripPlanningUiSource, /照合精度/);
   assert.doesNotMatch(tripPlanningUiSource, /必要システム/);
   assert.doesNotMatch(tripPlanningUiSource, /不足装備/);
   assert.doesNotMatch(tripPlanningUiSource, /対応装備/);
@@ -255,7 +260,7 @@ test("trip planning UI presents a professional gear checklist", () => {
 test("pack planning checklist prioritizes readiness before gear-backed details", () => {
   const heroIndex = tripPlanningUiSource.indexOf("HeroReadinessCard");
   const checklistIndex = tripPlanningUiSource.indexOf("装備チェックリスト");
-  const matchingIndex = tripPlanningUiSource.indexOf("装備庫との照合詳細");
+  const matchingIndex = tripPlanningUiSource.indexOf("所持済みの判定理由");
 
   assert.ok(heroIndex > -1);
   assert.ok(checklistIndex > heroIndex);

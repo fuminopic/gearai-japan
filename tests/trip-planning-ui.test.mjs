@@ -94,6 +94,10 @@ const labelsSource = readFileSync(
   new URL("../src/lib/i18n/labels.ts", import.meta.url),
   "utf8"
 );
+const legacyRuleEngineSource = readFileSync(
+  new URL("../src/lib/recommendations/rule-engine.ts", import.meta.url),
+  "utf8"
+);
 const authFormSource = readFileSync(
   new URL("../src/components/auth-form.tsx", import.meta.url),
   "utf8"
@@ -352,6 +356,11 @@ test("trip planning UI avoids recommendation and shopping language", () => {
     assert.doesNotMatch(source, /推薦|購入|予算|価格|買う|wishlist/i);
     assert.doesNotMatch(source, /\b(recommend|shopping|upgrade|best|price)\b/i);
   }
+});
+
+test("legacy recommendation copy stays Japanese-only", () => {
+  assert.match(legacyRuleEngineSource, /推定追加費用/);
+  assert.doesNotMatch(legacyRuleEngineSource, /预计|金额|预算|购买|一键|删除/);
 });
 
 test("trip planning form filters seasons and styles by selected mountain", () => {

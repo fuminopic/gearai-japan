@@ -105,7 +105,7 @@ export function createRuleBasedRecommendation(
     risk_warnings: risks,
     estimated_total_weight_g: sumWeight(allItems),
     estimated_total_budget_jpy: sumPrice(allItems),
-    budget_comment: `不足装備の预计追加金额は ${sumPrice(allItems).toLocaleString(
+    budget_comment: `不足装備の推定追加費用は ${sumPrice(allItems).toLocaleString(
       "ja-JP"
     )} 円です。`,
     safety_note: "直前の天候、登山道、山小屋営業状況を確認して判断してください。",

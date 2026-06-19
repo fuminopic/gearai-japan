@@ -18,7 +18,11 @@ const { outputText } = ts.transpileModule(planChecklistSource, {
 const planChecklistModule = await import(
   `data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`
 );
-const { buildPlanChecklist } = planChecklistModule;
+const {
+  buildPlanChecklist,
+  buildPlanDecisionChips,
+  buildPlanNotNeededItems
+} = planChecklistModule;
 
 const baseMountain = {
   slug: "sample-yama",
@@ -167,6 +171,11 @@ test("long remote day hikes promote forced-bivouac emergency items", () => {
 
   assert.equal(itemByLabel(checklist, "ヘッドランプ予備電池")?.priority, "ESSENTIAL");
   assert.equal(itemByLabel(checklist, "エマージェンシーシート")?.priority, "ESSENTIAL");
+  assert.match(itemByLabel(checklist, "ヘッドランプ")?.reason ?? "", /長時間行動/);
+  assert.match(
+    itemByLabel(checklist, "エマージェンシーシート")?.reason ?? "",
+    /停滞/
+  );
 });
 
 test("river-crossing and portable-toilet notes create special checklist items", () => {
@@ -220,6 +229,59 @@ test("full-service hut stays keep the inner sheet checklist item", () => {
 
   assert.equal(itemByLabel(checklist, "インナーシーツ")?.priority, "ESSENTIAL");
   assert.equal(itemByLabel(checklist, "シュラフ（寝袋）"), undefined);
+});
+
+test("checklist exposes user-facing reasons and M0.8 trust hints", () => {
+  const lowRiskDayPlan = makePlan({
+    season: "SUMMER",
+    style: "DAY_HIKE",
+    mountain: {
+      route_seriousness: "LOW",
+      technical_terrain: "MAINTAINED_TRAIL",
+      helmet_guidance: "NOT_NEEDED",
+      water_availability: "TREATED_RELIABLE",
+      alpine_environment: "LOWLAND_FOREST",
+      snow_or_ice_risk: "LOW",
+      route_duration_band: "HALF_DAY",
+      escape_options: "EASY",
+      cell_signal_reliability: "RELIABLE"
+    },
+    requiredSlots: ["RAIN_JACKET", "RAIN_PANTS", "INSULATION_LAYER"]
+  });
+  const lowRiskChecklist = buildPlanChecklist({ plan: lowRiskDayPlan });
+
+  assert.match(itemByLabel(lowRiskChecklist, "レインウェア")?.reason ?? "", /天候/);
+  assert.deepEqual(
+    buildPlanNotNeededItems(lowRiskDayPlan).map((item) => item.label),
+    ["テント", "シュラフ", "キャンプ装備", "ヘルメット"]
+  );
+
+  const alpinePlan = makePlan({
+    season: "AUTUMN",
+    mountain: {
+      route_seriousness: "HIGH",
+      technical_terrain: "CHAIN_LADDER",
+      helmet_guidance: "RECOMMENDED",
+      water_availability: "LIMITED_OR_SEASONAL",
+      alpine_environment: "HIGH_ALPINE_EXPOSED",
+      snow_or_ice_risk: "SEASONAL_PATCHES",
+      route_duration_band: "LONG_DAY",
+      cell_signal_reliability: "POOR"
+    },
+    requiredSlots: ["HELMET", "TRACTION_DEVICE", "POWER_BANK"]
+  });
+
+  assert.deepEqual(
+    buildPlanDecisionChips(alpinePlan).map((chip) => chip.label),
+    [
+      "高所稜線",
+      "残雪・凍結",
+      "鎖場・岩稜",
+      "水場限定",
+      "電波不安定",
+      "長時間行動"
+    ]
+  );
 });
 
 test("reviewed static mountain fixes flow through the checklist without stale risk gear", () => {

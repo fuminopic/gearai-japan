@@ -64,6 +64,8 @@ import {
 } from "@/lib/i18n/labels";
 import {
   buildPlanChecklist,
+  buildPlanDecisionChips,
+  buildPlanNotNeededItems,
   calculateChecklistProgress,
   checklistPriorityLabels,
   getChecklistOnlyStorageKey,
@@ -72,7 +74,9 @@ import {
   isSupportedRequirementSlot,
   type ChecklistCategory,
   type ChecklistItemIcon,
-  type ChecklistItem
+  type ChecklistItem,
+  type PlanDecisionChip,
+  type PlanNotNeededItem
 } from "@/lib/plan-checklist";
 import { createClient } from "@/lib/supabase/client";
 import { writeTripPlanLocalMeta } from "@/lib/trip-plan-local-meta";
@@ -429,7 +433,10 @@ function SavePlanButton({
   }
 
   return (
-    <form ref={formRef}>
+    <form
+      ref={formRef}
+      className="rounded-lg border border-forest-100 bg-white p-4 shadow-soft sm:p-5"
+    >
       {planId ? <input type="hidden" name="id" value={planId} /> : null}
       <input type="hidden" name="mountain_slug" value={mountainSlug} />
       <input type="hidden" name="mountain_name" value={mountainName} />
@@ -449,11 +456,22 @@ function SavePlanButton({
         name="checked_slots"
         value={JSON.stringify(checkedSlots)}
       />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-bold text-forest-700">計画を保存</p>
+          <p className="mt-1 text-xs font-semibold text-stone-500">
+            保存するとホームの次回山行カードに反映されます。
+          </p>
+        </div>
+        <p className="text-sm font-bold text-ink">
+          完成度 {progress.toLocaleString("ja-JP")}%
+        </p>
+      </div>
       <button
         type="button"
         disabled={isPending}
         onClick={handleSavePlan}
-        className="fixed bottom-24 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl bg-forest-700 py-3.5 font-bold text-white shadow-xl transition active:scale-[0.99] disabled:opacity-70"
+        className="mt-3 inline-flex h-12 w-full items-center justify-center rounded-lg bg-forest-700 text-base font-bold text-white shadow-sm transition active:scale-[0.99] disabled:opacity-70"
       >
         {isPending ? "保存中..." : planId ? "変更を更新" : "計画を保存"}
       </button>
@@ -476,12 +494,19 @@ function PlanHistorySection({
           <h2 className="mt-1 text-lg font-semibold text-ink">計画履歴</h2>
         </div>
         {plans.length > 0 ? (
-          <form action={clearTripPlans}>
+          <form
+            action={clearTripPlans}
+            onSubmit={(event) => {
+              if (!window.confirm("保存済みプランをすべて削除しますか？")) {
+                event.preventDefault();
+              }
+            }}
+          >
             <button
               type="submit"
               className="rounded-full border border-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
             >
-              一键删除
+              すべて削除
             </button>
           </form>
         ) : null}
@@ -506,13 +531,20 @@ function PlanHistorySection({
                     {formatSavedPlanMeta(record)}
                   </p>
                 </Link>
-                <form action={deleteTripPlan}>
+                <form
+                  action={deleteTripPlan}
+                  onSubmit={(event) => {
+                    if (!window.confirm("この計画を削除しますか？")) {
+                      event.preventDefault();
+                    }
+                  }}
+                >
                   <input type="hidden" name="id" value={record.id} />
                   <button
                     type="submit"
                     className="rounded-full border border-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
                   >
-                    Delete
+                    削除
                   </button>
                 </form>
               </div>
@@ -709,6 +741,8 @@ function TripPlanningResult({
     checkedChecklistOnlyIds: checklistOnlyIds,
     ownedGear
   });
+  const decisionChips = buildPlanDecisionChips(plan);
+  const notNeededItems = buildPlanNotNeededItems(plan);
   const displaySlots = dedupeDisplaySlots(plan.required_slots);
   const compatibleSlots = displaySlots
     .map((slotPlan) => ({
@@ -808,6 +842,10 @@ function TripPlanningResult({
         progressPercent={checklist.summary.percent}
       />
 
+      {decisionChips.length > 0 ? (
+        <DecisionChipsSection chips={decisionChips} />
+      ) : null}
+
       <section className="space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -840,6 +878,10 @@ function TripPlanningResult({
           ))}
         </div>
       </section>
+
+      {notNeededItems.length > 0 ? (
+        <NotNeededItemsSection items={notNeededItems} />
+      ) : null}
 
       {compatibleSlots.length > 0 ? (
         <details className="group rounded-lg bg-white p-5 shadow-soft">
@@ -1138,6 +1180,52 @@ function ReadinessMetric({
   );
 }
 
+function DecisionChipsSection({ chips }: { chips: PlanDecisionChip[] }) {
+  return (
+    <section className="rounded-lg bg-white p-4 shadow-soft sm:p-5">
+      <div className="flex items-center gap-2">
+        <CircleAlert className="h-4 w-4 text-forest-700" aria-hidden="true" />
+        <h2 className="text-sm font-bold text-ink">判断根拠</h2>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {chips.map((chip) => (
+          <span
+            key={chip.label}
+            title={chip.reason}
+            className="inline-flex items-center rounded-full bg-forest-50 px-3 py-1.5 text-xs font-bold text-forest-800"
+          >
+            {chip.label}
+          </span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function NotNeededItemsSection({ items }: { items: PlanNotNeededItem[] }) {
+  return (
+    <section className="rounded-lg bg-white p-4 shadow-soft sm:p-5">
+      <div className="flex items-center gap-2">
+        <Check className="h-4 w-4 text-forest-700" aria-hidden="true" />
+        <h2 className="text-sm font-bold text-ink">今回不要なもの</h2>
+      </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        {items.map((item) => (
+          <div
+            key={item.label}
+            className="rounded-lg border border-stone-100 bg-stone-50 px-3 py-2"
+          >
+            <p className="text-sm font-bold text-ink">{item.label}</p>
+            <p className="mt-1 text-xs font-semibold leading-5 text-stone-500">
+              {item.reason}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function buildMountainBrief(plan: PackRequirementPlan) {
   const { mountain } = plan;
   const lines = [
@@ -1225,8 +1313,16 @@ function ChecklistCategoryCard({
         <div>
           <h3 className="text-lg font-semibold text-ink">{category.label}</h3>
           <p className="mt-1 text-xs font-semibold text-stone-500">
-            {category.progress.checkedCount.toLocaleString("ja-JP")} 完了 /{" "}
-            {category.progress.missingCount.toLocaleString("ja-JP")} 未完了
+            {category.progress.checkedCount.toLocaleString("ja-JP")} 完了
+            {category.progress.missingCount > 0 ? (
+              <span className="ml-2 rounded-full bg-red-50 px-2 py-0.5 text-red-700">
+                不足 {category.progress.missingCount.toLocaleString("ja-JP")}
+              </span>
+            ) : (
+              <span className="ml-2 rounded-full bg-forest-50 px-2 py-0.5 text-forest-800">
+                不足なし
+              </span>
+            )}
           </p>
         </div>
         <div className="text-right">
@@ -1322,6 +1418,9 @@ function ChecklistItemRow({
             {item.matchingOwnedGear.map(formatOwnedGearName).join(" / ")}
           </span>
         ) : null}
+        <span className="mt-1 block text-xs font-medium leading-5 text-stone-500">
+          {item.reason}
+        </span>
       </span>
     </label>
   );
@@ -1386,8 +1485,8 @@ function getChecklistItemStatus(item: ChecklistItem) {
 
   if (item.source === "GEAR_BACKED") {
     return {
-      label: "要確認",
-      className: "bg-stone-100 text-stone-600"
+      label: "不足",
+      className: "bg-red-50 text-red-700"
     };
   }
 
@@ -1399,7 +1498,7 @@ function getChecklistItemStatus(item: ChecklistItem) {
   }
 
   return {
-    label: "要確認",
+    label: "確認する",
     className: "bg-stone-100 text-stone-600"
   };
 }
@@ -1517,7 +1616,7 @@ function PlanningNotes({
       {missingCount > 0 ? (
         <p className="flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-900">
           <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>未完了項目を先に確認してください: {missingCount.toLocaleString("ja-JP")} 件</span>
+          <span>不足・未確認の項目を先に確認してください: {missingCount.toLocaleString("ja-JP")} 件</span>
         </p>
       ) : (
         <p className="flex items-start gap-2 rounded-lg bg-forest-50 px-3 py-2 text-sm font-medium text-forest-900">

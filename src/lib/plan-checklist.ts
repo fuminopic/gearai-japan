@@ -69,6 +69,7 @@ export type ChecklistItemDefinition = {
 export type ChecklistItem = ChecklistItemDefinition & {
   source: ChecklistItemSource;
   checked: boolean;
+  reason: string;
   slots: RequirementSlot[];
   toggleSlots: RequirementSlot[];
   matchingOwnedGear: GearMatchingOwnedGearMatch[];
@@ -96,6 +97,16 @@ export type ChecklistProgress = {
 export type ChecklistView = {
   categories: ChecklistCategory[];
   summary: ChecklistProgress;
+};
+
+export type PlanDecisionChip = {
+  label: string;
+  reason: string;
+};
+
+export type PlanNotNeededItem = {
+  label: string;
+  reason: string;
 };
 
 const checkedSlotsStoragePrefix = "yamajitaku:trip-plan:checked-slots:";
@@ -402,6 +413,7 @@ export function buildPlanChecklist({
       const checklistItems = items.map((item) => {
         return buildChecklistItem({
           definition: item,
+          plan,
           slotPlansBySlot,
           checkedSlotSet,
           checkedChecklistOnlySet,
@@ -421,12 +433,14 @@ export function buildPlanChecklist({
 
 function buildChecklistItem({
   definition,
+  plan,
   slotPlansBySlot,
   checkedSlotSet,
   checkedChecklistOnlySet,
   ownedGear
 }: {
   definition: ChecklistItemDefinition;
+  plan: PackRequirementPlan;
   slotPlansBySlot: Map<RequirementSlot, PackRequirementSlotPlan>;
   checkedSlotSet: Set<RequirementSlot>;
   checkedChecklistOnlySet: Set<string>;
@@ -467,6 +481,7 @@ function buildChecklistItem({
     ...definition,
     source,
     checked,
+    reason: getChecklistItemReason(definition, plan),
     slots,
     toggleSlots,
     matchingOwnedGear
@@ -686,6 +701,267 @@ function getHutSleepItem(plan: PackRequirementPlan): ChecklistItemDefinition {
   };
 }
 
+function getChecklistItemReason(
+  definition: ChecklistItemDefinition,
+  plan: PackRequirementPlan
+) {
+  const { mountain, season, style } = plan;
+  const seasonLabel = getSeasonReasonLabel(season);
+
+  if (definition.id === "clothing-rainwear") {
+    return `${mountain.name_ja}では天候が変わることがあるため、上下の雨具を出発前に確認してください。`;
+  }
+
+  if (definition.id === "clothing-insulation") {
+    if (
+      season === "AUTUMN" ||
+      season === "WINTER" ||
+      ["ABOVE_TREELINE", "HIGH_ALPINE_EXPOSED"].includes(
+        mountain.alpine_environment ?? ""
+      )
+    ) {
+      return `${seasonLabel}の高所や稜線では停滞時に冷えやすいため、防寒着を確認してください。`;
+    }
+
+    return "休憩時や天候悪化時に体温を保つため、防寒着を一枚準備しておくと安心です。";
+  }
+
+  if (definition.id === "clothing-base-layer") {
+    return "汗冷えを防ぐため、乾きやすい肌着・ベースレイヤーを選んでください。";
+  }
+
+  if (definition.id === "clothing-gloves") {
+    return definition.priority === "OPTIONAL"
+      ? "低山の日帰りでは必須ではありませんが、朝夕の冷えや手すり利用に備えて確認します。"
+      : "稜線の風や低温で手先が冷えやすいため、手袋を確認してください。";
+  }
+
+  if (definition.id === "food-water") {
+    if (
+      mountain.water_availability === "LIMITED_OR_SEASONAL" ||
+      mountain.water_availability === "UNRELIABLE"
+    ) {
+      return "水場が限られるため、飲み水と必要に応じた浄水手段を多めに確認してください。";
+    }
+
+    return "行動中の脱水を防ぐため、飲み水とボトル容量を出発前に確認してください。";
+  }
+
+  if (definition.id === "food-trail-snacks") {
+    return "歩きながら補給できる行動食は、疲労やシャリバテを防ぐために確認します。";
+  }
+
+  if (definition.id === "food-meals") {
+    return "行程が長引いた場合に備えて、食事や非常食を少し余裕を持って確認してください。";
+  }
+
+  if (
+    definition.id === "food-stove" ||
+    definition.id === "food-cook-pot" ||
+    definition.id === "food-fuel"
+  ) {
+    return "今回の計画で調理装備が必要な条件のため、バーナー・クッカー・燃料をまとめて確認します。";
+  }
+
+  if (definition.id === "nav-map-app") {
+    return "スマホの登山地図アプリを事前に準備し、地図のダウンロードと現在地確認を済ませてください。";
+  }
+
+  if (definition.id === "nav-map-compass") {
+    return isHighNavigationRisk(plan)
+      ? "電波や視界が不安定な場面に備えて、紙地図・コンパスも確認してください。"
+      : "必要に応じてスマホ以外の確認手段として紙地図・コンパスを準備します。";
+  }
+
+  if (definition.id === "nav-headlamp") {
+    return definition.priority === "ESSENTIAL"
+      ? "長時間行動や宿泊を想定し、暗くなる前提でヘッドランプを確認してください。"
+      : "日帰りでも下山遅れに備えて、ヘッドランプの有無を確認してください。";
+  }
+
+  if (definition.id === "nav-power-bank") {
+    return "登山地図アプリや連絡手段を保つため、モバイルバッテリーを確認してください。";
+  }
+
+  if (definition.id === "safety-first-aid") {
+    return "小さなけがや靴ずれにすぐ対応できるよう、救急セットを確認してください。";
+  }
+
+  if (definition.id === "safety-insurance-card") {
+    return "万一の手続きに備えて、保険証や保険情報をすぐ確認できる状態にしてください。";
+  }
+
+  if (definition.id === "safety-emergency-sheet") {
+    return isForcedBivouacRisk(plan)
+      ? "長時間行動や退避困難時の停滞に備えて、エマージェンシーシートを必ず確認してください。"
+      : "休憩時の冷えや下山遅れに備えて、エマージェンシーシートを確認してください。";
+  }
+
+  if (definition.id === "special-helmet") {
+    return mountain.helmet_guidance === "REQUIRED"
+      ? "落石や岩場の危険が高いルートのため、ヘルメットを必ず確認してください。"
+      : "鎖場・岩稜・落石リスクのある区間に備えて、ヘルメットを確認してください。";
+  }
+
+  if (definition.id === "special-chain-spikes") {
+    return mountain.snow_or_ice_risk === "WINTER_ALPINE" ||
+      mountain.snow_or_ice_risk === "LIKELY"
+      ? "雪や凍結を前提に、足元の滑り止めを必ず確認してください。"
+      : "季節や標高によって凍結が残ることがあるため、チェーンスパイクを確認してください。";
+  }
+
+  if (definition.id === "special-crampons") {
+    return "冬季高山や硬い雪面に備えて、アイゼンが必要な条件か確認してください。";
+  }
+
+  if (definition.id === "special-ice-axe") {
+    return "急な雪面や滑落停止が必要な条件に備えて、ピッケルを確認してください。";
+  }
+
+  if (definition.id === "special-bear-protection") {
+    return "熊や野生動物との遭遇リスクがあるため、熊鈴などの対策装備を確認してください。";
+  }
+
+  if (definition.id === "overnight-tent") {
+    return "テント泊計画のため、テント本体と設営に必要な付属品を確認してください。";
+  }
+
+  if (
+    definition.id === "overnight-sleeping-bag" ||
+    definition.id === "overnight-hut-sleeping-bag"
+  ) {
+    return style === "OVERNIGHT_HUT"
+      ? "寝具提供がない小屋泊に備えて、シュラフを確認してください。"
+      : "夜間の気温低下に備えて、季節に合うシュラフを確認してください。";
+  }
+
+  if (definition.id === "overnight-groundsheet") {
+    return "テント底面の保護と濡れ対策のため、グランドシートを確認してください。";
+  }
+
+  if (definition.id === "overnight-inner-sheet") {
+    return "小屋泊の衛生面と寝具利用に備えて、インナーシーツを確認してください。";
+  }
+
+  return `${mountain.name_ja}の${seasonLabel}・${getStyleReasonLabel(style)}計画に合わせて、出発前に確認してください。`;
+}
+
+export function buildPlanDecisionChips(plan: PackRequirementPlan): PlanDecisionChip[] {
+  const { mountain } = plan;
+  const chips: PlanDecisionChip[] = [];
+
+  if (
+    mountain.alpine_environment === "ABOVE_TREELINE" ||
+    mountain.alpine_environment === "HIGH_ALPINE_EXPOSED"
+  ) {
+    chips.push({
+      label: "高所稜線",
+      reason: "森林限界以上の風雨と低温を考慮"
+    });
+  }
+
+  if (
+    plan.season === "WINTER" ||
+    mountain.snow_or_ice_risk === "SEASONAL_PATCHES" ||
+    mountain.snow_or_ice_risk === "LIKELY" ||
+    mountain.snow_or_ice_risk === "WINTER_ALPINE"
+  ) {
+    chips.push({
+      label: "残雪・凍結",
+      reason: "季節や標高による足元リスクを考慮"
+    });
+  }
+
+  if (
+    mountain.technical_terrain === "CHAIN_LADDER" ||
+    mountain.technical_terrain === "EXPOSED_SCRAMBLE" ||
+    mountain.helmet_guidance === "RECOMMENDED" ||
+    mountain.helmet_guidance === "REQUIRED"
+  ) {
+    chips.push({
+      label: "鎖場・岩稜",
+      reason: "転倒・落石・手を使う通過を考慮"
+    });
+  }
+
+  if (
+    mountain.water_availability === "LIMITED_OR_SEASONAL" ||
+    mountain.water_availability === "UNRELIABLE"
+  ) {
+    chips.push({
+      label: "水場限定",
+      reason: "飲み水の補給しづらさを考慮"
+    });
+  }
+
+  if (
+    mountain.cell_signal_reliability === "PARTIAL" ||
+    mountain.cell_signal_reliability === "POOR" ||
+    mountain.cell_signal_reliability === "NONE"
+  ) {
+    chips.push({
+      label: "電波不安定",
+      reason: "スマホ依存を下げる必要性を考慮"
+    });
+  }
+
+  if (
+    mountain.route_duration_band === "LONG_DAY" ||
+    mountain.route_duration_band === "MULTI_DAY" ||
+    mountain.route_seriousness === "HIGH" ||
+    mountain.route_seriousness === "EXTREME"
+  ) {
+    chips.push({
+      label: "長時間行動",
+      reason: "下山遅れと疲労時の余裕を考慮"
+    });
+  }
+
+  return chips;
+}
+
+export function buildPlanNotNeededItems(
+  plan: PackRequirementPlan
+): PlanNotNeededItem[] {
+  const items: PlanNotNeededItem[] = [];
+
+  if (plan.style === "DAY_HIKE") {
+    items.push(
+      {
+        label: "テント",
+        reason: "日帰り計画のため、宿泊用テントは今回不要です。"
+      },
+      {
+        label: "シュラフ",
+        reason: "日帰り計画のため、寝袋は今回不要です。"
+      },
+      {
+        label: "キャンプ装備",
+        reason: "テント泊ではないため、ペグやグランドシートなどは今回不要です。"
+      }
+    );
+  }
+
+  if (
+    plan.style === "OVERNIGHT_HUT" &&
+    !hasRequiredSlot(plan, "SLEEP_INSULATION")
+  ) {
+    items.push({
+      label: "シュラフ",
+      reason: "寝具提供のある小屋泊として扱うため、寝袋は今回不要です。"
+    });
+  }
+
+  if (isLowRiskMaintainedTrail(plan)) {
+    items.push({
+      label: "ヘルメット",
+      reason: "低リスクの整備道として扱うため、ヘルメットは今回不要です。"
+    });
+  }
+
+  return items;
+}
+
 function usesTentStyle(style: MountainFoundationStyle, plan: PackRequirementPlan) {
   return style === "OVERNIGHT_TENT" || hasRequiredSlot(plan, "TENT");
 }
@@ -696,6 +972,38 @@ function hasRequiredSlot(plan: PackRequirementPlan, slot: RequirementSlot) {
 
 function hasAnyRequiredSlot(plan: PackRequirementPlan, slots: readonly RequirementSlot[]) {
   return slots.some((slot) => hasRequiredSlot(plan, slot));
+}
+
+function isLowRiskMaintainedTrail(plan: PackRequirementPlan) {
+  const { mountain } = plan;
+
+  return (
+    mountain.helmet_guidance === "NOT_NEEDED" &&
+    mountain.technical_terrain === "MAINTAINED_TRAIL" &&
+    ["LOW", "MODERATE"].includes(mountain.route_seriousness ?? "")
+  );
+}
+
+function getSeasonReasonLabel(season: PackRequirementPlan["season"]) {
+  const labels: Record<PackRequirementPlan["season"], string> = {
+    SPRING: "春",
+    SUMMER: "夏",
+    AUTUMN: "秋",
+    WINTER: "冬"
+  };
+
+  return labels[season];
+}
+
+function getStyleReasonLabel(style: MountainFoundationStyle) {
+  const labels: Record<MountainFoundationStyle, string> = {
+    DAY_HIKE: "日帰り",
+    OVERNIGHT_HUT: "小屋泊",
+    OVERNIGHT_TENT: "テント泊",
+    MULTI_DAY_TREK: "縦走"
+  };
+
+  return labels[style];
 }
 
 function getGlovesPriority(plan: PackRequirementPlan): ChecklistPriority {

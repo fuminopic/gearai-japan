@@ -209,7 +209,10 @@ test("trip planning UI presents a professional gear checklist", () => {
     "あると便利",
     "所持済み",
     "確認済み",
-    "要確認",
+    "確認する",
+    "不足",
+    "判断根拠",
+    "今回不要なもの",
     "登山地図アプリ（YAMAP・ヤマレコ等）",
     "紙地図・コンパス"
   ]) {
@@ -235,8 +238,10 @@ test("trip planning UI presents a professional gear checklist", () => {
   assert.match(tripPlanningUiSource, /ChecklistItemRow/);
   assert.match(tripPlanningUiSource, /PlanHistorySection/);
   assert.match(tripPlanningUiSource, /SavePlanButton/);
+  assert.match(tripPlanningUiSource, /item\.reason/);
   assert.match(tripPlanningUiSource, /<details/);
   assert.match(tripPlanningUiSource, /<summary/);
+  assert.doesNotMatch(`${tripPlanningUiSource}\n${planChecklistSource}`, /要確認/);
   assert.doesNotMatch(tripPlanningUiSource, /必要システム/);
   assert.doesNotMatch(tripPlanningUiSource, /不足装備/);
   assert.doesNotMatch(tripPlanningUiSource, /対応装備/);
@@ -412,8 +417,11 @@ test("navigation and labels are Japanese-first planning copy", () => {
 test("plan history supports Supabase-backed delete and clear all actions", () => {
   assert.match(tripPlanningUiSource, /計画履歴/);
   assert.match(tripPlanningUiSource, /保存済みプラン/);
-  assert.match(tripPlanningUiSource, /Delete/);
-  assert.match(tripPlanningUiSource, /一键删除/);
+  assert.match(tripPlanningUiSource, /削除/);
+  assert.match(tripPlanningUiSource, /すべて削除/);
+  assert.match(tripPlanningUiSource, /window\.confirm/);
+  assert.doesNotMatch(tripPlanningUiSource, /Delete/);
+  assert.doesNotMatch(tripPlanningUiSource, /一键删除/);
   assert.match(tripPlanningUiSource, /action=\{deleteTripPlan\}/);
   assert.match(tripPlanningUiSource, /action=\{clearTripPlans\}/);
   assert.match(planActionsSource, /from\("trip_plans"\)/);
@@ -430,10 +438,8 @@ test("saving and updating a plan writes progress payload and redirects home", ()
   assert.match(tripPlanningUiSource, /router\.push\("\/dashboard"\)/);
   assert.match(tripPlanningUiSource, /計画を保存/);
   assert.match(tripPlanningUiSource, /変更を更新/);
-  assert.match(
-    tripPlanningUiSource,
-    /fixed bottom-24 left-1\/2 z-50 w-\[calc\(100%-2rem\)\] max-w-sm -translate-x-1\/2 rounded-2xl bg-forest-700 py-3\.5/
-  );
+  assert.match(tripPlanningUiSource, /ホームの次回山行カードに反映/);
+  assert.doesNotMatch(tripPlanningUiSource, /fixed bottom-24/);
   assert.match(tripPlanningUiSource, /name="progress" value=\{progress\}/);
   assert.match(tripPlanningUiSource, /name="checked_slots"/);
   assert.match(tripPlanningUiSource, /JSON\.stringify\(checkedSlots\)/);

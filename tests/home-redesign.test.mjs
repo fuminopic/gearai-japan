@@ -156,7 +156,8 @@ test("home hero shows the saved plan checklist summary over the static hills bac
   assert.match(dashboardPlanChecklistSummarySource, /未確認/);
   assert.match(dashboardPlanChecklistSummarySource, /重要確認/);
   assert.match(dashboardPlanChecklistSummarySource, /category\.progress\.percent/);
-  assert.match(dashboardSource, /`\/plan\?id=\$\{trip\.id\}&focus=predeparture`/);
+  assert.match(dashboardSource, /`\/plan\?id=\$\{trip\.id\}`/);
+  assert.doesNotMatch(dashboardSource, /focus=predeparture/);
   assert.match(dashboardSource, /出発前確認へ/);
   assert.match(dashboardSource, /trip\.progress/);
   assert.match(dashboardSource, /trip\.mountain_name/);

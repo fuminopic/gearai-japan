@@ -13,7 +13,6 @@ import {
   ChevronDown,
   CircleAlert,
   CircleDashed,
-  ClipboardList,
   CloudRain,
   Compass,
   Cookie,
@@ -30,6 +29,7 @@ import {
   Map as MapIcon,
   Mountain,
   Navigation,
+  Pencil,
   PlugZap,
   Shirt,
   ShieldAlert,
@@ -40,7 +40,6 @@ import {
   Toilet,
   Utensils,
   Volume2,
-  X,
   Zap,
   type LucideIcon
 } from "lucide-react";
@@ -78,6 +77,7 @@ import {
   isSupportedChecklistOnlyId,
   isSupportedRequirementSlot,
   type ChecklistCategory,
+  type ChecklistView,
   type ChecklistItemIcon,
   type ChecklistItem,
   type PlanDecisionChip,
@@ -147,6 +147,7 @@ export function TripPlanningUI({
   const router = useRouter();
   const searchParams = useSearchParams();
   const planId = searchParams.get("id") ?? selectedPlanId ?? null;
+  const planView = searchParams.get("view");
   const shouldFocusChecklist = searchParams.get("focus") === "checklist";
   const shouldFocusPreDeparture = searchParams.get("focus") === "predeparture";
   const resultSectionRef = useRef<HTMLDivElement>(null);
@@ -164,6 +165,7 @@ export function TripPlanningUI({
   >(null);
   const [storedCheckedSlots, setStoredCheckedSlots] = useState<RequirementSlot[]>([]);
   const [storedChecklistOnlyIds, setStoredChecklistOnlyIds] = useState<string[]>([]);
+  const [isSavedPlanEditorOpen, setIsSavedPlanEditorOpen] = useState(false);
   const effectiveMountainSlug = hydratedPlan?.mountain_slug ?? selectedMountainSlug;
   const effectiveSeason = hydratedPlan?.season ?? selectedSeason;
   const effectiveStyle = hydratedPlan?.style ?? selectedStyle;
@@ -205,6 +207,8 @@ export function TripPlanningUI({
   const planStateKey = plan
     ? `${plan.mountain.slug}:${plan.season}:${plan.style}`
     : "no-plan";
+  const isSavedPlanMode = Boolean(planId && plan);
+  const isFullChecklistView = isSavedPlanMode && planView === "checklist";
 
   useEffect(() => {
     setInteractiveProgress(null);
@@ -324,21 +328,42 @@ export function TripPlanningUI({
 
   return (
     <div className="space-y-5 pb-24">
-      <TripPlanningForm
-        mountains={mountains}
-        selectedMountainSlug={effectiveMountainSlug}
-        selectedSeason={effectiveSeason}
-        selectedStyle={effectiveStyle}
-        selectedPlannedDate={planDetailsDraft.plannedDate}
-        selectedTripMemo={planDetailsDraft.tripMemo}
-        onPlanDetailsChange={(details) =>
-          setPlanDetailsDraft((current) => ({ ...current, ...details }))
-        }
-        planId={planId}
-        error={error}
-      />
+      {isSavedPlanMode && plan && !isFullChecklistView ? (
+        <SavedPlanDetailHeader
+          plan={plan}
+          plannedDate={planDetailsDraft.plannedDate}
+          isEditorOpen={isSavedPlanEditorOpen}
+          onToggleEditor={() => setIsSavedPlanEditorOpen((isOpen) => !isOpen)}
+        />
+      ) : null}
+
+      {(!isSavedPlanMode || isSavedPlanEditorOpen) && !isFullChecklistView ? (
+        <TripPlanningForm
+          mountains={mountains}
+          selectedMountainSlug={effectiveMountainSlug}
+          selectedSeason={effectiveSeason}
+          selectedStyle={effectiveStyle}
+          selectedPlannedDate={planDetailsDraft.plannedDate}
+          selectedTripMemo={planDetailsDraft.tripMemo}
+          onPlanDetailsChange={(details) =>
+            setPlanDetailsDraft((current) => ({ ...current, ...details }))
+          }
+          planId={planId}
+          error={error}
+        />
+      ) : null}
 
       {plan ? (
+        isFullChecklistView && planId ? (
+          <SavedPlanFullChecklistView
+            plan={plan}
+            plannedDate={planDetailsDraft.plannedDate}
+            checkedSlots={currentCheckedSlots}
+            checklistOnlyIds={currentChecklistOnlyIds}
+            ownedGear={ownedGear}
+            planId={planId}
+          />
+        ) : (
         <>
           <div ref={resultSectionRef} className="scroll-mt-24">
             <TripPlanningResult
@@ -346,6 +371,7 @@ export function TripPlanningUI({
               compatibilityBySlot={compatibilityBySlot}
               ownedGear={ownedGear}
               plannedDate={planDetailsDraft.plannedDate}
+              isSavedPlanDetail={isSavedPlanMode}
               initialCheckedSlots={currentCheckedSlots}
               initialChecklistOnlyIds={currentChecklistOnlyIds}
               onProgressChange={setInteractiveProgress}
@@ -371,10 +397,61 @@ export function TripPlanningUI({
             />
           ) : null}
         </>
+        )
       ) : null}
 
-      <PlanHistorySection plans={savedPlans} legacyPlans={planHistory} />
+      {!isFullChecklistView ? (
+        <PlanHistorySection plans={savedPlans} legacyPlans={planHistory} />
+      ) : null}
     </div>
+  );
+}
+
+function SavedPlanDetailHeader({
+  plan,
+  plannedDate,
+  isEditorOpen,
+  onToggleEditor
+}: {
+  plan: PackRequirementPlan;
+  plannedDate: string;
+  isEditorOpen: boolean;
+  onToggleEditor: () => void;
+}) {
+  return (
+    <section className="rounded-lg border border-forest-100 bg-white px-4 py-3 shadow-soft sm:px-5">
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-forest-50 text-forest-700">
+          <Mountain className="h-5 w-5" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h1 className="truncate text-lg font-semibold tracking-normal text-ink">
+              {plan.mountain.name_ja}
+            </h1>
+            <span className="text-sm font-semibold text-stone-600">
+              {mountainFoundationSeasonLabels[plan.season]} / {mountainFoundationStyleLabels[plan.style]}
+            </span>
+            <span className="text-sm font-semibold text-stone-600">
+              {formatPlanDateShort(plannedDate)}
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onToggleEditor}
+          className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border transition active:scale-95 ${
+            isEditorOpen
+              ? "border-forest-200 bg-forest-50 text-forest-800"
+              : "border-stone-100 bg-stone-50 text-stone-600"
+          }`}
+          aria-expanded={isEditorOpen}
+          aria-label="計画条件を編集"
+        >
+          <Pencil className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </div>
+    </section>
   );
 }
 
@@ -720,6 +797,7 @@ function TripPlanningResult({
   compatibilityBySlot,
   ownedGear,
   plannedDate,
+  isSavedPlanDetail,
   planId,
   initialCheckedSlots = emptyCheckedSlots,
   initialChecklistOnlyIds = emptyChecklistOnlyIds,
@@ -731,6 +809,7 @@ function TripPlanningResult({
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
   ownedGear: UserGear[];
   plannedDate: string;
+  isSavedPlanDetail: boolean;
   planId: string | null;
   initialCheckedSlots?: RequirementSlot[];
   initialChecklistOnlyIds?: string[];
@@ -756,7 +835,6 @@ function TripPlanningResult({
   const decisionChips = buildPlanDecisionChips(plan);
   const notNeededItems = buildPlanNotNeededItems(plan);
   const [scanFilter, setScanFilter] = useState<ChecklistScanFilter>("ACTION");
-  const [isChecklistSheetOpen, setIsChecklistSheetOpen] = useState(false);
   const visibleCategories = filterChecklistCategoriesForScan(
     checklist.categories,
     scanFilter
@@ -853,22 +931,25 @@ function TripPlanningResult({
 
   return (
     <div className="space-y-5">
-      <HeroReadinessCard
-        plan={plan}
-        checkedCount={checklist.summary.checkedCount}
-        missingCount={checklist.summary.missingCount}
-        totalCount={checklist.summary.totalCount}
-        progressPercent={checklist.summary.percent}
-      />
+      {!isSavedPlanDetail ? (
+        <>
+          <HeroReadinessCard
+            plan={plan}
+            checkedCount={checklist.summary.checkedCount}
+            missingCount={checklist.summary.missingCount}
+            totalCount={checklist.summary.totalCount}
+            progressPercent={checklist.summary.percent}
+          />
 
-      <PreDepartureConfirmationPanel
-        summary={preDepartureSummary}
-        progressPercent={checklist.summary.percent}
-        onShowAllItems={() => setScanFilter("ALL")}
-        onOpenChecklistSheet={() => setIsChecklistSheetOpen(true)}
-      />
+          <PreDepartureConfirmationPanel
+            summary={preDepartureSummary}
+            progressPercent={checklist.summary.percent}
+            onShowAllItems={() => setScanFilter("ALL")}
+          />
+        </>
+      ) : null}
 
-      {decisionChips.length > 0 ? (
+      {!isSavedPlanDetail && decisionChips.length > 0 ? (
         <DecisionChipsSection chips={decisionChips} />
       ) : null}
 
@@ -897,6 +978,7 @@ function TripPlanningResult({
         <ChecklistScanControls
           activeFilter={scanFilter}
           summary={preDepartureSummary}
+          includeAllFilter={!isSavedPlanDetail}
           onFilterChange={setScanFilter}
         />
 
@@ -945,137 +1027,105 @@ function TripPlanningResult({
         </details>
       ) : null}
 
-      <section className="rounded-lg bg-white p-5 shadow-soft">
-        <h2 className="text-lg font-semibold text-ink">確認メモ</h2>
-        <PlanningNotes
-          missingCount={checklist.summary.missingCount}
-          displaySlots={displaySlots}
-          compatibilityBySlot={compatibilityBySlot}
-        />
-      </section>
+      {isSavedPlanDetail && planId ? (
+        <AllItemsChecklistLink planId={planId} />
+      ) : (
+        <section className="rounded-lg bg-white p-5 shadow-soft">
+          <h2 className="text-lg font-semibold text-ink">確認メモ</h2>
+          <PlanningNotes
+            missingCount={checklist.summary.missingCount}
+            displaySlots={displaySlots}
+            compatibilityBySlot={compatibilityBySlot}
+          />
+        </section>
+      )}
+    </div>
+  );
+}
 
-      <ChecklistSheetModal
-        isOpen={isChecklistSheetOpen}
-        onClose={() => setIsChecklistSheetOpen(false)}
+function SavedPlanFullChecklistView({
+  plan,
+  plannedDate,
+  checkedSlots,
+  checklistOnlyIds,
+  ownedGear,
+  planId
+}: {
+  plan: PackRequirementPlan;
+  plannedDate: string;
+  checkedSlots: RequirementSlot[];
+  checklistOnlyIds: string[];
+  ownedGear: UserGear[];
+  planId: string;
+}) {
+  const checklist = buildPlanChecklist({
+    plan,
+    checkedSlots,
+    checkedChecklistOnlyIds: checklistOnlyIds,
+    ownedGear
+  });
+  const summary = buildPreDepartureSummary(checklist);
+  const counts = getFullChecklistCounts(checklist);
+
+  return (
+    <section className="space-y-4">
+      <Link
+        href={`/plan?id=${planId}` as Route}
+        className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-bold text-forest-700 shadow-soft transition active:scale-[0.99]"
+      >
+        ← 計画詳細へ戻る
+      </Link>
+
+      <div className="rounded-lg bg-white p-5 shadow-soft">
+        <p className="text-sm font-bold text-forest-700">出発前確認</p>
+        <h1 className="mt-1 text-2xl font-semibold tracking-normal text-ink">
+          持ち物チェック表
+        </h1>
+        <div className="mt-4 flex flex-col gap-3 rounded-lg bg-stone-50 p-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-xs font-bold text-stone-500">
+              {formatPlanDateShort(plannedDate)}
+            </p>
+            <p className="mt-1 text-xl font-semibold text-ink">
+              {plan.mountain.name_ja}
+            </p>
+            <p className="mt-1 text-sm font-semibold text-stone-600">
+              {mountainFoundationSeasonLabels[plan.season]} / {mountainFoundationStyleLabels[plan.style]}
+            </p>
+          </div>
+          <span className="inline-flex w-fit rounded-lg bg-forest-50 px-3 py-2 text-xs font-bold text-forest-800">
+            {summary.statusLabel}
+          </span>
+        </div>
+
+        <div className="mt-4 grid grid-cols-4 gap-2 text-center">
+          <FullChecklistMetric label="不足" value={counts.missing} tone="missing" />
+          <FullChecklistMetric label="確認する" value={counts.confirm} tone="confirm" />
+          <FullChecklistMetric label="所持済み" value={counts.owned} tone="owned" />
+          <FullChecklistMetric label="確認済み" value={counts.checked} tone="checked" />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {checklist.categories.map((category) => (
+          <FullChecklistCategory
+            key={category.id}
+            category={category}
+          />
+        ))}
+      </div>
+
+      <FullChecklistImageSaveButton
         plan={plan}
         plannedDate={plannedDate}
         checklist={checklist}
-        summary={preDepartureSummary}
+        summary={summary}
       />
-    </div>
+    </section>
   );
 }
 
-function ChecklistSheetModal({
-  isOpen,
-  onClose,
-  plan,
-  plannedDate,
-  checklist,
-  summary
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  plan: PackRequirementPlan;
-  plannedDate: string;
-  checklist: ReturnType<typeof buildPlanChecklist>;
-  summary: PreDepartureSummary;
-}) {
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) {
-    return null;
-  }
-
-  const sheetCounts = getChecklistSheetCounts(checklist);
-
-  return (
-    <div
-      className="fixed inset-0 z-[80] bg-black/40 sm:px-6 sm:py-6"
-      role="dialog"
-      aria-modal="true"
-      aria-label="チェック表"
-    >
-      <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#FAFAFA] shadow-2xl sm:mx-auto sm:h-[calc(100dvh-3rem)] sm:max-w-3xl sm:rounded-2xl">
-        <div className="flex shrink-0 items-center justify-between border-b border-stone-100 bg-white px-4 pb-3 pt-[max(env(safe-area-inset-top),16px)] sm:px-6 sm:pt-5">
-          <div>
-            <p className="text-xs font-bold text-forest-700">出発前確認</p>
-            <h2 className="mt-1 text-xl font-semibold tracking-normal text-ink">
-              チェック表
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-stone-100 text-stone-700 transition active:scale-95"
-            aria-label="チェック表を閉じる"
-          >
-            <X className="h-5 w-5" aria-hidden="true" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
-          <section className="rounded-lg bg-white p-4 shadow-soft">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="text-xs font-bold text-stone-500">
-                  {formatChecklistSheetDate(plannedDate)}
-                </p>
-                <h3 className="mt-1 text-2xl font-semibold tracking-normal text-ink">
-                  {plan.mountain.name_ja}
-                </h3>
-                <p className="mt-1 text-sm font-semibold text-stone-600">
-                  {mountainFoundationSeasonLabels[plan.season]} / {mountainFoundationStyleLabels[plan.style]}
-                </p>
-              </div>
-              <span className="inline-flex w-fit rounded-lg bg-forest-50 px-3 py-2 text-xs font-bold text-forest-800">
-                {summary.statusLabel}
-              </span>
-            </div>
-
-            <div className="mt-4 grid grid-cols-4 gap-2 text-center">
-              <ChecklistSheetMetric label="不足" value={sheetCounts.missing} tone="missing" />
-              <ChecklistSheetMetric label="確認する" value={sheetCounts.confirm} tone="confirm" />
-              <ChecklistSheetMetric label="所持済み" value={sheetCounts.owned} tone="owned" />
-              <ChecklistSheetMetric label="確認済み" value={sheetCounts.checked} tone="checked" />
-            </div>
-          </section>
-
-          <div className="mt-4 space-y-4">
-            {checklist.categories.map((category) => (
-              <ChecklistSheetCategory
-                key={category.id}
-                category={category}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ChecklistSheetMetric({
+function FullChecklistMetric({
   label,
   value,
   tone
@@ -1101,7 +1151,7 @@ function ChecklistSheetMetric({
   );
 }
 
-function ChecklistSheetCategory({ category }: { category: ChecklistCategory }) {
+function FullChecklistCategory({ category }: { category: ChecklistCategory }) {
   return (
     <section className="overflow-hidden rounded-lg bg-white shadow-soft">
       <div className="flex items-center justify-between border-b border-stone-100 px-4 py-3">
@@ -1112,7 +1162,7 @@ function ChecklistSheetCategory({ category }: { category: ChecklistCategory }) {
       </div>
       <div className="divide-y divide-stone-100">
         {category.items.map((item) => (
-          <ChecklistSheetRow
+          <FullChecklistRow
             key={`${category.id}-${item.id}`}
             item={item}
             categoryLabel={category.label}
@@ -1123,14 +1173,14 @@ function ChecklistSheetCategory({ category }: { category: ChecklistCategory }) {
   );
 }
 
-function ChecklistSheetRow({
+function FullChecklistRow({
   item,
   categoryLabel
 }: {
   item: ChecklistItem;
   categoryLabel: string;
 }) {
-  const status = getChecklistSheetItemStatus(item);
+  const status = getFullChecklistItemStatus(item);
 
   return (
     <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-4 py-3">
@@ -1157,7 +1207,75 @@ function ChecklistSheetRow({
   );
 }
 
-function getChecklistSheetCounts(checklist: ReturnType<typeof buildPlanChecklist>) {
+function FullChecklistImageSaveButton({
+  plan,
+  plannedDate,
+  checklist,
+  summary
+}: {
+  plan: PackRequirementPlan;
+  plannedDate: string;
+  checklist: ReturnType<typeof buildPlanChecklist>;
+  summary: PreDepartureSummary;
+}) {
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "success" | "error">(
+    "idle"
+  );
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function handleSaveImage() {
+    setSaveState("saving");
+    setMessage("保存用画像を作成しています...");
+
+    try {
+      const blob = await createChecklistImageBlob({
+        plan,
+        plannedDate,
+        checklist,
+        summary
+      });
+      const fileName = `yamajitaku-${plan.mountain.slug}-checklist.png`;
+      const didShare = await shareChecklistImageIfAvailable(blob, fileName, plan);
+
+      if (!didShare) {
+        downloadChecklistImage(blob, fileName);
+      }
+
+      setSaveState("success");
+      setMessage(didShare ? "共有シートを開きました。" : "画像をダウンロードしました。");
+    } catch (error) {
+      console.error("Checklist image save failed:", error);
+      setSaveState("error");
+      setMessage("画像を保存できませんでした。時間をおいてもう一度お試しください。");
+    }
+  }
+
+  return (
+    <section className="rounded-lg bg-white p-5 shadow-soft">
+      <button
+        type="button"
+        onClick={handleSaveImage}
+        disabled={saveState === "saving"}
+        className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-forest-700 px-5 text-sm font-bold text-white shadow-sm transition active:scale-[0.99] disabled:cursor-wait disabled:opacity-70"
+      >
+        {saveState === "saving" ? "画像を作成中..." : "画像として保存"}
+      </button>
+      {message ? (
+        <p
+          className={`mt-3 rounded-lg px-3 py-2 text-sm font-bold ${
+            saveState === "error"
+              ? "bg-red-50 text-red-700"
+              : "bg-forest-50 text-forest-800"
+          }`}
+        >
+          {message}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function getFullChecklistCounts(checklist: ReturnType<typeof buildPlanChecklist>) {
   const counts = {
     missing: 0,
     confirm: 0,
@@ -1167,7 +1285,7 @@ function getChecklistSheetCounts(checklist: ReturnType<typeof buildPlanChecklist
 
   for (const category of checklist.categories) {
     for (const item of category.items) {
-      const status = getChecklistSheetItemStatus(item);
+      const status = getFullChecklistItemStatus(item);
 
       if (status.kind === "MISSING") {
         counts.missing += 1;
@@ -1184,7 +1302,7 @@ function getChecklistSheetCounts(checklist: ReturnType<typeof buildPlanChecklist
   return counts;
 }
 
-function getChecklistSheetItemStatus(item: ChecklistItem) {
+function getFullChecklistItemStatus(item: ChecklistItem) {
   if (item.matchingOwnedGear.length > 0) {
     return {
       kind: "OWNED" as const,
@@ -1222,8 +1340,232 @@ function getChecklistSheetItemStatus(item: ChecklistItem) {
   };
 }
 
-function formatChecklistSheetDate(value: string) {
+function formatPlanDateShort(value: string) {
   return value ? value.replaceAll("-", "/") : "予定日未設定";
+}
+
+async function createChecklistImageBlob({
+  plan,
+  plannedDate,
+  checklist,
+  summary
+}: {
+  plan: PackRequirementPlan;
+  plannedDate: string;
+  checklist: ReturnType<typeof buildPlanChecklist>;
+  summary: PreDepartureSummary;
+}) {
+  const rows = checklist.categories.flatMap((category) =>
+    category.items.map((item) => ({
+      category: category.label,
+      item,
+      status: getFullChecklistItemStatus(item)
+    }))
+  );
+  const width = 1200;
+  const height = Math.max(
+    900,
+    360 + checklist.categories.length * 70 + rows.length * 58
+  );
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("Canvas context is unavailable");
+  }
+
+  context.fillStyle = "#FAFAF8";
+  context.fillRect(0, 0, width, height);
+  context.fillStyle = "#14724e";
+  context.font = '700 30px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif';
+  context.fillText("YAMAJITAKU", 72, 76);
+  context.fillStyle = "#111827";
+  context.font = '700 48px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif';
+  drawTruncatedCanvasText(context, plan.mountain.name_ja, 72, 145, 720);
+  context.font = '600 28px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif';
+  context.fillStyle = "#57534E";
+  context.fillText(
+    `${mountainFoundationSeasonLabels[plan.season]} / ${mountainFoundationStyleLabels[plan.style]}  ${formatPlanDateShort(plannedDate)}`,
+    72,
+    194
+  );
+  context.fillStyle = "#EAF4EE";
+  roundRect(context, 72, 226, width - 144, 86, 24);
+  context.fill();
+  context.fillStyle = "#14724e";
+  context.font = '700 28px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif';
+  drawTruncatedCanvasText(context, summary.statusLabel, 104, 278, 900);
+
+  const counts = getFullChecklistCounts(checklist);
+  const metrics = [
+    ["不足", counts.missing, "#B91C1C"],
+    ["確認する", counts.confirm, "#92400E"],
+    ["所持済み", counts.owned, "#14724e"],
+    ["確認済み", counts.checked, "#1D4ED8"]
+  ] as const;
+  const metricWidth = (width - 144 - 36) / 4;
+
+  for (const [index, metric] of metrics.entries()) {
+    const x = 72 + index * (metricWidth + 12);
+    context.fillStyle = "#FFFFFF";
+    roundRect(context, x, 338, metricWidth, 86, 18);
+    context.fill();
+    context.fillStyle = metric[2];
+    context.font = '700 24px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif';
+    context.fillText(metric[0], x + 22, 372);
+    context.font = '700 34px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif';
+    context.fillText(metric[1].toLocaleString("ja-JP"), x + 22, 410);
+  }
+
+  let y = 484;
+
+  for (const category of checklist.categories) {
+    context.fillStyle = "#111827";
+    context.font = '700 30px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif';
+    context.fillText(category.label, 72, y);
+    context.fillStyle = "#78716C";
+    context.font = '600 22px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif';
+    context.fillText(`${category.items.length.toLocaleString("ja-JP")} 件`, width - 170, y);
+    y += 24;
+
+    for (const item of category.items) {
+      const status = getFullChecklistItemStatus(item);
+      context.fillStyle = "#FFFFFF";
+      roundRect(context, 72, y, width - 144, 50, 14);
+      context.fill();
+      context.strokeStyle = status.checked ? "#14724e" : "#D6D3D1";
+      context.lineWidth = 3;
+      context.strokeRect(96, y + 13, 24, 24);
+
+      if (status.checked) {
+        context.fillStyle = "#14724e";
+        context.fillRect(96, y + 13, 24, 24);
+        context.strokeStyle = "#FFFFFF";
+        context.lineWidth = 4;
+        context.beginPath();
+        context.moveTo(101, y + 25);
+        context.lineTo(107, y + 31);
+        context.lineTo(118, y + 19);
+        context.stroke();
+      }
+
+      context.fillStyle = "#111827";
+      context.font = '700 22px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif';
+      drawTruncatedCanvasText(context, item.label, 140, y + 32, 560);
+      context.fillStyle = "#78716C";
+      context.font = '600 18px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif';
+      drawTruncatedCanvasText(context, category.label, 710, y + 31, 170);
+      context.fillStyle = getChecklistStatusCanvasColor(status.kind);
+      context.font = '700 18px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif';
+      drawTruncatedCanvasText(context, status.label, 910, y + 31, 170);
+      y += 58;
+    }
+
+    y += 26;
+  }
+
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob);
+      } else {
+        reject(new Error("Failed to create image"));
+      }
+    }, "image/png");
+  });
+}
+
+async function shareChecklistImageIfAvailable(
+  blob: Blob,
+  fileName: string,
+  plan: PackRequirementPlan
+) {
+  if (typeof File === "undefined" || !navigator.share) {
+    return false;
+  }
+
+  const file = new File([blob], fileName, { type: "image/png" });
+  const shareData = {
+    files: [file],
+    title: `${plan.mountain.name_ja} 持ち物チェック表`,
+    text: "山支度の持ち物チェック表"
+  };
+
+  if (navigator.canShare && !navigator.canShare(shareData)) {
+    return false;
+  }
+
+  await navigator.share(shareData);
+  return true;
+}
+
+function downloadChecklistImage(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function drawTruncatedCanvasText(
+  context: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number
+) {
+  if (context.measureText(text).width <= maxWidth) {
+    context.fillText(text, x, y);
+    return;
+  }
+
+  let nextText = text;
+
+  while (nextText.length > 1 && context.measureText(`${nextText}...`).width > maxWidth) {
+    nextText = nextText.slice(0, -1);
+  }
+
+  context.fillText(`${nextText}...`, x, y);
+}
+
+function roundRect(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number
+) {
+  context.beginPath();
+  context.moveTo(x + radius, y);
+  context.arcTo(x + width, y, x + width, y + height, radius);
+  context.arcTo(x + width, y + height, x, y + height, radius);
+  context.arcTo(x, y + height, x, y, radius);
+  context.arcTo(x, y, x + width, y, radius);
+  context.closePath();
+}
+
+function getChecklistStatusCanvasColor(
+  kind: ReturnType<typeof getFullChecklistItemStatus>["kind"]
+) {
+  if (kind === "MISSING") {
+    return "#B91C1C";
+  }
+
+  if (kind === "CONFIRM") {
+    return "#92400E";
+  }
+
+  if (kind === "OWNED") {
+    return "#14724e";
+  }
+
+  return "#1D4ED8";
 }
 
 function filterCheckedSlotsForPlan(
@@ -1380,16 +1722,35 @@ function mergeGearMatchingConfidence(matches: GearMatchingResult[]) {
   return "HIGH";
 }
 
+function AllItemsChecklistLink({ planId }: { planId: string }) {
+  return (
+    <Link
+      href={`/plan?id=${planId}&view=checklist` as Route}
+      className="flex items-center justify-between rounded-lg border border-forest-100 bg-white px-5 py-4 text-left shadow-soft transition active:scale-[0.99]"
+    >
+      <span>
+        <span className="block text-sm font-bold text-forest-700">
+          すべての持ち物を確認
+        </span>
+        <span className="mt-1 block text-xs font-semibold text-stone-500">
+          今回の持ち物と確認状態を一覧で見ます
+        </span>
+      </span>
+      <span className="shrink-0 text-lg font-bold text-forest-700" aria-hidden="true">
+        →
+      </span>
+    </Link>
+  );
+}
+
 function PreDepartureConfirmationPanel({
   summary,
   progressPercent,
-  onShowAllItems,
-  onOpenChecklistSheet
+  onShowAllItems
 }: {
   summary: PreDepartureSummary;
   progressPercent: number;
   onShowAllItems: () => void;
-  onOpenChecklistSheet: () => void;
 }) {
   const [completionMessage, setCompletionMessage] = useState<string | null>(null);
 
@@ -1475,14 +1836,6 @@ function PreDepartureConfirmationPanel({
           </p>
         )}
         <div className="flex flex-col gap-2 sm:flex-row">
-          <button
-            type="button"
-            onClick={onOpenChecklistSheet}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-stone-200 bg-stone-50 px-5 text-sm font-bold text-ink transition active:scale-[0.99]"
-          >
-            <ClipboardList className="h-4 w-4" aria-hidden="true" />
-            チェック表を見る
-          </button>
           <button
             type="button"
             onClick={onShowAllItems}
@@ -1579,10 +1932,12 @@ function PreDepartureSummaryGroup({
 function ChecklistScanControls({
   activeFilter,
   summary,
+  includeAllFilter,
   onFilterChange
 }: {
   activeFilter: ChecklistScanFilter;
   summary: PreDepartureSummary;
+  includeAllFilter: boolean;
   onFilterChange: (filter: ChecklistScanFilter) => void;
 }) {
   const filters: Array<{
@@ -1597,20 +1952,17 @@ function ChecklistScanControls({
     },
     { value: "MISSING", label: "不足", count: summary.missingCount },
     { value: "CONFIRM", label: "未確認", count: summary.confirmationCount },
-    { value: "IMPORTANT", label: "重要", count: summary.importantConfirmationCount },
-    { value: "ALL", label: "すべての持ち物" }
+    { value: "IMPORTANT", label: "重要", count: summary.importantConfirmationCount }
   ];
+  const visibleFilters = includeAllFilter
+    ? [...filters, { value: "ALL" as const, label: "すべての持ち物" }]
+    : filters;
 
   return (
     <div className="rounded-lg bg-white p-3 shadow-soft">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-        <p className="text-xs font-bold text-forest-700">臨行前スキャン</p>
-        <p className="text-[11px] font-semibold leading-5 text-stone-500">
-          すべての持ち物と確認状態を見られます
-        </p>
-      </div>
+      <p className="text-xs font-bold text-forest-700">臨行前スキャン</p>
       <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
-        {filters.map((filter) => {
+        {visibleFilters.map((filter) => {
           const isActive = activeFilter === filter.value;
 
           return (

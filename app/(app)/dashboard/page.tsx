@@ -153,7 +153,7 @@ function HeroCard({
   }
 
   const coveragePercent = tripChecklist?.summary.percent ?? getSavedProgressFallback(trip);
-  const planHref = `/plan?id=${trip.id}&focus=predeparture` as Route;
+  const planHref = `/plan?id=${trip.id}` as Route;
   return (
     <section className="relative min-h-[252px] w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7] shadow-sm">
       <div className="absolute inset-0 z-0">

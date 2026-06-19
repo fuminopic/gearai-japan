@@ -304,32 +304,39 @@ test("M2 pre-departure confirmation reuses checklist-derived counts", () => {
   assert.match(dashboardPlanChecklistSummarySource, /不足/);
   assert.match(dashboardPlanChecklistSummarySource, /未確認/);
   assert.match(dashboardPlanChecklistSummarySource, /重要確認/);
-  assert.match(dashboardPageSource, /focus=predeparture/);
+  assert.match(dashboardPageSource, /`\/plan\?id=\$\{trip\.id\}`/);
+  assert.doesNotMatch(dashboardPageSource, /focus=predeparture/);
   assert.match(dashboardPageSource, /出発前確認へ/);
 
   assert.match(tripPlanningUiSource, /PreDepartureConfirmationPanel/);
   assert.match(tripPlanningUiSource, /ChecklistScanControls/);
   assert.match(tripPlanningUiSource, /filterChecklistCategoriesForScan/);
-  assert.match(tripPlanningUiSource, /出発前の最終確認/);
-  assert.match(tripPlanningUiSource, /不足しているもの/);
-  assert.match(tripPlanningUiSource, /出発前に確認するもの/);
-  assert.match(tripPlanningUiSource, /安全に関わる確認/);
+  assert.match(tripPlanningUiSource, /SavedPlanDetailHeader/);
+  assert.match(tripPlanningUiSource, /isSavedPlanMode/);
+  assert.match(tripPlanningUiSource, /isFullChecklistView/);
+  assert.match(tripPlanningUiSource, /SavedPlanFullChecklistView/);
+  assert.match(tripPlanningUiSource, /formatPlanDateShort/);
+  assert.match(tripPlanningUiSource, /計画条件を編集/);
+  assert.match(tripPlanningUiSource, /!\s*isSavedPlanDetail\s*\?/);
   assert.match(tripPlanningUiSource, /臨行前スキャン/);
   assert.match(tripPlanningUiSource, /要対応/);
-  assert.match(tripPlanningUiSource, /すべての持ち物/);
-  assert.match(tripPlanningUiSource, /すべての持ち物を見る/);
-  assert.match(tripPlanningUiSource, /すべての持ち物と確認状態を見られます/);
-  assert.match(tripPlanningUiSource, /チェック表を見る/);
-  assert.match(tripPlanningUiSource, /ChecklistSheetModal/);
-  assert.match(tripPlanningUiSource, /aria-label="チェック表"/);
-  assert.match(tripPlanningUiSource, /sheetCounts\.missing/);
+  assert.match(tripPlanningUiSource, /includeAllFilter=\{!isSavedPlanDetail\}/);
+  assert.match(tripPlanningUiSource, /すべての持ち物を確認/);
+  assert.match(tripPlanningUiSource, /view=checklist/);
+  assert.match(tripPlanningUiSource, /持ち物チェック表/);
+  assert.match(tripPlanningUiSource, /FullChecklistImageSaveButton/);
+  assert.match(tripPlanningUiSource, /画像として保存/);
+  assert.match(tripPlanningUiSource, /createChecklistImageBlob/);
+  assert.match(tripPlanningUiSource, /navigator\.share/);
+  assert.match(tripPlanningUiSource, /downloadChecklistImage/);
+  assert.match(tripPlanningUiSource, /getFullChecklistCounts/);
   assert.match(tripPlanningUiSource, /確認する/);
   assert.match(tripPlanningUiSource, /予定日未設定/);
   assert.match(tripPlanningUiSource, /残り \{remainingCount\.toLocaleString\("ja-JP"\)\} 件/);
   assert.doesNotMatch(tripPlanningUiSource, /ほか \{remainingCount\.toLocaleString\("ja-JP"\)\} 件を確認/);
-  assert.match(tripPlanningUiSource, /出発前確認を完了/);
-  assert.match(tripPlanningUiSource, /出発前確認が完了しました/);
-  assert.match(tripPlanningUiSource, /不足または未確認の項目があります/);
+  assert.doesNotMatch(tripPlanningUiSource, /ChecklistSheetModal/);
+  assert.doesNotMatch(tripPlanningUiSource, /すべての持ち物と確認状態を見られます/);
+  assert.doesNotMatch(tripPlanningUiSource, /チェック表を見る/);
   assert.doesNotMatch(tripPlanningUiSource, /購入する/);
 });
 
@@ -605,7 +612,8 @@ test("plan id hydration links home and history to the exact saved plan", () => {
   assert.match(tripPlanningUiSource, /\.single\(\)/);
   assert.match(tripPlanningUiSource, /router\.replace\(`\/plan\?\$\{nextParams\.toString\(\)\}`\)/);
   assert.match(tripPlanningUiSource, /href=\{`\/plan\?id=\$\{record\.id\}` as Route\}/);
-  assert.match(dashboardPageSource, /`\/plan\?id=\$\{trip\.id\}&focus=predeparture`/);
+  assert.match(dashboardPageSource, /`\/plan\?id=\$\{trip\.id\}`/);
+  assert.doesNotMatch(dashboardPageSource, /focus=predeparture/);
 });
 
 test("user-facing branding uses YAMAJITAKU hierarchy", () => {

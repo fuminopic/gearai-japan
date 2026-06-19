@@ -1,11 +1,7 @@
 import {
   ArrowLeft,
   ChevronDown,
-  CircleAlert,
-  MapPin,
-  Phone,
   ShieldCheck,
-  SlidersHorizontal,
   UserRound
 } from "lucide-react";
 import Link from "next/link";
@@ -19,9 +15,6 @@ type ProfileEditPageProps = {
   }>;
 };
 
-const tripStyleOptions = ["未設定", "日帰り", "山小屋泊", "テント泊"];
-const experienceOptions = ["未設定", "初心者", "初級", "中級", "上級"];
-const paceOptions = ["未設定", "ゆっくり", "標準", "速め"];
 const insuranceStatusOptions = [
   { value: "unknown", label: "未登録" },
   { value: "active", label: "加入済み" },
@@ -64,7 +57,7 @@ export default async function ProfileEditPage({
 
       <ProfileSection
         title="基本情報"
-        description="アプリ内で表示する名前と、山行準備で使う最低限の情報です。"
+        description="アプリ内で表示する名前とメモです。"
         icon={UserRound}
       >
         <ProfileField
@@ -77,37 +70,19 @@ export default async function ProfileEditPage({
           label="メモ"
           name="self_introduction"
           defaultValue={getMetadataString(metadata, "self_introduction")}
-          placeholder="よく行く山、準備時に意識したいことなど"
+          placeholder="準備時に残しておきたいメモ"
         />
         <ProfileStaticRow label="メールアドレス" value={user.email ?? ""} />
       </ProfileSection>
 
       <ProfileSection
-        id="safety"
-        title="保険・遭難時の対策"
-        description="万一の時に確認したい情報です。公開プロフィールには表示しません。"
+        id="insurance"
+        title="山岳保険"
+        description="出発前に確認する保険情報を登録します。"
         icon={ShieldCheck}
       >
-        <ProfileField
-          label="本人の携帯番号"
-          name="mobile_phone"
-          defaultValue={getFirstMetadataString(metadata, ["mobile_phone", "emergency_phone"])}
-          placeholder="090-0000-0000"
-        />
-        <ProfileField
-          label="緊急連絡先の名前"
-          name="emergency_contact_name"
-          defaultValue={getMetadataString(metadata, "emergency_contact_name")}
-          placeholder="家族・同行者など"
-        />
-        <ProfileField
-          label="緊急連絡先の電話"
-          name="emergency_contact_phone"
-          defaultValue={getMetadataString(metadata, "emergency_contact_phone")}
-          placeholder="090-0000-0000"
-        />
         <ProfileSelect
-          label="山岳保険"
+          label="加入状況"
           name="mountain_insurance_status"
           defaultValue={getMetadataString(metadata, "mountain_insurance_status") || "unknown"}
           options={insuranceStatusOptions}
@@ -119,64 +94,10 @@ export default async function ProfileEditPage({
           placeholder="例：やまきふ共済会 山岳保険"
         />
         <ProfileField
-          label="保険期限"
+          label="有効期限"
           name="mountain_insurance_expires_on"
           type="date"
           defaultValue={getMetadataString(metadata, "mountain_insurance_expires_on")}
-        />
-        <ProfileField
-          label="遭難対策サービス"
-          name="rescue_service_name"
-          defaultValue={getMetadataString(metadata, "rescue_service_name")}
-          placeholder="例：ココヘリ"
-        />
-        <ProfileField
-          label="会員番号"
-          name="rescue_service_member_id"
-          defaultValue={getMetadataString(metadata, "rescue_service_member_id")}
-          placeholder="任意"
-        />
-        <p className="flex gap-2 px-4 pb-4 text-xs font-semibold leading-relaxed text-stone-500">
-          <CircleAlert aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-          山行前にこの情報を更新しておくと、同行者や家族への確認がしやすくなります。
-        </p>
-      </ProfileSection>
-
-      <ProfileSection
-        id="preferences"
-        title="登山の初期設定"
-        description="今後の計画作成や表示を使いやすくするための設定です。"
-        icon={SlidersHorizontal}
-      >
-        <ProfileField
-          label="主な山域"
-          name="home_area"
-          defaultValue={getMetadataString(metadata, "home_area")}
-          placeholder="例：関東・八ヶ岳"
-        />
-        <ProfileSelect
-          label="よく使うスタイル"
-          name="default_trip_style"
-          defaultValue={getMetadataString(metadata, "default_trip_style") || "未設定"}
-          options={tripStyleOptions.map((value) => ({ value, label: value }))}
-        />
-        <ProfileSelect
-          label="登山経験"
-          name="hiking_experience"
-          defaultValue={getMetadataString(metadata, "hiking_experience") || "未設定"}
-          options={experienceOptions.map((value) => ({ value, label: value }))}
-        />
-        <ProfileSelect
-          label="歩行ペース"
-          name="hiking_pace"
-          defaultValue={getMetadataString(metadata, "hiking_pace") || "未設定"}
-          options={paceOptions.map((value) => ({ value, label: value }))}
-        />
-        <ProfileTextArea
-          label="装備メモ"
-          name="gear_preference_note"
-          defaultValue={getMetadataString(metadata, "gear_preference_note")}
-          placeholder="寒がり、軽量重視、膝に不安がある等"
         />
       </ProfileSection>
 
@@ -232,7 +153,7 @@ function ProfileField({
   type?: "text" | "date";
 }) {
   return (
-    <label className="block px-4 py-4 sm:grid sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center sm:gap-4">
+    <label className="block px-4 py-4 sm:grid sm:grid-cols-[160px_minmax(0,1fr)] sm:items-center sm:gap-4">
       <span className="text-sm font-bold text-ink">{label}</span>
       <input
         type={type}
@@ -257,7 +178,7 @@ function ProfileSelect({
   options: Array<{ value: string; label: string }>;
 }) {
   return (
-    <label className="block px-4 py-4 sm:grid sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center sm:gap-4">
+    <label className="block px-4 py-4 sm:grid sm:grid-cols-[160px_minmax(0,1fr)] sm:items-center sm:gap-4">
       <span className="text-sm font-bold text-ink">{label}</span>
       <span className="relative mt-2 block sm:mt-0">
         <select
@@ -307,7 +228,7 @@ function ProfileTextArea({
 
 function ProfileStaticRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="block px-4 py-4 sm:grid sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center sm:gap-4">
+    <div className="block px-4 py-4 sm:grid sm:grid-cols-[160px_minmax(0,1fr)] sm:items-center sm:gap-4">
       <span className="text-sm font-bold text-ink">{label}</span>
       <span className="mt-1 block truncate text-sm font-semibold text-stone-500 sm:mt-0">
         {value}
@@ -325,20 +246,6 @@ function getDisplayName(
     email?.split("@")[0] ||
     ""
   );
-}
-
-function getFirstMetadataString(
-  metadata: Record<string, unknown> | null | undefined,
-  keys: string[]
-) {
-  for (const key of keys) {
-    const value = getMetadataString(metadata, key);
-    if (value) {
-      return value;
-    }
-  }
-
-  return "";
 }
 
 function getMetadataString(

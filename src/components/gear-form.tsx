@@ -919,7 +919,7 @@ function ProductResultCard({
             loading="lazy"
           />
         ) : (
-          <PackagePlus className="h-6 w-6 text-stone-300" />
+          <ProductImageFallback brand={product.brand} compact />
         )}
       </span>
       <span className="min-w-0">
@@ -934,7 +934,7 @@ function ProductResultCard({
             {getProductCategoryLabel(product)}
           </span>
           <span className="font-semibold text-stone-600">{formatWeightGrams(weight)}</span>
-          <span className="text-stone-400">{product.msrp_jpy ? formatJpy(product.msrp_jpy) : "-"}</span>
+          <span className="text-stone-400">{formatProductPrice(product.msrp_jpy)}</span>
         </span>
       </span>
       <span
@@ -968,7 +968,7 @@ function SelectedProductConfirmCard({ product }: { product: GearProduct }) {
               loading="lazy"
             />
           ) : (
-            <PackagePlus className="h-6 w-6 text-forest-700" />
+            <ProductImageFallback brand={product.brand} />
           )}
         </div>
         <div className="min-w-0">
@@ -981,7 +981,7 @@ function SelectedProductConfirmCard({ product }: { product: GearProduct }) {
           </p>
           <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
             <ProductFact label="重量" value={formatWeightGrams(weight)} />
-            <ProductFact label="価格" value={product.msrp_jpy ? formatJpy(product.msrp_jpy) : "-"} />
+            <ProductFact label="価格" value={formatProductPrice(product.msrp_jpy)} />
             <ProductFact label="カテゴリー" value={getProductCategoryLabel(product)} />
             <ProductFact label="容量" value={productVolume ?? productCapacity ?? "-"} />
           </dl>
@@ -1000,6 +1000,23 @@ function ProductFact({ label, value }: { label: string; value: string }) {
       <dt className="text-[10px] font-semibold text-stone-400">{label}</dt>
       <dd className="mt-0.5 truncate font-semibold text-stone-700">{value}</dd>
     </div>
+  );
+}
+
+function ProductImageFallback({
+  brand,
+  compact = false
+}: {
+  brand: string;
+  compact?: boolean;
+}) {
+  return (
+    <span className="flex h-full w-full flex-col items-center justify-center rounded-lg bg-white/70 text-center">
+      <PackagePlus className={`${compact ? "h-4 w-4" : "h-5 w-5"} text-stone-300`} />
+      <span className="mt-1 line-clamp-2 px-1 text-[10px] font-semibold leading-tight text-stone-400">
+        {brand}
+      </span>
+    </span>
   );
 }
 
@@ -1571,7 +1588,11 @@ function normalize(value: string) {
 }
 
 function formatWeightGrams(value: number | null | undefined) {
-  return typeof value === "number" ? `${value}g` : "-";
+  return typeof value === "number" ? `${value}g` : "公式確認中";
+}
+
+function formatProductPrice(value: number | null | undefined) {
+  return typeof value === "number" ? formatJpy(value) : "公式確認中";
 }
 
 function getImageExtension(file: File) {

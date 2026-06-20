@@ -113,3 +113,11 @@ test("popular Japan brand catalog adds search aliases and brand priority", () =>
   }
 }
 );
+
+test("product picker shows unverified catalog gaps as pending official confirmation", () => {
+  assert.match(gearFormSource, /function ProductImageFallback/);
+  assert.match(gearFormSource, /公式確認中/);
+  assert.match(gearFormSource, /formatProductPrice/);
+  assert.doesNotMatch(gearFormSource, /product\.msrp_jpy \? formatJpy\(product\.msrp_jpy\) : "-"/);
+  assert.match(gearFormSource, /<ProductImageFallback brand=\{product\.brand\}/);
+});

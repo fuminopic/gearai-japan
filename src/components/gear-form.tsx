@@ -1095,6 +1095,34 @@ function getBrandSearchAliases(brand: string) {
     return ["Caravan", "キャラバン", "GRANDKING", "Grandking", "グランドキング"];
   }
 
+  if (normalize(brand) === "columbia") {
+    return ["Columbia", "コロンビア"];
+  }
+
+  if (normalize(brand) === "millet") {
+    return ["MILLET", "Millet", "ミレー"];
+  }
+
+  if (normalize(brand) === "arcteryx") {
+    return ["Arc'teryx", "Arcteryx", "ArcTeryx", "アークテリクス"];
+  }
+
+  if (normalize(brand) === "patagonia") {
+    return ["patagonia", "Patagonia", "パタゴニア"];
+  }
+
+  if (normalize(brand) === "gregory") {
+    return ["GREGORY", "Gregory", "グレゴリー"];
+  }
+
+  if (normalize(brand) === "lasportiva") {
+    return ["LA SPORTIVA", "La Sportiva", "スポルティバ", "ラスポルティバ"];
+  }
+
+  if (normalize(brand) === "mammut") {
+    return ["Mammut", "MAMMUT", "マムート"];
+  }
+
   if (normalize(brand) === "osprey") {
     return ["Osprey", "OSPREY", "Osprey Packs", "オスプレー"];
   }

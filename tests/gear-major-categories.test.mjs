@@ -20,6 +20,14 @@ test("retail gear categories use shop-friendly labels and avoid sleeping bag clo
   }
 
   assert.match(gearMajorCategoriesSource, /subcategoryAliases:[\s\S]*"sleeping_bag"/);
+  assert.match(gearMajorCategoriesSource, /subcategoryAliases:[\s\S]*"hat"/);
+  assert.match(gearMajorCategoriesSource, /subcategoryAliases:[\s\S]*"sunglasses"/);
+  assert.match(gearMajorCategoriesSource, /subcategoryAliases:[\s\S]*"map"/);
+  assert.match(gearMajorCategoriesSource, /subcategoryAliases:[\s\S]*"spare_battery"/);
+  assert.match(gearMajorCategoriesSource, /subcategoryAliases:[\s\S]*"whistle"/);
+  assert.match(gearMajorCategoriesSource, /subcategoryAliases:[\s\S]*"portable_toilet"/);
+  assert.match(gearMajorCategoriesSource, /subcategoryAliases:[\s\S]*"pegs"/);
+  assert.match(gearMajorCategoriesSource, /subcategoryAliases:[\s\S]*"inner_sheet"/);
   assert.match(gearMajorCategoriesSource, /for \(const category of MAJOR_GEAR_CATEGORIES\)[\s\S]*subcategoryAliases/);
   assert.match(gearMajorCategoriesSource, /for \(const category of MAJOR_GEAR_CATEGORIES\)[\s\S]*categoryAliases/);
   assert.match(gearMajorCategoriesSource, /for \(const category of MAJOR_GEAR_CATEGORIES\)[\s\S]*textHints/);

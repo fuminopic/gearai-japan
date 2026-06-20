@@ -14,7 +14,9 @@ export const MAJOR_GEAR_CATEGORIES = [
       "down_jacket",
       "base_layer",
       "trekking_pants",
-      "gloves"
+      "gloves",
+      "hat",
+      "sunglasses"
     ],
     textHints: [
       "ウェア",
@@ -41,7 +43,7 @@ export const MAJOR_GEAR_CATEGORIES = [
     label: "シューズ",
     color: "#F57C00",
     categoryAliases: [],
-    subcategoryAliases: ["footwear", "gaiters", "socks", "insole"],
+    subcategoryAliases: ["footwear", "gaiter", "gaiters", "socks", "insole"],
     textHints: [
       "登山靴",
       "シューズ",
@@ -60,10 +62,12 @@ export const MAJOR_GEAR_CATEGORIES = [
     subcategoryAliases: [
       "tent",
       "groundsheet",
+      "pegs",
       "sleeping_bag",
       "sleeping_pad",
       "pillow",
-      "sleeping_bag_cover"
+      "sleeping_bag_cover",
+      "inner_sheet"
     ],
     textHints: [
       "テント",
@@ -114,9 +118,15 @@ export const MAJOR_GEAR_CATEGORIES = [
     categoryAliases: ["electronics", "navigation", "first_aid", "safety", "bear_safety"],
     subcategoryAliases: [
       "gps",
+      "map",
+      "compass",
+      "spare_battery",
       "power_bank",
       "headlamp",
       "first_aid_kit",
+      "whistle",
+      "emergency_sheet",
+      "portable_toilet",
       "helmet",
       "traction_device",
       "ice_axe",
@@ -136,7 +146,8 @@ export const MAJOR_GEAR_CATEGORIES = [
       "アイゼン",
       "チェーンスパイク",
       "ピッケル",
-      "モバイルバッテリー"
+      "モバイルバッテリー",
+      "予備電池"
     ]
   }
 ] as const;

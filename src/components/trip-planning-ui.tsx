@@ -427,7 +427,7 @@ export function TripPlanningUI({
         />
       ) : null}
 
-      {!isSavedPlanMode && !isFullChecklistView ? (
+      {!plan && !isSavedPlanMode && !isFullChecklistView ? (
         <TripPlanningForm
           mountains={mountains}
           selectedMountainSlug={effectiveMountainSlug}
@@ -457,6 +457,13 @@ export function TripPlanningUI({
           />
         ) : (
         <>
+          {!isSavedPlanMode ? (
+            <PlanResultSummaryHeader
+              plan={plan}
+              plannedDate={planDetailsDraft.plannedDate}
+              plannedEndDate={planDetailsDraft.plannedEndDate}
+            />
+          ) : null}
           <div ref={resultSectionRef} className="scroll-mt-24">
             <TripPlanningResult
               plan={plan}
@@ -498,6 +505,39 @@ export function TripPlanningUI({
         <PlanHistorySection plans={savedPlans} legacyPlans={planHistory} />
       ) : null}
     </div>
+  );
+}
+
+function PlanResultSummaryHeader({
+  plan,
+  plannedDate,
+  plannedEndDate
+}: {
+  plan: PackRequirementPlan;
+  plannedDate: string;
+  plannedEndDate: string;
+}) {
+  return (
+    <section className="rounded-lg border border-forest-100 bg-white px-4 py-3 shadow-soft sm:px-5">
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-forest-50 text-forest-700">
+          <Mountain className="h-5 w-5" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h1 className="truncate text-lg font-semibold tracking-normal text-ink">
+              {plan.mountain.name_ja}
+            </h1>
+            <span className="text-sm font-semibold text-stone-600">
+              {mountainFoundationSeasonLabels[plan.season]} / {mountainFoundationStyleLabels[plan.style]}
+            </span>
+            <span className="text-sm font-semibold text-stone-600">
+              {formatPlanDateRange(plannedDate, plannedEndDate, plan.style)}
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 

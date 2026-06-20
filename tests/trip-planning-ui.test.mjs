@@ -309,6 +309,8 @@ test("M2 pre-departure confirmation reuses checklist-derived counts", () => {
   assert.match(tripPlanningUiSource, /ChecklistScanControls/);
   assert.match(tripPlanningUiSource, /filterChecklistCategoriesForScan/);
   assert.match(tripPlanningUiSource, /SavedPlanDetailHeader/);
+  assert.match(tripPlanningUiSource, /PlanResultSummaryHeader/);
+  assert.match(tripPlanningUiSource, /!plan && !isSavedPlanMode && !isFullChecklistView/);
   assert.match(tripPlanningUiSource, /isSavedPlanMode/);
   assert.match(tripPlanningUiSource, /isFullChecklistView/);
   assert.match(tripPlanningUiSource, /SavedPlanFullChecklistView/);

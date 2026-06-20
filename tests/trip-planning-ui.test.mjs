@@ -86,6 +86,10 @@ const tripPlansDetailsMigrationSource = readFileSync(
   new URL("../supabase/migrations/037_trip_plan_details.sql", import.meta.url),
   "utf8"
 );
+const tripPlansDateRangeMigrationSource = readFileSync(
+  new URL("../supabase/migrations/038_trip_plan_date_range.sql", import.meta.url),
+  "utf8"
+);
 const planPageSource = readFileSync(
   new URL("../app/(app)/plan/page.tsx", import.meta.url),
   "utf8"
@@ -190,10 +194,7 @@ test("app navigation responds immediately during dynamic route loading", () => {
 test("trip planning UI presents a professional gear checklist", () => {
   for (const copy of [
     "装備チェックリスト",
-    "総完成度",
     "未完了",
-    "所持済みの判定理由",
-    "確認メモ",
     "パック計画を作成",
     "計画履歴"
   ]) {
@@ -215,7 +216,8 @@ test("trip planning UI presents a professional gear checklist", () => {
     "確認済み",
     "確認する",
     "不足",
-    "判断根拠",
+    "臨行前スキャン",
+    "すべての持ち物を確認",
     "今回不要なもの",
     "登山地図アプリ（YAMAP・ヤマレコ等）",
     "紙地図・コンパス"
@@ -235,9 +237,8 @@ test("trip planning UI presents a professional gear checklist", () => {
   assert.match(tripPlanningUiSource, /checklistItemIcons/);
   assert.match(tripPlanningUiSource, /type ChecklistItemIcon/);
   assert.match(tripPlanningUiSource, /matching_owned_gear/);
-  assert.match(tripPlanningUiSource, /matching_database_gear/);
-  assert.match(tripPlanningUiSource, /登録データ上の対応例/);
-  assert.match(tripPlanningUiSource, /HeroReadinessCard/);
+  assert.doesNotMatch(tripPlanningUiSource, /登録データ上の対応例/);
+  assert.doesNotMatch(tripPlanningUiSource, /HeroReadinessCard/);
   assert.match(tripPlanningUiSource, /ChecklistCategoryCard/);
   assert.match(tripPlanningUiSource, /ChecklistItemRow/);
   assert.match(tripPlanningUiSource, /PlanHistorySection/);
@@ -245,12 +246,13 @@ test("trip planning UI presents a professional gear checklist", () => {
   assert.match(tripPlanningUiSource, /item\.reason/);
   assert.match(tripPlanningUiSource, /カバーしています/);
   assert.match(tripPlanningUiSource, /分類が近いため候補にしています。出発前に用途を確認してください。/);
-  assert.match(tripPlanningUiSource, /判定の確かさ/);
   assert.match(tripPlanningUiSource, /<details/);
   assert.match(tripPlanningUiSource, /<summary/);
   assert.doesNotMatch(`${tripPlanningUiSource}\n${planChecklistSource}`, /(^|[^重])要確認/);
   assert.doesNotMatch(tripPlanningUiSource, /装備庫との照合詳細/);
   assert.doesNotMatch(tripPlanningUiSource, /照合精度/);
+  assert.doesNotMatch(tripPlanningUiSource, /判定の確かさ/);
+  assert.doesNotMatch(tripPlanningUiSource, /登録装備との対応/);
   assert.doesNotMatch(tripPlanningUiSource, /必要システム/);
   assert.doesNotMatch(tripPlanningUiSource, /不足装備/);
   assert.doesNotMatch(tripPlanningUiSource, /対応装備/);
@@ -258,20 +260,18 @@ test("trip planning UI presents a professional gear checklist", () => {
 });
 
 test("pack planning checklist prioritizes readiness before gear-backed details", () => {
-  const heroIndex = tripPlanningUiSource.indexOf("<HeroReadinessCard");
-  const preDepartureIndex = tripPlanningUiSource.indexOf("<PreDepartureConfirmationPanel");
   const checklistIndex = tripPlanningUiSource.indexOf("装備チェックリスト");
-  const matchingIndex = tripPlanningUiSource.indexOf("所持済みの判定理由");
+  const scanIndex = tripPlanningUiSource.indexOf("臨行前スキャン");
+  const notNeededIndex = tripPlanningUiSource.indexOf("今回不要なもの");
 
-  assert.ok(heroIndex > -1);
-  assert.ok(preDepartureIndex > heroIndex);
-  assert.ok(checklistIndex > preDepartureIndex);
-  assert.ok(checklistIndex > heroIndex);
-  assert.ok(matchingIndex > checklistIndex);
+  assert.ok(checklistIndex > -1);
+  assert.ok(scanIndex > checklistIndex);
+  assert.ok(notNeededIndex > checklistIndex);
+  assert.doesNotMatch(tripPlanningUiSource, /<HeroReadinessCard/);
+  assert.doesNotMatch(tripPlanningUiSource, /<PreDepartureConfirmationPanel/);
+  assert.doesNotMatch(tripPlanningUiSource, /登録装備との対応/);
 
   for (const copy of [
-    "山行準備",
-    "本チェックリストは現在の",
     "準備確認",
     "完成",
     "完了",
@@ -280,7 +280,6 @@ test("pack planning checklist prioritizes readiness before gear-backed details",
     assert.match(tripPlanningUiSource, new RegExp(copy));
   }
 
-  assert.match(tripPlanningUiSource, /sm:hidden/);
   assert.match(tripPlanningUiSource, /missingCount\.toLocaleString\("ja-JP"\)/);
 });
 
@@ -308,19 +307,21 @@ test("M2 pre-departure confirmation reuses checklist-derived counts", () => {
   assert.doesNotMatch(dashboardPageSource, /focus=predeparture/);
   assert.match(dashboardPageSource, /出発前確認へ/);
 
-  assert.match(tripPlanningUiSource, /PreDepartureConfirmationPanel/);
+  assert.doesNotMatch(tripPlanningUiSource, /PreDepartureConfirmationPanel/);
   assert.match(tripPlanningUiSource, /ChecklistScanControls/);
   assert.match(tripPlanningUiSource, /filterChecklistCategoriesForScan/);
   assert.match(tripPlanningUiSource, /SavedPlanDetailHeader/);
   assert.match(tripPlanningUiSource, /isSavedPlanMode/);
   assert.match(tripPlanningUiSource, /isFullChecklistView/);
   assert.match(tripPlanningUiSource, /SavedPlanFullChecklistView/);
-  assert.match(tripPlanningUiSource, /formatPlanDateShort/);
+  assert.match(tripPlanningUiSource, /formatPlanDateRange/);
+  assert.match(tripPlanningUiSource, /SavedPlanDateField/);
+  assert.match(tripPlanningUiSource, /planned_end_date/);
+  assert.match(tripPlanningUiSource, /normalizePlanEndDate/);
+  assert.match(tripPlanningUiSource, /日付を選ぶと自動で保存されます。/);
   assert.match(tripPlanningUiSource, /計画条件を編集/);
-  assert.match(tripPlanningUiSource, /!\s*isSavedPlanDetail\s*\?/);
   assert.match(tripPlanningUiSource, /臨行前スキャン/);
   assert.match(tripPlanningUiSource, /要対応/);
-  assert.match(tripPlanningUiSource, /includeAllFilter=\{!isSavedPlanDetail\}/);
   assert.match(tripPlanningUiSource, /すべての持ち物を確認/);
   assert.match(tripPlanningUiSource, /view=checklist/);
   assert.match(tripPlanningUiSource, /持ち物チェック表/);
@@ -332,8 +333,9 @@ test("M2 pre-departure confirmation reuses checklist-derived counts", () => {
   assert.match(tripPlanningUiSource, /getFullChecklistCounts/);
   assert.match(tripPlanningUiSource, /確認する/);
   assert.match(tripPlanningUiSource, /予定日未設定/);
-  assert.match(tripPlanningUiSource, /残り \{remainingCount\.toLocaleString\("ja-JP"\)\} 件/);
-  assert.doesNotMatch(tripPlanningUiSource, /ほか \{remainingCount\.toLocaleString\("ja-JP"\)\} 件を確認/);
+  assert.doesNotMatch(tripPlanningUiSource, /件を確認/);
+  assert.doesNotMatch(tripPlanningUiSource, /出発前の最終確認/);
+  assert.doesNotMatch(tripPlanningUiSource, /登録装備との対応/);
   assert.doesNotMatch(tripPlanningUiSource, /ChecklistSheetModal/);
   assert.doesNotMatch(tripPlanningUiSource, /すべての持ち物と確認状態を見られます/);
   assert.doesNotMatch(tripPlanningUiSource, /チェック表を見る/);
@@ -531,6 +533,8 @@ test("saving and updating a plan writes progress payload and redirects home", ()
   assert.match(planActionsSource, /progress/);
   assert.match(planActionsSource, /checked_slots: checkedSlots/);
   assert.match(planActionsSource, /planned_date: plannedDate/);
+  assert.match(planActionsSource, /planned_end_date: plannedEndDate/);
+  assert.match(planActionsSource, /normalizePlannedEndDate/);
   assert.match(planActionsSource, /trip_memo: tripMemo/);
   assert.match(planActionsSource, /bring_cash: bringCash/);
   assert.match(planActionsSource, /has_mountain_insurance: hasMountainInsurance/);
@@ -550,6 +554,7 @@ test("saving and updating a plan writes progress payload and redirects home", ()
   assert.match(tripPlansDetailsMigrationSource, /add column if not exists trip_memo text/);
   assert.match(tripPlansDetailsMigrationSource, /add column if not exists bring_cash boolean/);
   assert.match(tripPlansDetailsMigrationSource, /add column if not exists has_mountain_insurance boolean/);
+  assert.match(tripPlansDateRangeMigrationSource, /add column if not exists planned_end_date date/);
 });
 
 test("trip planning form captures date and memo while moving insurance out of the plan flow", () => {
@@ -564,13 +569,18 @@ test("trip planning form captures date and memo while moving insurance out of th
   assert.match(tripPlanningFormSource, /h-\[42px\]/);
   assert.match(tripPlanningFormSource, /ChevronsUpDown/);
   assert.match(tripPlanningFormSource, /opacity-0/);
-  assert.match(tripPlanningFormSource, /aria-label="予定日"/);
+  assert.match(tripPlanningFormSource, /aria-label=\{label\}/);
+  assert.match(tripPlanningFormSource, /name="end_date"/);
+  assert.match(tripPlanningFormSource, /出発日/);
+  assert.match(tripPlanningFormSource, /帰着日/);
+  assert.match(tripPlanningFormSource, /normalizeEndDateValue/);
   assert.doesNotMatch(tripPlanningFormSource, /山行オプション/);
   assert.doesNotMatch(tripPlanningFormSource, /現金を持参/);
   assert.doesNotMatch(tripPlanningFormSource, /山岳保険に加入済み/);
   assert.doesNotMatch(tripPlanningFormSource, /name="cash"/);
   assert.doesNotMatch(tripPlanningFormSource, /name="insurance"/);
   assert.match(tripPlanningUiSource, /name="planned_date"/);
+  assert.match(tripPlanningUiSource, /name="planned_end_date"/);
   assert.match(tripPlanningUiSource, /name="trip_memo"/);
   assert.match(tripPlanningUiSource, /name="bring_cash"/);
   assert.match(tripPlanningUiSource, /name="has_mountain_insurance"/);

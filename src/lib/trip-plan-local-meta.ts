@@ -1,5 +1,6 @@
 export type TripPlanLocalMeta = {
   plannedDate: string;
+  plannedEndDate: string;
   tripMemo: string;
 };
 
@@ -28,6 +29,8 @@ export function readTripPlanLocalMeta(planId: string): TripPlanLocalMeta | null 
     return {
       plannedDate:
         typeof parsed.plannedDate === "string" ? parsed.plannedDate : "",
+      plannedEndDate:
+        typeof parsed.plannedEndDate === "string" ? parsed.plannedEndDate : "",
       tripMemo: typeof parsed.tripMemo === "string" ? parsed.tripMemo : ""
     };
   } catch {
@@ -41,10 +44,11 @@ export function writeTripPlanLocalMeta(planId: string, meta: TripPlanLocalMeta) 
   }
 
   const plannedDate = sanitizeLocalDate(meta.plannedDate);
+  const plannedEndDate = sanitizeLocalDate(meta.plannedEndDate);
   const tripMemo = sanitizeLocalMemo(meta.tripMemo);
   const storageKey = getTripPlanMetaStorageKey(planId);
 
-  if (!plannedDate && !tripMemo) {
+  if (!plannedDate && !plannedEndDate && !tripMemo) {
     window.localStorage.removeItem(storageKey);
     return;
   }
@@ -53,6 +57,7 @@ export function writeTripPlanLocalMeta(planId: string, meta: TripPlanLocalMeta) 
     storageKey,
     JSON.stringify({
       plannedDate,
+      plannedEndDate,
       tripMemo
     })
   );

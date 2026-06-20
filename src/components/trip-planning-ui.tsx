@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  AlertTriangle,
   Axe,
   Backpack,
   Battery,
@@ -56,16 +55,12 @@ import {
   updateTripPlan
 } from "@/lib/actions/trip-plans";
 import {
-  categoryLabels,
-  gearMatchingConfidenceLabels,
-  gearSubcategoryLabels,
   mountainFoundationSeasonLabels,
   mountainFoundationStyleLabels,
   requirementSlotLabels
 } from "@/lib/i18n/labels";
 import {
   buildPlanChecklist,
-  buildPlanDecisionChips,
   buildPlanNotNeededItems,
   buildPreDepartureSummary,
   calculateChecklistProgress,
@@ -80,14 +75,12 @@ import {
   type ChecklistView,
   type ChecklistItemIcon,
   type ChecklistItem,
-  type PlanDecisionChip,
   type PlanNotNeededItem,
   type PreDepartureSummary
 } from "@/lib/plan-checklist";
 import { createClient } from "@/lib/supabase/client";
 import { writeTripPlanLocalMeta } from "@/lib/trip-plan-local-meta";
 import type {
-  GearMatchingDatabaseGearMatch,
   GearMatchingOwnedGearMatch,
   GearMatchingResult,
   AIRecommendationRecord,
@@ -146,6 +139,7 @@ export function TripPlanningUI({
 }: TripPlanningUIProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [, startDateTransition] = useTransition();
   const planId = searchParams.get("id") ?? selectedPlanId ?? null;
   const planView = searchParams.get("view");
   const shouldFocusChecklist = searchParams.get("focus") === "checklist";
@@ -165,12 +159,25 @@ export function TripPlanningUI({
   >(null);
   const [storedCheckedSlots, setStoredCheckedSlots] = useState<RequirementSlot[]>([]);
   const [storedChecklistOnlyIds, setStoredChecklistOnlyIds] = useState<string[]>([]);
-  const [isSavedPlanEditorOpen, setIsSavedPlanEditorOpen] = useState(false);
+  const [isDateEditorOpen, setIsDateEditorOpen] = useState(false);
+  const [dateSaveState, setDateSaveState] = useState<
+    "idle" | "saving" | "success" | "error"
+  >("idle");
   const effectiveMountainSlug = hydratedPlan?.mountain_slug ?? selectedMountainSlug;
   const effectiveSeason = hydratedPlan?.season ?? selectedSeason;
   const effectiveStyle = hydratedPlan?.style ?? selectedStyle;
-  const resolvedPlannedDate =
-    sanitizeDateParam(searchParams.get("date")) ?? hydratedPlan?.planned_date ?? "";
+  const resolvedPlannedDate = planId
+    ? hydratedPlan?.planned_date ?? sanitizeDateParam(searchParams.get("date")) ?? ""
+    : sanitizeDateParam(searchParams.get("date")) ?? "";
+  const resolvedPlannedEndDate = normalizePlanEndDate(
+    resolvedPlannedDate,
+    planId
+      ? hydratedPlan?.planned_end_date ??
+          sanitizeDateParam(searchParams.get("end_date")) ??
+          ""
+      : sanitizeDateParam(searchParams.get("end_date")) ?? "",
+    effectiveStyle
+  );
   const resolvedTripMemo =
     sanitizeMemoParam(searchParams.get("memo")) ?? hydratedPlan?.trip_memo ?? "";
   const resolvedBringCash =
@@ -181,6 +188,7 @@ export function TripPlanningUI({
     false;
   const [planDetailsDraft, setPlanDetailsDraft] = useState({
     plannedDate: resolvedPlannedDate,
+    plannedEndDate: resolvedPlannedEndDate,
     tripMemo: resolvedTripMemo,
     bringCash: resolvedBringCash,
     hasMountainInsurance: resolvedHasMountainInsurance
@@ -221,6 +229,7 @@ export function TripPlanningUI({
   useEffect(() => {
     setPlanDetailsDraft({
       plannedDate: resolvedPlannedDate,
+      plannedEndDate: resolvedPlannedEndDate,
       tripMemo: resolvedTripMemo,
       bringCash: resolvedBringCash,
       hasMountainInsurance: resolvedHasMountainInsurance
@@ -228,6 +237,7 @@ export function TripPlanningUI({
   }, [
     resolvedBringCash,
     resolvedHasMountainInsurance,
+    resolvedPlannedEndDate,
     resolvedPlannedDate,
     resolvedTripMemo
   ]);
@@ -282,6 +292,9 @@ export function TripPlanningUI({
         if (nextPlan.planned_date) {
           nextParams.set("date", nextPlan.planned_date);
         }
+        if (nextPlan.planned_end_date) {
+          nextParams.set("end_date", nextPlan.planned_end_date);
+        }
         if (nextPlan.trip_memo) {
           nextParams.set("memo", nextPlan.trip_memo);
         }
@@ -326,24 +339,94 @@ export function TripPlanningUI({
     };
   }, [plan, planStateKey, shouldFocusChecklist, shouldFocusPreDeparture]);
 
+  function handleSavedPlanDateChange(nextStartDate: string, nextEndDate: string) {
+    const normalizedEndDate = normalizePlanEndDate(
+      nextStartDate,
+      nextEndDate,
+      effectiveStyle
+    );
+
+    setPlanDetailsDraft((current) => ({
+      ...current,
+      plannedDate: nextStartDate,
+      plannedEndDate: normalizedEndDate
+    }));
+
+    if (!planId || !selectedMountain) {
+      return;
+    }
+
+    setDateSaveState("saving");
+
+    const formData = new FormData();
+    formData.set("id", planId);
+    formData.set("mountain_slug", selectedMountain.slug);
+    formData.set("mountain_name", selectedMountain.name_ja);
+    formData.set("season", effectiveSeason);
+    formData.set("style", effectiveStyle);
+    formData.set("planned_date", nextStartDate);
+    if (normalizedEndDate) {
+      formData.set("planned_end_date", normalizedEndDate);
+    }
+    formData.set("trip_memo", planDetailsDraft.tripMemo);
+    formData.set("bring_cash", planDetailsDraft.bringCash ? "1" : "0");
+    formData.set(
+      "has_mountain_insurance",
+      planDetailsDraft.hasMountainInsurance ? "1" : "0"
+    );
+    formData.set("progress", String(currentProgressValue));
+    formData.set("checked_slots", JSON.stringify(currentCheckedSlots));
+
+    startDateTransition(async () => {
+      try {
+        const result = await updateTripPlan(formData);
+        const updatedPlanId = result?.id ?? planId;
+
+        writeTripPlanLocalMeta(updatedPlanId, {
+          plannedDate: nextStartDate,
+          plannedEndDate: normalizedEndDate,
+          tripMemo: planDetailsDraft.tripMemo
+        });
+        setHydratedPlan((current) =>
+          current
+            ? {
+                ...current,
+                planned_date: nextStartDate || null,
+                planned_end_date: normalizedEndDate || null
+              }
+            : current
+        );
+        setDateSaveState("success");
+        router.refresh();
+      } catch (saveError) {
+        console.error("Plan date update failed:", saveError);
+        setDateSaveState("error");
+      }
+    });
+  }
+
   return (
     <div className="space-y-5 pb-24">
       {isSavedPlanMode && plan && !isFullChecklistView ? (
         <SavedPlanDetailHeader
           plan={plan}
           plannedDate={planDetailsDraft.plannedDate}
-          isEditorOpen={isSavedPlanEditorOpen}
-          onToggleEditor={() => setIsSavedPlanEditorOpen((isOpen) => !isOpen)}
+          plannedEndDate={planDetailsDraft.plannedEndDate}
+          isEditorOpen={isDateEditorOpen}
+          saveState={dateSaveState}
+          onToggleEditor={() => setIsDateEditorOpen((isOpen) => !isOpen)}
+          onDateChange={handleSavedPlanDateChange}
         />
       ) : null}
 
-      {(!isSavedPlanMode || isSavedPlanEditorOpen) && !isFullChecklistView ? (
+      {!isSavedPlanMode && !isFullChecklistView ? (
         <TripPlanningForm
           mountains={mountains}
           selectedMountainSlug={effectiveMountainSlug}
           selectedSeason={effectiveSeason}
           selectedStyle={effectiveStyle}
           selectedPlannedDate={planDetailsDraft.plannedDate}
+          selectedPlannedEndDate={planDetailsDraft.plannedEndDate}
           selectedTripMemo={planDetailsDraft.tripMemo}
           onPlanDetailsChange={(details) =>
             setPlanDetailsDraft((current) => ({ ...current, ...details }))
@@ -358,6 +441,7 @@ export function TripPlanningUI({
           <SavedPlanFullChecklistView
             plan={plan}
             plannedDate={planDetailsDraft.plannedDate}
+            plannedEndDate={planDetailsDraft.plannedEndDate}
             checkedSlots={currentCheckedSlots}
             checklistOnlyIds={currentChecklistOnlyIds}
             ownedGear={ownedGear}
@@ -371,6 +455,7 @@ export function TripPlanningUI({
               compatibilityBySlot={compatibilityBySlot}
               ownedGear={ownedGear}
               plannedDate={planDetailsDraft.plannedDate}
+              plannedEndDate={planDetailsDraft.plannedEndDate}
               isSavedPlanDetail={isSavedPlanMode}
               initialCheckedSlots={currentCheckedSlots}
               initialChecklistOnlyIds={currentChecklistOnlyIds}
@@ -387,6 +472,7 @@ export function TripPlanningUI({
               season={effectiveSeason}
               style={effectiveStyle}
               plannedDate={planDetailsDraft.plannedDate}
+              plannedEndDate={planDetailsDraft.plannedEndDate}
               tripMemo={planDetailsDraft.tripMemo}
               bringCash={planDetailsDraft.bringCash}
               hasMountainInsurance={planDetailsDraft.hasMountainInsurance}
@@ -410,14 +496,37 @@ export function TripPlanningUI({
 function SavedPlanDetailHeader({
   plan,
   plannedDate,
+  plannedEndDate,
   isEditorOpen,
-  onToggleEditor
+  saveState,
+  onToggleEditor,
+  onDateChange
 }: {
   plan: PackRequirementPlan;
   plannedDate: string;
+  plannedEndDate: string;
   isEditorOpen: boolean;
+  saveState: "idle" | "saving" | "success" | "error";
   onToggleEditor: () => void;
+  onDateChange: (startDate: string, endDate: string) => void;
 }) {
+  const usesDateRange = isOvernightPlanStyle(plan.style);
+  const displayDate = formatPlanDateRange(plannedDate, plannedEndDate, plan.style);
+  const startInputValue = plannedDate || getTodayDateValue();
+  const endInputValue = normalizePlanEndDate(
+    startInputValue,
+    plannedEndDate || startInputValue,
+    plan.style
+  );
+  const saveStateLabel =
+    saveState === "saving"
+      ? "保存中..."
+      : saveState === "success"
+        ? "保存しました"
+        : saveState === "error"
+          ? "保存できませんでした"
+          : null;
+
   return (
     <section className="rounded-lg border border-forest-100 bg-white px-4 py-3 shadow-soft sm:px-5">
       <div className="flex items-center gap-3">
@@ -432,9 +541,14 @@ function SavedPlanDetailHeader({
             <span className="text-sm font-semibold text-stone-600">
               {mountainFoundationSeasonLabels[plan.season]} / {mountainFoundationStyleLabels[plan.style]}
             </span>
-            <span className="text-sm font-semibold text-stone-600">
-              {formatPlanDateShort(plannedDate)}
-            </span>
+            <button
+              type="button"
+              onClick={onToggleEditor}
+              className="text-left text-sm font-semibold text-stone-600 underline decoration-stone-300 underline-offset-4 transition hover:text-forest-700"
+              aria-expanded={isEditorOpen}
+            >
+              {displayDate}
+            </button>
           </div>
         </div>
         <button
@@ -449,9 +563,83 @@ function SavedPlanDetailHeader({
           aria-label="計画条件を編集"
         >
           <Pencil className="h-4 w-4" aria-hidden="true" />
-        </button>
+          </button>
       </div>
+      {isEditorOpen ? (
+        <div className="mt-3 rounded-lg bg-stone-50 p-3">
+          <div
+            className={
+              usesDateRange
+                ? "grid grid-cols-2 gap-2 sm:max-w-md"
+                : "grid grid-cols-1 gap-2 sm:max-w-48"
+            }
+          >
+            <SavedPlanDateField
+              label={usesDateRange ? "出発日" : "予定日"}
+              value={startInputValue}
+              onChange={(value) =>
+                onDateChange(
+                  value,
+                  usesDateRange ? normalizePlanEndDate(value, endInputValue, plan.style) : ""
+                )
+              }
+            />
+            {usesDateRange ? (
+              <SavedPlanDateField
+                label="帰着日"
+                value={endInputValue}
+                min={startInputValue}
+                onChange={(value) => onDateChange(startInputValue, value)}
+              />
+            ) : null}
+          </div>
+          {saveStateLabel ? (
+            <p
+              className={`mt-2 text-xs font-bold ${
+                saveState === "error" ? "text-red-700" : "text-forest-700"
+              }`}
+            >
+              {saveStateLabel}
+            </p>
+          ) : (
+            <p className="mt-2 text-xs font-semibold text-stone-500">
+              日付を選ぶと自動で保存されます。
+            </p>
+          )}
+        </div>
+      ) : null}
     </section>
+  );
+}
+
+function SavedPlanDateField({
+  label,
+  value,
+  min,
+  onChange
+}: {
+  label: string;
+  value: string;
+  min?: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="block min-w-0">
+      <span className="text-xs font-bold text-stone-600">{label}</span>
+      <span className="relative mt-1.5 block">
+        <input
+          type="date"
+          value={value}
+          min={min}
+          onChange={(event) => onChange(event.target.value)}
+          className="h-[42px] w-full appearance-none rounded-lg border border-stone-200 bg-white px-3 pr-8 text-sm font-semibold text-ink outline-none focus:border-forest-500 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+        />
+        <ChevronDown
+          aria-hidden="true"
+          className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink"
+        />
+      </span>
+    </label>
   );
 }
 
@@ -462,6 +650,7 @@ function SavePlanButton({
   season,
   style,
   plannedDate,
+  plannedEndDate,
   tripMemo,
   bringCash,
   hasMountainInsurance,
@@ -475,6 +664,7 @@ function SavePlanButton({
   season: MountainFoundationSeason;
   style: MountainFoundationStyle;
   plannedDate: string;
+  plannedEndDate: string;
   tripMemo: string;
   bringCash: boolean;
   hasMountainInsurance: boolean;
@@ -510,6 +700,7 @@ function SavePlanButton({
         writeStoredChecklistOnlyIds(savedPlanId, checklistOnlyIds);
         writeTripPlanLocalMeta(savedPlanId, {
           plannedDate,
+          plannedEndDate,
           tripMemo
         });
       }
@@ -529,6 +720,7 @@ function SavePlanButton({
       <input type="hidden" name="season" value={season} />
       <input type="hidden" name="style" value={style} />
       <input type="hidden" name="planned_date" value={plannedDate} />
+      <input type="hidden" name="planned_end_date" value={plannedEndDate} />
       <input type="hidden" name="trip_memo" value={tripMemo} />
       <input type="hidden" name="bring_cash" value={bringCash ? "1" : "0"} />
       <input
@@ -656,7 +848,11 @@ function formatSavedPlanMeta(record: SavedTripPlan) {
     mountainFoundationSeasonLabels[record.season],
     mountainFoundationStyleLabels[record.style],
     record.planned_date
-      ? formatPlanDate(record.planned_date)
+      ? formatPlanDateRange(
+          record.planned_date,
+          record.planned_end_date ?? "",
+          record.style
+        )
       : new Date(record.created_at).toLocaleDateString("ja-JP")
   ];
 
@@ -701,6 +897,53 @@ function formatPlanDate(value: string) {
     day: "numeric",
     weekday: "short"
   }).format(date);
+}
+
+function formatPlanDateRange(
+  startDate: string,
+  endDate: string,
+  style: MountainFoundationStyle
+) {
+  if (!startDate) {
+    return "予定日未設定";
+  }
+
+  if (!isOvernightPlanStyle(style)) {
+    return formatPlanDateShort(startDate);
+  }
+
+  return `${formatPlanDateShort(startDate)} - ${formatPlanDateShort(
+    normalizePlanEndDate(startDate, endDate, style)
+  )}`;
+}
+
+function normalizePlanEndDate(
+  startDate: string,
+  endDate: string | null | undefined,
+  style: MountainFoundationStyle
+) {
+  if (!isOvernightPlanStyle(style) || !startDate) {
+    return "";
+  }
+
+  if (!endDate) {
+    return startDate;
+  }
+
+  return endDate < startDate ? startDate : endDate;
+}
+
+function isOvernightPlanStyle(style: MountainFoundationStyle) {
+  return style !== "DAY_HIKE";
+}
+
+function getTodayDateValue() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
 function getSavedPlanCheckedSlots(plan: SavedTripPlan | null) {
@@ -797,6 +1040,7 @@ function TripPlanningResult({
   compatibilityBySlot,
   ownedGear,
   plannedDate,
+  plannedEndDate,
   isSavedPlanDetail,
   planId,
   initialCheckedSlots = emptyCheckedSlots,
@@ -809,6 +1053,7 @@ function TripPlanningResult({
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
   ownedGear: UserGear[];
   plannedDate: string;
+  plannedEndDate: string;
   isSavedPlanDetail: boolean;
   planId: string | null;
   initialCheckedSlots?: RequirementSlot[];
@@ -832,7 +1077,6 @@ function TripPlanningResult({
     ownedGear
   });
   const preDepartureSummary = buildPreDepartureSummary(checklist);
-  const decisionChips = buildPlanDecisionChips(plan);
   const notNeededItems = buildPlanNotNeededItems(plan);
   const [scanFilter, setScanFilter] = useState<ChecklistScanFilter>("ACTION");
   const visibleCategories = filterChecklistCategoriesForScan(
@@ -841,17 +1085,6 @@ function TripPlanningResult({
   );
   const actionCategoryLabel = getChecklistScanFilterLabel(scanFilter);
   const displaySlots = dedupeDisplaySlots(plan.required_slots);
-  const compatibleSlots = displaySlots
-    .map((slotPlan) => ({
-      slotPlan,
-      match: mergeCompatibilityMatches(slotPlan, compatibilityBySlot)
-    }))
-    .filter(({ match }) => {
-      return (
-        match.matching_owned_gear.length > 0 ||
-        match.matching_database_gear.length > 0
-      );
-    });
 
   useEffect(() => {
     const nextCheckedSlots = filterCheckedSlotsForPlan(initialCheckedSlots, plan);
@@ -931,28 +1164,6 @@ function TripPlanningResult({
 
   return (
     <div className="space-y-5">
-      {!isSavedPlanDetail ? (
-        <>
-          <HeroReadinessCard
-            plan={plan}
-            checkedCount={checklist.summary.checkedCount}
-            missingCount={checklist.summary.missingCount}
-            totalCount={checklist.summary.totalCount}
-            progressPercent={checklist.summary.percent}
-          />
-
-          <PreDepartureConfirmationPanel
-            summary={preDepartureSummary}
-            progressPercent={checklist.summary.percent}
-            onShowAllItems={() => setScanFilter("ALL")}
-          />
-        </>
-      ) : null}
-
-      {!isSavedPlanDetail && decisionChips.length > 0 ? (
-        <DecisionChipsSection chips={decisionChips} />
-      ) : null}
-
       <section className="space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -1004,41 +1215,39 @@ function TripPlanningResult({
         <NotNeededItemsSection items={notNeededItems} />
       ) : null}
 
-      {compatibleSlots.length > 0 ? (
-        <details className="group rounded-lg bg-white p-5 shadow-soft">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-stone-500">登録装備との対応</p>
-              <h2 className="mt-1 text-lg font-semibold text-ink">所持済みの判定理由</h2>
-            </div>
-            <ChevronDown className="h-5 w-5 shrink-0 text-stone-500 transition group-open:rotate-180" />
-          </summary>
-          <div className="mt-4 divide-y divide-stone-100">
-            {compatibleSlots.map(({ slotPlan, match }) => {
-              return (
-                <CompatibleGearSlot
-                  key={slotPlan.displayKey}
-                  slotPlan={slotPlan}
-                  match={match}
-                />
-              );
-            })}
-          </div>
-        </details>
-      ) : null}
-
       {isSavedPlanDetail && planId ? (
         <AllItemsChecklistLink planId={planId} />
       ) : (
-        <section className="rounded-lg bg-white p-5 shadow-soft">
-          <h2 className="text-lg font-semibold text-ink">確認メモ</h2>
-          <PlanningNotes
-            missingCount={checklist.summary.missingCount}
-            displaySlots={displaySlots}
-            compatibilityBySlot={compatibilityBySlot}
-          />
-        </section>
+        <button
+          type="button"
+          onClick={() => setScanFilter("ALL")}
+          className="flex w-full items-center justify-between rounded-lg border border-forest-100 bg-white px-5 py-4 text-left shadow-soft transition active:scale-[0.99]"
+        >
+          <span>
+            <span className="block text-sm font-bold text-forest-700">
+              すべての持ち物を確認
+            </span>
+            <span className="mt-1 block text-xs font-semibold text-stone-500">
+              今回の持ち物と確認状態を一覧で見ます
+            </span>
+          </span>
+          <span className="shrink-0 text-lg font-bold text-forest-700" aria-hidden="true">
+            →
+          </span>
+        </button>
       )}
+
+      <details className="group rounded-lg bg-white p-5 shadow-soft">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-ink">出発前チェック</h2>
+          <ChevronDown className="h-5 w-5 shrink-0 text-stone-500 transition group-open:rotate-180" />
+        </summary>
+        <PlanningNotes
+          missingCount={checklist.summary.missingCount}
+          displaySlots={displaySlots}
+          compatibilityBySlot={compatibilityBySlot}
+        />
+      </details>
     </div>
   );
 }
@@ -1046,6 +1255,7 @@ function TripPlanningResult({
 function SavedPlanFullChecklistView({
   plan,
   plannedDate,
+  plannedEndDate,
   checkedSlots,
   checklistOnlyIds,
   ownedGear,
@@ -1053,6 +1263,7 @@ function SavedPlanFullChecklistView({
 }: {
   plan: PackRequirementPlan;
   plannedDate: string;
+  plannedEndDate: string;
   checkedSlots: RequirementSlot[];
   checklistOnlyIds: string[];
   ownedGear: UserGear[];
@@ -1084,7 +1295,7 @@ function SavedPlanFullChecklistView({
         <div className="mt-4 flex flex-col gap-3 rounded-lg bg-stone-50 p-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-xs font-bold text-stone-500">
-              {formatPlanDateShort(plannedDate)}
+              {formatPlanDateRange(plannedDate, plannedEndDate, plan.style)}
             </p>
             <p className="mt-1 text-xl font-semibold text-ink">
               {plan.mountain.name_ja}
@@ -1118,6 +1329,7 @@ function SavedPlanFullChecklistView({
       <FullChecklistImageSaveButton
         plan={plan}
         plannedDate={plannedDate}
+        plannedEndDate={plannedEndDate}
         checklist={checklist}
         summary={summary}
       />
@@ -1210,11 +1422,13 @@ function FullChecklistRow({
 function FullChecklistImageSaveButton({
   plan,
   plannedDate,
+  plannedEndDate,
   checklist,
   summary
 }: {
   plan: PackRequirementPlan;
   plannedDate: string;
+  plannedEndDate: string;
   checklist: ReturnType<typeof buildPlanChecklist>;
   summary: PreDepartureSummary;
 }) {
@@ -1231,6 +1445,7 @@ function FullChecklistImageSaveButton({
       const blob = await createChecklistImageBlob({
         plan,
         plannedDate,
+        plannedEndDate,
         checklist,
         summary
       });
@@ -1347,11 +1562,13 @@ function formatPlanDateShort(value: string) {
 async function createChecklistImageBlob({
   plan,
   plannedDate,
+  plannedEndDate,
   checklist,
   summary
 }: {
   plan: PackRequirementPlan;
   plannedDate: string;
+  plannedEndDate: string;
   checklist: ReturnType<typeof buildPlanChecklist>;
   summary: PreDepartureSummary;
 }) {
@@ -1387,7 +1604,7 @@ async function createChecklistImageBlob({
   context.font = '600 28px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif';
   context.fillStyle = "#57534E";
   context.fillText(
-    `${mountainFoundationSeasonLabels[plan.season]} / ${mountainFoundationStyleLabels[plan.style]}  ${formatPlanDateShort(plannedDate)}`,
+    `${mountainFoundationSeasonLabels[plan.season]} / ${mountainFoundationStyleLabels[plan.style]}  ${formatPlanDateRange(plannedDate, plannedEndDate, plan.style)}`,
     72,
     194
   );
@@ -1669,47 +1886,6 @@ function uniqueGearMatches(matches: GearMatchingOwnedGearMatch[]) {
   return Array.from(gearById.values());
 }
 
-function mergeCompatibilityMatches(
-  slotPlan: DisplayRequirementSlotPlan,
-  compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>
-): DisplayGearMatchingResult {
-  const matches = slotPlan.slots
-    .map((slot) => compatibilityBySlot[slot])
-    .filter((match): match is GearMatchingResult => Boolean(match));
-
-  return {
-    slot: slotPlan.slot,
-    compatible_categories: uniqueStrings(
-      matches.flatMap((match) => match.compatible_categories)
-    ),
-    compatible_subcategories: uniqueStrings(
-      matches.flatMap((match) => match.compatible_subcategories)
-    ),
-    matching_owned_gear: uniqueGearMatches(
-      matches.flatMap((match) => match.matching_owned_gear)
-    ),
-    matching_database_gear: uniqueDatabaseGearMatches(
-      matches.flatMap((match) => match.matching_database_gear)
-    ),
-    confidence: mergeGearMatchingConfidence(matches),
-    ambiguous_cases: uniqueStrings(matches.flatMap((match) => match.ambiguous_cases))
-  };
-}
-
-function uniqueDatabaseGearMatches(matches: GearMatchingDatabaseGearMatch[]) {
-  const gearById = new Map<string, GearMatchingDatabaseGearMatch>();
-
-  for (const match of matches) {
-    gearById.set(match.id, match);
-  }
-
-  return Array.from(gearById.values());
-}
-
-function uniqueStrings(values: string[]) {
-  return Array.from(new Set(values));
-}
-
 function mergeGearMatchingConfidence(matches: GearMatchingResult[]) {
   if (matches.some((match) => match.confidence === "LOW")) {
     return "LOW";
@@ -1740,192 +1916,6 @@ function AllItemsChecklistLink({ planId }: { planId: string }) {
         →
       </span>
     </Link>
-  );
-}
-
-function PreDepartureConfirmationPanel({
-  summary,
-  progressPercent,
-  onShowAllItems
-}: {
-  summary: PreDepartureSummary;
-  progressPercent: number;
-  onShowAllItems: () => void;
-}) {
-  const [completionMessage, setCompletionMessage] = useState<string | null>(null);
-
-  function handleComplete() {
-    setCompletionMessage(
-      summary.canComplete
-        ? "出発前確認が完了しました"
-        : "不足または未確認の項目があります"
-    );
-  }
-
-  return (
-    <section className="rounded-lg border border-forest-100 bg-white p-4 shadow-soft sm:p-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-sm font-bold text-forest-700">出発前の最終確認</p>
-          <h2 className="mt-1 text-2xl font-semibold tracking-normal text-ink">
-            {summary.statusLabel}
-          </h2>
-          <p className="mt-2 text-sm font-medium leading-6 text-stone-600">
-            {summary.statusDescription}
-          </p>
-        </div>
-        <div className="rounded-lg bg-stone-50 px-4 py-3 text-right">
-          <p className="text-xs font-bold text-stone-500">準備進捗</p>
-          <p className="mt-1 text-2xl font-semibold text-ink">{progressPercent}%</p>
-        </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        <PreDepartureMetric
-          label="不足"
-          value={summary.missingCount}
-          tone={summary.missingCount > 0 ? "missing" : "ok"}
-        />
-        <PreDepartureMetric
-          label="未確認"
-          value={summary.confirmationCount}
-          tone={summary.confirmationCount > 0 ? "confirm" : "ok"}
-        />
-        <PreDepartureMetric
-          label="重要確認"
-          value={summary.importantConfirmationCount}
-          tone={summary.importantConfirmationCount > 0 ? "confirm" : "ok"}
-        />
-      </div>
-
-      <div className="mt-4 grid gap-3 lg:grid-cols-3">
-        <PreDepartureSummaryGroup
-          title="不足しているもの"
-          emptyLabel="不足はありません"
-          items={summary.missingItems}
-          tone="missing"
-        />
-        <PreDepartureSummaryGroup
-          title="出発前に確認するもの"
-          emptyLabel="未確認はありません"
-          items={summary.confirmationItems}
-          tone="confirm"
-        />
-        <PreDepartureSummaryGroup
-          title="安全に関わる確認"
-          emptyLabel="安全確認はありません"
-          items={summary.importantItems}
-          tone="important"
-        />
-      </div>
-
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        {completionMessage ? (
-          <p
-            className={`rounded-lg px-3 py-2 text-sm font-bold ${
-              summary.canComplete
-                ? "bg-forest-50 text-forest-800"
-                : "bg-amber-50 text-amber-800"
-            }`}
-          >
-            {completionMessage}
-          </p>
-        ) : (
-          <p className="text-xs font-semibold leading-5 text-stone-500">
-            不足がなく、安全に関わる未確認がない場合に完了できます。
-          </p>
-        )}
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <button
-            type="button"
-            onClick={onShowAllItems}
-            className="inline-flex h-11 items-center justify-center rounded-lg border border-forest-200 bg-white px-5 text-sm font-bold text-forest-700 transition active:scale-[0.99]"
-          >
-            すべての持ち物を見る
-          </button>
-          <button
-            type="button"
-            onClick={handleComplete}
-            className="inline-flex h-11 items-center justify-center rounded-lg bg-forest-700 px-5 text-sm font-bold text-white shadow-sm transition active:scale-[0.99]"
-          >
-            出発前確認を完了
-          </button>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function PreDepartureMetric({
-  label,
-  value,
-  tone
-}: {
-  label: string;
-  value: number;
-  tone: "missing" | "confirm" | "ok";
-}) {
-  const toneClass =
-    tone === "missing"
-      ? "bg-red-50 text-red-700"
-      : tone === "confirm"
-        ? "bg-amber-50 text-amber-800"
-        : "bg-forest-50 text-forest-800";
-
-  return (
-    <div className={`rounded-lg px-3 py-2 text-center ${toneClass}`}>
-      <p className="text-[11px] font-bold">{label}</p>
-      <p className="mt-1 text-xl font-semibold">{value.toLocaleString("ja-JP")}</p>
-    </div>
-  );
-}
-
-function PreDepartureSummaryGroup({
-  title,
-  emptyLabel,
-  items,
-  tone
-}: {
-  title: string;
-  emptyLabel: string;
-  items: PreDepartureSummary["missingItems"];
-  tone: "missing" | "confirm" | "important";
-}) {
-  const visibleItems = items.slice(0, 3);
-  const remainingCount = items.length - visibleItems.length;
-  const dotClass =
-    tone === "missing"
-      ? "bg-red-500"
-      : tone === "confirm"
-        ? "bg-amber-500"
-        : "bg-forest-700";
-
-  return (
-    <div className="rounded-lg border border-stone-100 bg-stone-50 p-3">
-      <h3 className="text-sm font-bold text-ink">{title}</h3>
-      {visibleItems.length > 0 ? (
-        <div className="mt-2 space-y-2">
-          {visibleItems.map((item) => (
-            <div key={`${title}-${item.id}`} className="flex items-start gap-2">
-              <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dotClass}`} />
-              <div className="min-w-0">
-                <p className="truncate text-xs font-bold text-ink">{item.label}</p>
-                <p className="text-[11px] font-semibold text-stone-500">
-                  {item.categoryLabel}
-                </p>
-              </div>
-            </div>
-          ))}
-          {remainingCount > 0 ? (
-            <p className="text-xs font-bold text-stone-500">
-              残り {remainingCount.toLocaleString("ja-JP")} 件
-            </p>
-          ) : null}
-        </div>
-      ) : (
-        <p className="mt-2 text-xs font-semibold text-stone-500">{emptyLabel}</p>
-      )}
-    </div>
   );
 }
 
@@ -2041,136 +2031,6 @@ function getChecklistScanFilterLabel(filter: ChecklistScanFilter) {
   };
 
   return labels[filter];
-}
-
-function HeroReadinessCard({
-  plan,
-  checkedCount,
-  missingCount,
-  totalCount,
-  progressPercent
-}: {
-  plan: PackRequirementPlan;
-  checkedCount: number;
-  missingCount: number;
-  totalCount: number;
-  progressPercent: number;
-}) {
-  const mountainBrief = buildMountainBrief(plan);
-
-  return (
-    <section className="overflow-hidden rounded-lg bg-ink text-white shadow-soft">
-      <div className="grid gap-0 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="p-5 sm:p-6">
-          <div className="flex items-center gap-2 text-sm font-semibold text-trail-300">
-            <Mountain className="h-4 w-4" />
-            山行準備
-          </div>
-          <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="text-3xl font-semibold tracking-normal">
-                {plan.mountain.name_ja}
-              </h2>
-              <p className="mt-2 text-sm font-medium text-stone-200">
-                {mountainFoundationSeasonLabels[plan.season]} / {mountainFoundationStyleLabels[plan.style]}
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-stretch sm:text-right">
-              <div className="rounded-lg bg-white/10 px-4 py-3">
-                <p className="text-4xl font-semibold tracking-normal">
-                  {progressPercent}%
-                </p>
-                <p className="text-sm font-semibold text-stone-200">総完成度</p>
-              </div>
-              <div className="rounded-lg bg-white/10 px-4 py-3 sm:hidden">
-                <p className="text-4xl font-semibold tracking-normal text-red-200">
-                  {missingCount.toLocaleString("ja-JP")}
-                </p>
-                <p className="text-sm font-semibold text-stone-200">未完了</p>
-              </div>
-            </div>
-          </div>
-          <div className="mt-5 max-w-2xl space-y-1 text-sm font-medium leading-6 text-stone-200">
-            {mountainBrief.map((line) => (
-              <p key={line}>{line}</p>
-            ))}
-          </div>
-        </div>
-
-        <div className="hidden grid-cols-3 border-t border-white/10 bg-white/5 sm:grid lg:border-l lg:border-t-0">
-          <ReadinessMetric
-            label="完了"
-            value={checkedCount}
-            suffix={`/${totalCount}`}
-            tone="covered"
-          />
-          <ReadinessMetric
-            label="未完了"
-            value={missingCount}
-            suffix="件"
-            tone="missing"
-          />
-          <ReadinessMetric
-            label="完成度"
-            value={progressPercent}
-            suffix="%"
-            tone="neutral"
-          />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ReadinessMetric({
-  label,
-  value,
-  suffix,
-  tone
-}: {
-  label: string;
-  value: number;
-  suffix: string;
-  tone: "covered" | "missing" | "neutral";
-}) {
-  const valueClass =
-    tone === "missing"
-      ? "text-red-200"
-      : tone === "covered"
-        ? "text-forest-100"
-        : "text-trail-100";
-
-  return (
-    <div className="border-r border-white/10 px-3 py-4 last:border-r-0 sm:px-5 sm:py-6">
-      <p className="text-xs font-semibold text-stone-300">{label}</p>
-      <p className={`mt-2 text-2xl font-semibold ${valueClass}`}>
-        {value.toLocaleString("ja-JP")}
-        <span className="ml-1 text-sm font-semibold text-stone-300">{suffix}</span>
-      </p>
-    </div>
-  );
-}
-
-function DecisionChipsSection({ chips }: { chips: PlanDecisionChip[] }) {
-  return (
-    <section className="rounded-lg bg-white p-4 shadow-soft sm:p-5">
-      <div className="flex items-center gap-2">
-        <CircleAlert className="h-4 w-4 text-forest-700" aria-hidden="true" />
-        <h2 className="text-sm font-bold text-ink">判断根拠</h2>
-      </div>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {chips.map((chip) => (
-          <span
-            key={chip.label}
-            title={chip.reason}
-            className="inline-flex items-center rounded-full bg-forest-50 px-3 py-1.5 text-xs font-bold text-forest-800"
-          >
-            {chip.label}
-          </span>
-        ))}
-      </div>
-    </section>
-  );
 }
 
 function NotNeededItemsSection({ items }: { items: PlanNotNeededItem[] }) {
@@ -2524,99 +2384,6 @@ function getChecklistItemMatchingInsight(
   };
 }
 
-function CompatibleGearSlot({
-  slotPlan,
-  match
-}: {
-  slotPlan: DisplayRequirementSlotPlan;
-  match: DisplayGearMatchingResult;
-}) {
-  return (
-    <article className="py-4 first:pt-0 last:pb-0">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="font-semibold text-ink">{requirementSlotLabels[slotPlan.slot]}</h3>
-        <span className="text-xs font-semibold text-stone-500">
-          判定の確かさ: {gearMatchingConfidenceLabels[match.confidence]}
-        </span>
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        {match.compatible_categories.map((category) => (
-          <span key={`category-${category}`} className="rounded-lg bg-stone-100 px-2 py-1 text-xs font-semibold text-stone-700">
-            {categoryLabels[category] ?? category}
-          </span>
-        ))}
-        {match.compatible_subcategories.map((subcategory) => (
-          <span key={`subcategory-${subcategory}`} className="rounded-lg bg-trail-100 px-2 py-1 text-xs font-semibold text-trail-800">
-            {gearSubcategoryLabels[subcategory] ?? subcategory}
-          </span>
-        ))}
-      </div>
-
-      <div className="mt-3 grid gap-4 lg:grid-cols-2">
-        <GearMatchList
-          title="所有装備"
-          emptyLabel="一致する所有装備なし"
-          items={match.matching_owned_gear}
-          formatter={formatOwnedGearName}
-        />
-        <GearMatchList
-          title="登録データ上の対応例"
-          emptyLabel="対応する登録データなし"
-          items={match.matching_database_gear}
-          formatter={formatDatabaseGearName}
-        />
-      </div>
-
-      {match.ambiguous_cases.length > 0 ? (
-        <div className="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{match.ambiguous_cases.join(" / ")}</span>
-        </div>
-      ) : null}
-    </article>
-  );
-}
-
-function GearMatchList<T>({
-  title,
-  emptyLabel,
-  items,
-  formatter
-}: {
-  title: string;
-  emptyLabel: string;
-  items: T[];
-  formatter: (item: T) => string;
-}) {
-  const visibleItems = items.slice(0, 4);
-  const remainingCount = Math.max(0, items.length - visibleItems.length);
-
-  return (
-    <div>
-      <h4 className="text-xs font-semibold uppercase tracking-normal text-stone-500">
-        {title}
-      </h4>
-      {items.length === 0 ? (
-        <p className="mt-2 text-sm text-stone-500">{emptyLabel}</p>
-      ) : (
-        <div className="mt-2 space-y-1">
-          {visibleItems.map((item, index) => (
-            <p key={`${title}-${index}`} className="text-sm text-stone-700">
-              {formatter(item)}
-            </p>
-          ))}
-          {remainingCount > 0 ? (
-            <p className="text-xs font-medium text-stone-500">
-              他 {remainingCount.toLocaleString("ja-JP")} 件
-            </p>
-          ) : null}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function PlanningNotes({
   missingCount,
   displaySlots,
@@ -2659,14 +2426,6 @@ function formatOwnedGearName(gear: GearMatchingOwnedGearMatch) {
     brand: gear.brand,
     model: gear.model,
     name: gear.name
-  });
-}
-
-function formatDatabaseGearName(gear: GearMatchingDatabaseGearMatch) {
-  return formatDisplayGearName({
-    brand: gear.brand,
-    model: gear.model,
-    name: gear.name_ja
   });
 }
 

@@ -181,6 +181,7 @@ function HeroCard({
           <DashboardPlanMeta
             planId={trip.id}
             plannedDate={trip.planned_date}
+            plannedEndDate={trip.planned_end_date}
             tripMemo={trip.trip_memo}
             variant="memo"
           />
@@ -249,6 +250,7 @@ function HeroTitle({ trip }: { trip?: SavedTripPlan }) {
         <DashboardPlanMeta
           planId={trip.id}
           plannedDate={trip.planned_date}
+          plannedEndDate={trip.planned_end_date}
           tripMemo={trip.trip_memo}
           style={trip.style}
         />

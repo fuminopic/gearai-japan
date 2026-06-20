@@ -63,6 +63,7 @@ function legacyRecommendationToTripPlan(record: AIRecommendationRecord): SavedTr
     progress: 0,
     checked_slots: [],
     planned_date: null,
+    planned_end_date: null,
     trip_memo: null,
     bring_cash: false,
     has_mountain_insurance: false,

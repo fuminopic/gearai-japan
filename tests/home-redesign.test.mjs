@@ -247,11 +247,14 @@ test("home redesign syncs latest saved trip plan from Supabase", () => {
 test("home hero can display saved trip date and memo without price information", () => {
   assert.match(dashboardSource, /DashboardPlanMeta/);
   assert.match(dashboardSource, /plannedDate=\{trip\.planned_date\}/);
+  assert.match(dashboardSource, /plannedEndDate=\{trip\.planned_end_date\}/);
   assert.match(dashboardSource, /tripMemo=\{trip\.trip_memo\}/);
   assert.match(dashboardSource, /style=\{trip\.style\}/);
   assert.match(dashboardSource, /variant="memo"/);
   assert.match(dashboardPlanMetaSource, /readTripPlanLocalMeta/);
-  assert.match(dashboardPlanMetaSource, /formatPlanDate\(displayDate, style\)/);
+  assert.match(dashboardPlanMetaSource, /plannedEndDate\?: string \| null/);
+  assert.match(dashboardPlanMetaSource, /localMeta\?\.plannedEndDate/);
+  assert.match(dashboardPlanMetaSource, /formatPlanDate\(displayDate, displayEndDate, style\)/);
   assert.match(dashboardPlanMetaSource, /function PlanDatePart/);
   assert.match(dashboardSource, /items-end gap-x-4 gap-y-3/);
   assert.match(dashboardSource, /pb-1 font-maru/);
@@ -259,7 +262,7 @@ test("home hero can display saved trip date and memo without price information",
   assert.match(dashboardPlanMetaSource, /text-\[27px\]/);
   assert.match(dashboardPlanMetaSource, /rounded-full border-2 border-stone-950/);
   assert.match(dashboardPlanMetaSource, /style === "DAY_HIKE"/);
-  assert.match(dashboardPlanMetaSource, /endDate\.setDate\(date\.getDate\(\) \+ 1\)/);
+  assert.doesNotMatch(dashboardPlanMetaSource, /endDate\.setDate\(date\.getDate\(\) \+ 1\)/);
   assert.match(dashboardPlanMetaSource, /truncate text-\[11px\] font-medium text-stone-500/);
 });
 

@@ -7,6 +7,7 @@ import { readTripPlanLocalMeta } from "@/lib/trip-plan-local-meta";
 type DashboardPlanMetaProps = {
   planId: string;
   plannedDate: string | null;
+  plannedEndDate?: string | null;
   tripMemo: string | null;
   style?: string;
   variant?: "date" | "memo";
@@ -15,21 +16,24 @@ type DashboardPlanMetaProps = {
 export function DashboardPlanMeta({
   planId,
   plannedDate,
+  plannedEndDate,
   tripMemo,
   style,
   variant = "date"
 }: DashboardPlanMetaProps) {
   const [localMeta, setLocalMeta] = useState<{
     plannedDate: string;
+    plannedEndDate: string;
     tripMemo: string;
   } | null>(null);
   const displayDate = localMeta?.plannedDate || plannedDate || "";
+  const displayEndDate = localMeta?.plannedEndDate || plannedEndDate || "";
   const displayMemo = localMeta?.tripMemo || tripMemo?.trim() || "";
-  const plannedDateRange = formatPlanDate(displayDate, style);
+  const plannedDateRange = formatPlanDate(displayDate, displayEndDate, style);
 
   useEffect(() => {
     setLocalMeta(readTripPlanLocalMeta(planId));
-  }, [planId, plannedDate, tripMemo]);
+  }, [planId, plannedDate, plannedEndDate, tripMemo]);
 
   if (variant === "memo") {
     return displayMemo ? (
@@ -52,7 +56,7 @@ export function DashboardPlanMeta({
   ) : null;
 }
 
-function formatPlanDate(value: string, style?: string) {
+function formatPlanDate(value: string, endValue: string, style?: string) {
   if (!value) {
     return "";
   }
@@ -67,10 +71,17 @@ function formatPlanDate(value: string, style?: string) {
     return { start: date, end: null };
   }
 
-  const endDate = new Date(date);
-  endDate.setDate(date.getDate() + 1);
+  if (!endValue) {
+    return { start: date, end: null };
+  }
 
-  return { start: date, end: endDate };
+  const endDate = new Date(`${endValue}T00:00:00`);
+
+  if (Number.isNaN(endDate.getTime())) {
+    return { start: date, end: null };
+  }
+
+  return { start: date, end: endDate < date ? date : endDate };
 }
 
 function PlanDatePart({

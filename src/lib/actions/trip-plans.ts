@@ -17,6 +17,11 @@ export async function saveTripPlan(formData: FormData) {
   const progress = parseProgress(formData.get("progress"));
   const checkedSlots = parseCheckedSlots(formData.get("checked_slots"));
   const plannedDate = parsePlannedDate(formData.get("planned_date"));
+  const plannedEndDate = normalizePlannedEndDate(
+    plannedDate,
+    parsePlannedDate(formData.get("planned_end_date")),
+    style
+  );
   const tripMemo = parseTripMemo(formData.get("trip_memo"));
   const bringCash = parseBoolean(formData.get("bring_cash"));
   const hasMountainInsurance = parseBoolean(formData.get("has_mountain_insurance"));
@@ -33,6 +38,7 @@ export async function saveTripPlan(formData: FormData) {
     season,
     style,
     planned_date: plannedDate,
+    planned_end_date: plannedEndDate,
     trip_memo: tripMemo,
     bring_cash: bringCash,
     has_mountain_insurance: hasMountainInsurance,
@@ -82,6 +88,11 @@ export async function updateTripPlan(formData: FormData) {
   const progress = parseProgress(formData.get("progress"));
   const checkedSlots = parseCheckedSlots(formData.get("checked_slots"));
   const plannedDate = parsePlannedDate(formData.get("planned_date"));
+  const plannedEndDate = normalizePlannedEndDate(
+    plannedDate,
+    parsePlannedDate(formData.get("planned_end_date")),
+    style
+  );
   const tripMemo = parseTripMemo(formData.get("trip_memo"));
   const bringCash = parseBoolean(formData.get("bring_cash"));
   const hasMountainInsurance = parseBoolean(formData.get("has_mountain_insurance"));
@@ -101,6 +112,7 @@ export async function updateTripPlan(formData: FormData) {
     season,
     style,
     planned_date: plannedDate,
+    planned_end_date: plannedEndDate,
     trip_memo: tripMemo,
     bring_cash: bringCash,
     has_mountain_insurance: hasMountainInsurance,
@@ -238,6 +250,22 @@ function parseTripMemo(value: FormDataEntryValue | null) {
   return trimmed ? trimmed.slice(0, 200) : null;
 }
 
+function normalizePlannedEndDate(
+  startDate: string | null,
+  endDate: string | null,
+  style: MountainFoundationStyle | null
+) {
+  if (!startDate || !style || style === "DAY_HIKE") {
+    return null;
+  }
+
+  if (!endDate) {
+    return startDate;
+  }
+
+  return endDate < startDate ? startDate : endDate;
+}
+
 function parseBoolean(value: FormDataEntryValue | null) {
   return value === "1" || value === "true" || value === "on";
 }
@@ -302,6 +330,7 @@ function withoutOptionalPlanColumns<
   T extends {
     checked_slots: RequirementSlot[];
     planned_date?: string | null;
+    planned_end_date?: string | null;
     trip_memo?: string | null;
     bring_cash?: boolean;
     has_mountain_insurance?: boolean;
@@ -310,6 +339,7 @@ function withoutOptionalPlanColumns<
   const {
     checked_slots: _checkedSlots,
     planned_date: _plannedDate,
+    planned_end_date: _plannedEndDate,
     trip_memo: _tripMemo,
     bring_cash: _bringCash,
     has_mountain_insurance: _hasMountainInsurance,
@@ -322,7 +352,7 @@ function withoutOptionalPlanColumns<
 function isMissingPlanColumnError(error: { message?: string; code?: string }) {
   return (
     error.code === "42703" ||
-    /(checked_slots|planned_date|trip_memo|bring_cash|has_mountain_insurance)/i.test(
+    /(checked_slots|planned_date|planned_end_date|trip_memo|bring_cash|has_mountain_insurance)/i.test(
       error.message ?? ""
     )
   );

@@ -357,6 +357,7 @@ export type SavedTripPlan = {
   progress: number;
   checked_slots: RequirementSlot[];
   planned_date: string | null;
+  planned_end_date: string | null;
   trip_memo: string | null;
   bring_cash: boolean;
   has_mountain_insurance: boolean;

@@ -22,6 +22,7 @@ type TripPlanningFormProps = {
   selectedSeason: MountainFoundationSeason;
   selectedStyle: MountainFoundationStyle;
   selectedPlannedDate?: string;
+  selectedPlannedEndDate?: string;
   selectedTripMemo?: string;
   onPlanDetailsChange?: (details: Partial<PlanDetailsDraft>) => void;
   planId?: string | null;
@@ -30,6 +31,7 @@ type TripPlanningFormProps = {
 
 type PlanDetailsDraft = {
   plannedDate: string;
+  plannedEndDate: string;
   tripMemo: string;
 };
 
@@ -117,6 +119,7 @@ export function TripPlanningForm({
   selectedSeason,
   selectedStyle,
   selectedPlannedDate = "",
+  selectedPlannedEndDate = "",
   selectedTripMemo = "",
   onPlanDetailsChange,
   planId,
@@ -170,8 +173,16 @@ export function TripPlanningForm({
   const effectiveStyle = styleOptions.includes(selectedStyle)
     ? selectedStyle
     : styleOptions[0];
+  const [styleDraft, setStyleDraft] = useState<MountainFoundationStyle>(effectiveStyle);
+  const currentStyle = styleOptions.includes(styleDraft) ? styleDraft : effectiveStyle;
+  const usesDateRange = isOvernightStyle(currentStyle);
+  const plannedEndDateValue = normalizeEndDateValue(
+    plannedDateValue,
+    selectedPlannedEndDate || plannedDateValue,
+    currentStyle
+  );
   const prefetchedPlanHref = useMemo(() => {
-    if (!mountainSlug || !effectiveSeason || !effectiveStyle) {
+    if (!mountainSlug || !effectiveSeason || !currentStyle) {
       return null;
     }
 
@@ -183,10 +194,10 @@ export function TripPlanningForm({
 
     params.set("mountain", mountainSlug);
     params.set("season", effectiveSeason);
-    params.set("style", effectiveStyle);
+    params.set("style", currentStyle);
 
     return `/plan?${params.toString()}` as Route;
-  }, [effectiveSeason, effectiveStyle, mountainSlug, planId]);
+  }, [currentStyle, effectiveSeason, mountainSlug, planId]);
 
   useEffect(() => {
     const nextMountainSlug = getAvailableMountainSlug(
@@ -199,6 +210,10 @@ export function TripPlanningForm({
   useEffect(() => {
     setVisibleMountainCount(3);
   }, [mountainListFilter, mountainQuery, selectedArea]);
+
+  useEffect(() => {
+    setStyleDraft(effectiveStyle);
+  }, [effectiveStyle, mountainSlug]);
 
   useEffect(() => {
     if (!prefetchedPlanHref) {
@@ -224,7 +239,7 @@ export function TripPlanningForm({
     const formData = new FormData(event.currentTarget);
     const params = new URLSearchParams();
 
-    for (const key of ["id", "mountain", "season", "style", "date", "memo"]) {
+    for (const key of ["id", "mountain", "season", "style", "date", "end_date", "memo"]) {
       const value = formData.get(key);
 
       if (typeof value === "string" && value.length > 0) {
@@ -437,7 +452,19 @@ export function TripPlanningForm({
             <select
               key={`${mountainSlug}-style`}
               name="style"
-              defaultValue={effectiveStyle}
+              value={currentStyle}
+              onChange={(event) => {
+                const nextStyle = event.target.value as MountainFoundationStyle;
+                setStyleDraft(nextStyle);
+                onPlanDetailsChange?.({
+                  plannedDate: plannedDateValue,
+                  plannedEndDate: normalizeEndDateValue(
+                    plannedDateValue,
+                    plannedEndDateValue,
+                    nextStyle
+                  )
+                });
+              }}
               required
               disabled={styleOptions.length === 0}
               className="h-[42px] w-full min-w-0 appearance-none rounded-lg border border-stone-200 bg-stone-50 px-2 pr-7 text-left text-sm font-semibold leading-none text-ink outline-none focus:border-forest-500 focus:bg-white disabled:opacity-60 sm:px-3 sm:pr-8"
@@ -455,28 +482,53 @@ export function TripPlanningForm({
           </span>
         </label>
 
-        <label className="block min-w-0">
-          <span className="text-xs font-bold text-stone-700">予定日</span>
-          <span className="relative mt-1.5 flex h-[42px] w-full min-w-0 items-center overflow-hidden rounded-lg border border-stone-200 bg-stone-50 px-2 pr-7 text-left text-sm font-semibold leading-none text-ink focus-within:border-forest-500 focus-within:bg-white sm:px-3 sm:pr-8">
-            <span className="block min-w-0 truncate" aria-hidden="true">
-              {formatDateDisplay(plannedDateValue)}
-            </span>
-            <input
-              type="date"
+        {usesDateRange ? (
+          <div className="col-span-3 grid grid-cols-2 gap-2 sm:gap-3 lg:col-span-1">
+            <DateField
+              label="出発日"
               name="date"
               value={plannedDateValue}
-              onChange={(event) =>
-                onPlanDetailsChange?.({ plannedDate: event.target.value })
+              onChange={(value) =>
+                onPlanDetailsChange?.({
+                  plannedDate: value,
+                  plannedEndDate: normalizeEndDateValue(
+                    value,
+                    plannedEndDateValue,
+                    currentStyle
+                  )
+                })
               }
-              aria-label="予定日"
-              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
             />
-            <ChevronsUpDown
-              aria-hidden="true"
-              className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-ink sm:right-2.5"
+            <DateField
+              label="帰着日"
+              name="end_date"
+              value={plannedEndDateValue}
+              min={plannedDateValue}
+              onChange={(value) =>
+                onPlanDetailsChange?.({
+                  plannedDate: plannedDateValue,
+                  plannedEndDate: normalizeEndDateValue(
+                    plannedDateValue,
+                    value,
+                    currentStyle
+                  )
+                })
+              }
             />
-          </span>
-        </label>
+          </div>
+        ) : (
+          <DateField
+            label="予定日"
+            name="date"
+            value={plannedDateValue}
+            onChange={(value) =>
+              onPlanDetailsChange?.({
+                plannedDate: value,
+                plannedEndDate: ""
+              })
+            }
+          />
+        )}
       </div>
 
       <label className="mt-4 block">
@@ -674,6 +726,66 @@ function getTodayDateValue() {
 
 function formatDateDisplay(value: string) {
   return value.replaceAll("-", "/");
+}
+
+function DateField({
+  label,
+  name,
+  value,
+  min,
+  onChange
+}: {
+  label: string;
+  name: string;
+  value: string;
+  min?: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="block min-w-0">
+      <span className="text-xs font-bold text-stone-700">{label}</span>
+      <span className="relative mt-1.5 block">
+        <input
+          type="date"
+          aria-label={label}
+          name={name}
+          value={value}
+          min={min}
+          required
+          onChange={(event) => onChange(event.target.value)}
+          className="h-[42px] w-full min-w-0 appearance-none rounded-lg border border-stone-200 bg-stone-50 px-2 pr-7 text-left text-sm font-semibold leading-none text-ink outline-none focus:border-forest-500 focus:bg-white sm:px-3 sm:pr-8 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+        />
+        <ChevronsUpDown
+          aria-hidden="true"
+          className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-ink sm:right-2.5"
+        />
+      </span>
+    </label>
+  );
+}
+
+function isOvernightStyle(style: MountainFoundationStyle) {
+  return style !== "DAY_HIKE";
+}
+
+function normalizeEndDateValue(
+  startDate: string,
+  endDate: string,
+  style: MountainFoundationStyle
+) {
+  if (!isOvernightStyle(style)) {
+    return "";
+  }
+
+  if (!startDate) {
+    return endDate;
+  }
+
+  if (!endDate) {
+    return startDate;
+  }
+
+  return endDate < startDate ? startDate : endDate;
 }
 
 function sortMountainsByElevation(

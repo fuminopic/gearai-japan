@@ -65,6 +65,34 @@ const officialBrandLogos: Record<
   yamatomichi: {
     src: "/brand-logos/yamatomichi.png",
     alt: "山と道"
+  },
+  columbia: {
+    src: "/brand-logos/columbia.png",
+    alt: "Columbia"
+  },
+  millet: {
+    src: "/brand-logos/millet.png",
+    alt: "MILLET"
+  },
+  arcteryx: {
+    src: "/brand-logos/arcteryx.png",
+    alt: "Arc'teryx"
+  },
+  patagonia: {
+    src: "/brand-logos/patagonia.png",
+    alt: "patagonia"
+  },
+  gregory: {
+    src: "/brand-logos/gregory.png",
+    alt: "GREGORY"
+  },
+  lasportiva: {
+    src: "/brand-logos/la-sportiva.png",
+    alt: "LA SPORTIVA"
+  },
+  mammut: {
+    src: "/brand-logos/mammut.png",
+    alt: "Mammut"
   }
 };
 

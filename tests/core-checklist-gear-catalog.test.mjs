@@ -22,7 +22,9 @@ test("core checklist gear follow-up preserves matching-critical subcategories", 
   }
 
   assert.match(migrationSource, /c\.name_en = 'hydration'/);
-  assert.match(migrationSource, /s\.name_en = 'bottle'/);
+  assert.match(migrationSource, /exists \(\s*select 1\s*from public\.gear_subcategories s\s*where s\.id = p\.subcategory_id\s*and s\.name_en = 'bottle'/);
+  assert.match(migrationSource, /exists \(\s*select 1\s*from public\.gear_subcategories s\s*where s\.id = g\.subcategory_id\s*and s\.name_en = 'bottle'/);
+  assert.doesNotMatch(migrationSource, /left join public\.gear_subcategories s on s\.id = [pg]\.subcategory_id/);
   assert.match(migrationSource, /nalgene\|bottle\|ボトル\|水筒/);
   assert.match(migrationSource, /spork\|cutlery\|カトラリー\|スプーン\|フォーク\|箸\|食器/);
 });

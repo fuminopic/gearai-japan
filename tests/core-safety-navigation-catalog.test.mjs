@@ -23,6 +23,9 @@ test("safety and navigation follow-up preserves matching-critical categories", (
   }
 
   assert.match(migrationSource, /garmin\|etrex\|gpsmap\|inreach/);
+  assert.match(migrationSource, /exists \(\s*select 1\s*from public\.gear_subcategories s\s*where s\.id = p\.subcategory_id\s*and s\.name_en = 'gps'/);
+  assert.match(migrationSource, /exists \(\s*select 1\s*from public\.gear_subcategories s\s*where s\.id = g\.subcategory_id\s*and s\.name_en = 'gps'/);
+  assert.doesNotMatch(migrationSource, /left join public\.gear_subcategories s on s\.id = [pg]\.subcategory_id/);
   assert.match(migrationSource, /power bank\|powercore\|battery pack\|mobile battery\|portable battery\|モバイルバッテリー\|携帯バッテリー\|バッテリーパック/);
   assert.match(migrationSource, /first aid\|medical kit\|ファーストエイド\|救急/);
 });

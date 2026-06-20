@@ -47,11 +47,15 @@ begin
         else 'needs_review'
       end
   from public.gear_categories c
-  left join public.gear_subcategories s on s.id = p.subcategory_id
   where p.category_id = c.id
     and (
       c.name_en = 'hydration'
-      or s.name_en = 'bottle'
+      or exists (
+        select 1
+        from public.gear_subcategories s
+        where s.id = p.subcategory_id
+          and s.name_en = 'bottle'
+      )
       or lower(coalesce(p.brand, '') || ' ' || coalesce(p.name_ja, '') || ' ' || coalesce(p.model, '')) ~ '(nalgene|bottle|ボトル|水筒)'
     );
 
@@ -63,11 +67,15 @@ begin
         else bottle_sub_id
       end
   from public.gear_categories c
-  left join public.gear_subcategories s on s.id = g.subcategory_id
   where g.category_id = c.id
     and (
       c.name_en = 'hydration'
-      or s.name_en = 'bottle'
+      or exists (
+        select 1
+        from public.gear_subcategories s
+        where s.id = g.subcategory_id
+          and s.name_en = 'bottle'
+      )
       or lower(coalesce(g.brand, '') || ' ' || coalesce(g.name, '') || ' ' || coalesce(g.model, '')) ~ '(nalgene|bottle|ボトル|水筒)'
     );
 

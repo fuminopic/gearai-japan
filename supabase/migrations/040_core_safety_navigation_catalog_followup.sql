@@ -45,10 +45,17 @@ begin
         else 'needs_review'
       end
   from public.gear_categories c
-  left join public.gear_subcategories s on s.id = p.subcategory_id
   where p.category_id = c.id
     and (
-      (c.name_en = 'navigation' and s.name_en = 'gps')
+      (
+        c.name_en = 'navigation'
+        and exists (
+          select 1
+          from public.gear_subcategories s
+          where s.id = p.subcategory_id
+            and s.name_en = 'gps'
+        )
+      )
       or lower(coalesce(p.brand, '') || ' ' || coalesce(p.name_ja, '') || ' ' || coalesce(p.model, '')) ~ '(garmin|etrex|gpsmap|inreach|\mgps\M)'
     );
 
@@ -56,10 +63,17 @@ begin
   set category_id = electronics_id,
       subcategory_id = gps_sub_id
   from public.gear_categories c
-  left join public.gear_subcategories s on s.id = g.subcategory_id
   where g.category_id = c.id
     and (
-      (c.name_en = 'navigation' and s.name_en = 'gps')
+      (
+        c.name_en = 'navigation'
+        and exists (
+          select 1
+          from public.gear_subcategories s
+          where s.id = g.subcategory_id
+            and s.name_en = 'gps'
+        )
+      )
       or lower(coalesce(g.brand, '') || ' ' || coalesce(g.name, '') || ' ' || coalesce(g.model, '')) ~ '(garmin|etrex|gpsmap|inreach|\mgps\M)'
     );
 

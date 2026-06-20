@@ -298,11 +298,9 @@ test("M2 pre-departure confirmation reuses checklist-derived counts", () => {
   assert.match(planChecklistSource, /item\.source === "GEAR_BACKED" \? "MISSING" : "CONFIRM"/);
 
   assert.match(dashboardPageSource, /buildPlanChecklist/);
-  assert.match(dashboardPlanChecklistSummarySource, /buildPreDepartureSummary/);
-  assert.match(dashboardPlanChecklistSummarySource, /出発前確認/);
-  assert.match(dashboardPlanChecklistSummarySource, /不足/);
-  assert.match(dashboardPlanChecklistSummarySource, /未確認/);
-  assert.match(dashboardPlanChecklistSummarySource, /重要確認/);
+  assert.doesNotMatch(dashboardPlanChecklistSummarySource, /buildPreDepartureSummary/);
+  assert.doesNotMatch(dashboardPlanChecklistSummarySource, /出発前確認/);
+  assert.doesNotMatch(dashboardPlanChecklistSummarySource, /重要確認/);
   assert.match(dashboardPageSource, /`\/plan\?id=\$\{trip\.id\}`/);
   assert.doesNotMatch(dashboardPageSource, /focus=predeparture/);
   assert.match(dashboardPageSource, /出発前確認へ/);
@@ -315,7 +313,7 @@ test("M2 pre-departure confirmation reuses checklist-derived counts", () => {
   assert.match(tripPlanningUiSource, /isFullChecklistView/);
   assert.match(tripPlanningUiSource, /SavedPlanFullChecklistView/);
   assert.match(tripPlanningUiSource, /formatPlanDateRange/);
-  assert.match(tripPlanningUiSource, /SavedPlanDateField/);
+  assert.match(tripPlanningUiSource, /SavedPlanDateRangeField/);
   assert.match(tripPlanningUiSource, /planned_end_date/);
   assert.match(tripPlanningUiSource, /normalizePlanEndDate/);
   assert.match(tripPlanningUiSource, /日付を選ぶと自動で保存されます。/);
@@ -558,7 +556,7 @@ test("saving and updating a plan writes progress payload and redirects home", ()
 });
 
 test("trip planning form captures date and memo while moving insurance out of the plan flow", () => {
-  assert.match(tripPlanningFormSource, /name="date"/);
+  assert.match(tripPlanningFormSource, /startName="date"/);
   assert.match(tripPlanningFormSource, /予定日/);
   assert.match(tripPlanningFormSource, /type="date"/);
   assert.match(tripPlanningFormSource, /name="memo"/);
@@ -568,11 +566,13 @@ test("trip planning form captures date and memo while moving insurance out of th
   assert.match(tripPlanningFormSource, /formatDateDisplay/);
   assert.match(tripPlanningFormSource, /h-\[42px\]/);
   assert.match(tripPlanningFormSource, /ChevronsUpDown/);
-  assert.match(tripPlanningFormSource, /opacity-0/);
-  assert.match(tripPlanningFormSource, /aria-label=\{label\}/);
-  assert.match(tripPlanningFormSource, /name="end_date"/);
-  assert.match(tripPlanningFormSource, /出発日/);
-  assert.match(tripPlanningFormSource, /帰着日/);
+  assert.match(tripPlanningFormSource, /DateRangeField/);
+  assert.match(tripPlanningFormSource, /endName="end_date"/);
+  assert.match(tripPlanningFormSource, /予定期間/);
+  assert.match(tripPlanningFormSource, /開始日/);
+  assert.match(tripPlanningFormSource, /終了日/);
+  assert.doesNotMatch(tripPlanningFormSource, /出発日/);
+  assert.doesNotMatch(tripPlanningFormSource, /帰着日/);
   assert.match(tripPlanningFormSource, /normalizeEndDateValue/);
   assert.doesNotMatch(tripPlanningFormSource, /山行オプション/);
   assert.doesNotMatch(tripPlanningFormSource, /現金を持参/);

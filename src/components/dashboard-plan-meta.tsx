@@ -48,7 +48,7 @@ export function DashboardPlanMeta({
       <PlanDatePart date={plannedDateRange.start} includeYear />
       {plannedDateRange.end ? (
         <>
-          <span className="pb-0.5 px-1 text-[22px] font-bold leading-none">→</span>
+          <span className="pb-[3px] px-0.5 text-[16px] font-bold leading-none">→</span>
           <PlanDatePart date={plannedDateRange.end} />
         </>
       ) : null}
@@ -92,16 +92,16 @@ function PlanDatePart({
   includeYear?: boolean;
 }) {
   return (
-    <span className="inline-flex items-end gap-1.5 leading-none">
+    <span className="inline-flex items-end gap-1 leading-none">
       {includeYear ? (
-        <span className="pb-[3px] text-[13px] font-bold tracking-[0.08em]">
+        <span className="pb-[3px] text-[12px] font-bold tracking-[0.06em]">
           {date.getFullYear()}.
         </span>
       ) : null}
-      <span className="text-[27px] font-bold tracking-[0.06em]">
+      <span className="text-[18px] font-bold tracking-[0.04em]">
         {date.getMonth() + 1}.{date.getDate()}
       </span>
-      <span className="mb-[2px] inline-flex h-6 w-6 items-center justify-center rounded-full border-2 border-stone-950 text-[14px] font-bold leading-none">
+      <span className="mb-[1px] inline-flex h-[18px] w-[18px] items-center justify-center rounded-full border border-stone-950 text-[11px] font-bold leading-none">
         {getWeekday(date)}
       </span>
     </span>

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 import {
   applyChecklistStateToChecklist,
-  buildPreDepartureSummary,
   getCheckedSlotsStorageKey,
   getChecklistOnlyStorageKey,
   isSupportedChecklistOnlyId,
@@ -48,33 +47,8 @@ export function DashboardPlanChecklistSummary({
   }, [checklist, planId]);
 
   const progress = hydratedChecklist?.summary.percent ?? fallbackProgress;
-  const preDepartureSummary = hydratedChecklist
-    ? buildPreDepartureSummary(hydratedChecklist)
-    : null;
-
   return (
     <div className="space-y-3">
-      {preDepartureSummary ? (
-        <div
-          className="rounded-xl bg-white/80 px-3 py-2"
-          aria-label="出発前確認サマリー"
-        >
-          <p className="text-xs font-bold text-[#14724e]">
-            {preDepartureSummary.statusLabel}
-          </p>
-          <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold">
-            <span className="rounded bg-red-50 px-2 py-1 text-red-700">
-              不足 {preDepartureSummary.missingCount.toLocaleString("ja-JP")}
-            </span>
-            <span className="rounded bg-amber-50 px-2 py-1 text-amber-800">
-              未確認 {preDepartureSummary.confirmationCount.toLocaleString("ja-JP")}
-            </span>
-            <span className="rounded bg-stone-100 px-2 py-1 text-stone-700">
-              重要確認 {preDepartureSummary.importantConfirmationCount.toLocaleString("ja-JP")}
-            </span>
-          </div>
-        </div>
-      ) : null}
       <div>
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
@@ -86,11 +60,6 @@ export function DashboardPlanChecklistSummary({
             </div>
           </div>
           <span className="shrink-0 text-sm font-bold">{progress}%</span>
-          {preDepartureSummary ? (
-            <span className="shrink-0 rounded bg-red-50 px-2 py-1 text-[11px] font-bold text-red-700">
-              不足 {preDepartureSummary.missingCount.toLocaleString("ja-JP")}
-            </span>
-          ) : null}
         </div>
       </div>
 

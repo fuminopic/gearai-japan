@@ -482,53 +482,22 @@ export function TripPlanningForm({
           </span>
         </label>
 
-        {usesDateRange ? (
-          <div className="col-span-3 grid grid-cols-2 gap-2 sm:gap-3 lg:col-span-1">
-            <DateField
-              label="出発日"
-              name="date"
-              value={plannedDateValue}
-              onChange={(value) =>
-                onPlanDetailsChange?.({
-                  plannedDate: value,
-                  plannedEndDate: normalizeEndDateValue(
-                    value,
-                    plannedEndDateValue,
-                    currentStyle
-                  )
-                })
-              }
-            />
-            <DateField
-              label="帰着日"
-              name="end_date"
-              value={plannedEndDateValue}
-              min={plannedDateValue}
-              onChange={(value) =>
-                onPlanDetailsChange?.({
-                  plannedDate: plannedDateValue,
-                  plannedEndDate: normalizeEndDateValue(
-                    plannedDateValue,
-                    value,
-                    currentStyle
-                  )
-                })
-              }
-            />
-          </div>
-        ) : (
-          <DateField
-            label="予定日"
-            name="date"
-            value={plannedDateValue}
-            onChange={(value) =>
-              onPlanDetailsChange?.({
-                plannedDate: value,
-                plannedEndDate: ""
-              })
-            }
-          />
-        )}
+        <DateRangeField
+          label={usesDateRange ? "予定期間" : "予定日"}
+          startName="date"
+          endName="end_date"
+          startValue={plannedDateValue}
+          endValue={plannedEndDateValue}
+          usesDateRange={usesDateRange}
+          onChange={(startValue, endValue) =>
+            onPlanDetailsChange?.({
+              plannedDate: startValue,
+              plannedEndDate: usesDateRange
+                ? normalizeEndDateValue(startValue, endValue, currentStyle)
+                : ""
+            })
+          }
+        />
       </div>
 
       <label className="mt-4 block">
@@ -728,38 +697,108 @@ function formatDateDisplay(value: string) {
   return value.replaceAll("-", "/");
 }
 
-function DateField({
+function DateRangeField({
   label,
-  name,
+  startName,
+  endName,
+  startValue,
+  endValue,
+  usesDateRange,
+  onChange
+}: {
+  label: string;
+  startName: string;
+  endName: string;
+  startValue: string;
+  endValue: string;
+  usesDateRange: boolean;
+  onChange: (startValue: string, endValue: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const normalizedEndValue = normalizeEndDateValue(
+    startValue,
+    endValue || startValue,
+    usesDateRange ? "OVERNIGHT_HUT" : "DAY_HIKE"
+  );
+  const displayValue = usesDateRange
+    ? `${formatDateDisplay(startValue)} - ${formatDateDisplay(normalizedEndValue)}`
+    : formatDateDisplay(startValue);
+
+  return (
+    <div className="relative block min-w-0">
+      <span className="text-xs font-bold text-stone-700">{label}</span>
+      <input type="hidden" name={startName} value={startValue} />
+      <input type="hidden" name={endName} value={usesDateRange ? normalizedEndValue : ""} />
+      <button
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        className="relative mt-1.5 flex h-[42px] w-full min-w-0 items-center rounded-lg border border-stone-200 bg-stone-50 px-2 pr-7 text-left text-sm font-semibold leading-none text-ink outline-none transition focus:border-forest-500 focus:bg-white sm:px-3 sm:pr-8"
+        aria-expanded={isOpen}
+      >
+        <span className="block min-w-0 truncate">{displayValue}</span>
+        <ChevronsUpDown
+          aria-hidden="true"
+          className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-ink sm:right-2.5"
+        />
+      </button>
+      {isOpen ? (
+        <div className="absolute right-0 z-30 mt-2 w-[min(82vw,320px)] rounded-xl border border-stone-200 bg-white p-3 shadow-xl">
+          <div className={usesDateRange ? "grid grid-cols-2 gap-2" : "grid gap-2"}>
+            <NativeDateInput
+              label={usesDateRange ? "開始日" : "予定日"}
+              value={startValue}
+              onChange={(value) =>
+                onChange(
+                  value,
+                  usesDateRange
+                    ? normalizeEndDateValue(value, normalizedEndValue, "OVERNIGHT_HUT")
+                    : ""
+                )
+              }
+            />
+            {usesDateRange ? (
+              <NativeDateInput
+                label="終了日"
+                value={normalizedEndValue}
+                min={startValue}
+                onChange={(value) => onChange(startValue, value)}
+              />
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-lg bg-forest-700 text-xs font-bold text-white"
+          >
+            決定
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function NativeDateInput({
+  label,
   value,
   min,
   onChange
 }: {
   label: string;
-  name: string;
   value: string;
   min?: string;
   onChange: (value: string) => void;
 }) {
   return (
     <label className="block min-w-0">
-      <span className="text-xs font-bold text-stone-700">{label}</span>
-      <span className="relative mt-1.5 block">
-        <input
-          type="date"
-          aria-label={label}
-          name={name}
-          value={value}
-          min={min}
-          required
-          onChange={(event) => onChange(event.target.value)}
-          className="h-[42px] w-full min-w-0 appearance-none rounded-lg border border-stone-200 bg-stone-50 px-2 pr-7 text-left text-sm font-semibold leading-none text-ink outline-none focus:border-forest-500 focus:bg-white sm:px-3 sm:pr-8 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
-        />
-        <ChevronsUpDown
-          aria-hidden="true"
-          className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-ink sm:right-2.5"
-        />
-      </span>
+      <span className="text-[11px] font-bold text-stone-500">{label}</span>
+      <input
+        type="date"
+        value={value}
+        min={min}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-1 h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-2 text-xs font-bold text-ink outline-none focus:border-forest-500 focus:bg-white"
+      />
     </label>
   );
 }

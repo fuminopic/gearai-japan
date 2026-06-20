@@ -243,9 +243,9 @@ function EmptyTripHero() {
 
 function HeroTitle({ trip }: { trip?: SavedTripPlan }) {
   return (
-    <div className="flex flex-wrap items-end gap-x-3 gap-y-1 font-sans text-[#14724e]">
+    <div className="flex items-end gap-2 overflow-hidden font-sans text-[#14724e]">
       <Mountain className="mb-0.5 h-5 w-5 fill-[#14724e] text-[#14724e]" />
-      <span className="pb-0.5 text-sm font-bold leading-none">次回の山行</span>
+      <span className="shrink-0 pb-[3px] text-sm font-bold leading-none">次回の山行</span>
       {trip ? (
         <DashboardPlanMeta
           planId={trip.id}

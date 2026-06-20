@@ -79,7 +79,10 @@ import {
   type PreDepartureSummary
 } from "@/lib/plan-checklist";
 import { createClient } from "@/lib/supabase/client";
-import { writeTripPlanLocalMeta } from "@/lib/trip-plan-local-meta";
+import {
+  readTripPlanLocalMeta,
+  writeTripPlanLocalMeta
+} from "@/lib/trip-plan-local-meta";
 import type {
   GearMatchingOwnedGearMatch,
   GearMatchingResult,
@@ -166,14 +169,19 @@ export function TripPlanningUI({
   const effectiveMountainSlug = hydratedPlan?.mountain_slug ?? selectedMountainSlug;
   const effectiveSeason = hydratedPlan?.season ?? selectedSeason;
   const effectiveStyle = hydratedPlan?.style ?? selectedStyle;
+  const localPlanMeta = planId ? readTripPlanLocalMeta(planId) : null;
   const resolvedPlannedDate = planId
-    ? hydratedPlan?.planned_date ?? sanitizeDateParam(searchParams.get("date")) ?? ""
+    ? hydratedPlan?.planned_date ??
+      sanitizeDateParam(searchParams.get("date")) ??
+      localPlanMeta?.plannedDate ??
+      ""
     : sanitizeDateParam(searchParams.get("date")) ?? "";
   const resolvedPlannedEndDate = normalizePlanEndDate(
     resolvedPlannedDate,
     planId
       ? hydratedPlan?.planned_end_date ??
           sanitizeDateParam(searchParams.get("end_date")) ??
+          localPlanMeta?.plannedEndDate ??
           ""
       : sanitizeDateParam(searchParams.get("end_date")) ?? "",
     effectiveStyle
@@ -567,32 +575,18 @@ function SavedPlanDetailHeader({
       </div>
       {isEditorOpen ? (
         <div className="mt-3 rounded-lg bg-stone-50 p-3">
-          <div
-            className={
-              usesDateRange
-                ? "grid grid-cols-2 gap-2 sm:max-w-md"
-                : "grid grid-cols-1 gap-2 sm:max-w-48"
+          <SavedPlanDateRangeField
+            label={usesDateRange ? "予定期間" : "予定日"}
+            startValue={startInputValue}
+            endValue={endInputValue}
+            usesDateRange={usesDateRange}
+            onChange={(startValue, endValue) =>
+              onDateChange(
+                startValue,
+                usesDateRange ? normalizePlanEndDate(startValue, endValue, plan.style) : ""
+              )
             }
-          >
-            <SavedPlanDateField
-              label={usesDateRange ? "出発日" : "予定日"}
-              value={startInputValue}
-              onChange={(value) =>
-                onDateChange(
-                  value,
-                  usesDateRange ? normalizePlanEndDate(value, endInputValue, plan.style) : ""
-                )
-              }
-            />
-            {usesDateRange ? (
-              <SavedPlanDateField
-                label="帰着日"
-                value={endInputValue}
-                min={startInputValue}
-                onChange={(value) => onDateChange(startInputValue, value)}
-              />
-            ) : null}
-          </div>
+          />
           {saveStateLabel ? (
             <p
               className={`mt-2 text-xs font-bold ${
@@ -612,7 +606,77 @@ function SavedPlanDetailHeader({
   );
 }
 
-function SavedPlanDateField({
+function SavedPlanDateRangeField({
+  label,
+  startValue,
+  endValue,
+  usesDateRange,
+  onChange
+}: {
+  label: string;
+  startValue: string;
+  endValue: string;
+  usesDateRange: boolean;
+  onChange: (startValue: string, endValue: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const displayValue = usesDateRange
+    ? `${formatPlanDateShort(startValue)} - ${formatPlanDateShort(endValue)}`
+    : formatPlanDateShort(startValue);
+
+  return (
+    <div className="relative block max-w-[320px] min-w-0">
+      <span className="text-xs font-bold text-stone-600">{label}</span>
+      <button
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        className="relative mt-1.5 flex h-[42px] w-full items-center rounded-lg border border-stone-200 bg-white px-3 pr-8 text-left text-sm font-semibold text-ink outline-none transition focus:border-forest-500"
+        aria-expanded={isOpen}
+      >
+        <span className="block min-w-0 truncate">{displayValue}</span>
+        <ChevronDown
+          aria-hidden="true"
+          className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink"
+        />
+      </button>
+      {isOpen ? (
+        <div className="absolute left-0 z-30 mt-2 w-[min(82vw,320px)] rounded-xl border border-stone-200 bg-white p-3 shadow-xl">
+          <div className={usesDateRange ? "grid grid-cols-2 gap-2" : "grid gap-2"}>
+            <SavedPlanNativeDateInput
+              label={usesDateRange ? "開始日" : "予定日"}
+              value={startValue}
+              onChange={(value) =>
+                onChange(
+                  value,
+                  usesDateRange
+                    ? normalizePlanEndDate(value, endValue, "OVERNIGHT_HUT")
+                    : ""
+                )
+              }
+            />
+            {usesDateRange ? (
+              <SavedPlanNativeDateInput
+                label="終了日"
+                value={endValue}
+                min={startValue}
+                onChange={(value) => onChange(startValue, value)}
+              />
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-lg bg-forest-700 text-xs font-bold text-white"
+          >
+            決定
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function SavedPlanNativeDateInput({
   label,
   value,
   min,
@@ -625,20 +689,14 @@ function SavedPlanDateField({
 }) {
   return (
     <label className="block min-w-0">
-      <span className="text-xs font-bold text-stone-600">{label}</span>
-      <span className="relative mt-1.5 block">
-        <input
-          type="date"
-          value={value}
-          min={min}
-          onChange={(event) => onChange(event.target.value)}
-          className="h-[42px] w-full appearance-none rounded-lg border border-stone-200 bg-white px-3 pr-8 text-sm font-semibold text-ink outline-none focus:border-forest-500 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
-        />
-        <ChevronDown
-          aria-hidden="true"
-          className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink"
-        />
-      </span>
+      <span className="text-[11px] font-bold text-stone-500">{label}</span>
+      <input
+        type="date"
+        value={value}
+        min={min}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-1 h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-2 text-xs font-bold text-ink outline-none focus:border-forest-500 focus:bg-white"
+      />
     </label>
   );
 }

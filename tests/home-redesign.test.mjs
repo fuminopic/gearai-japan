@@ -150,11 +150,9 @@ test("home hero shows the saved plan checklist summary over the static hills bac
   assert.match(dashboardPlanChecklistSummarySource, /getChecklistOnlyStorageKey/);
   assert.match(dashboardPlanChecklistSummarySource, /getCheckedSlotsStorageKey/);
   assert.match(dashboardPlanChecklistSummarySource, /applyChecklistStateToChecklist/);
-  assert.match(dashboardPlanChecklistSummarySource, /buildPreDepartureSummary/);
   assert.match(dashboardPlanChecklistSummarySource, /PlanCategorySummary/);
-  assert.match(dashboardPlanChecklistSummarySource, /不足/);
-  assert.match(dashboardPlanChecklistSummarySource, /未確認/);
-  assert.match(dashboardPlanChecklistSummarySource, /重要確認/);
+  assert.doesNotMatch(dashboardPlanChecklistSummarySource, /buildPreDepartureSummary/);
+  assert.doesNotMatch(dashboardPlanChecklistSummarySource, /重要確認/);
   assert.match(dashboardPlanChecklistSummarySource, /category\.progress\.percent/);
   assert.match(dashboardSource, /`\/plan\?id=\$\{trip\.id\}`/);
   assert.doesNotMatch(dashboardSource, /focus=predeparture/);
@@ -258,9 +256,9 @@ test("home hero can display saved trip date and memo without price information",
   assert.match(dashboardPlanMetaSource, /function PlanDatePart/);
   assert.match(dashboardSource, /items-end gap-x-4 gap-y-3/);
   assert.match(dashboardSource, /pb-1 font-maru/);
-  assert.match(dashboardSource, /items-end gap-x-3 gap-y-1/);
-  assert.match(dashboardPlanMetaSource, /text-\[27px\]/);
-  assert.match(dashboardPlanMetaSource, /rounded-full border-2 border-stone-950/);
+  assert.match(dashboardSource, /flex items-end gap-2 overflow-hidden/);
+  assert.match(dashboardPlanMetaSource, /text-\[18px\]/);
+  assert.match(dashboardPlanMetaSource, /h-\[18px\] w-\[18px\]/);
   assert.match(dashboardPlanMetaSource, /style === "DAY_HIKE"/);
   assert.doesNotMatch(dashboardPlanMetaSource, /endDate\.setDate\(date\.getDate\(\) \+ 1\)/);
   assert.match(dashboardPlanMetaSource, /truncate text-\[11px\] font-medium text-stone-500/);

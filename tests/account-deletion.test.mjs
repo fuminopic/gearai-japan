@@ -72,8 +72,14 @@ test("account deletion server action verifies current user and deletes storage p
   assert.match(authActionsSource, /redirect\("\/login\?deleted=1"\)/);
 });
 
-test("admin client uses service role only from server-side action", () => {
+test("admin client uses the Supabase secret key only from server-side action", () => {
+  assert.match(supabaseAdminSource, /SUPABASE_SECRET_KEY/);
   assert.match(supabaseAdminSource, /SUPABASE_SERVICE_ROLE_KEY/);
+  assert.ok(
+    supabaseAdminSource.indexOf("SUPABASE_SECRET_KEY") <
+      supabaseAdminSource.indexOf("SUPABASE_SERVICE_ROLE_KEY"),
+    "new Supabase secret key name should be preferred while keeping service_role compatibility"
+  );
   assert.match(supabaseAdminSource, /persistSession: false/);
   assert.match(supabaseAdminSource, /autoRefreshToken: false/);
   assert.doesNotMatch(supabaseAdminSource, /NEXT_PUBLIC_SUPABASE_ANON_KEY/);

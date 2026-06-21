@@ -1,5 +1,5 @@
 import { AuthForm } from "@/components/auth-form";
-import { signIn } from "@/lib/actions/auth";
+import { signIn, signInWithApple, signInWithGoogle } from "@/lib/actions/auth";
 
 type LoginPageProps = {
   searchParams: Promise<{
@@ -16,6 +16,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <AuthForm
       mode="login"
       action={signIn}
+      appleAction={signInWithApple}
+      googleAction={signInWithGoogle}
       error={params.error}
       notice={params.deleted === "1" ? "アカウントが削除されました" : undefined}
       showEmailForm={params.email === "1"}

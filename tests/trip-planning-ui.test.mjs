@@ -106,6 +106,14 @@ const authFormSource = readFileSync(
   new URL("../src/components/auth-form.tsx", import.meta.url),
   "utf8"
 );
+const authActionsSource = readFileSync(
+  new URL("../src/lib/actions/auth.ts", import.meta.url),
+  "utf8"
+);
+const authCallbackSource = readFileSync(
+  new URL("../app/auth/callback/route.ts", import.meta.url),
+  "utf8"
+);
 const rootLayoutSource = readFileSync(
   new URL("../app/layout.tsx", import.meta.url),
   "utf8"
@@ -661,4 +669,18 @@ test("user-facing branding uses YAMAJITAKU hierarchy", () => {
 test("auth form shows submit progress for login and signup", () => {
   assert.match(authFormSource, /ログイン中\.\.\./);
   assert.match(authFormSource, /作成中\.\.\./);
+});
+
+test("auth landing social buttons start Supabase OAuth", () => {
+  assert.match(authActionsSource, /signInWithGoogle/);
+  assert.match(authActionsSource, /signInWithApple/);
+  assert.match(authActionsSource, /signInWithOAuth/);
+  assert.match(authActionsSource, /provider: "google" \| "apple"/);
+  assert.match(authActionsSource, /\/auth\/callback\?next=\/dashboard/);
+  assert.match(authCallbackSource, /exchangeCodeForSession/);
+  assert.match(authCallbackSource, /getSafeNextPath/);
+  assert.match(authFormSource, /action=\{appleAction\}/);
+  assert.match(authFormSource, /action=\{googleAction\}/);
+  assert.doesNotMatch(authFormSource, /Appleで続ける[\s\S]{0,120}type="button"/);
+  assert.doesNotMatch(authFormSource, /Googleで続ける[\s\S]{0,120}type="button"/);
 });

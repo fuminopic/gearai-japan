@@ -14,12 +14,22 @@ import { SubmitButton } from "@/components/submit-button";
 type AuthFormProps = {
   mode: "login" | "signup";
   action: (formData: FormData) => void | Promise<void>;
+  appleAction: () => void | Promise<void>;
+  googleAction: () => void | Promise<void>;
   error?: string;
   notice?: string;
   showEmailForm?: boolean;
 };
 
-export function AuthForm({ mode, action, error, notice, showEmailForm }: AuthFormProps) {
+export function AuthForm({
+  mode,
+  action,
+  appleAction,
+  googleAction,
+  error,
+  notice,
+  showEmailForm
+}: AuthFormProps) {
   const isSignup = mode === "signup";
   const shouldShowEmailForm = Boolean(showEmailForm || error);
 
@@ -200,20 +210,24 @@ export function AuthForm({ mode, action, error, notice, showEmailForm }: AuthFor
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              className="flex h-11 items-center justify-center gap-2 rounded-[10px] border border-white/55 bg-black/20 px-3 text-[12px] font-semibold text-white backdrop-blur-sm"
-            >
-              <span className="text-base" aria-hidden="true"></span>
-              Appleで続ける
-            </button>
-            <button
-              type="button"
-              className="flex h-11 items-center justify-center gap-2 rounded-[10px] border border-white/55 bg-black/20 px-3 text-[12px] font-semibold text-white backdrop-blur-sm"
-            >
-              <span className="grid h-4 w-4 place-items-center rounded-full bg-white text-[11px] font-bold text-[#4285f4]" aria-hidden="true">G</span>
-              Googleで続ける
-            </button>
+            <form action={appleAction}>
+              <button
+                type="submit"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-white/55 bg-black/20 px-3 text-[12px] font-semibold text-white backdrop-blur-sm transition hover:bg-white/10"
+              >
+                <span className="text-base" aria-hidden="true"></span>
+                Appleで続ける
+              </button>
+            </form>
+            <form action={googleAction}>
+              <button
+                type="submit"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-white/55 bg-black/20 px-3 text-[12px] font-semibold text-white backdrop-blur-sm transition hover:bg-white/10"
+              >
+                <span className="grid h-4 w-4 place-items-center rounded-full bg-white text-[11px] font-bold text-[#4285f4]" aria-hidden="true">G</span>
+                Googleで続ける
+              </button>
+            </form>
           </div>
 
           <p className="mt-4 flex items-start gap-2 text-[9px] leading-4 text-white/58 max-[380px]:mt-3">

@@ -1,5 +1,5 @@
 import { AuthForm } from "@/components/auth-form";
-import { signUp } from "@/lib/actions/auth";
+import { signInWithApple, signInWithGoogle, signUp } from "@/lib/actions/auth";
 
 type SignupPageProps = {
   searchParams: Promise<{
@@ -15,6 +15,8 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
     <AuthForm
       mode="signup"
       action={signUp}
+      appleAction={signInWithApple}
+      googleAction={signInWithGoogle}
       error={params.error}
       showEmailForm={params.email === "1"}
     />

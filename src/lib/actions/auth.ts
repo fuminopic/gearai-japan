@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import type { Route } from "next";
 import { redirect } from "next/navigation";
 
@@ -47,6 +48,14 @@ export async function signIn(formData: FormData) {
   redirect("/dashboard");
 }
 
+export async function signInWithGoogle() {
+  await signInWithOAuthProvider("google");
+}
+
+export async function signInWithApple() {
+  await signInWithOAuthProvider("apple");
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
@@ -89,6 +98,47 @@ export async function deleteAccount() {
 
   await supabase.auth.signOut();
   redirect("/login?deleted=1");
+}
+
+async function signInWithOAuthProvider(provider: "google" | "apple") {
+  const supabase = await createClient();
+  const origin = await getRequestOrigin();
+  const redirectTo = `${origin}/auth/callback?next=/dashboard`;
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo
+    }
+  });
+
+  if (error) {
+    redirect(`/login?email=1&error=${encodeURIComponent(error.message)}` as Route);
+  }
+
+  if (!data.url) {
+    redirect(
+      `/login?email=1&error=${encodeURIComponent("外部ログインを開始できませんでした")}` as Route
+    );
+  }
+
+  redirect(data.url as Route);
+}
+
+async function getRequestOrigin() {
+  const requestHeaders = await headers();
+  const origin = requestHeaders.get("origin");
+
+  if (origin) {
+    return origin;
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (siteUrl) {
+    return siteUrl.startsWith("http") ? siteUrl : `https://${siteUrl}`;
+  }
+
+  return "http://localhost:3000";
 }
 
 export async function updateProfile(formData: FormData) {

@@ -29,7 +29,7 @@ export function AIRecommendationForm({ error }: AIRecommendationFormProps) {
     <div className="space-y-5">
       <section className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-forest-700">Rule Engine + AI</p>
+          <p className="text-sm font-semibold text-forest-700">過去機能</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">
             装備推薦
           </h1>

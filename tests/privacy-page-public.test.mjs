@@ -4,7 +4,10 @@ import test from "node:test";
 
 const publicPrivacyPath = "app/privacy/page.tsx";
 const protectedPrivacyPath = "app/(app)/privacy/page.tsx";
+const publicTermsPath = "app/terms/page.tsx";
+const protectedTermsPath = "app/(app)/terms/page.tsx";
 const publicPrivacySource = readFileSync(publicPrivacyPath, "utf8");
+const publicTermsSource = readFileSync(publicTermsPath, "utf8");
 const appLayoutSource = readFileSync("app/(app)/layout.tsx", "utf8");
 
 test("privacy policy is served from the public /privacy route", () => {
@@ -15,6 +18,19 @@ test("privacy policy is served from the public /privacy route", () => {
   assert.doesNotMatch(publicPrivacySource, /redirect\("\/login"\)/);
   assert.doesNotMatch(publicPrivacySource, /noindex/i);
   assert.match(appLayoutSource, /AuthGate/);
+});
+
+test("terms are served from the public /terms route", () => {
+  assert.ok(existsSync(publicTermsPath));
+  assert.equal(existsSync(protectedTermsPath), false);
+  assert.match(publicTermsSource, /export default function TermsPage/);
+  assert.match(publicTermsSource, /export const metadata/);
+  assert.match(publicTermsSource, /canonical: "\/terms"/);
+  assert.match(publicTermsSource, /山支度（YAMAJITAKU、以下「本アプリ」といいます）/);
+  assert.match(publicTermsSource, /yamajitaku\.app@gmail\.com/);
+  assert.doesNotMatch(publicTermsSource, /requireUser/);
+  assert.doesNotMatch(publicTermsSource, /redirect\("\/login"\)/);
+  assert.doesNotMatch(publicTermsSource, /noindex/i);
 });
 
 test("privacy policy keeps the supplied legal content and contact details", () => {

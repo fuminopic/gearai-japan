@@ -6,10 +6,10 @@ It makes the seven-brand catalog repair repeatable: candidate inventory, image-s
 ## Summary
 
 - Target brands: Columbia, MILLET, Arc'teryx, patagonia, GREGORY, LA SPORTIVA, Mammut
-- Audit rows: 73
-- Grade A / verified and visible: 14
+- Audit rows: 85
+- Grade A / verified and visible: 29
 - Grade B / clean candidate, still needs manual product-detail verification: 0
-- Grade C / hidden until a clean source is verified: 59
+- Grade C / hidden until a clean source is verified: 56
 
 ## Brand Status
 
@@ -19,7 +19,7 @@ It makes the seven-brand catalog repair repeatable: candidate inventory, image-s
 | MILLET | 5 | 10 | Maintain and expand after higher-gap brands |
 | Arc'teryx | 0 | 10 | Find official/official-agent clean product images first |
 | patagonia | 2 | 10 | Batch verify next clean candidates |
-| GREGORY | 1 | 10 | Batch verify next clean candidates |
+| GREGORY | 16 | 22 | Maintain and expand after higher-gap brands |
 | LA SPORTIVA | 0 | 10 | Find official/official-agent clean product images first |
 | Mammut | 3 | 10 | Batch verify next clean candidates |
 
@@ -31,6 +31,7 @@ Allowed clean image hosts:
 - milletonline.itembox.cloud
 - edge.dis.commercecloud.salesforce.com
 - www.gregory.jp
+- image.rakuten.co.jp
 - mammt.store-image.jp
 - arcteryx.scene7.com
 - images-dynamic-arcteryx.imgix.net
@@ -59,6 +60,8 @@ Blocked URL signals:
 - `/sw=256/i`
 - `/w_380\.h_380/i`
 
+Exception: direct product images from the official GREGORY Rakuten shop are allowed only when the URL starts with `https://image.rakuten.co.jp/gregory-japan/cabinet/`. Search thumbnails such as `thumbnail.image.rakuten.co.jp` stay blocked.
+
 ## Grade A Rows
 
 | Brand | Model | Image host | Source |
@@ -71,12 +74,27 @@ Blocked URL signals:
 | patagonia | Torrentshell 3L Jacket | edge.dis.commercecloud.salesforce.com | https://www.patagonia.jp/product/mens-torrentshell-3-layer-rain-jacket/85241.html |
 | patagonia | Houdini Jacket | edge.dis.commercecloud.salesforce.com | https://www.patagonia.jp/product/mens-houdini-windbreaker-jacket/24142.html |
 | GREGORY | Zulu 30 | www.gregory.jp | https://www.gregory.jp/float/zulu-30-md-lg/gr-145291-0527.html |
+| GREGORY | Zulu 35 | image.rakuten.co.jp | https://item.rakuten.co.jp/gregory-japan/l24-9976/ |
+| GREGORY | Zulu 45 | image.rakuten.co.jp | https://item.rakuten.co.jp/gregory-japan/l25-0662/ |
+| GREGORY | Jade 28 | image.rakuten.co.jp | https://item.rakuten.co.jp/gregory-japan/m75-a257/ |
 | Mammut | Lithium 20 | mammt.store-image.jp | https://www.mammut.jp/items/2530-00720 |
 | Mammut | Lithium 25 | mammt.store-image.jp | https://www.mammut.jp/items/2530-00730 |
 | Mammut | Lithium 30 | mammt.store-image.jp | https://www.mammut.jp/items/2530-00740 |
 | Columbia | Saber Six Mid Outdry Wide | www.columbiasports.co.jp | https://www.columbiasports.co.jp/shop/g/gYI8972287----7000/ |
 | Columbia | Saber Six Low Outdry Wide | www.columbiasports.co.jp | https://www.columbiasports.co.jp/shop/g/gYI0238287----7000/ |
 | Columbia | Castle Rock 25L Backpack II | www.columbiasports.co.jp | https://www.columbiasports.co.jp/shop/g/gPU8662536--OZS000/ |
+| GREGORY | Jade 33 | image.rakuten.co.jp | https://item.rakuten.co.jp/gregory-japan/44j-341/ |
+| GREGORY | Jade 43 | image.rakuten.co.jp | https://item.rakuten.co.jp/gregory-japan/44j-340/ |
+| GREGORY | Stout 35 | image.rakuten.co.jp | https://item.rakuten.co.jp/gregory-japan/n22-a266/ |
+| GREGORY | Amber 34 | image.rakuten.co.jp | https://item.rakuten.co.jp/gregory-japan/n26-6059/ |
+| GREGORY | Citro 24 | image.rakuten.co.jp | https://item.rakuten.co.jp/gregory-japan/j78-7416/ |
+| GREGORY | Juno 24 | image.rakuten.co.jp | https://item.rakuten.co.jp/gregory-japan/j80-1327/ |
+| GREGORY | Miko 25 | image.rakuten.co.jp | https://item.rakuten.co.jp/gregory-japan/l51-9968/ |
+| GREGORY | Maya 20 | image.rakuten.co.jp | https://item.rakuten.co.jp/gregory-japan/l56-5586/ |
+| GREGORY | Maya 25 | image.rakuten.co.jp | https://item.rakuten.co.jp/gregory-japan/l55-9975/ |
+| GREGORY | Nano 18 | image.rakuten.co.jp | https://item.rakuten.co.jp/gregory-japan/43j-029/ |
+| GREGORY | Arrio 24 | image.rakuten.co.jp | https://item.rakuten.co.jp/gregory-japan/54j-008/ |
+| GREGORY | Arrio 28 | image.rakuten.co.jp | https://item.rakuten.co.jp/gregory-japan/54j-009/ |
 
 ## Hidden / Needs Clean Source
 
@@ -115,9 +133,6 @@ Blocked URL signals:
 | patagonia | Capilene Cool Daily Shirt | no clean product image candidate has been verified |
 | patagonia | Terrebonne Joggers | no clean product image candidate has been verified |
 | patagonia | Black Hole Pack 32L | no clean product image candidate has been verified |
-| GREGORY | Zulu 35 | no clean product image candidate has been verified |
-| GREGORY | Zulu 45 | no clean product image candidate has been verified |
-| GREGORY | Jade 28 | no clean product image candidate has been verified |
 | GREGORY | Jade 38 | no clean product image candidate has been verified |
 | GREGORY | Baltoro 65 | no clean product image candidate has been verified |
 | GREGORY | Deva 60 | no clean product image candidate has been verified |

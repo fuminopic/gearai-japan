@@ -21,6 +21,7 @@ export const allowedCleanImageHosts = [
   "milletonline.itembox.cloud",
   "edge.dis.commercecloud.salesforce.com",
   "www.gregory.jp",
+  "image.rakuten.co.jp",
   "mammt.store-image.jp",
   "arcteryx.scene7.com",
   "images-dynamic-arcteryx.imgix.net",
@@ -49,6 +50,15 @@ export const forbiddenImagePatterns = [
   /sw=256/i,
   /w_380\.h_380/i
 ];
+
+function isOfficialGregoryRakutenImage(imageUrl) {
+  try {
+    const url = new URL(imageUrl);
+    return url.host === "image.rakuten.co.jp" && url.pathname.startsWith("/gregory-japan/cabinet/");
+  } catch {
+    return false;
+  }
+}
 
 function unescapeSql(value) {
   return value.replaceAll("''", "'");
@@ -118,6 +128,10 @@ export function cleanImageUrlGrade(imageUrl) {
 
   if (!allowedCleanImageHosts.includes(host)) {
     return { ok: false, reason: `host ${host} is not allowlisted` };
+  }
+
+  if (isOfficialGregoryRakutenImage(imageUrl)) {
+    return { ok: true, reason: "official GREGORY Rakuten shop product image" };
   }
 
   const forbidden = forbiddenImagePatterns.find((pattern) => pattern.test(imageUrl));
@@ -275,6 +289,8 @@ export function buildReport() {
     "Blocked URL signals:",
     "",
     ...forbiddenImagePatterns.map((pattern) => `- \`${pattern}\``),
+    "",
+    "Exception: direct product images from the official GREGORY Rakuten shop are allowed only when the URL starts with `https://image.rakuten.co.jp/gregory-japan/cabinet/`. Search thumbnails such as `thumbnail.image.rakuten.co.jp` stay blocked.",
     "",
     "## Grade A Rows",
     "",

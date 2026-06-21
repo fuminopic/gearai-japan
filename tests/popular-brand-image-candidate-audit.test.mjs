@@ -58,6 +58,7 @@ test("popular brand image audit centralizes clean image source policy", () => {
   assert.ok(allowedCleanImageHosts.includes("milletonline.itembox.cloud"));
   assert.ok(allowedCleanImageHosts.includes("edge.dis.commercecloud.salesforce.com"));
   assert.ok(allowedCleanImageHosts.includes("www.gregory.jp"));
+  assert.ok(allowedCleanImageHosts.includes("image.rakuten.co.jp"));
   assert.ok(allowedCleanImageHosts.includes("mammt.store-image.jp"));
 
   assert.ok(forbiddenImagePatterns.some((pattern) => pattern.test("https://image.rakuten.co.jp/x.jpg")));
@@ -69,6 +70,14 @@ test("popular brand image audit rejects low-quality or untrusted candidate image
   assert.deepEqual(
     cleanImageUrlGrade("https://image.rakuten.co.jp/shop/cabinet/product.jpg").ok,
     false
+  );
+  assert.deepEqual(
+    cleanImageUrlGrade("https://thumbnail.image.rakuten.co.jp/@0_mall/gregory-japan/cabinet/product.jpg").ok,
+    false
+  );
+  assert.deepEqual(
+    cleanImageUrlGrade("https://image.rakuten.co.jp/gregory-japan/cabinet/l24-9976/l24-9976.jpg").ok,
+    true
   );
   assert.deepEqual(
     cleanImageUrlGrade("https://www.columbiasports.co.jp/img/goods/S/search_thumbnail.jpg").ok,

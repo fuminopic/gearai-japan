@@ -5,6 +5,7 @@ type LoginPageProps = {
   searchParams: Promise<{
     error?: string;
     deleted?: string;
+    email?: string;
   }>;
 };
 
@@ -17,6 +18,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       action={signIn}
       error={params.error}
       notice={params.deleted === "1" ? "アカウントが削除されました" : undefined}
+      showEmailForm={params.email === "1"}
     />
   );
 }

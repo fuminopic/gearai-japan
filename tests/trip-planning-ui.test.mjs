@@ -648,6 +648,12 @@ test("user-facing branding uses YAMAJITAKU hierarchy", () => {
   assert.match(authFormSource, /不安をなくす。/);
   assert.match(authFormSource, /登山準備を、/);
   assert.match(authFormSource, /もっとシンプルに。/);
+  assert.match(authFormSource, /auth-mountain-bg\.png/);
+  assert.match(authFormSource, /auth-logo-white-cropped\.png/);
+  assert.match(authFormSource, /showEmailForm/);
+  assert.match(authFormSource, /\/login\?email=1/);
+  assert.match(authFormSource, /\/signup\?email=1/);
+  assert.doesNotMatch(authFormSource, /#email/);
   assert.doesNotMatch(authFormSource, /MVP/);
   assert.doesNotMatch(authFormSource, /10秒で/);
 });

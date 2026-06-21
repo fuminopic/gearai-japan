@@ -1,8 +1,8 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 
 const projectRoot = new URL("../", import.meta.url);
 const candidateMigrationUrl = new URL("supabase/migrations/043_popular_japan_brand_catalog_p0.sql", projectRoot);
-const repairMigrationUrl = new URL("supabase/migrations/046_popular_brand_image_quality_repair.sql", projectRoot);
+const migrationsUrl = new URL("supabase/migrations/", projectRoot);
 const reportUrl = new URL("docs/popular-brand-image-candidate-audit.md", projectRoot);
 const sourceCandidatePath = "/tmp/yamajitaku-source-cache/popular-brand-source-candidates.json";
 
@@ -217,7 +217,11 @@ function escapeTable(value) {
 
 export function buildReport() {
   const candidateSource = readFileSync(candidateMigrationUrl, "utf8");
-  const repairSource = readFileSync(repairMigrationUrl, "utf8");
+  const repairSource = readdirSync(migrationsUrl)
+    .filter((file) => /^0(?:4[6-9]|[5-9]\d)_.*\.sql$/.test(file))
+    .sort()
+    .map((file) => readFileSync(new URL(file, migrationsUrl), "utf8"))
+    .join("\n");
   const auditRows = buildAuditRows({ candidateSource, repairSource });
   const gradeCounts = ["A", "B", "C"].reduce((counts, grade) => {
     counts[grade] = auditRows.filter((row) => row.grade === grade).length;

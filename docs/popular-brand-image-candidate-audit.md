@@ -6,17 +6,17 @@ It makes the seven-brand catalog repair repeatable: candidate inventory, image-s
 ## Summary
 
 - Target brands: Columbia, MILLET, Arc'teryx, patagonia, GREGORY, LA SPORTIVA, Mammut
-- Audit rows: 72
-- Grade A / verified and visible: 9
+- Audit rows: 73
+- Grade A / verified and visible: 14
 - Grade B / clean candidate, still needs manual product-detail verification: 0
-- Grade C / hidden until a clean source is verified: 63
+- Grade C / hidden until a clean source is verified: 59
 
 ## Brand Status
 
 | Brand | Verified visible | Candidate inventory | Next action |
 |---|---:|---:|---|
-| Columbia | 2 | 12 | Batch verify next clean candidates |
-| MILLET | 1 | 10 | Batch verify next clean candidates |
+| Columbia | 3 | 13 | Batch verify next clean candidates |
+| MILLET | 5 | 10 | Maintain and expand after higher-gap brands |
 | Arc'teryx | 0 | 10 | Find official/official-agent clean product images first |
 | patagonia | 2 | 10 | Batch verify next clean candidates |
 | GREGORY | 1 | 10 | Batch verify next clean candidates |
@@ -63,7 +63,11 @@ Blocked URL signals:
 
 | Brand | Model | Image host | Source |
 |---|---|---|---|
+| MILLET | SAAS FEE NX 30+5 | milletonline.itembox.cloud | https://www.millet.jp/c/hardware/backpacks/30-49l/MIS0756 |
 | MILLET | SAAS FEE NX 40+5 | milletonline.itembox.cloud | https://www.millet.jp/c/products/MIS0754 |
+| MILLET | KULA 30 | milletonline.itembox.cloud | https://www.millet.jp/c/hardware/backpacks/30-49l/MIS0545 |
+| MILLET | Drynamic Mesh NS | milletonline.itembox.cloud | https://www.millet.jp/c/men/underwear/MIV01248 |
+| MILLET | Wanaka Stretch Pants | milletonline.itembox.cloud | https://www.millet.jp/c/men/bottoms/MIV10109 |
 | patagonia | Torrentshell 3L Jacket | edge.dis.commercecloud.salesforce.com | https://www.patagonia.jp/product/mens-torrentshell-3-layer-rain-jacket/85241.html |
 | patagonia | Houdini Jacket | edge.dis.commercecloud.salesforce.com | https://www.patagonia.jp/product/mens-houdini-windbreaker-jacket/24142.html |
 | GREGORY | Zulu 30 | www.gregory.jp | https://www.gregory.jp/float/zulu-30-md-lg/gr-145291-0527.html |
@@ -72,6 +76,7 @@ Blocked URL signals:
 | Mammut | Lithium 30 | mammt.store-image.jp | https://www.mammut.jp/items/2530-00740 |
 | Columbia | Saber Six Mid Outdry Wide | www.columbiasports.co.jp | https://www.columbiasports.co.jp/shop/g/gYI8972287----7000/ |
 | Columbia | Saber Six Low Outdry Wide | www.columbiasports.co.jp | https://www.columbiasports.co.jp/shop/g/gYI0238287----7000/ |
+| Columbia | Castle Rock 25L Backpack II | www.columbiasports.co.jp | https://www.columbiasports.co.jp/shop/g/gPU8662536--OZS000/ |
 
 ## Hidden / Needs Clean Source
 
@@ -87,15 +92,11 @@ Blocked URL signals:
 | Columbia | Mountains Are Calling Jacket | no clean product image candidate has been verified |
 | Columbia | Blue Ridge Mountain 30L | no clean product image candidate has been verified |
 | Columbia | Castle Rock 25L | no clean product image candidate has been verified |
-| MILLET | SAAS FEE NX 30+5 | no clean product image candidate has been verified |
-| MILLET | KULA 30 | no clean product image candidate has been verified |
 | MILLET | WELKIN 30 | no clean product image candidate has been verified |
 | MILLET | TYPHON 50000 Stretch Jacket | no clean product image candidate has been verified |
 | MILLET | TYPHON 50000 Stretch Pants | no clean product image candidate has been verified |
-| MILLET | Drynamic Mesh NS | no clean product image candidate has been verified |
 | MILLET | Drynamic Mesh 3/4 Tights | no clean product image candidate has been verified |
 | MILLET | Breathe Barrier Toi Alpha Direct Jacket | no clean product image candidate has been verified |
-| MILLET | Wanaka Stretch Pants | no clean product image candidate has been verified |
 | Arc'teryx | Beta Jacket | no clean product image candidate has been verified |
 | Arc'teryx | Beta AR Jacket | no clean product image candidate has been verified |
 | Arc'teryx | Alpha SV Jacket | no clean product image candidate has been verified |

@@ -1,6 +1,7 @@
 import {
   ChevronRight,
   Edit3,
+  KeyRound,
   LogOut,
   ShieldCheck,
   UserRound
@@ -127,6 +128,13 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             {user.email}
           </p>
         </div>
+        <Link
+          href={"/profile/password" as Route}
+          className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-stone-200 bg-white px-4 text-sm font-bold text-stone-700 transition active:scale-[0.98]"
+        >
+          <KeyRound aria-hidden className="h-4 w-4" />
+          パスワード管理
+        </Link>
         <form action={signOut} className="mt-3">
           <button className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-stone-200 bg-white px-4 text-sm font-bold text-stone-700 transition active:scale-[0.98]">
             <LogOut aria-hidden className="h-4 w-4" />

@@ -42,7 +42,7 @@ export async function signIn(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
+    redirect(`/login?email=1&error=${encodeURIComponent(getLoginErrorMessage(error.message))}`);
   }
 
   redirect("/dashboard");
@@ -198,12 +198,54 @@ export async function updateInsurance(formData: FormData) {
   redirect("/profile");
 }
 
+export async function updatePassword(formData: FormData) {
+  const supabase = await createClient();
+  const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirm_password") ?? "");
+
+  if (password.length < 6) {
+    redirect(
+      `/profile/password?error=${encodeURIComponent("パスワードは6文字以上で入力してください")}` as Route
+    );
+  }
+
+  if (password !== confirmPassword) {
+    redirect(
+      `/profile/password?error=${encodeURIComponent("確認用パスワードが一致しません")}` as Route
+    );
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password
+  });
+
+  if (error) {
+    redirect(`/profile/password?error=${encodeURIComponent(error.message)}` as Route);
+  }
+
+  revalidatePath("/profile");
+  redirect("/profile/password?saved=1" as Route);
+}
+
 function cleanText(value: FormDataEntryValue | null, maxLength: number) {
   if (typeof value !== "string") {
     return "";
   }
 
   return value.trim().slice(0, maxLength);
+}
+
+function getLoginErrorMessage(message: string) {
+  const normalized = message.toLowerCase();
+
+  if (
+    normalized.includes("invalid login credentials") ||
+    normalized.includes("invalid credentials")
+  ) {
+    return "メールアドレスまたはパスワードが正しくありません。Google / Appleで登録した場合は、下のボタンからログインしてください。";
+  }
+
+  return message;
 }
 
 async function listUserGearImagePaths(

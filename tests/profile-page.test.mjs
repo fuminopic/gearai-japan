@@ -5,6 +5,7 @@ import test from "node:test";
 const profilePageSource = readFileSync("app/(app)/profile/page.tsx", "utf8");
 const profileEditPageSource = readFileSync("app/(app)/profile/edit/page.tsx", "utf8");
 const insurancePageSource = readFileSync("app/(app)/profile/insurance/page.tsx", "utf8");
+const passwordPageSource = readFileSync("app/(app)/profile/password/page.tsx", "utf8");
 const authActionsSource = readFileSync("src/lib/actions/auth.ts", "utf8");
 
 test("my page stays focused on account and pre-trip insurance", () => {
@@ -12,6 +13,8 @@ test("my page stays focused on account and pre-trip insurance", () => {
   assert.match(profilePageSource, /プロフィールを編集/);
   assert.match(profilePageSource, /\/profile\/edit/);
   assert.match(profilePageSource, /\/profile\/insurance/);
+  assert.match(profilePageSource, /\/profile\/password/);
+  assert.match(profilePageSource, /パスワード管理/);
   assert.match(profilePageSource, /山岳保険のご案内、保険情報の入力/);
   assert.match(profilePageSource, /mountain_insurance_status/);
   assert.match(profilePageSource, /未加入/);
@@ -31,6 +34,31 @@ test("my page stays focused on account and pre-trip insurance", () => {
   assert.doesNotMatch(profilePageSource, /山行記録/);
   assert.doesNotMatch(profilePageSource, /getDashboardSummary/);
   assert.doesNotMatch(profilePageSource, /getTripPlans/);
+});
+
+test("password page lets OAuth and email users add or change a password", () => {
+  for (const copy of [
+    "パスワード管理",
+    "パスワードを追加・変更",
+    "Google / Appleで登録した方も",
+    "メールアドレスとパスワードでログインできます",
+    "新しいパスワード",
+    "新しいパスワード（確認）",
+    "Google / Appleアカウント自体のパスワードは変更されません",
+    "パスワードを更新する"
+  ]) {
+    assert.match(passwordPageSource, new RegExp(copy));
+  }
+
+  assert.match(passwordPageSource, /action=\{updatePassword\}/);
+  assert.match(passwordPageSource, /requireUser/);
+  assert.match(passwordPageSource, /name="password"/);
+  assert.match(passwordPageSource, /name="confirm_password"/);
+  assert.match(passwordPageSource, /minLength=\{6\}/);
+  assert.match(authActionsSource, /export async function updatePassword/);
+  assert.match(authActionsSource, /supabase\.auth\.updateUser\(\{\s*password/s);
+  assert.match(authActionsSource, /確認用パスワードが一致しません/);
+  assert.match(authActionsSource, /パスワードは6文字以上/);
 });
 
 test("profile edit page only asks for display profile and mountain insurance", () => {
@@ -95,6 +123,7 @@ test("insurance page mirrors the insurance-only entry flow", () => {
 test("profile and insurance updates store user metadata without adding a new table", () => {
   assert.match(authActionsSource, /export async function updateProfile/);
   assert.match(authActionsSource, /export async function updateInsurance/);
+  assert.match(authActionsSource, /export async function updatePassword/);
   assert.match(authActionsSource, /supabase\.auth\.updateUser/);
   assert.match(authActionsSource, /display_name/);
   assert.match(authActionsSource, /mountain_insurance_status/);

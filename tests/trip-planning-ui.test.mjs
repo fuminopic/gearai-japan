@@ -684,3 +684,14 @@ test("auth landing social buttons start Supabase OAuth", () => {
   assert.doesNotMatch(authFormSource, /Appleで続ける[\s\S]{0,120}type="button"/);
   assert.doesNotMatch(authFormSource, /Googleで続ける[\s\S]{0,120}type="button"/);
 });
+
+test("email login guides OAuth-created accounts back to social login", () => {
+  assert.match(authActionsSource, /getLoginErrorMessage/);
+  assert.match(authActionsSource, /Invalid login credentials/i);
+  assert.match(authActionsSource, /Google \/ Appleで登録した場合は/);
+  assert.match(authFormSource, /Google \/ Appleで登録した方は/);
+  assert.match(authFormSource, /Googleアカウントのパスワードはここでは使用できません/);
+  assert.match(authFormSource, /function SocialAuthButtons/);
+  assert.match(authFormSource, /variant="light"/);
+  assert.match(authFormSource, /variant="dark"/);
+});

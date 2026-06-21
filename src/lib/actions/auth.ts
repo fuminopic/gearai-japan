@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import type { Route } from "next";
 import { redirect } from "next/navigation";
 
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export async function signUp(formData: FormData) {
@@ -50,6 +51,44 @@ export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/login");
+}
+
+export async function deleteAccount() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    redirect("/login");
+  }
+
+  const admin = createAdminClient();
+
+  const storagePaths = await listUserGearImagePaths(admin, user.id).catch((error) => {
+    const message =
+      error instanceof Error ? error.message : "アップロード画像を確認できませんでした";
+    redirect(`/profile?error=${encodeURIComponent(message)}`);
+  });
+
+  if (storagePaths.length > 0) {
+    const { error: storageError } = await admin.storage
+      .from("gear-images")
+      .remove(storagePaths);
+
+    if (storageError) {
+      redirect(`/profile?error=${encodeURIComponent(storageError.message)}`);
+    }
+  }
+
+  const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);
+  if (deleteError) {
+    redirect(`/profile?error=${encodeURIComponent(deleteError.message)}`);
+  }
+
+  await supabase.auth.signOut();
+  redirect("/login?deleted=1");
 }
 
 export async function updateProfile(formData: FormData) {
@@ -115,4 +154,37 @@ function cleanText(value: FormDataEntryValue | null, maxLength: number) {
   }
 
   return value.trim().slice(0, maxLength);
+}
+
+async function listUserGearImagePaths(
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string
+) {
+  const paths: string[] = [];
+  let offset = 0;
+  const limit = 100;
+
+  while (true) {
+    const { data, error } = await admin.storage
+      .from("gear-images")
+      .list(userId, {
+        limit,
+        offset
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    const files = data ?? [];
+    paths.push(...files.filter((file) => file.id).map((file) => `${userId}/${file.name}`));
+
+    if (files.length < limit) {
+      break;
+    }
+
+    offset += limit;
+  }
+
+  return paths;
 }

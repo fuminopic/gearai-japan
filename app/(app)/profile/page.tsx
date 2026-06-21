@@ -8,11 +8,21 @@ import {
 import type { Route } from "next";
 import Link from "next/link";
 
+import { AccountDeleteButton } from "@/components/account-delete-button";
 import { signOut } from "@/lib/actions/auth";
 import { requireUser } from "@/lib/data/gear";
 
-export default async function ProfilePage() {
-  const { user } = await requireUser();
+type ProfilePageProps = {
+  searchParams: Promise<{
+    error?: string;
+  }>;
+};
+
+export default async function ProfilePage({ searchParams }: ProfilePageProps) {
+  const [{ error }, { supabase, user }] = await Promise.all([
+    searchParams,
+    requireUser()
+  ]);
   const metadata = user.user_metadata;
   const displayName = getDisplayName(user.email, metadata);
   const profileMemo = getMetadataString(metadata, "self_introduction");
@@ -20,6 +30,10 @@ export default async function ProfilePage() {
   const insuranceProvider = getMetadataString(metadata, "mountain_insurance_provider");
   const insuranceExpiresOn = getMetadataString(metadata, "mountain_insurance_expires_on");
   const hasInsurance = insuranceStatus === "active";
+  const { count: gearCount } = await supabase
+    .from("user_gear")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id);
 
   return (
     <div className="mx-auto max-w-2xl space-y-5 pb-24">
@@ -102,6 +116,11 @@ export default async function ProfilePage() {
 
       <section className="rounded-[22px] bg-white p-5 shadow-soft">
         <h2 className="text-lg font-bold tracking-normal text-ink">アカウント</h2>
+        {error ? (
+          <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold leading-relaxed text-red-700">
+            {error}
+          </p>
+        ) : null}
         <div className="mt-4 rounded-2xl bg-stone-50 px-4 py-3">
           <p className="text-xs font-bold text-stone-500">メールアドレス</p>
           <p className="mt-1 truncate text-sm font-semibold text-stone-800">
@@ -114,6 +133,7 @@ export default async function ProfilePage() {
             ログアウト
           </button>
         </form>
+        <AccountDeleteButton gearCount={gearCount ?? 0} />
       </section>
     </div>
   );

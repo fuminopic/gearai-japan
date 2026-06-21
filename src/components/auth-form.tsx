@@ -6,9 +6,10 @@ type AuthFormProps = {
   mode: "login" | "signup";
   action: (formData: FormData) => void | Promise<void>;
   error?: string;
+  notice?: string;
 };
 
-export function AuthForm({ mode, action, error }: AuthFormProps) {
+export function AuthForm({ mode, action, error, notice }: AuthFormProps) {
   const isSignup = mode === "signup";
 
   return (
@@ -29,6 +30,11 @@ export function AuthForm({ mode, action, error }: AuthFormProps) {
           {error ? (
             <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
+            </p>
+          ) : null}
+          {notice ? (
+            <p className="rounded-lg bg-forest-50 px-4 py-3 text-sm font-semibold text-forest-700">
+              {notice}
             </p>
           ) : null}
 

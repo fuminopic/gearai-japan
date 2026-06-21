@@ -17,6 +17,7 @@ test("my page stays focused on account and pre-trip insurance", () => {
   assert.match(profilePageSource, /未加入/);
   assert.match(profilePageSource, /契約済み/);
   assert.match(profilePageSource, /signOut/);
+  assert.match(profilePageSource, /AccountDeleteButton/);
   assert.doesNotMatch(profilePageSource, /山行前の登録状況/);
   assert.doesNotMatch(profilePageSource, /遭難時の対策/);
   assert.doesNotMatch(profilePageSource, /遭難対策サービス/);

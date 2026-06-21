@@ -9,10 +9,10 @@ export const metadata: Metadata = {
     default: "山支度 | YAMAJITAKU",
     template: "%s | 山支度"
   },
-  description: "登山前の装備確認を10秒で。",
+  description: "登山準備を、もっとシンプルに。",
   openGraph: {
     title: "山支度 | YAMAJITAKU",
-    description: "登山前の装備確認を10秒で。",
+    description: "登山準備を、もっとシンプルに。",
     siteName: "山支度",
     locale: "ja_JP",
     type: "website"
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary",
     title: "山支度 | YAMAJITAKU",
-    description: "登山前の装備確認を10秒で。"
+    description: "登山準備を、もっとシンプルに。"
   }
 };
 

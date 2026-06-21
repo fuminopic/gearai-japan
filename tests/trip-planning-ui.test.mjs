@@ -642,10 +642,14 @@ test("user-facing branding uses YAMAJITAKU hierarchy", () => {
   assert.match(appNavSource, /AppLogo/);
   assert.match(dashboardPageSource, /AppLogo/);
   assert.match(appLogoSource, /\/yamajitaku-logo\.png/);
-  assert.match(rootLayoutSource, /登山前の装備確認を10秒で。/);
   assert.match(rootLayoutSource, /openGraph/);
   assert.match(rootLayoutSource, /siteName: "山支度"/);
-  assert.match(authFormSource, /登山前の装備確認を10秒で。/);
+  assert.match(authFormSource, /山へ行く前の/);
+  assert.match(authFormSource, /不安をなくす。/);
+  assert.match(authFormSource, /登山準備を、/);
+  assert.match(authFormSource, /もっとシンプルに。/);
+  assert.doesNotMatch(authFormSource, /MVP/);
+  assert.doesNotMatch(authFormSource, /10秒で/);
 });
 
 test("auth form shows submit progress for login and signup", () => {

@@ -1,5 +1,6 @@
 import { AuthForm } from "@/components/auth-form";
-import { signIn, signInWithApple, signInWithGoogle } from "@/lib/actions/auth";
+import { signIn } from "@/lib/actions/auth";
+import { headers } from "next/headers";
 
 type LoginPageProps = {
   searchParams: Promise<{
@@ -12,15 +13,15 @@ type LoginPageProps = {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
+  const requestHeaders = await headers();
+  const isIosApp = params.app === "ios" || requestHeaders.get("user-agent")?.includes("YamajitakuApp");
 
   return (
     <AuthForm
       mode="login"
       action={signIn}
-      appleAction={signInWithApple}
-      googleAction={signInWithGoogle}
       error={params.error}
-      isIosApp={params.app === "ios"}
+      isIosApp={isIosApp}
       notice={params.deleted === "1" ? "アカウントが削除されました" : undefined}
       showEmailForm={params.email === "1"}
     />

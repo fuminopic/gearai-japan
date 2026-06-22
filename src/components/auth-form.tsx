@@ -14,8 +14,6 @@ import { SubmitButton } from "@/components/submit-button";
 type AuthFormProps = {
   mode: "login" | "signup";
   action: (formData: FormData) => void | Promise<void>;
-  appleAction: () => void | Promise<void>;
-  googleAction: () => void | Promise<void>;
   error?: string;
   isIosApp?: boolean;
   notice?: string;
@@ -25,8 +23,6 @@ type AuthFormProps = {
 export function AuthForm({
   mode,
   action,
-  appleAction,
-  googleAction,
   error,
   isIosApp,
   notice,
@@ -38,6 +34,10 @@ export function AuthForm({
   const emailSignupHref = isIosApp ? "/signup?email=1&app=ios" : "/signup?email=1";
   const landingLoginHref = isIosApp ? "/login?app=ios" : "/login";
   const landingSignupHref = isIosApp ? "/signup?app=ios" : "/signup";
+  const appleAuthHref = isIosApp ? "/auth/oauth/apple?app=ios" : "/auth/oauth/apple";
+  const googleAuthHref = isIosApp ? "/auth/oauth/google?app=ios" : "/auth/oauth/google";
+  const termsHref = isIosApp ? "/terms?from=auth&app=ios" : "/terms?from=auth";
+  const privacyHref = isIosApp ? "/privacy?from=auth&app=ios" : "/privacy?from=auth";
 
   if (shouldShowEmailForm) {
     return (
@@ -81,6 +81,7 @@ export function AuthForm({
             ) : null}
 
             <form action={action} className="space-y-4">
+              {isIosApp ? <input type="hidden" name="app" value="ios" /> : null}
               {error ? (
                 <p className="rounded-[12px] bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
                   {error}
@@ -156,8 +157,8 @@ export function AuthForm({
             </div>
 
             <SocialAuthButtons
-              appleAction={appleAction}
-              googleAction={googleAction}
+              appleHref={appleAuthHref}
+              googleHref={googleAuthHref}
               variant="light"
             />
           </section>
@@ -235,8 +236,8 @@ export function AuthForm({
           </div>
 
           <SocialAuthButtons
-            appleAction={appleAction}
-            googleAction={googleAction}
+            appleHref={appleAuthHref}
+            googleHref={googleAuthHref}
             variant="dark"
           />
 
@@ -244,9 +245,9 @@ export function AuthForm({
             <LockKeyhole className="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
             <span>
               登録することで
-              <Link href="/terms" className="text-[#48c579]">利用規約</Link>
+              <Link href={termsHref} className="text-[#48c579]">利用規約</Link>
               と
-              <Link href="/privacy" className="text-[#48c579]">プライバシーポリシー</Link>
+              <Link href={privacyHref} className="text-[#48c579]">プライバシーポリシー</Link>
               に同意したことになります。
             </span>
           </p>
@@ -257,12 +258,12 @@ export function AuthForm({
 }
 
 function SocialAuthButtons({
-  appleAction,
-  googleAction,
+  appleHref,
+  googleHref,
   variant
 }: {
-  appleAction: () => void | Promise<void>;
-  googleAction: () => void | Promise<void>;
+  appleHref: string;
+  googleHref: string;
   variant: "dark" | "light";
 }) {
   const buttonClass =
@@ -272,25 +273,21 @@ function SocialAuthButtons({
 
   return (
     <div className="grid grid-cols-2 gap-3">
-      <form action={appleAction}>
-        <button type="submit" className={buttonClass}>
-          <span className="text-base" aria-hidden="true">
-            
-          </span>
-          Appleで続ける
-        </button>
-      </form>
-      <form action={googleAction}>
-        <button type="submit" className={buttonClass}>
-          <span
-            className="grid h-4 w-4 place-items-center rounded-full bg-white text-[11px] font-bold text-[#4285f4]"
-            aria-hidden="true"
-          >
-            G
-          </span>
-          Googleで続ける
-        </button>
-      </form>
+      <a href={appleHref} className={buttonClass}>
+        <span className="text-base" aria-hidden="true">
+          
+        </span>
+        Appleで続ける
+      </a>
+      <a href={googleHref} className={buttonClass}>
+        <span
+          className="grid h-4 w-4 place-items-center rounded-full bg-white text-[11px] font-bold text-[#4285f4]"
+          aria-hidden="true"
+        >
+          G
+        </span>
+        Googleで続ける
+      </a>
     </div>
   );
 }

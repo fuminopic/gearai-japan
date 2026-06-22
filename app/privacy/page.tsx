@@ -10,17 +10,37 @@ export const metadata: Metadata = {
   }
 };
 
-export default function PrivacyPage() {
+type PrivacyPageProps = {
+  searchParams: Promise<{
+    app?: string;
+    from?: string;
+  }>;
+};
+
+export default async function PrivacyPage({ searchParams }: PrivacyPageProps) {
+  const params = await searchParams;
+  const authReturnHref = params.app === "ios" ? "/login?app=ios" : "/login";
+  const shouldShowAuthReturn = params.from === "auth";
+
   return (
     <main className="min-h-screen bg-[#FAFAFA] px-5 py-10 text-ink sm:py-14">
       <article className="mx-auto max-w-[760px]">
         <header className="mb-9">
-          <Link
-            href="/"
-            className="text-sm font-bold tracking-normal text-[#14724e]"
-          >
-            YAMAJITAKU
-          </Link>
+          {shouldShowAuthReturn ? (
+            <Link
+              href={authReturnHref}
+              className="inline-flex h-11 items-center rounded-full border border-[#14724e]/20 bg-white px-4 text-sm font-bold tracking-normal text-[#14724e] shadow-sm"
+            >
+              ログイン画面へ戻る
+            </Link>
+          ) : (
+            <Link
+              href="/"
+              className="text-sm font-bold tracking-normal text-[#14724e]"
+            >
+              YAMAJITAKU
+            </Link>
+          )}
           <h1 className="mt-5 text-[28px] font-bold leading-tight tracking-normal text-[#1a3a2a]">
             プライバシーポリシー
           </h1>
@@ -212,6 +232,15 @@ export default function PrivacyPage() {
         </div>
 
         <footer className="mt-16 text-center text-[13px] text-stone-400">
+          {shouldShowAuthReturn ? (
+            <Link
+              href={authReturnHref}
+              className="mb-8 inline-flex h-11 items-center rounded-full bg-[#14724e] px-5 text-sm font-bold text-white"
+            >
+              ログイン画面へ戻る
+            </Link>
+          ) : null}
+          <br />
           © 2026 山支度 YAMAJITAKU
         </footer>
       </article>

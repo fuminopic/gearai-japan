@@ -35,6 +35,7 @@ export async function signIn(formData: FormData) {
   const supabase = await createClient();
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
+  const isIosApp = String(formData.get("app") ?? "") === "ios";
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -42,7 +43,14 @@ export async function signIn(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/login?email=1&error=${encodeURIComponent(getLoginErrorMessage(error.message))}`);
+    const params = new URLSearchParams({
+      email: "1",
+      error: getLoginErrorMessage(error.message)
+    });
+    if (isIosApp) {
+      params.set("app", "ios");
+    }
+    redirect(`/login?${params.toString()}`);
   }
 
   redirect("/dashboard");
@@ -104,7 +112,7 @@ async function signInWithOAuthProvider(provider: "google" | "apple") {
   const supabase = await createClient();
   const origin = await getRequestOrigin();
   const isIosApp = await isIosAppRequest();
-  const callbackUrl = new URL(isIosApp ? "yamajitaku://auth/callback" : "/auth/callback", origin);
+  const callbackUrl = new URL(isIosApp ? "/auth/mobile-callback" : "/auth/callback", origin);
   callbackUrl.searchParams.set("next", "/dashboard");
   if (isIosApp) {
     callbackUrl.searchParams.set("app", "ios");
@@ -129,6 +137,38 @@ async function signInWithOAuthProvider(provider: "google" | "apple") {
   }
 
   redirect(data.url as Route);
+}
+
+export async function getOAuthSignInUrl(provider: "google" | "apple", app?: string) {
+  const supabase = await createClient();
+  const origin = await getRequestOrigin();
+  const isIosApp = app === "ios" || (await isIosAppRequest());
+  const callbackUrl = new URL(isIosApp ? "/auth/mobile-callback" : "/auth/callback", origin);
+  callbackUrl.searchParams.set("next", "/dashboard");
+  if (isIosApp) {
+    callbackUrl.searchParams.set("app", "ios");
+  }
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo: callbackUrl.toString(),
+      skipBrowserRedirect: true
+    }
+  });
+
+  if (error || !data.url) {
+    const params = new URLSearchParams({
+      email: "1",
+      error: error?.message ?? "外部ログインを開始できませんでした"
+    });
+    if (isIosApp) {
+      params.set("app", "ios");
+    }
+    redirect(`/login?${params.toString()}` as Route);
+  }
+
+  return data.url;
 }
 
 async function isIosAppRequest() {

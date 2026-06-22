@@ -13,17 +13,20 @@ const appLayoutSource = readFileSync("app/(app)/layout.tsx", "utf8");
 test("privacy policy is served from the public /privacy route", () => {
   assert.ok(existsSync(publicPrivacyPath));
   assert.equal(existsSync(protectedPrivacyPath), false);
-  assert.match(publicPrivacySource, /export default function PrivacyPage/);
+  assert.match(publicPrivacySource, /export default async function PrivacyPage/);
   assert.doesNotMatch(publicPrivacySource, /requireUser/);
   assert.doesNotMatch(publicPrivacySource, /redirect\("\/login"\)/);
   assert.doesNotMatch(publicPrivacySource, /noindex/i);
+  assert.match(publicPrivacySource, /from\?: string/);
+  assert.match(publicPrivacySource, /ログイン画面へ戻る/);
+  assert.match(publicPrivacySource, /\/login\?app=ios/);
   assert.match(appLayoutSource, /AuthGate/);
 });
 
 test("terms are served from the public /terms route", () => {
   assert.ok(existsSync(publicTermsPath));
   assert.equal(existsSync(protectedTermsPath), false);
-  assert.match(publicTermsSource, /export default function TermsPage/);
+  assert.match(publicTermsSource, /export default async function TermsPage/);
   assert.match(publicTermsSource, /export const metadata/);
   assert.match(publicTermsSource, /canonical: "\/terms"/);
   assert.match(publicTermsSource, /山支度（YAMAJITAKU、以下「本アプリ」といいます）/);
@@ -31,6 +34,9 @@ test("terms are served from the public /terms route", () => {
   assert.doesNotMatch(publicTermsSource, /requireUser/);
   assert.doesNotMatch(publicTermsSource, /redirect\("\/login"\)/);
   assert.doesNotMatch(publicTermsSource, /noindex/i);
+  assert.match(publicTermsSource, /from\?: string/);
+  assert.match(publicTermsSource, /ログイン画面へ戻る/);
+  assert.match(publicTermsSource, /\/login\?app=ios/);
 });
 
 test("privacy policy keeps the supplied legal content and contact details", () => {

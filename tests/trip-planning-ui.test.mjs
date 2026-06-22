@@ -114,6 +114,14 @@ const authCallbackSource = readFileSync(
   new URL("../app/auth/callback/route.ts", import.meta.url),
   "utf8"
 );
+const authMobileCallbackSource = readFileSync(
+  new URL("../app/auth/mobile-callback/route.ts", import.meta.url),
+  "utf8"
+);
+const authOAuthRouteSource = readFileSync(
+  new URL("../app/auth/oauth/[provider]/route.ts", import.meta.url),
+  "utf8"
+);
 const rootLayoutSource = readFileSync(
   new URL("../app/layout.tsx", import.meta.url),
   "utf8"
@@ -675,14 +683,21 @@ test("auth landing social buttons start Supabase OAuth", () => {
   assert.match(authActionsSource, /signInWithGoogle/);
   assert.match(authActionsSource, /signInWithApple/);
   assert.match(authActionsSource, /signInWithOAuth/);
+  assert.match(authActionsSource, /skipBrowserRedirect:\s*true/);
   assert.match(authActionsSource, /provider: "google" \| "apple"/);
   assert.match(authActionsSource, /callbackUrl\.searchParams\.set\("next", "\/dashboard"\)/);
-  assert.match(authActionsSource, /yamajitaku:\/\/auth\/callback/);
+  assert.match(authActionsSource, /\/auth\/mobile-callback/);
   assert.match(authActionsSource, /YamajitakuApp/);
   assert.match(authCallbackSource, /exchangeCodeForSession/);
   assert.match(authCallbackSource, /getSafeNextPath/);
-  assert.match(authFormSource, /action=\{appleAction\}/);
-  assert.match(authFormSource, /action=\{googleAction\}/);
+  assert.match(authOAuthRouteSource, /getOAuthSignInUrl/);
+  assert.match(authOAuthRouteSource, /NextResponse\.redirect\(signInUrl\)/);
+  assert.match(authMobileCallbackSource, /yamajitaku:\/\/auth\/callback/);
+  assert.match(authMobileCallbackSource, /window\.location\.replace/);
+  assert.match(authFormSource, /href=\{appleHref\}/);
+  assert.match(authFormSource, /href=\{googleHref\}/);
+  assert.doesNotMatch(authFormSource, /action=\{appleAction\}/);
+  assert.doesNotMatch(authFormSource, /action=\{googleAction\}/);
   assert.match(authFormSource, /app=ios/);
   assert.doesNotMatch(authFormSource, /Appleで続ける[\s\S]{0,120}type="button"/);
   assert.doesNotMatch(authFormSource, /Googleで続ける[\s\S]{0,120}type="button"/);

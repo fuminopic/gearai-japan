@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const SPLASH_STORAGE_KEY = "yamajitaku:splash-seen:v2";
 const SPLASH_VISIBLE_MS = 1000;
 const SPLASH_FADE_MS = 260;
 
@@ -14,11 +13,6 @@ export function SplashScreen() {
   const [isArtworkReady, setIsArtworkReady] = useState(false);
 
   useEffect(() => {
-    if (window.sessionStorage.getItem(SPLASH_STORAGE_KEY) === "true") {
-      setPhase("hidden");
-      return;
-    }
-
     if (imageRef.current?.complete) {
       setIsArtworkReady(true);
     }
@@ -28,8 +22,6 @@ export function SplashScreen() {
     if (phase === "hidden" || !isArtworkReady) {
       return;
     }
-
-    window.sessionStorage.setItem(SPLASH_STORAGE_KEY, "true");
 
     const leaveTimer = window.setTimeout(() => {
       setPhase("leaving");

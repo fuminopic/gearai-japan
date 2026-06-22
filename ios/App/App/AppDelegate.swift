@@ -42,6 +42,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         // Called when the app was launched with a url. Feel free to add additional processing here,
         // but if you want the App API to support tracking app url opens, make sure to keep this call
+        if url.scheme == "yamajitaku", url.host == "auth", url.path == "/callback" {
+            loadOAuthCallbackInWebView(url)
+            return true
+        }
+
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
     }
 
@@ -50,6 +55,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Feel free to add additional processing here, but if you want the App API to support
         // tracking app url opens, make sure to keep this call
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
+    }
+
+    private func loadOAuthCallbackInWebView(_ url: URL) {
+        guard
+            var components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+            let query = components.percentEncodedQuery
+        else {
+            return
+        }
+
+        components.scheme = "https"
+        components.host = "yamajitaku.com"
+        components.path = "/auth/callback"
+        components.percentEncodedQuery = query
+
+        guard
+            let callbackUrl = components.url,
+            let bridgeViewController = window?.rootViewController as? CAPBridgeViewController
+        else {
+            return
+        }
+
+        bridgeViewController.webView?.load(URLRequest(url: callbackUrl))
     }
 
 }

@@ -676,11 +676,14 @@ test("auth landing social buttons start Supabase OAuth", () => {
   assert.match(authActionsSource, /signInWithApple/);
   assert.match(authActionsSource, /signInWithOAuth/);
   assert.match(authActionsSource, /provider: "google" \| "apple"/);
-  assert.match(authActionsSource, /\/auth\/callback\?next=\/dashboard/);
+  assert.match(authActionsSource, /callbackUrl\.searchParams\.set\("next", "\/dashboard"\)/);
+  assert.match(authActionsSource, /yamajitaku:\/\/auth\/callback/);
+  assert.match(authActionsSource, /YamajitakuApp/);
   assert.match(authCallbackSource, /exchangeCodeForSession/);
   assert.match(authCallbackSource, /getSafeNextPath/);
   assert.match(authFormSource, /action=\{appleAction\}/);
   assert.match(authFormSource, /action=\{googleAction\}/);
+  assert.match(authFormSource, /app=ios/);
   assert.doesNotMatch(authFormSource, /Appleで続ける[\s\S]{0,120}type="button"/);
   assert.doesNotMatch(authFormSource, /Googleで続ける[\s\S]{0,120}type="button"/);
 });

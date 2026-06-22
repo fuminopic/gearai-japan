@@ -17,6 +17,7 @@ type AuthFormProps = {
   appleAction: () => void | Promise<void>;
   googleAction: () => void | Promise<void>;
   error?: string;
+  isIosApp?: boolean;
   notice?: string;
   showEmailForm?: boolean;
 };
@@ -27,11 +28,16 @@ export function AuthForm({
   appleAction,
   googleAction,
   error,
+  isIosApp,
   notice,
   showEmailForm
 }: AuthFormProps) {
   const isSignup = mode === "signup";
   const shouldShowEmailForm = Boolean(showEmailForm || error);
+  const emailLoginHref = isIosApp ? "/login?email=1&app=ios" : "/login?email=1";
+  const emailSignupHref = isIosApp ? "/signup?email=1&app=ios" : "/signup?email=1";
+  const landingLoginHref = isIosApp ? "/login?app=ios" : "/login";
+  const landingSignupHref = isIosApp ? "/signup?app=ios" : "/signup";
 
   if (shouldShowEmailForm) {
     return (
@@ -39,7 +45,7 @@ export function AuthForm({
         <div className="mx-auto flex min-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-56px)] w-full max-w-[390px] flex-col">
           <div className="flex items-center justify-between">
             <Link
-              href={isSignup ? "/signup" : "/login"}
+              href={isSignup ? landingSignupHref : landingLoginHref}
               className="grid h-12 w-12 place-items-center rounded-[14px] bg-white text-stone-700 shadow-sm ring-1 ring-stone-100"
               aria-label="戻る"
             >
@@ -136,7 +142,7 @@ export function AuthForm({
             <p className="mt-6 text-center text-sm text-stone-600">
               {isSignup ? "すでにアカウントがありますか？" : "はじめて利用しますか？"}{" "}
               <Link
-                href={isSignup ? "/login?email=1" : "/signup?email=1"}
+                href={isSignup ? emailLoginHref : emailSignupHref}
                 className="font-semibold text-[#14724e]"
               >
                 {isSignup ? "ログイン" : "新規登録"}
@@ -208,14 +214,14 @@ export function AuthForm({
 
           <div className="mt-[30px] space-y-[14px] max-[380px]:mt-6 max-[380px]:space-y-3">
             <Link
-              href="/signup?email=1"
+              href={emailSignupHref}
               className="flex h-12 w-full items-center justify-center gap-3 rounded-[14px] bg-gradient-to-r from-[#42b760] to-[#4fc96f] px-5 text-[15px] font-semibold text-white shadow-[0_18px_42px_rgba(0,0,0,0.28)] transition hover:brightness-105"
             >
               無料で新規登録
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
             <Link
-              href="/login?email=1"
+              href={emailLoginHref}
               className="flex h-12 w-full items-center justify-center rounded-[14px] border border-white/75 bg-black/12 px-5 text-[15px] font-semibold text-white backdrop-blur-sm transition hover:bg-white/10"
             >
               ログイン

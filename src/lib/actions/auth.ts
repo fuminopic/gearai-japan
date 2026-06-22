@@ -103,7 +103,13 @@ export async function deleteAccount() {
 async function signInWithOAuthProvider(provider: "google" | "apple") {
   const supabase = await createClient();
   const origin = await getRequestOrigin();
-  const redirectTo = `${origin}/auth/callback?next=/dashboard`;
+  const isIosApp = await isIosAppRequest();
+  const callbackUrl = new URL(isIosApp ? "yamajitaku://auth/callback" : "/auth/callback", origin);
+  callbackUrl.searchParams.set("next", "/dashboard");
+  if (isIosApp) {
+    callbackUrl.searchParams.set("app", "ios");
+  }
+  const redirectTo = callbackUrl.toString();
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
@@ -123,6 +129,27 @@ async function signInWithOAuthProvider(provider: "google" | "apple") {
   }
 
   redirect(data.url as Route);
+}
+
+async function isIosAppRequest() {
+  const requestHeaders = await headers();
+  const userAgent = requestHeaders.get("user-agent") ?? "";
+  const referer = requestHeaders.get("referer");
+
+  if (userAgent.includes("YamajitakuApp")) {
+    return true;
+  }
+
+  if (!referer) {
+    return false;
+  }
+
+  try {
+    const refererUrl = new URL(referer);
+    return refererUrl.searchParams.get("app") === "ios";
+  } catch {
+    return false;
+  }
 }
 
 async function getRequestOrigin() {

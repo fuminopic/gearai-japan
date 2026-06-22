@@ -8,6 +8,7 @@ const config: CapacitorConfig = {
     url: "https://yamajitaku.com",
     cleartext: false
   },
+  appendUserAgent: "YamajitakuApp",
   ios: {
     contentInset: "automatic",
     scrollEnabled: true

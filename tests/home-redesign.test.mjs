@@ -46,6 +46,10 @@ const globalsSource = readFileSync(
   new URL("../app/globals.css", import.meta.url),
   "utf8"
 );
+const rootLayoutSource = readFileSync(
+  new URL("../app/layout.tsx", import.meta.url),
+  "utf8"
+);
 
 test("home redesign keeps the required mobile-first section order", () => {
   const order = [
@@ -131,6 +135,17 @@ test("home redesign v2 removes hero secondary actions and replaces bell with men
   assert.doesNotMatch(dashboardSource, /CalendarDays/);
   assert.doesNotMatch(dashboardSource, /formatTripDate/);
   assert.doesNotMatch(dashboardSource, /aria-label="計画を開く"/);
+});
+
+test("home background fills the iOS safe area during scroll", () => {
+  assert.match(rootLayoutSource, /viewportFit: "cover"/);
+  assert.match(rootLayoutSource, /themeColor: "#FAFAFA"/);
+  assert.match(globalsSource, /html \{[\s\S]*background: #fafafa;/);
+  assert.match(globalsSource, /body \{[\s\S]*background: #fafafa;/);
+  assert.match(globalsSource, /body:has\(main\.home-redesign\)::before/);
+  assert.match(globalsSource, /height: env\(safe-area-inset-top\);/);
+  assert.match(globalsSource, /position: fixed;/);
+  assert.match(globalsSource, /z-index: 60;/);
 });
 
 test("home hero shows the saved plan checklist summary over the static hills background", () => {

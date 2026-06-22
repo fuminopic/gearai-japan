@@ -177,7 +177,7 @@ test("app navigation responds immediately during dynamic route loading", () => {
   assert.match(appLayoutSource, /function AppLayout/);
   assert.match(appLayoutSource, /async function AuthGate/);
   assert.match(appLoadingSource, /animate-pulse/);
-  assert.match(rootLoadingSource, /animate-pulse/);
+  assert.doesNotMatch(rootLoadingSource, /animate-pulse/);
   assert.match(appNavSource, /NavigationFeedback/);
   assert.match(appNavSource, /AppRoutePrefetcher/);
   assert.match(appRoutePrefetcherSource, /router\.prefetch/);

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 import "./globals.css";
 
@@ -20,6 +20,14 @@ export const metadata: Metadata = {
     title: "山支度 | YAMAJITAKU",
     description: "登山準備を、もっとシンプルに。"
   }
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#FAFAFA",
+  colorScheme: "light"
 };
 
 export default function RootLayout({

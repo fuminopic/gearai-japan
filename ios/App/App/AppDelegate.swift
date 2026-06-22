@@ -66,7 +66,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         components.scheme = "https"
-        components.host = "yamajitaku.com"
+        components.host = "www.yamajitaku.com"
         components.path = "/auth/callback"
         components.percentEncodedQuery = query
 

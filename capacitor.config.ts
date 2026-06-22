@@ -5,7 +5,8 @@ const config: CapacitorConfig = {
   appName: "山支度",
   webDir: "capacitor-www",
   server: {
-    url: "https://yamajitaku.com",
+    url: "https://www.yamajitaku.com",
+    allowNavigation: ["yamajitaku.com", "www.yamajitaku.com"],
     cleartext: false
   },
   appendUserAgent: "YamajitakuApp",

@@ -19,7 +19,7 @@ export async function createClient() {
       setAll(cookiesToSet: Parameters<SetAllCookies>[0]) {
         try {
           cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
+            cookieStore.set(name, value, withSharedYamajitakuDomain(options));
           });
         } catch {
           // Server Components cannot set cookies; Server Actions can.
@@ -27,4 +27,21 @@ export async function createClient() {
       }
     }
   });
+}
+
+function withSharedYamajitakuDomain(options: Parameters<SetAllCookies>[0][number]["options"]) {
+  if (!usesYamajitakuDomain()) {
+    return options;
+  }
+
+  return {
+    ...options,
+    domain: ".yamajitaku.com",
+    path: options.path ?? "/"
+  };
+}
+
+function usesYamajitakuDomain() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  return Boolean(siteUrl?.includes("yamajitaku.com"));
 }

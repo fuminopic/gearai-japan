@@ -25,7 +25,7 @@ export async function updateSession(request: NextRequest) {
           request
         });
         cookiesToSet.forEach(({ name, value, options }) => {
-          response.cookies.set(name, value, options);
+          response.cookies.set(name, value, withSharedYamajitakuDomain(options));
         });
       }
     }
@@ -35,4 +35,21 @@ export async function updateSession(request: NextRequest) {
   await supabase.auth.getSession();
 
   return response;
+}
+
+function withSharedYamajitakuDomain(options: Parameters<SetAllCookies>[0][number]["options"]) {
+  if (!usesYamajitakuDomain()) {
+    return options;
+  }
+
+  return {
+    ...options,
+    domain: ".yamajitaku.com",
+    path: options.path ?? "/"
+  };
+}
+
+function usesYamajitakuDomain() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  return Boolean(siteUrl?.includes("yamajitaku.com"));
 }

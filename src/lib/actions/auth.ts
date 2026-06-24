@@ -122,7 +122,8 @@ async function signInWithOAuthProvider(provider: "google" | "apple") {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo
+      redirectTo,
+      queryParams: getOAuthQueryParams(provider)
     }
   });
 
@@ -153,6 +154,7 @@ export async function getOAuthSignInUrl(provider: "google" | "apple", app?: stri
     provider,
     options: {
       redirectTo: callbackUrl.toString(),
+      queryParams: getOAuthQueryParams(provider),
       skipBrowserRedirect: true
     }
   });
@@ -169,6 +171,16 @@ export async function getOAuthSignInUrl(provider: "google" | "apple", app?: stri
   }
 
   return data.url;
+}
+
+function getOAuthQueryParams(provider: "google" | "apple") {
+  if (provider === "google") {
+    return {
+      prompt: "select_account"
+    };
+  }
+
+  return undefined;
 }
 
 async function isIosAppRequest() {

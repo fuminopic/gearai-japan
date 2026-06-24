@@ -106,6 +106,10 @@ const authFormSource = readFileSync(
   new URL("../src/components/auth-form.tsx", import.meta.url),
   "utf8"
 );
+const socialAuthButtonsSource = readFileSync(
+  new URL("../src/components/social-auth-buttons.tsx", import.meta.url),
+  "utf8"
+);
 const authActionsSource = readFileSync(
   new URL("../src/lib/actions/auth.ts", import.meta.url),
   "utf8"
@@ -173,10 +177,11 @@ test("trip planning page always refreshes gear-derived pack coverage", () => {
 });
 
 test("app navigation responds immediately during dynamic route loading", () => {
-  assert.match(appLayoutSource, /<Suspense fallback=\{<AppLoadingFallback \/>/);
+  assert.match(appLayoutSource, /<Suspense fallback=\{<AppAuthLoading \/>/);
   assert.match(appLayoutSource, /function AppLayout/);
   assert.match(appLayoutSource, /async function AuthGate/);
-  assert.match(appLoadingSource, /animate-pulse/);
+  assert.match(appLoadingSource, /AppLoadingFallback/);
+  assert.doesNotMatch(appLoadingSource, /animate-pulse/);
   assert.doesNotMatch(rootLoadingSource, /animate-pulse/);
   assert.match(appNavSource, /NavigationFeedback/);
   assert.match(appNavSource, /AppRoutePrefetcher/);
@@ -684,6 +689,7 @@ test("auth landing social buttons start Supabase OAuth", () => {
   assert.match(authActionsSource, /signInWithApple/);
   assert.match(authActionsSource, /signInWithOAuth/);
   assert.match(authActionsSource, /skipBrowserRedirect:\s*true/);
+  assert.match(authActionsSource, /prompt:\s*"select_account"/);
   assert.match(authActionsSource, /provider: "google" \| "apple"/);
   assert.match(authActionsSource, /callbackUrl\.searchParams\.set\("next", "\/dashboard"\)/);
   assert.match(authActionsSource, /\/auth\/mobile-callback/);
@@ -693,9 +699,12 @@ test("auth landing social buttons start Supabase OAuth", () => {
   assert.match(authOAuthRouteSource, /getOAuthSignInUrl/);
   assert.match(authOAuthRouteSource, /NextResponse\.redirect\(signInUrl\)/);
   assert.match(authMobileCallbackSource, /yamajitaku:\/\/auth\/callback/);
+  assert.match(authMobileCallbackSource, /exchangeCodeForSession/);
+  assert.match(authMobileCallbackSource, /access_token/);
+  assert.match(authMobileCallbackSource, /refresh_token/);
   assert.match(authMobileCallbackSource, /window\.location\.replace/);
-  assert.match(authFormSource, /href=\{appleHref\}/);
-  assert.match(authFormSource, /href=\{googleHref\}/);
+  assert.match(socialAuthButtonsSource, /openOAuth\(appleHref\)/);
+  assert.match(socialAuthButtonsSource, /openOAuth\(googleHref\)/);
   assert.doesNotMatch(authFormSource, /action=\{appleAction\}/);
   assert.doesNotMatch(authFormSource, /action=\{googleAction\}/);
   assert.match(authFormSource, /app=ios/);
@@ -709,7 +718,7 @@ test("email login guides OAuth-created accounts back to social login", () => {
   assert.match(authActionsSource, /Google \/ Appleで登録した場合は/);
   assert.match(authFormSource, /Google \/ Appleで登録した方は/);
   assert.match(authFormSource, /Googleアカウントのパスワードはここでは使用できません/);
-  assert.match(authFormSource, /function SocialAuthButtons/);
+  assert.match(socialAuthButtonsSource, /function SocialAuthButtons/);
   assert.match(authFormSource, /variant="light"/);
   assert.match(authFormSource, /variant="dark"/);
 });

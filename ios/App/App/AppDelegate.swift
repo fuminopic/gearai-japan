@@ -1,6 +1,7 @@
 import UIKit
 import Capacitor
 import WebKit
+import SafariServices
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -43,6 +44,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the app was launched with a url. Feel free to add additional processing here,
         // but if you want the App API to support tracking app url opens, make sure to keep this call
         if url.scheme == "yamajitaku", url.host == "auth", url.path == "/callback" {
+            closePresentedSafariViewController()
             loadOAuthCallbackInWebView(url)
             return true
         }
@@ -78,6 +80,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         bridgeViewController.webView?.load(URLRequest(url: callbackUrl))
+    }
+
+    private func closePresentedSafariViewController() {
+        guard let rootViewController = window?.rootViewController else {
+            return
+        }
+
+        if rootViewController.presentedViewController is SFSafariViewController {
+            rootViewController.dismiss(animated: true)
+            return
+        }
+
+        if rootViewController.presentedViewController != nil {
+            rootViewController.dismiss(animated: true)
+        }
     }
 
 }

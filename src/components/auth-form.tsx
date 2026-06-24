@@ -9,6 +9,7 @@ import {
   ShieldCheck
 } from "lucide-react";
 
+import { SocialAuthButtons } from "@/components/social-auth-buttons";
 import { SubmitButton } from "@/components/submit-button";
 
 type AuthFormProps = {
@@ -160,6 +161,7 @@ export function AuthForm({
               appleHref={appleAuthHref}
               googleHref={googleAuthHref}
               variant="light"
+              isIosApp={isIosApp}
             />
           </section>
         </div>
@@ -239,6 +241,7 @@ export function AuthForm({
             appleHref={appleAuthHref}
             googleHref={googleAuthHref}
             variant="dark"
+            isIosApp={isIosApp}
           />
 
           <p className="mt-4 flex items-start gap-2 text-[9px] leading-4 text-white/58 max-[380px]:mt-3">
@@ -254,41 +257,6 @@ export function AuthForm({
         </section>
       </div>
     </main>
-  );
-}
-
-function SocialAuthButtons({
-  appleHref,
-  googleHref,
-  variant
-}: {
-  appleHref: string;
-  googleHref: string;
-  variant: "dark" | "light";
-}) {
-  const buttonClass =
-    variant === "dark"
-      ? "flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-white/55 bg-black/20 px-3 text-[12px] font-semibold text-white backdrop-blur-sm transition hover:bg-white/10"
-      : "flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-stone-200 bg-white px-3 text-[12px] font-semibold text-stone-800 shadow-sm transition hover:bg-stone-50";
-
-  return (
-    <div className="grid grid-cols-2 gap-3">
-      <a href={appleHref} className={buttonClass}>
-        <span className="text-base" aria-hidden="true">
-          
-        </span>
-        Appleで続ける
-      </a>
-      <a href={googleHref} className={buttonClass}>
-        <span
-          className="grid h-4 w-4 place-items-center rounded-full bg-white text-[11px] font-bold text-[#4285f4]"
-          aria-hidden="true"
-        >
-          G
-        </span>
-        Googleで続ける
-      </a>
-    </div>
   );
 }
 

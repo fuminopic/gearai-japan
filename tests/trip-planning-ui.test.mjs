@@ -703,8 +703,10 @@ test("auth landing social buttons start Supabase OAuth", () => {
   assert.match(authMobileCallbackSource, /access_token/);
   assert.match(authMobileCallbackSource, /refresh_token/);
   assert.match(authMobileCallbackSource, /window\.location\.replace/);
-  assert.match(socialAuthButtonsSource, /openOAuth\(appleHref\)/);
-  assert.match(socialAuthButtonsSource, /openOAuth\(googleHref\)/);
+  assert.match(socialAuthButtonsSource, /Browser\.close\(\)\.catch/);
+  assert.match(socialAuthButtonsSource, /setPendingProvider\(null\)/);
+  assert.match(socialAuthButtonsSource, /openOAuth\("apple", appleHref\)/);
+  assert.match(socialAuthButtonsSource, /openOAuth\("google", googleHref\)/);
   assert.doesNotMatch(authFormSource, /action=\{appleAction\}/);
   assert.doesNotMatch(authFormSource, /action=\{googleAction\}/);
   assert.match(authFormSource, /app=ios/);

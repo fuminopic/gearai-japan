@@ -66,8 +66,9 @@ export async function signInWithApple() {
 
 export async function signOut() {
   const supabase = await createClient();
+  const isIosApp = await isIosAppRequest();
   await supabase.auth.signOut();
-  redirect("/login");
+  redirect(isIosApp ? "/login?app=ios" : "/login");
 }
 
 export async function deleteAccount() {

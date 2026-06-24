@@ -1,25 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { createClient } from "@/lib/supabase/server";
-
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const appCallbackUrl = new URL("yamajitaku://auth/callback");
-  const code = requestUrl.searchParams.get("code");
 
   for (const [key, value] of requestUrl.searchParams.entries()) {
     appCallbackUrl.searchParams.set(key, value);
-  }
-
-  if (code) {
-    const supabase = await createClient();
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (!error && data.session) {
-      appCallbackUrl.searchParams.delete("code");
-      appCallbackUrl.searchParams.set("access_token", data.session.access_token);
-      appCallbackUrl.searchParams.set("refresh_token", data.session.refresh_token);
-    }
   }
 
   if (!appCallbackUrl.searchParams.has("next")) {

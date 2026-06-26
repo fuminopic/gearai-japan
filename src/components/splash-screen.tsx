@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const SPLASH_VISIBLE_MS = 1000;
-const SPLASH_FADE_MS = 260;
+const SPLASH_VISIBLE_MS = 1500;
+const SPLASH_FADE_MS = 500;
 const SPLASH_SESSION_KEY = "yamajitaku:splash-shown";
 
 type SplashPhase = "visible" | "leaving" | "hidden";
@@ -51,20 +51,25 @@ export function SplashScreen() {
   return (
     <div
       aria-hidden="true"
-      className={`fixed inset-0 z-[120] bg-white transition-opacity duration-[260ms] ease-out ${
+      className={`fixed inset-0 z-[120] flex items-center justify-center bg-[#FAFAF8] transition-opacity duration-500 ease-out ${
         phase === "leaving" ? "opacity-0" : "opacity-100"
       }`}
     >
-      <img
-        ref={imageRef}
-        src="/splash-screen.png"
-        alt=""
-        className="h-full w-full object-cover"
-        decoding="async"
-        fetchPriority="high"
-        onError={() => setIsArtworkReady(true)}
-        onLoad={() => setIsArtworkReady(true)}
-      />
+      <div className="flex flex-col items-center">
+        <img
+          ref={imageRef}
+          src="/yamajitaku-icon.png"
+          alt=""
+          className="h-28 w-28 object-contain sm:h-32 sm:w-32"
+          decoding="async"
+          fetchPriority="high"
+          onError={() => setIsArtworkReady(true)}
+          onLoad={() => setIsArtworkReady(true)}
+        />
+        <div className="mt-5 text-3xl font-light tracking-[0.18em] text-[#2D6A4F]">
+          山支度
+        </div>
+      </div>
     </div>
   );
 }

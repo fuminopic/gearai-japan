@@ -58,17 +58,14 @@ export function SplashScreen() {
       <div className="flex flex-col items-center">
         <img
           ref={imageRef}
-          src="/yamajitaku-icon.png"
+          src="/yamajitaku-splash-logo.png"
           alt=""
-          className="h-28 w-28 object-contain sm:h-32 sm:w-32"
+          className="h-[168px] w-[168px] object-contain sm:h-48 sm:w-48"
           decoding="async"
           fetchPriority="high"
           onError={() => setIsArtworkReady(true)}
           onLoad={() => setIsArtworkReady(true)}
         />
-        <div className="mt-5 text-3xl font-light tracking-[0.18em] text-[#2D6A4F]">
-          山支度
-        </div>
       </div>
     </div>
   );

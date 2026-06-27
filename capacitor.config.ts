@@ -14,7 +14,11 @@ const config: CapacitorConfig = {
   },
   appendUserAgent: "YamajitakuApp",
   ios: {
-    contentInset: "automatic",
+    // Edge-to-edge: let the web content fill the full screen on every device,
+    // and handle the notch / home-indicator with CSS env() safe-area insets
+    // (the app already uses viewport-fit=cover). "automatic" instead reserves a
+    // safe-area band that exposed the webview background as a blank strip.
+    contentInset: "never",
     scrollEnabled: true
   },
   plugins: {

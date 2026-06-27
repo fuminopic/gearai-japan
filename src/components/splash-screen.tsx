@@ -11,20 +11,6 @@ export function SplashScreen() {
   const imageRef = useRef<HTMLImageElement>(null);
   const [phase, setPhase] = useState<SplashPhase>("visible");
   const [isArtworkReady, setIsArtworkReady] = useState(false);
-  const [isNativeApp, setIsNativeApp] = useState(false);
-
-  useEffect(() => {
-    // On native (Capacitor) the OS-level splash screen already covers startup
-    // and is dismissed by NativeSplashHider, so the web splash would only add a
-    // second, redundant flash. Skip it there.
-    void import("@capacitor/core")
-      .then(({ Capacitor }) => {
-        if (Capacitor.isNativePlatform()) {
-          setIsNativeApp(true);
-        }
-      })
-      .catch(() => undefined);
-  }, []);
 
   useEffect(() => {
 
@@ -52,7 +38,7 @@ export function SplashScreen() {
     };
   }, [isArtworkReady, phase]);
 
-  if (phase === "hidden" || isNativeApp) {
+  if (phase === "hidden") {
     return null;
   }
 

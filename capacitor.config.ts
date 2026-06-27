@@ -19,21 +19,14 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      // Hold the native splash until the web app signals first paint
-      // (SplashScreen.hide()), so the remote page load never shows a blank
-      // webview. launchShowDuration is only a backstop in case the web bundle
-      // never loads (e.g. fully offline). It is deliberately generous so a slow
-      // network never prematurely reveals a half-loaded page — the web layer
-      // hides it far sooner on any working connection.
-      launchShowDuration: 20000,
+      // No branded splash at launch. The launch screen is just the brand
+      // background; the app goes straight to the login (or home) page. The
+      // branded splash (logo, 1.5s + fade) is shown by the web app AFTER login,
+      // on entry to the authenticated area — not at process launch.
+      launchShowDuration: 0,
       launchAutoHide: true,
-      launchFadeOutDuration: 300,
       backgroundColor: "#FAFAF8",
-      showSpinner: false,
-      // iOS shows the LaunchScreen storyboard (configured to display the
-      // "Splash" image full-screen) — no iOS-specific resource name needed.
-      splashFullScreen: true,
-      splashImmersive: false
+      showSpinner: false
     }
   }
 };

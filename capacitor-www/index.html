@@ -2,30 +2,269 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0d1512" />
     <title>山支度</title>
     <style>
-      html,
-      body {
+      * { box-sizing: border-box; }
+      html, body {
         height: 100%;
         margin: 0;
-        background: #14724e;
-        color: #ffffff;
-        font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+        background: #0d1512;
+        color: #fff;
+        font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
       }
+      button { font: inherit; cursor: pointer; }
+      input { font: inherit; }
 
-      main {
-        display: grid;
+      /* ---------- Login landing ---------- */
+      #login {
+        position: relative;
         min-height: 100%;
-        place-items: center;
-        padding: 24px;
-        text-align: center;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
       }
+      #login .bg {
+        position: absolute; inset: 0;
+        background: url("auth-mountain-bg.png") center / cover no-repeat;
+      }
+      #login .scrim {
+        position: absolute; inset: 0;
+        background: linear-gradient(180deg,
+          rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.18) 38%,
+          rgba(0,0,0,0.72) 76%, rgba(0,0,0,0.94) 100%);
+      }
+      .wrap {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 390px;
+        margin: 0 auto;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: calc(env(safe-area-inset-top) + 60px) 31px
+                 calc(env(safe-area-inset-bottom) + 22px);
+      }
+      .logo { display: flex; justify-content: center; }
+      .logo img { height: 70px; width: auto; object-fit: contain; }
+      .lower { margin-top: auto; }
+      h1 { font-size: 28px; line-height: 1.36; font-weight: 600; margin: 0; }
+      .accent { margin-top: 16px; height: 2px; width: 26px; border-radius: 99px; background: #43b86a; }
+      .sub { margin-top: 14px; font-size: 14px; line-height: 1.7; color: rgba(255,255,255,0.9); }
+
+      .btns { margin-top: 28px; display: grid; gap: 12px; }
+      .btn {
+        height: 48px; width: 100%; border-radius: 14px; border: 0;
+        font-size: 15px; font-weight: 600; display: flex; align-items: center;
+        justify-content: center; gap: 10px; color: #fff;
+      }
+      .btn-primary { background: linear-gradient(90deg, #42b760, #4fc96f); }
+      .btn-ghost { background: rgba(0,0,0,0.12); border: 1px solid rgba(255,255,255,0.75); }
+      .or { margin: 18px 0; display: flex; align-items: center; gap: 14px;
+            font-size: 11px; color: rgba(255,255,255,0.72); }
+      .or::before, .or::after { content: ""; height: 1px; flex: 1; background: rgba(255,255,255,0.28); }
+      .social { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .social .btn {
+        height: 44px; font-size: 12px; border-radius: 10px;
+        background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.55);
+        backdrop-filter: blur(4px);
+      }
+      .gicon { width: 16px; height: 16px; border-radius: 99px; background: #fff;
+               color: #4285f4; font-weight: 700; font-size: 11px;
+               display: grid; place-items: center; }
+      .legal { margin-top: 16px; font-size: 9px; line-height: 1.5; color: rgba(255,255,255,0.58); text-align: center; }
+      .legal a { color: #48c579; }
+
+      /* ---------- Email form ---------- */
+      .email-form { display: none; margin-top: 22px; }
+      .email-form.show { display: block; }
+      .field { display: block; margin-bottom: 14px; }
+      .field span { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); }
+      .field input {
+        margin-top: 8px; height: 50px; width: 100%; border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.12);
+        color: #fff; padding: 0 16px; outline: none;
+      }
+      .field input::placeholder { color: rgba(255,255,255,0.5); }
+      .err { display: none; margin: 0 0 12px; padding: 10px 14px; border-radius: 12px;
+             background: rgba(220,38,38,0.18); color: #fecaca; font-size: 13px; }
+      .err.show { display: block; }
+      .link { background: none; border: 0; color: #7ee06f; font-weight: 600; font-size: 13px; padding: 8px; }
+      .center { text-align: center; margin-top: 6px; }
+
+      /* ---------- Handoff splash ---------- */
+      #splash {
+        position: fixed; inset: 0; z-index: 50; display: none;
+        align-items: center; justify-content: center; background: #FAFAF8;
+        transition: opacity 0.4s ease;
+      }
+      #splash.show { display: flex; }
+      #splash img { height: 168px; width: 168px; object-fit: contain; }
+
+      [disabled] { opacity: 0.6; }
     </style>
   </head>
   <body>
-    <main>
-      <p>山支度を読み込んでいます</p>
+    <!-- Branded login (renders instantly from local assets) -->
+    <main id="login">
+      <div class="bg"></div>
+      <div class="scrim"></div>
+      <div class="wrap">
+        <div class="logo">
+          <img src="auth-logo-white-cropped.png" alt="山支度 YAMAJITAKU" />
+        </div>
+        <div class="lower">
+          <h1>山へ行く前の<br />不安をなくす。</h1>
+          <div class="accent"></div>
+          <p class="sub">登山準備を、<br />もっとシンプルに。</p>
+
+          <!-- Default: choices -->
+          <div id="choices">
+            <div class="btns">
+              <button class="btn btn-ghost" id="show-email">メールでログイン</button>
+            </div>
+            <div class="or"><span>または</span></div>
+            <div class="social">
+              <button class="btn" id="apple"> Appleで続ける</button>
+              <button class="btn" id="google"><span class="gicon">G</span>Googleで続ける</button>
+            </div>
+            <p class="legal">
+              続行することで<a id="terms">利用規約</a>と<a id="privacy">プライバシーポリシー</a>に同意したことになります。
+            </p>
+          </div>
+
+          <!-- Email/password form -->
+          <form class="email-form" id="email-form">
+            <p class="err" id="err"></p>
+            <label class="field">
+              <span>メールアドレス</span>
+              <input id="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required />
+            </label>
+            <label class="field">
+              <span>パスワード</span>
+              <input id="password" type="password" autocomplete="current-password" placeholder="6文字以上" required />
+            </label>
+            <button class="btn btn-primary" id="submit" type="submit">ログイン</button>
+            <div class="center">
+              <button class="link" id="to-signup" type="button">新規登録</button>
+              <button class="link" id="back" type="button">戻る</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </main>
+
+    <!-- Handoff splash: shown after auth, while the remote app loads -->
+    <div id="splash"><img src="yamajitaku-splash-logo.png" alt="" /></div>
+
+    <script src="supabase.js"></script>
+    <script>
+      (function () {
+        var SUPABASE_URL = "https://fdakykmfsrsnuwnhdwmw.supabase.co";
+        var SUPABASE_ANON_KEY = "sb_publishable_JuWQ1maCyTx0jpnTBcfBeA_fvluSI_n";
+        var REMOTE = "https://www.yamajitaku.com";
+
+        var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+        });
+
+        var $ = function (id) { return document.getElementById(id); };
+
+        function inApp() {
+          return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+        }
+
+        // Open the remote app with a freshly minted session (reuses /auth/callback).
+        function handoff(session) {
+          $("splash").classList.add("show");
+          var url = new URL(REMOTE + "/auth/callback");
+          url.searchParams.set("access_token", session.access_token);
+          url.searchParams.set("refresh_token", session.refresh_token);
+          url.searchParams.set("app", "ios");
+          url.searchParams.set("next", "/dashboard");
+          // Let the splash paint, then navigate; the remote shows its own splash
+          // over the load, so the brand mark stays continuous.
+          setTimeout(function () { window.location.href = url.toString(); }, 450);
+        }
+
+        function setBusy(b) {
+          $("submit").disabled = b;
+          $("submit").textContent = b ? "ログイン中..." : "ログイン";
+        }
+        function showError(msg) {
+          var e = $("err");
+          if (!msg) { e.classList.remove("show"); e.textContent = ""; return; }
+          e.textContent = msg; e.classList.add("show");
+        }
+        function loginErrorMessage(msg) {
+          var n = (msg || "").toLowerCase();
+          if (n.indexOf("invalid login credentials") >= 0 || n.indexOf("invalid credentials") >= 0) {
+            return "メールアドレスまたはパスワードが正しくありません。Google / Appleで登録した場合は下のボタンからログインしてください。";
+          }
+          return msg || "ログインできませんでした";
+        }
+
+        // OAuth reuses the existing iOS flow: open the remote provider route in
+        // the in-app browser; the yamajitaku:// deep link returns and the native
+        // layer loads /auth/callback into the main webview.
+        function oauth(provider) {
+          var url = REMOTE + "/auth/oauth/" + provider + "?app=ios";
+          if (inApp() && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
+            window.Capacitor.Plugins.Browser.open({
+              url: url, presentationStyle: "fullscreen", toolbarColor: "#14724e"
+            });
+          } else {
+            window.location.href = url;
+          }
+        }
+
+        // --- wire up UI ---
+        $("show-email").addEventListener("click", function () {
+          $("choices").style.display = "none";
+          $("email-form").classList.add("show");
+        });
+        $("back").addEventListener("click", function () {
+          $("email-form").classList.remove("show");
+          $("choices").style.display = "";
+          showError("");
+        });
+        $("apple").addEventListener("click", function () { oauth("apple"); });
+        $("google").addEventListener("click", function () { oauth("google"); });
+        $("terms").addEventListener("click", function () { window.location.href = REMOTE + "/terms?from=auth&app=ios"; });
+        $("privacy").addEventListener("click", function () { window.location.href = REMOTE + "/privacy?from=auth&app=ios"; });
+        $("to-signup").addEventListener("click", function () { window.location.href = REMOTE + "/signup?app=ios"; });
+
+        $("email-form").addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          showError("");
+          setBusy(true);
+          client.auth
+            .signInWithPassword({ email: $("email").value.trim(), password: $("password").value })
+            .then(function (res) {
+              setBusy(false);
+              if (res.error) { showError(loginErrorMessage(res.error.message)); return; }
+              if (res.data && res.data.session) { handoff(res.data.session); }
+              else { showError("ログインできませんでした"); }
+            })
+            .catch(function () { setBusy(false); showError("ログインできませんでした"); });
+        });
+
+        // On launch: the login UI is already visible (instant, no white). In the
+        // background, if a valid stored session exists, hand off automatically.
+        client.auth.getSession().then(function (res) {
+          var session = res && res.data && res.data.session;
+          if (!session) return;
+          client.auth.getUser().then(function (u) {
+            if (u && u.data && u.data.user) { handoff(session); }
+          }).catch(function () {});
+        }).catch(function () {});
+      })();
+    </script>
   </body>
 </html>

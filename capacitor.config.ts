@@ -4,11 +4,12 @@ const config: CapacitorConfig = {
   appId: "com.yamajitaku.app",
   appName: "山支度",
   webDir: "capacitor-www",
-  // Brand background for the webview/window so the cold-launch gap before the
-  // first paint is the brand cream colour, never a black or white flash.
-  backgroundColor: "#FAFAF8",
+  // The app now boots the bundled local login page (capacitor-www) instantly,
+  // instead of loading the remote site first. The login page navigates to the
+  // remote app (allowNavigation) after authentication. Background matches the
+  // local login screen so there is no colour flash before it renders.
+  backgroundColor: "#0d1512",
   server: {
-    url: "https://www.yamajitaku.com",
     allowNavigation: ["yamajitaku.com", "www.yamajitaku.com"],
     cleartext: false
   },

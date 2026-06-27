@@ -21,7 +21,7 @@ export function AppLoginRedirect() {
       window.name === "yamajitaku-native" ||
       navigator.userAgent.includes("YamajitakuApp");
     if (inApp) {
-      window.location.replace("capacitor://localhost/");
+      window.location.replace("capacitor://localhost/?login=1");
     }
   }, []);
 

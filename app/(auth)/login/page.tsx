@@ -25,7 +25,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   // (before any render) so the remote login never flashes. AppLoginRedirect
   // below is a client-side fallback for cases the UA isn't seen server-side.
   if (isNativeApp) {
-    redirect("capacitor://localhost/");
+    redirect("capacitor://localhost/?login=1");
   }
 
   return (

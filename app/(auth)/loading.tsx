@@ -3,6 +3,7 @@ export default function AuthLoading() {
     <main className="flex min-h-[100dvh] items-center justify-center bg-[#FAFAF8]" aria-hidden="true">
       <div className="flex flex-col items-center">
         <img src="/yamajitaku-splash-logo.png" alt="" className="h-36 w-36 object-contain" />
+        <div className="mt-5 h-7 w-7 animate-spin rounded-full border-2 border-[#2D6A4F]/20 border-t-[#2D6A4F]" />
       </div>
     </main>
   );

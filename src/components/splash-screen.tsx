@@ -16,12 +16,16 @@ export function SplashScreen() {
   useEffect(() => {
     // In the native app, the bundled local login page already shows the splash
     // during the post-login handoff. Showing this web splash again would be a
-    // duplicate ("splash → load → splash"), so skip it on native. Web browsers
-    // (window.Capacitor undefined) keep the splash.
-    const cap = (window as unknown as {
-      Capacitor?: { isNativePlatform?: () => boolean };
-    }).Capacitor;
-    if (cap?.isNativePlatform?.()) {
+    // duplicate ("splash → load → splash"), so skip it on native.
+    //
+    // The remote app is loaded via Capacitor allowNavigation (NOT as the
+    // Capacitor server), so window.Capacitor / isNativePlatform() is NOT
+    // injected here. Detect the app by its custom user-agent instead — this is
+    // present on every page (set via appendUserAgent). Web browsers keep it.
+    if (
+      typeof navigator !== "undefined" &&
+      navigator.userAgent.includes("YamajitakuApp")
+    ) {
       setIsNativeApp(true);
     }
   }, []);

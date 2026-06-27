@@ -3,11 +3,15 @@
 import { useEffect } from "react";
 
 /**
- * Hides the native (Capacitor) splash screen once the web app has rendered its
- * first frame. The native splash is configured with launchAutoHide:false-style
- * behaviour (a long safety duration), so it stays up across the remote page
- * load and we dismiss it here only when there is real content to show — no
- * white webview, no separate loading page.
+ * Hides the native (Capacitor) splash screen once the destination page has
+ * actually finished loading — not merely first-painted. Hiding on first paint
+ * revealed the route's `loading.tsx` skeleton (nav bars + a centred spinner),
+ * which read as a broken "second splash". Waiting for the document `load`
+ * event means the splash fades straight into real content instead.
+ *
+ * The native splash has a long safety duration (launchShowDuration), so it
+ * stays up across the remote page load and the auth redirect chain. We dismiss
+ * it here when content is ready; a web-side timeout is the secondary backstop.
  *
  * Safe on web and on older native binaries: if the plugin is unavailable the
  * dynamic import / call is swallowed and nothing happens.
@@ -16,6 +20,7 @@ export function NativeSplashHider() {
   useEffect(() => {
     let cancelled = false;
     let safetyTimer: number | undefined;
+    let onLoad: (() => void) | undefined;
 
     void (async () => {
       try {
@@ -30,15 +35,25 @@ export function NativeSplashHider() {
           if (cancelled) {
             return;
           }
-          void SplashScreen.hide({ fadeOutDuration: 250 }).catch(() => undefined);
+          cancelled = true;
+          if (safetyTimer !== undefined) {
+            window.clearTimeout(safetyTimer);
+          }
+          void SplashScreen.hide({ fadeOutDuration: 300 }).catch(() => undefined);
         };
 
-        // Primary: hide once the first paint has actually landed.
-        requestAnimationFrame(() => requestAnimationFrame(hide));
+        // Primary: hide when the page has fully loaded (real content present),
+        // so the splash never reveals the loading skeleton underneath.
+        if (document.readyState === "complete") {
+          hide();
+        } else {
+          onLoad = hide;
+          window.addEventListener("load", onLoad, { once: true });
+        }
 
-        // Safety: never leave the splash stuck if the paint signal is missed
-        // for any reason. Tunable here (web), independent of the native build.
-        safetyTimer = window.setTimeout(hide, 8000);
+        // Backstop: never leave the splash stuck (e.g. a load event that never
+        // fires). Generous so a slow network does not reveal a half-loaded page.
+        safetyTimer = window.setTimeout(hide, 12000);
       } catch {
         // Plugin not present (web build or pre-plugin native binary) — no-op.
       }
@@ -48,6 +63,9 @@ export function NativeSplashHider() {
       cancelled = true;
       if (safetyTimer !== undefined) {
         window.clearTimeout(safetyTimer);
+      }
+      if (onLoad) {
+        window.removeEventListener("load", onLoad);
       }
     };
   }, []);

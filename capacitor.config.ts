@@ -4,6 +4,9 @@ const config: CapacitorConfig = {
   appId: "com.yamajitaku.app",
   appName: "山支度",
   webDir: "capacitor-www",
+  // Brand background for the webview/window so the cold-launch gap before the
+  // first paint is the brand cream colour, never a black or white flash.
+  backgroundColor: "#FAFAF8",
   server: {
     url: "https://www.yamajitaku.com",
     allowNavigation: ["yamajitaku.com", "www.yamajitaku.com"],
@@ -24,6 +27,7 @@ const config: CapacitorConfig = {
       // hides it far sooner on any working connection.
       launchShowDuration: 20000,
       launchAutoHide: true,
+      launchFadeOutDuration: 300,
       backgroundColor: "#FAFAF8",
       showSpinner: false,
       // iOS shows the LaunchScreen storyboard (configured to display the

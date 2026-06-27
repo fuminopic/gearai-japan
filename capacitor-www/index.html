@@ -8,6 +8,20 @@
     />
     <meta name="theme-color" content="#0d1512" />
     <title>山支度</title>
+    <script>
+      // Runs synchronously before paint: if a Supabase session is already
+      // stored, show the splash immediately (no login flash) while it is
+      // validated in the background.
+      try {
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && /^sb-.*-auth-token$/.test(k) && localStorage.getItem(k)) {
+            document.documentElement.className += " has-session";
+            break;
+          }
+        }
+      } catch (e) {}
+    </script>
     <style>
       * { box-sizing: border-box; }
       html, body {
@@ -106,6 +120,9 @@
       }
       #splash.show { display: flex; }
       #splash img { height: 168px; width: 168px; object-fit: contain; }
+      /* Returning user with a stored session: skip the login flash. */
+      html.has-session #login { display: none; }
+      html.has-session #splash { display: flex; }
 
       [disabled] { opacity: 0.6; }
     </style>
@@ -255,15 +272,23 @@
             .catch(function () { setBusy(false); showError("ログインできませんでした"); });
         });
 
-        // On launch: the login UI is already visible (instant, no white). In the
-        // background, if a valid stored session exists, hand off automatically.
-        client.auth.getSession().then(function (res) {
-          var session = res && res.data && res.data.session;
-          if (!session) return;
-          client.auth.getUser().then(function (u) {
-            if (u && u.data && u.data.user) { handoff(session); }
-          }).catch(function () {});
-        }).catch(function () {});
+        // On launch: if a session was found synchronously (head script), we are
+        // already showing the splash instead of the login. Validate it: hand off
+        // if good, otherwise reveal the login screen.
+        function revealLogin() {
+          document.documentElement.classList.remove("has-session");
+          $("splash").classList.remove("show");
+        }
+        if (document.documentElement.classList.contains("has-session")) {
+          client.auth.getSession().then(function (res) {
+            var session = res && res.data && res.data.session;
+            if (!session) { revealLogin(); return; }
+            client.auth.getUser().then(function (u) {
+              if (u && u.data && u.data.user) { handoff(session); }
+              else { revealLogin(); }
+            }).catch(function () { revealLogin(); });
+          }).catch(function () { revealLogin(); });
+        }
       })();
     </script>
   </body>

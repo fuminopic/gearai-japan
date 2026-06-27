@@ -6,8 +6,10 @@ const config: CapacitorConfig = {
   webDir: "capacitor-www",
   // The app now boots the bundled local login page (capacitor-www) instantly,
   // instead of loading the remote site first. The login page navigates to the
-  // remote app (allowNavigation) after authentication. White launch background.
-  backgroundColor: "#ffffff",
+  // remote app (allowNavigation) after authentication. The launch background
+  // matches the splash tone (#FAFAF8, reads as white) so the local->remote
+  // handoff has no colour flash between the two splash screens.
+  backgroundColor: "#FAFAF8",
   server: {
     allowNavigation: ["yamajitaku.com", "www.yamajitaku.com"],
     cleartext: false

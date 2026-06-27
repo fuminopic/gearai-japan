@@ -207,7 +207,10 @@
           url.searchParams.set("next", "/dashboard");
           // Let the splash paint, then navigate; the remote shows its own splash
           // over the load, so the brand mark stays continuous.
-          setTimeout(function () { window.location.href = url.toString(); }, 1500);
+          // Navigate almost immediately; the splash stays visible across the
+          // load and the remote shows its server-rendered splash on first paint,
+          // so the brand mark is continuous (no extra front-loaded delay).
+          setTimeout(function () { window.location.href = url.toString(); }, 150);
         }
 
         function setBusy(b) {

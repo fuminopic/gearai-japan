@@ -15,6 +15,7 @@ import { useEffect } from "react";
 export function NativeSplashHider() {
   useEffect(() => {
     let cancelled = false;
+    let safetyTimer: number | undefined;
 
     void (async () => {
       try {
@@ -32,8 +33,12 @@ export function NativeSplashHider() {
           void SplashScreen.hide({ fadeOutDuration: 250 }).catch(() => undefined);
         };
 
-        // Wait two frames so the first paint has actually landed before fading.
+        // Primary: hide once the first paint has actually landed.
         requestAnimationFrame(() => requestAnimationFrame(hide));
+
+        // Safety: never leave the splash stuck if the paint signal is missed
+        // for any reason. Tunable here (web), independent of the native build.
+        safetyTimer = window.setTimeout(hide, 8000);
       } catch {
         // Plugin not present (web build or pre-plugin native binary) — no-op.
       }
@@ -41,6 +46,9 @@ export function NativeSplashHider() {
 
     return () => {
       cancelled = true;
+      if (safetyTimer !== undefined) {
+        window.clearTimeout(safetyTimer);
+      }
     };
   }, []);
 

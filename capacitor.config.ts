@@ -18,9 +18,11 @@ const config: CapacitorConfig = {
     SplashScreen: {
       // Hold the native splash until the web app signals first paint
       // (SplashScreen.hide()), so the remote page load never shows a blank
-      // webview. launchShowDuration is only a safety net in case the web
-      // bundle never loads (e.g. offline) — it auto-hides after 10s.
-      launchShowDuration: 10000,
+      // webview. launchShowDuration is only a backstop in case the web bundle
+      // never loads (e.g. fully offline). It is deliberately generous so a slow
+      // network never prematurely reveals a half-loaded page — the web layer
+      // hides it far sooner on any working connection.
+      launchShowDuration: 20000,
       launchAutoHide: true,
       backgroundColor: "#FAFAF8",
       showSpinner: false,

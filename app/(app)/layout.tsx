@@ -28,7 +28,7 @@ async function AuthGate({ children }: { children: React.ReactNode }) {
       <div
         id="app-splash"
         aria-hidden="true"
-        className="fixed inset-0 z-[200] flex items-center justify-center bg-[#FAFAF8] transition-opacity duration-300"
+        className="fixed inset-0 z-[200] flex items-center justify-center bg-[#FAFAF8] transition-opacity duration-500"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

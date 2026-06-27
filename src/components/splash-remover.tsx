@@ -26,14 +26,8 @@ export function SplashRemover() {
         return;
       }
       done = true;
-      // Wait two frames so the underlying content has actually painted before
-      // fading — otherwise the fade reveals a blank frame ("white after splash").
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => {
-          el.style.opacity = "0";
-          window.setTimeout(() => el.remove(), 250);
-        })
-      );
+      el.style.opacity = "0";
+      window.setTimeout(() => el.remove(), 500);
     };
 
     const whenLoaded = () => {

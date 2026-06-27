@@ -28,6 +28,16 @@ export async function GET(request: Request) {
     }
   }
 
+  // The PKCE code is single-use: a duplicate/repeated callback hit will fail to
+  // exchange even though the session was already established. Treat an existing
+  // valid session as success instead of surfacing a spurious error.
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+  if (user) {
+    return NextResponse.redirect(new URL(nextPath, requestUrl.origin));
+  }
+
   const errorPath = `/login?email=1&error=${encodeURIComponent(
     "外部ログインを完了できませんでした"
   )}${isIosApp ? "&app=ios" : ""}`;

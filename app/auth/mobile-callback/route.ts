@@ -15,12 +15,20 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error && data.session) {
-      appCallbackUrl.searchParams.delete("code");
-      appCallbackUrl.searchParams.set("access_token", data.session.access_token);
-      appCallbackUrl.searchParams.set("refresh_token", data.session.refresh_token);
+    appCallbackUrl.searchParams.delete("code");
+
+    // The PKCE code is single-use. If this callback is hit twice, the second
+    // exchange fails even though a session already exists — recover it instead
+    // of handing the app a spurious error.
+    const session =
+      !error && data.session
+        ? data.session
+        : (await supabase.auth.getSession()).data.session;
+
+    if (session) {
+      appCallbackUrl.searchParams.set("access_token", session.access_token);
+      appCallbackUrl.searchParams.set("refresh_token", session.refresh_token);
     } else {
-      appCallbackUrl.searchParams.delete("code");
       appCallbackUrl.searchParams.set("error", "外部ログインを完了できませんでした");
     }
   }

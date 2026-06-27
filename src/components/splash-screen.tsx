@@ -11,6 +11,20 @@ export function SplashScreen() {
   const imageRef = useRef<HTMLImageElement>(null);
   const [phase, setPhase] = useState<SplashPhase>("visible");
   const [isArtworkReady, setIsArtworkReady] = useState(false);
+  const [isNativeApp, setIsNativeApp] = useState(false);
+
+  useEffect(() => {
+    // In the native app, the bundled local login page already shows the splash
+    // during the post-login handoff. Showing this web splash again would be a
+    // duplicate ("splash → load → splash"), so skip it on native. Web browsers
+    // (window.Capacitor undefined) keep the splash.
+    const cap = (window as unknown as {
+      Capacitor?: { isNativePlatform?: () => boolean };
+    }).Capacitor;
+    if (cap?.isNativePlatform?.()) {
+      setIsNativeApp(true);
+    }
+  }, []);
 
   useEffect(() => {
 
@@ -38,7 +52,7 @@ export function SplashScreen() {
     };
   }, [isArtworkReady, phase]);
 
-  if (phase === "hidden") {
+  if (phase === "hidden" || isNativeApp) {
     return null;
   }
 

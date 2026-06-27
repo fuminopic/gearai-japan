@@ -284,6 +284,9 @@
         function revealLogin() {
           document.documentElement.classList.remove("has-session");
           $("splash").classList.remove("show");
+          // The stored session failed validation (e.g. signed out elsewhere or
+          // expired) — clear it locally so it does not linger and re-trigger.
+          try { client.auth.signOut({ scope: "local" }); } catch (e) {}
         }
         if (document.documentElement.classList.contains("has-session")) {
           client.auth.getSession().then(function (res) {

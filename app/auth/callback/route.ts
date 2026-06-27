@@ -9,7 +9,24 @@ export async function GET(request: Request) {
   const refreshToken = requestUrl.searchParams.get("refresh_token");
   const nextPath = getSafeNextPath(requestUrl.searchParams.get("next"));
   const isIosApp = requestUrl.searchParams.get("app") === "ios";
+  // Only the bundled local-login binary appends local=1 on its handoff. We mark
+  // it with a cookie so the remote /login knows to bounce back to the local
+  // login page. The older remote-only App Store binary never sets this, so it
+  // keeps its normal remote login and is unaffected by that behaviour.
+  const isLocalApp = requestUrl.searchParams.get("local") === "1";
   const supabase = await createClient();
+
+  const success = () => {
+    const response = NextResponse.redirect(new URL(nextPath, requestUrl.origin));
+    if (isLocalApp) {
+      response.cookies.set("yj_local_app", "1", {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 365,
+        sameSite: "lax"
+      });
+    }
+    return response;
+  };
 
   if (accessToken && refreshToken) {
     const { error } = await supabase.auth.setSession({
@@ -18,13 +35,13 @@ export async function GET(request: Request) {
     });
 
     if (!error) {
-      return NextResponse.redirect(new URL(nextPath, requestUrl.origin));
+      return success();
     }
   } else if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      return NextResponse.redirect(new URL(nextPath, requestUrl.origin));
+      return success();
     }
   }
 
@@ -35,7 +52,7 @@ export async function GET(request: Request) {
     data: { user }
   } = await supabase.auth.getUser();
   if (user) {
-    return NextResponse.redirect(new URL(nextPath, requestUrl.origin));
+    return success();
   }
 
   const errorPath = `/login?email=1&error=${encodeURIComponent(

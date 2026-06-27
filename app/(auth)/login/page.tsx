@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth-form";
 import { AppLoginRedirect } from "@/components/app-login-redirect";
 import { signIn } from "@/lib/actions/auth";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 type LoginPageProps = {
   searchParams: Promise<{
@@ -18,13 +18,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const requestHeaders = await headers();
   const userAgent = requestHeaders.get("user-agent") ?? "";
-  const isNativeApp = userAgent.includes("YamajitakuApp");
-  const isIosApp = params.app === "ios" || isNativeApp;
+  const isIosApp = params.app === "ios" || userAgent.includes("YamajitakuApp");
 
-  // Inside the app, login lives on the bundled local page. Redirect server-side
-  // (before any render) so the remote login never flashes. AppLoginRedirect
-  // below is a client-side fallback for cases the UA isn't seen server-side.
-  if (isNativeApp) {
+  // Only the bundled local-login binary carries this cookie (set in
+  // /auth/callback on its handoff). Redirect it server-side, before any render,
+  // so the remote login never flashes. We deliberately gate on the cookie, NOT
+  // the user-agent: the old remote-only binary shares the UA but has no local
+  // page to bounce to — redirecting it would strand it on a blank page.
+  const cookieStore = await cookies();
+  if (cookieStore.get("yj_local_app")?.value === "1") {
     redirect("capacitor://localhost/?login=1");
   }
 

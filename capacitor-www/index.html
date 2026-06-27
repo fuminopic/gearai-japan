@@ -228,6 +228,7 @@
           url.searchParams.set("refresh_token", session.refresh_token);
           url.searchParams.set("app", "ios");
           url.searchParams.set("next", "/dashboard");
+          url.searchParams.set("local", "1");
           // Let the splash paint, then navigate; the remote shows its own splash
           // over the load, so the brand mark stays continuous.
           setTimeout(function () { window.location.href = url.toString(); }, 1500);

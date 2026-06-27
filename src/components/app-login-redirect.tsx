@@ -17,10 +17,11 @@ export function AppLoginRedirect() {
     if (typeof window === "undefined") {
       return;
     }
-    const inApp =
-      window.name === "yamajitaku-native" ||
-      navigator.userAgent.includes("YamajitakuApp");
-    if (inApp) {
+    // Gate on window.name only — it is set exclusively by the new local-login
+    // binary and survives the cross-origin navigation. The old remote-only
+    // binary shares the user-agent but has no local page to return to, so we
+    // must never redirect it here.
+    if (window.name === "yamajitaku-native") {
       window.location.replace("capacitor://localhost/?login=1");
     }
   }, []);

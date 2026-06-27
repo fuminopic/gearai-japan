@@ -20,12 +20,16 @@ export function SplashScreen() {
     //
     // The remote app is loaded via Capacitor allowNavigation (NOT as the
     // Capacitor server), so window.Capacitor / isNativePlatform() is NOT
-    // injected here. Detect the app by its custom user-agent instead — this is
-    // present on every page (set via appendUserAgent). Web browsers keep it.
-    if (
+    // injected here. Detect the app two ways, either is sufficient:
+    //  1. window.name — the local login page sets "yamajitaku-native", and this
+    //     survives the cross-origin navigation into the remote app (robust).
+    //  2. the custom user-agent appended by the app (fallback).
+    const fromAppWindowName =
+      typeof window !== "undefined" && window.name === "yamajitaku-native";
+    const fromAppUserAgent =
       typeof navigator !== "undefined" &&
-      navigator.userAgent.includes("YamajitakuApp")
-    ) {
+      navigator.userAgent.includes("YamajitakuApp");
+    if (fromAppWindowName || fromAppUserAgent) {
       setIsNativeApp(true);
     }
   }, []);

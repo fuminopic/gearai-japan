@@ -183,6 +183,12 @@
     <script src="supabase.js"></script>
     <script>
       (function () {
+        // Mark this window as the native app. window.name survives the
+        // cross-origin navigation to the remote app, so the remote can reliably
+        // detect it is running inside the app (more robust than the user-agent,
+        // which is not guaranteed on an allowNavigation page).
+        try { window.name = "yamajitaku-native"; } catch (e) {}
+
         var SUPABASE_URL = "https://fdakykmfsrsnuwnhdwmw.supabase.co";
         var SUPABASE_ANON_KEY = "sb_publishable_JuWQ1maCyTx0jpnTBcfBeA_fvluSI_n";
         var REMOTE = "https://www.yamajitaku.com";

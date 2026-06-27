@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 
+import { NativeSplashHider } from "@/components/native-splash-hider";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -37,7 +39,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body>{children}</body>
+      <body>
+        <NativeSplashHider />
+        {children}
+      </body>
     </html>
   );
 }

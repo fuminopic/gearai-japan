@@ -141,9 +141,13 @@ async function signInWithOAuthProvider(provider: "google" | "apple") {
   redirect(data.url as Route);
 }
 
-export async function getOAuthSignInUrl(provider: "google" | "apple", app?: string) {
+export async function getOAuthSignInUrl(
+  provider: "google" | "apple",
+  app?: string,
+  originOverride?: string
+) {
   const supabase = await createClient();
-  const origin = await getRequestOrigin();
+  const origin = originOverride ?? (await getRequestOrigin());
   const isIosApp = app === "ios" || (await isIosAppRequest());
   const callbackUrl = new URL(isIosApp ? "/auth/mobile-callback" : "/auth/callback", origin);
   callbackUrl.searchParams.set("next", "/dashboard");

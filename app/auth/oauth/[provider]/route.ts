@@ -15,7 +15,11 @@ export async function GET(
   }
 
   const requestUrl = new URL(request.url);
-  const signInUrl = await getOAuthSignInUrl(provider, requestUrl.searchParams.get("app") ?? undefined);
+  const signInUrl = await getOAuthSignInUrl(
+    provider,
+    requestUrl.searchParams.get("app") ?? undefined,
+    requestUrl.origin
+  );
 
   return NextResponse.redirect(signInUrl);
 }

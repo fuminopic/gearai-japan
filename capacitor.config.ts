@@ -26,7 +26,8 @@ const config: CapacitorConfig = {
       launchAutoHide: true,
       backgroundColor: "#FAFAF8",
       showSpinner: false,
-      iosSplashResourceName: "Splash",
+      // iOS shows the LaunchScreen storyboard (configured to display the
+      // "Splash" image full-screen) — no iOS-specific resource name needed.
       splashFullScreen: true,
       splashImmersive: false
     }

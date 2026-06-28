@@ -376,7 +376,10 @@
               if (res.error) { signupError(res.error.message); return; }
               if (res.data && res.data.session) { handoff(res.data.session); }
               else {
-                signupError("確認メールを送信しました。メール内のリンクから登録を完了してください。");
+                // Email confirmation is off, so no session here means the email
+                // is already registered (Supabase returns no error to avoid
+                // leaking which emails exist).
+                signupError("このメールアドレスは既に登録されています。ログインからお進みください。");
               }
             })
             .catch(function () { setSignupBusy(false); signupError("アカウントを作成できませんでした"); });

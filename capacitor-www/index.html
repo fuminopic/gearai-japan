@@ -13,9 +13,14 @@
       // stored, show the splash immediately (no login flash) while it is
       // validated in the background.
       try {
-        // ?login=1 means we were just sent here by sign-out / "show login":
-        // go straight to the login screen, never the session splash.
-        if (!/[?&]login=1(&|$)/.test(window.location.search)) {
+        var _s = window.location.search;
+        if (/[?&]access_token=/.test(_s)) {
+          // OAuth deep-link return (native loaded us with tokens): show the
+          // splash, not the login screen.
+          document.documentElement.className += " has-session";
+        } else if (!/[?&]login=1(&|$)/.test(_s)) {
+          // ?login=1 means sign-out sent us here: always show login. Otherwise,
+          // if a session is already stored locally, show the splash.
           for (var i = 0; i < localStorage.length; i++) {
             var k = localStorage.key(i);
             if (k && /^sb-.*-auth-token$/.test(k) && localStorage.getItem(k)) {
@@ -321,7 +326,18 @@
           // expired) — clear it locally so it does not linger and re-trigger.
           try { client.auth.signOut({ scope: "local" }); } catch (e) {}
         }
-        if (document.documentElement.classList.contains("has-session")) {
+        var initParams = new URLSearchParams(window.location.search);
+        var oauthAccess = initParams.get("access_token");
+        var oauthRefresh = initParams.get("refresh_token");
+        if (oauthAccess && oauthRefresh) {
+          // OAuth deep-link return: the native layer loaded this local page with
+          // the tokens. Store the session locally (so the user stays signed in
+          // across launches, like email login), then hand off to the remote app.
+          var oauthSession = { access_token: oauthAccess, refresh_token: oauthRefresh };
+          client.auth.setSession(oauthSession)
+            .then(function () { handoff(oauthSession); })
+            .catch(function () { handoff(oauthSession); });
+        } else if (document.documentElement.classList.contains("has-session")) {
           client.auth.getSession().then(function (res) {
             var session = res && res.data && res.data.session;
             if (!session) { revealLogin(); return; }

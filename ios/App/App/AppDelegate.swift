@@ -67,9 +67,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return
         }
 
-        components.scheme = "https"
-        components.host = "www.yamajitaku.com"
-        components.path = "/auth/callback"
+        // Load the bundled local login page with the OAuth tokens (instead of the
+        // remote callback directly) so it stores the session locally — keeping
+        // the user signed in across launches — and shows the same splash/handoff
+        // as email login.
+        components.scheme = "capacitor"
+        components.host = "localhost"
+        components.path = "/"
         components.percentEncodedQuery = query
 
         guard

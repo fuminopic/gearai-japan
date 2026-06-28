@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 
 import { AppNav } from "@/components/app-nav";
-import { SplashScreen } from "@/components/splash-screen";
 import { requireUser } from "@/lib/data/gear";
 
 export default function AppLayout({
@@ -21,7 +20,9 @@ async function AuthGate({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pb-32 text-ink">
-      <SplashScreen />
+      {/* No remote splash here: the bundled local login page owns the single
+          splash for the app. Rendering one here too produced the recurring
+          "splash → blank → splash" double. Web simply loads straight in. */}
       <AppNav />
       <main className="mx-auto max-w-5xl px-4 pb-32 pt-5 md:ml-24 md:px-6 md:pb-10 md:pt-8">
         {children}

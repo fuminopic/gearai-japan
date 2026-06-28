@@ -223,6 +223,11 @@
         // Open the remote app with a freshly minted session (reuses /auth/callback).
         function handoff(session) {
           $("splash").classList.add("show");
+          // Mark that a local splash was shown for this login, so the remote app
+          // skips its own splash (avoids a double splash). OAuth logins do NOT
+          // go through here, so they keep the plain marker and show the remote
+          // splash instead.
+          try { window.name = "yamajitaku-native-splashed"; } catch (e) {}
           var url = new URL(REMOTE + "/auth/callback");
           url.searchParams.set("access_token", session.access_token);
           url.searchParams.set("refresh_token", session.refresh_token);
@@ -256,10 +261,20 @@
         // layer loads /auth/callback into the main webview.
         function oauth(provider) {
           var url = REMOTE + "/auth/oauth/" + provider + "?app=ios";
-          if (inApp() && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
-            window.Capacitor.Plugins.Browser.open({
-              url: url, presentationStyle: "fullscreen", toolbarColor: "#14724e"
-            });
+          var cap = window.Capacitor;
+          if (
+            cap && cap.isNativePlatform && cap.isNativePlatform() &&
+            cap.Plugins && cap.Plugins.Browser
+          ) {
+            var B = cap.Plugins.Browser;
+            // Reset any stale browser state first: a previous OAuth's Safari view
+            // may have been dismissed natively without the plugin knowing, which
+            // makes a later open() get silently ignored ("button does nothing").
+            B.close().catch(function () {}).then(function () {
+              return B.open({
+                url: url, presentationStyle: "fullscreen", toolbarColor: "#14724e"
+              });
+            }).catch(function () {});
           } else {
             window.location.href = url;
           }

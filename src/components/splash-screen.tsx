@@ -24,10 +24,12 @@ export function SplashScreen() {
     //  1. window.name — the local login page sets "yamajitaku-native", and this
     //     survives the cross-origin navigation into the remote app (robust).
     //  2. the custom user-agent appended by the app (fallback).
-    // Gate on window.name only (set by the new local-login binary). The old
-    // remote-only binary shares the YamajitakuApp user-agent and should keep
-    // its original remote splash, so we must not use the UA here.
-    if (typeof window !== "undefined" && window.name === "yamajitaku-native") {
+    // Skip this remote splash only when the bundled local login page already
+    // showed its own splash for this login (it marks window.name "-splashed" in
+    // the handoff). OAuth logins return via the native deep link without that
+    // local splash, so window.name stays "yamajitaku-native" and this remote
+    // splash still shows. Old/web builds (no marker) also keep the splash.
+    if (typeof window !== "undefined" && window.name === "yamajitaku-native-splashed") {
       setIsNativeApp(true);
     }
   }, []);

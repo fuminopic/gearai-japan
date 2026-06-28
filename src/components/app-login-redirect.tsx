@@ -17,11 +17,11 @@ export function AppLoginRedirect() {
     if (typeof window === "undefined") {
       return;
     }
-    // Gate on window.name only — it is set exclusively by the new local-login
-    // binary and survives the cross-origin navigation. The old remote-only
-    // binary shares the user-agent but has no local page to return to, so we
-    // must never redirect it here.
-    if (window.name === "yamajitaku-native") {
+    // Gate on the window.name marker — set exclusively by the new local-login
+    // binary and surviving the cross-origin navigation. It may be either
+    // "yamajitaku-native" or "yamajitaku-native-splashed", so match the prefix.
+    // The old remote-only binary never sets it, so it is never redirected here.
+    if (window.name.indexOf("yamajitaku-native") === 0) {
       window.location.replace("capacitor://localhost/?login=1");
     }
   }, []);

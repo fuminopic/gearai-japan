@@ -182,6 +182,28 @@
               <button class="link" id="back" type="button">戻る</button>
             </div>
           </form>
+
+          <!-- Sign-up form (local, mirrors the email login) -->
+          <form class="email-form" id="signup-form">
+            <p class="err" id="signup-err"></p>
+            <label class="field">
+              <span>表示名</span>
+              <input id="signup-name" type="text" autocomplete="name" placeholder="例: Yuki" />
+            </label>
+            <label class="field">
+              <span>メールアドレス</span>
+              <input id="signup-email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required />
+            </label>
+            <label class="field">
+              <span>パスワード</span>
+              <input id="signup-password" type="password" autocomplete="new-password" placeholder="6文字以上" minlength="6" required />
+            </label>
+            <button class="btn btn-primary" id="signup-submit" type="submit">アカウントを作成</button>
+            <div class="center">
+              <button class="link" id="to-login" type="button">ログイン</button>
+              <button class="link" id="signup-back" type="button">戻る</button>
+            </div>
+          </form>
         </div>
       </div>
     </main>
@@ -299,7 +321,21 @@
         $("google").addEventListener("click", function () { oauth("google"); });
         $("terms").addEventListener("click", function () { window.location.href = REMOTE + "/terms?from=auth&app=ios"; });
         $("privacy").addEventListener("click", function () { window.location.href = REMOTE + "/privacy?from=auth&app=ios"; });
-        $("to-signup").addEventListener("click", function () { window.location.href = REMOTE + "/signup?app=ios"; });
+        $("to-signup").addEventListener("click", function () {
+          $("email-form").classList.remove("show");
+          $("signup-form").classList.add("show");
+          showError("");
+        });
+        $("to-login").addEventListener("click", function () {
+          $("signup-form").classList.remove("show");
+          $("email-form").classList.add("show");
+          signupError("");
+        });
+        $("signup-back").addEventListener("click", function () {
+          $("signup-form").classList.remove("show");
+          $("choices").style.display = "";
+          signupError("");
+        });
 
         $("email-form").addEventListener("submit", function (ev) {
           ev.preventDefault();
@@ -314,6 +350,36 @@
               else { showError("ログインできませんでした"); }
             })
             .catch(function () { setBusy(false); showError("ログインできませんでした"); });
+        });
+
+        function signupError(msg) {
+          var e = $("signup-err");
+          if (!msg) { e.classList.remove("show"); e.textContent = ""; return; }
+          e.textContent = msg; e.classList.add("show");
+        }
+        function setSignupBusy(b) {
+          $("signup-submit").disabled = b;
+          $("signup-submit").textContent = b ? "作成中..." : "アカウントを作成";
+        }
+        $("signup-form").addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          signupError("");
+          setSignupBusy(true);
+          client.auth
+            .signUp({
+              email: $("signup-email").value.trim(),
+              password: $("signup-password").value,
+              options: { data: { display_name: $("signup-name").value.trim() } }
+            })
+            .then(function (res) {
+              setSignupBusy(false);
+              if (res.error) { signupError(res.error.message); return; }
+              if (res.data && res.data.session) { handoff(res.data.session); }
+              else {
+                signupError("確認メールを送信しました。メール内のリンクから登録を完了してください。");
+              }
+            })
+            .catch(function () { setSignupBusy(false); signupError("アカウントを作成できませんでした"); });
         });
 
         // On launch: if a session was found synchronously (head script), we are

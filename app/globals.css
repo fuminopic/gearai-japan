@@ -51,18 +51,7 @@ body:has(main.home-redesign) {
   background: #e5ebe9;
 }
 
-/* 顶部安全区(状态栏)填成 header 同色的绿,绿头延伸进状态栏 */
-body:has(main.home-redesign)::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
-  z-index: 60;
-  height: env(safe-area-inset-top);
-  background: #1f7950;
-  pointer-events: none;
-}
+/* 状态栏区不再单独填纯色,由 header 的渐变直接铺到顶,避免割裂 */
 
 button,
 input,

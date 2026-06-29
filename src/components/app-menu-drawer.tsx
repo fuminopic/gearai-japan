@@ -155,7 +155,18 @@ export function AppMenuDrawer({ userEmail, buttonClassName }: AppMenuDrawerProps
           </MenuSection>
         </nav>
 
-        <form action={signOut} className="mt-5">
+        <form
+          action={signOut}
+          className="mt-5"
+          onSubmit={() => {
+            // 退登时清掉 service worker 缓存的首页,避免下次串到上个账号/过期态
+            try {
+              navigator.serviceWorker?.controller?.postMessage("yj-clear-pages");
+            } catch (e) {
+              /* noop */
+            }
+          }}
+        >
           <button className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-bold text-stone-700 shadow-sm transition active:scale-95">
             <LogOut aria-hidden className="h-4 w-4" />
             ログアウト

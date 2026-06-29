@@ -267,11 +267,11 @@ function GearCard({ item }: { item: UserGear }) {
         className="grid grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-3 px-3 py-3 sm:px-4"
       >
         {item.image_url ? (
-          <span className="flex h-16 w-16 items-center justify-center rounded-xl border border-stone-100 bg-stone-50 p-2">
+          <span className="flex h-16 w-16 items-center justify-center rounded-xl border border-stone-100 bg-white p-2">
             <img
               src={item.image_url}
               alt={item.name}
-              className="max-h-full max-w-full object-contain"
+              className="max-h-full max-w-full object-contain mix-blend-multiply"
               loading="lazy"
             />
           </span>

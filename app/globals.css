@@ -2,6 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* D-DIN (SIL OFL 1.1) — numbers / Latin. Files self-hosted in /public/fonts. */
+@font-face {
+  font-family: "D-DIN";
+  src: url("/fonts/d-din/D-DIN.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "D-DIN";
+  src: url("/fonts/d-din/D-DIN-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Numbers / Latin go through D-DIN; Japanese falls back to Noto Sans JP. */
+.font-din {
+  font-family: "D-DIN", "Source Han Sans JP", "Noto Sans JP", -apple-system,
+    BlinkMacSystemFont, sans-serif;
+  font-feature-settings: "tnum" 1;
+}
+
 :root {
   color-scheme: light;
 }
@@ -25,9 +48,10 @@ body {
 }
 
 body:has(main.home-redesign) {
-  background: #fafafa;
+  background: #e5ebe9;
 }
 
+/* 顶部安全区(状态栏)填成 header 同色的绿,绿头延伸进状态栏 */
 body:has(main.home-redesign)::before {
   content: "";
   position: fixed;
@@ -36,7 +60,7 @@ body:has(main.home-redesign)::before {
   left: 0;
   z-index: 60;
   height: env(safe-area-inset-top);
-  background: #fafafa;
+  background: #1f7950;
   pointer-events: none;
 }
 

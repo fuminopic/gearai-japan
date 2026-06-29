@@ -1,18 +1,11 @@
-import {
-  Backpack,
-  Mountain,
-  Package,
-  Weight,
-  type LucideIcon
-} from "lucide-react";
+import { Backpack, Mountain, Package, Plus } from "lucide-react";
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import { AppLogo } from "@/components/app-logo";
 import { AppMenuDrawer } from "@/components/app-menu-drawer";
 import { DashboardPlanMeta } from "@/components/dashboard-plan-meta";
-import { DashboardPlanChecklistSummary } from "@/components/dashboard-plan-checklist-summary";
+import { HeroGauge } from "@/components/hero-gauge";
 import { getOwnedGearForPlanning } from "@/lib/data/gear";
 import { getPackRequirementPlan } from "@/lib/data/pack-requirements";
 import { getDashboardSummary } from "@/lib/data/dashboard";
@@ -26,9 +19,24 @@ export const revalidate = 0;
 
 const planRoute = "/plan" as Route;
 type DashboardTripChecklist = ReturnType<typeof buildPlanChecklist>;
-const categoryColorById = new Map<string, string>(
-  MAJOR_GEAR_CATEGORIES.map((category) => [category.id, category.color])
-);
+// 首页装備構成配色:规范 v1「米色系」6 色,按 id 覆盖 MAJOR_GEAR_CATEGORIES 旧色(仅首页用)
+const categoryColorById = new Map<string, string>([
+  ["clothing", "#C05A86"],
+  ["shoes", "#8A7A66"],
+  ["backpack", "#2F6FB0"],
+  ["tentSleep", "#6A57C4"],
+  ["cooking", "#C0763A"],
+  ["safetyNav", "#1F9B8E"]
+]);
+// 图例顺序(按设计稿:ウェア/シューズ/ザック ・ クッキング/安全・ナビ/テント)
+const LEGEND_ORDER = [
+  "clothing",
+  "shoes",
+  "backpack",
+  "cooking",
+  "safetyNav",
+  "tentSleep"
+];
 
 export default async function DashboardPage() {
   const [summary, nextTrip] = await Promise.all([
@@ -92,15 +100,19 @@ function HomePageContent({
   summary: DashboardSummary;
 }) {
   return (
-    <main className="home-redesign min-h-screen bg-[#FAFAFA] pb-32 text-ink">
+    <main className="home-redesign min-h-screen bg-[#E5EBE9] pb-32 text-ink">
       <HomeShellCss />
 
-      <header className="sticky top-0 z-50 flex w-full items-center justify-between border-b border-gray-100/50 bg-[#FAFAFA]/90 px-4 pb-3 pt-[max(env(safe-area-inset-top),20px)] backdrop-blur-md">
-        <AppLogo className="h-12" />
-        <AppMenuDrawer buttonClassName="-mr-2 inline-flex h-10 w-10 items-center justify-center rounded-xl text-gray-700 transition-transform active:scale-95" />
+      <header className="relative z-10 flex min-h-[226px] w-full items-start justify-between bg-gradient-to-br from-[#1F7950] to-[#81AB44] px-4 pt-[max(env(safe-area-inset-top),20px)]">
+        <img
+          src="/yamajitaku-wordmark-white.png"
+          alt="山支度 YAMAJITAKU"
+          className="mt-[42px] h-10 w-auto select-none object-contain"
+        />
+        <AppMenuDrawer buttonClassName="-mr-2 mt-[42px] inline-flex h-10 w-10 items-center justify-center rounded-xl text-white transition-transform active:scale-95" />
       </header>
 
-      <div className="mt-6 space-y-6 px-4">
+      <div className="relative z-20 -mt-[107px] space-y-[11px] px-4">
         <section>
           <HeroCard hasTrip={hasTrip} trip={trip} tripChecklist={tripChecklist} />
         </section>
@@ -152,54 +164,41 @@ function HeroCard({
     return <EmptyTripHero />;
   }
 
-  const coveragePercent = tripChecklist?.summary.percent ?? getSavedProgressFallback(trip);
+  const percent = tripChecklist?.summary.percent ?? getSavedProgressFallback(trip);
   const planHref = `/plan?id=${trip.id}` as Route;
   return (
-    <section className="relative min-h-[252px] w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-gray-100 via-gray-50 to-[#e7ece7] shadow-sm">
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/generic-hills.jpg"
-          fill
-          className="object-cover object-bottom opacity-80"
-          alt="background"
-          priority
-        />
-      </div>
-      <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#E8F0E8]/40 via-white/90 to-white" />
-      <div className="relative z-20 flex min-h-[252px] flex-col justify-between gap-3 p-5">
-        <div>
-          <HeroTitle trip={trip} />
-          <div className="mt-5 flex flex-wrap items-end gap-x-4 gap-y-3">
-            <h2 className="font-maru text-[45px] font-normal leading-none tracking-[0.04em] text-black">
-              {trip.mountain_name}
-            </h2>
-            <div className="flex flex-wrap gap-2 pb-1 font-maru">
-              <PlanPill>{seasonLabel(trip.season)}</PlanPill>
-              <PlanPill>{styleLabel(trip.style)}</PlanPill>
-            </div>
-          </div>
+    <section className="rounded-[20px] bg-white px-5 pt-5 pb-3 shadow-sm">
+      <div className="flex items-center justify-between gap-2 border-b border-[#EEEDE6] pb-3">
+        <span className="shrink-0 text-base font-bold text-ink">次回の山行</span>
+        <div className="flex min-w-0 items-center gap-2">
           <DashboardPlanMeta
             planId={trip.id}
             plannedDate={trip.planned_date}
             plannedEndDate={trip.planned_end_date}
             tripMemo={trip.trip_memo}
-            variant="memo"
+            style={trip.style}
           />
+          <span className="shrink-0 rounded-md border border-[#D9D9D9] px-2 py-1 text-[11px] font-medium leading-none text-[#818785]">
+            {styleLabel(trip.style)}
+          </span>
         </div>
+      </div>
 
-        <div className="space-y-3">
-          <DashboardPlanChecklistSummary
-            planId={trip.id}
-            checklist={tripChecklist}
-            fallbackProgress={coveragePercent}
-          />
-          <Link
-            href={planHref}
-            className="inline-flex w-[184px] items-center justify-center rounded-2xl bg-[#14724e] py-3 text-xs font-bold text-white shadow-sm transition active:scale-95"
-          >
-            出発前確認へ
-          </Link>
-        </div>
+      <HeroGauge
+        checklist={tripChecklist}
+        planId={trip.id}
+        fallbackPercent={percent}
+        mountainName={trip.mountain_name}
+        plannedDate={trip.planned_date}
+      />
+
+      <div className="mt-[18px] flex justify-center">
+        <Link
+          href={planHref}
+          className="inline-flex h-9 items-center justify-center rounded-full bg-[#4E914A] px-7 text-[13px] font-bold text-white shadow-sm transition active:scale-95"
+        >
+          出発前確認へ
+        </Link>
       </div>
     </section>
   );
@@ -259,43 +258,35 @@ function HeroTitle({ trip }: { trip?: SavedTripPlan }) {
   );
 }
 
-function PlanPill({ children }: { children: string }) {
-  return (
-    <span className="inline-flex min-w-[72px] items-center justify-center rounded-md bg-[#14724e] px-3 py-1 text-sm font-normal leading-none text-white">
-      {children}
-    </span>
-  );
-}
-
 function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
   return (
-    <section className="flex flex-col gap-4 rounded-[28px] bg-white p-5 shadow-sm">
+    <section className="flex flex-col gap-3 rounded-[20px] bg-white px-5 pt-3 pb-5 shadow-sm">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-bold">マイ装備</h2>
         <Link
           href="/gear/new"
-          className="inline-flex items-center gap-1 text-xs font-bold text-[#14724e]"
+          aria-label="装備を追加"
+          className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#4E914A] text-white opacity-70 shadow-sm transition active:scale-95"
         >
-          <PlusText />
-          装備を追加
+          <Plus className="h-3 w-3" strokeWidth={2.5} />
         </Link>
       </div>
 
       <div className="flex flex-row items-center justify-between">
         <SummaryMetric
-          icon={Backpack}
+          iconSrc="/metric-count.png"
           value={`${summary.ownedCount.toLocaleString("ja-JP")} 件`}
           label="所有装備数"
           divided
         />
         <SummaryMetric
-          icon={Weight}
+          iconSrc="/metric-weight.png"
           value={formatKg(summary.totalWeightG)}
           label="総重量"
           divided
         />
         <SummaryMetric
-          icon={Package}
+          iconSrc="/metric-category.png"
           value={`${summary.majorCategoryCoverageCount} / ${summary.majorCategoryTotalCount}`}
           label="主要カテゴリー"
         />
@@ -314,26 +305,22 @@ function RecentGearSection({
 }) {
   return (
     <section>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base font-bold text-gray-900">最近追加した装備</h2>
-        <Link href="/gear" className="text-xs font-medium text-[#14724e]">
-          すべて見る &gt;
-        </Link>
-      </div>
       {hasGear ? (
-        <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4">
+        <div className="hide-scrollbar flex snap-x snap-mandatory gap-[11px] overflow-x-auto pb-4">
           {gear.slice(0, 8).map((item) => (
             <div
               key={item.id}
-              className="flex w-[100px] flex-none snap-start flex-col"
+              className="relative flex h-[150px] w-[126px] flex-none snap-start flex-col items-center rounded-2xl bg-white px-3 pt-[17px] pb-[52px] shadow-sm"
             >
-              <div className="mb-2 flex aspect-square w-full items-center justify-center rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+              <div className="flex w-full min-h-0 flex-1 items-center justify-center">
                 <GearImage item={item} />
               </div>
-              <p className="truncate text-xs font-bold text-gray-800">
+              {/* 名字:锁定——绝对定位 + 固定 px 字号 + 固定行高 + 单行截断 */}
+              <p className="absolute inset-x-3 bottom-[27px] truncate text-center text-[12px] font-bold leading-none text-gray-900">
                 {item.name}
               </p>
-              <p className="mt-0.5 text-[10px] font-medium text-gray-400">
+              {/* 克重:锁死在卡底 14px,大小坐标固定,不随任何因素变 */}
+              <p className="absolute inset-x-0 bottom-[14px] text-center font-din text-[11px] font-medium leading-none text-gray-400">
                 {Number(item.weight_grams)} g
               </p>
             </div>
@@ -363,6 +350,12 @@ function RecentGearSection({
 function GearComposition({ summary }: { summary: DashboardSummary }) {
   const distribution = buildGearComposition(summary);
   const activeDistribution = distribution.filter((item) => item.value > 0);
+  const byId = new Map<string, (typeof distribution)[number]>(
+    distribution.map((item) => [item.id, item])
+  );
+  const orderedLegend = LEGEND_ORDER.map((id) => byId.get(id)).filter(
+    (item): item is (typeof distribution)[number] => Boolean(item)
+  );
 
   return (
     <div className="border-t border-stone-100 pt-4">
@@ -390,20 +383,19 @@ function GearComposition({ summary }: { summary: DashboardSummary }) {
           <span className="h-full w-full bg-stone-200" />
         )}
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
-        {distribution.map((item) => (
-          <div
-            key={item.id}
-            className="flex min-w-0 items-center justify-between gap-2 text-[11px]"
-          >
-            <span className="flex min-w-0 items-center gap-1.5 text-stone-600">
-              <span
-                className="h-2 w-2 shrink-0 rounded-full"
-                style={{ backgroundColor: item.color }}
-              />
-              <span className="truncate font-semibold">{item.label}</span>
-            </span>
-            <span className="shrink-0 font-bold text-stone-800">{item.percent}%</span>
+      <div className="mt-4 grid grid-cols-3 gap-x-4 gap-y-3">
+        {orderedLegend.map((item) => (
+          <div key={item.id} className="min-w-0">
+            <span
+              className="block h-[5px] w-5 rounded-full"
+              style={{ backgroundColor: item.color }}
+            />
+            <div className="mt-1.5 flex items-baseline gap-1 text-[11px]">
+              <span className="truncate font-bold text-stone-700">{item.label}</span>
+              <span className="shrink-0 font-din font-bold text-stone-500">
+                {item.percent}%
+              </span>
+            </div>
           </div>
         ))}
       </div>
@@ -412,33 +404,27 @@ function GearComposition({ summary }: { summary: DashboardSummary }) {
 }
 
 function SummaryMetric({
-  icon: Icon,
+  iconSrc,
   value,
   label,
   divided = false
 }: {
-  icon: LucideIcon;
+  iconSrc: string;
   value: string;
   label: string;
   divided?: boolean;
 }) {
   return (
     <div
-      className={`flex flex-1 flex-col items-center gap-1 text-center ${
+      className={`flex flex-1 flex-col items-center gap-1.5 px-1 text-center ${
         divided ? "border-r border-gray-100" : ""
       }`}
     >
-      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E8F1E8] text-[#14724e]">
-        <Icon className="h-5 w-5 stroke-[1.8]" />
-      </div>
-      <p className="text-lg font-bold leading-tight tracking-normal">{value}</p>
+      <img src={iconSrc} alt="" className="h-4 w-auto object-contain" />
+      <p className="font-din text-[22px] font-bold leading-none text-black">{value}</p>
       <p className="text-[10px] font-medium text-gray-400">{label}</p>
     </div>
   );
-}
-
-function PlusText() {
-  return <span className="text-lg leading-none">＋</span>;
 }
 
 function BackpackIllustration() {
@@ -449,14 +435,20 @@ function BackpackIllustration() {
   );
 }
 
+// displayScale 手动旋钮:按商品名给一个缩放系数(默认 1.0),让不同形状的商品在框内视觉大小一致。
+// 设计逐个微调,值填这里即可,例:{ "サム 45": 1.1, "Fillo™": 0.9 }
+const GEAR_DISPLAY_SCALE: Record<string, number> = {};
+
 function GearImage({ item }: { item: DashboardRecentGear }) {
+  const scale = GEAR_DISPLAY_SCALE[item.name] ?? 1;
   return (
     <>
       {item.image_url ? (
         <img
           src={item.image_url}
           alt=""
-          className="h-full w-full object-contain"
+          className="h-full w-full object-contain mix-blend-multiply"
+          style={scale !== 1 ? { transform: `scale(${scale})` } : undefined}
         />
       ) : (
         <Package className="h-10 w-10 text-gray-300" />
@@ -502,29 +494,14 @@ function clampProgress(progress: number | null | undefined) {
   return Math.min(100, Math.max(0, Math.round(value)));
 }
 
-function seasonLabel(season: string) {
-  const labels: Record<string, string> = {
-    SPRING: "春山",
-    SUMMER: "夏山",
-    AUTUMN: "秋山",
-    WINTER: "冬山",
-    spring: "春山",
-    summer: "夏山",
-    autumn: "秋山",
-    winter: "冬山"
-  };
-
-  return labels[season] ?? "山行";
-}
-
 function styleLabel(style: string) {
   const labels: Record<string, string> = {
     DAY_HIKE: "日帰り",
-    OVERNIGHT_HUT: "小屋泊",
+    OVERNIGHT_HUT: "山小屋泊",
     OVERNIGHT_TENT: "テント泊",
     MULTI_DAY_TREK: "縦走",
     day_hike: "日帰り",
-    hut: "小屋泊",
+    hut: "山小屋泊",
     tent: "テント泊"
   };
 

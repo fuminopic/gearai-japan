@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import { Backpack, Mountain, Package, Plus } from "lucide-react";
 import type { Route } from "next";
 import Image from "next/image";
@@ -39,18 +41,17 @@ const LEGEND_ORDER = [
 ];
 
 export default async function DashboardPage() {
+  // 首屏只等这两个(并行);checklist 不再阻塞渲染,改为 Hero 内 Suspense 流式补上
   const [summary, nextTrip] = await Promise.all([
     getDashboardSummary(),
     fetchLatestPlan()
   ]);
-  const tripChecklist = nextTrip ? await fetchLatestPlanChecklist(nextTrip) : null;
 
   return (
     <HomePageContent
       hasTrip={Boolean(nextTrip)}
       hasGear={summary.ownedCount > 0}
       trip={nextTrip}
-      tripChecklist={tripChecklist}
       summary={summary}
     />
   );
@@ -90,13 +91,11 @@ function HomePageContent({
   hasTrip,
   hasGear,
   trip,
-  tripChecklist,
   summary
 }: {
   hasTrip: boolean;
   hasGear: boolean;
   trip: SavedTripPlan | null;
-  tripChecklist: DashboardTripChecklist | null;
   summary: DashboardSummary;
 }) {
   return (
@@ -117,7 +116,7 @@ function HomePageContent({
 
       <div className="relative z-20 -mt-[107px] space-y-[11px] px-4">
         <section>
-          <HeroCard hasTrip={hasTrip} trip={trip} tripChecklist={tripChecklist} />
+          <HeroCard hasTrip={hasTrip} trip={trip} />
         </section>
 
         <section>
@@ -156,18 +155,16 @@ function HomeShellCss() {
 
 function HeroCard({
   hasTrip,
-  trip,
-  tripChecklist
+  trip
 }: {
   hasTrip: boolean;
   trip: SavedTripPlan | null;
-  tripChecklist: DashboardTripChecklist | null;
 }) {
   if (!hasTrip || !trip) {
     return <EmptyTripHero />;
   }
 
-  const percent = tripChecklist?.summary.percent ?? getSavedProgressFallback(trip);
+  const fallbackPercent = getSavedProgressFallback(trip);
   const planHref = `/plan?id=${trip.id}` as Route;
   return (
     <section className="rounded-[20px] bg-white px-5 pt-5 pb-3 shadow-sm">
@@ -187,13 +184,10 @@ function HeroCard({
         </div>
       </div>
 
-      <HeroGauge
-        checklist={tripChecklist}
-        planId={trip.id}
-        fallbackPercent={percent}
-        mountainName={trip.mountain_name}
-        plannedDate={trip.planned_date}
-      />
+      {/* gauge 数据(checklist)流式加载,不阻塞首屏 */}
+      <Suspense fallback={<HeroGaugeSkeleton mountainName={trip.mountain_name} />}>
+        <HeroGaugeAsync trip={trip} fallbackPercent={fallbackPercent} />
+      </Suspense>
 
       <div className="mt-[18px] flex justify-center">
         <Link
@@ -204,6 +198,53 @@ function HeroCard({
         </Link>
       </div>
     </section>
+  );
+}
+
+// 异步取 checklist 后渲染真正的 gauge(在 Suspense 内,不阻塞首屏)
+async function HeroGaugeAsync({
+  trip,
+  fallbackPercent
+}: {
+  trip: SavedTripPlan;
+  fallbackPercent: number;
+}) {
+  const checklist = await fetchLatestPlanChecklist(trip);
+  return (
+    <HeroGauge
+      checklist={checklist}
+      planId={trip.id}
+      fallbackPercent={fallbackPercent}
+      mountainName={trip.mountain_name}
+      plannedDate={trip.planned_date}
+    />
+  );
+}
+
+// gauge 数据到位前的占位:只画灰色轨道 + 山名,无动画(避免数据到了再二次动画)
+function HeroGaugeSkeleton({ mountainName }: { mountainName: string }) {
+  return (
+    <>
+      <div className="relative mx-auto mt-2 w-full max-w-[324px]">
+        <svg viewBox="0 12 240 116" className="w-full">
+          <path
+            d="M20 120 A100 100 0 0 1 220 120"
+            fill="none"
+            stroke="#D9D9D9"
+            strokeWidth="9"
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-end pb-1">
+          <span className="max-w-[180px] truncate text-base font-bold text-ink">
+            {mountainName}
+          </span>
+          <span className="font-din text-[52px] font-bold leading-[1.02] text-[#D9D9D9]">
+            ··<span className="text-[28px]">%</span>
+          </span>
+        </div>
+      </div>
+      <div className="mt-5 h-[30px]" />
+    </>
   );
 }
 

@@ -103,7 +103,10 @@ function HomePageContent({
     <main className="home-redesign min-h-screen bg-[#E5EBE9] pb-32 text-ink">
       <HomeShellCss />
 
-      <header className="relative z-10 flex min-h-[226px] w-full items-start justify-between bg-gradient-to-br from-[#1F7950] to-[#81AB44] px-4 pt-[max(env(safe-area-inset-top),20px)]">
+      <header
+        className="relative z-10 flex w-full items-start justify-between bg-gradient-to-br from-[#1F7950] to-[#81AB44] px-4 pt-[max(env(safe-area-inset-top),20px)]"
+        style={{ minHeight: "calc(max(env(safe-area-inset-top), 20px) + 206px)" }}
+      >
         <img
           src="/yamajitaku-wordmark-white.png"
           alt="山支度 YAMAJITAKU"

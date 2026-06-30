@@ -62,6 +62,7 @@ export function GearForm({
   const [query, setQuery] = useState(gear?.name ?? "");
   const [brandFilter, setBrandFilter] = useState("all");
   const [productCategoryFilter, setProductCategoryFilter] = useState("all");
+  const [productListExpanded, setProductListExpanded] = useState(false);
   const [name, setName] = useState(gear?.name ?? "");
   const [brand, setBrand] = useState(gear?.brand ?? "");
   const [model, setModel] = useState(gear?.model ?? "");
@@ -193,15 +194,15 @@ export function GearForm({
       (product) => product.category_id === productCategoryFilter
     );
   }, [productCategoryFilter, productsForBrand]);
+  const hasProductQuery = Boolean(normalize(query));
   const filteredProducts = useMemo(() => {
-    const normalizedQuery = normalize(query);
-
-    if (!normalizedQuery) {
-      return productsForCategory.slice(0, 12);
+    if (!hasProductQuery) {
+      return productListExpanded ? productsForCategory : productsForCategory.slice(0, 12);
     }
 
     return productsForCategory.filter((product) => matchesProductQuery(product, query));
-  }, [productsForCategory, query]);
+  }, [hasProductQuery, productListExpanded, productsForCategory, query]);
+  const hiddenProductCount = Math.max(0, productsForCategory.length - filteredProducts.length);
   const productSuggestions = useMemo(() => {
     const normalizedQuery = normalize(query);
 
@@ -248,6 +249,12 @@ export function GearForm({
     setQuery(value);
     setName(value);
     setProductId("");
+    setProductListExpanded(false);
+  }
+
+  function handleProductCategoryFilter(value: string) {
+    setProductCategoryFilter(value);
+    setProductListExpanded(false);
   }
 
   function confirmProductSearch() {
@@ -264,6 +271,7 @@ export function GearForm({
   function handleBrandFilter(value: string) {
     setBrandFilter(value);
     setProductCategoryFilter("all");
+    setProductListExpanded(false);
   }
 
   function startManualEntry() {
@@ -477,7 +485,7 @@ export function GearForm({
             <div className="mt-3 flex flex-wrap gap-2">
               <ProductFilterChip
                 active={productCategoryFilter === "all"}
-                onClick={() => setProductCategoryFilter("all")}
+                onClick={() => handleProductCategoryFilter("all")}
               >
                 すべて
               </ProductFilterChip>
@@ -485,7 +493,7 @@ export function GearForm({
                 <ProductFilterChip
                   key={item.id}
                   active={productCategoryFilter === item.id}
-                  onClick={() => setProductCategoryFilter(item.id)}
+                  onClick={() => handleProductCategoryFilter(item.id)}
                 >
                   {item.label}
                   <span className="ml-1 text-[11px] opacity-70">{item.count}</span>
@@ -518,6 +526,27 @@ export function GearForm({
                   </div>
                 </div>
               ))}
+              {!hasProductQuery && hiddenProductCount > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setProductListExpanded(true)}
+                  className="rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-forest-700 shadow-sm transition hover:border-forest-200 hover:bg-forest-50"
+                >
+                  もっと表示
+                  <span className="ml-2 text-xs font-medium text-stone-500">
+                    残り {hiddenProductCount} 件
+                  </span>
+                </button>
+              ) : null}
+              {!hasProductQuery && productListExpanded && productsForCategory.length > 12 ? (
+                <button
+                  type="button"
+                  onClick={() => setProductListExpanded(false)}
+                  className="rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-stone-600 shadow-sm transition hover:bg-stone-50"
+                >
+                  表示を少なくする
+                </button>
+              ) : null}
             </div>
           ) : (
             <p className="mt-4 rounded-2xl bg-stone-50 px-4 py-3 text-sm text-stone-500">

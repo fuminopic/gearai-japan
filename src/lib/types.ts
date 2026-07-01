@@ -519,6 +519,10 @@ export type MissingGearAnalysis = {
   estimated_missing_budget_jpy: number;
 };
 
+export type GearActionResult =
+  | { ok: true; redirectTo: string }
+  | { ok: false; error: string };
+
 export type AIRecommendationRecord = {
   id: string;
   user_id: string;

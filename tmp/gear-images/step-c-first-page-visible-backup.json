@@ -1,0 +1,585 @@
+{
+  "generated_at": "2026-06-29T09:19:04.027Z",
+  "dry_run": false,
+  "bucket": "gear-images-processed",
+  "storage_prefix": "gear-products/first-page-visible",
+  "source_manifest": "tmp/gear-images/step-b-catalog-first-page-visible-manifest.json",
+  "rows": [
+    {
+      "id": "c7382ce1-291a-4657-ade2-0b403ab6fe26",
+      "brand": "Columbia",
+      "model": "Castle Rock 25L Backpack II",
+      "name_ja": "キャッスルロック25LバックパックII",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/c7382ce1-291a-4657-ade2-0b403ab6fe26.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/c7382ce1-291a-4657-ade2-0b403ab6fe26.png"
+    },
+    {
+      "id": "67ca7d30-5e06-4f12-ad78-540f8616e00b",
+      "brand": "MILLET",
+      "model": "KULA 30",
+      "name_ja": "クーラ 30",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/67ca7d30-5e06-4f12-ad78-540f8616e00b.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/67ca7d30-5e06-4f12-ad78-540f8616e00b.png"
+    },
+    {
+      "id": "b1dfb9a4-8726-4598-8f8b-f9b254003ff5",
+      "brand": "Mammut",
+      "model": "Lithium 20",
+      "name_ja": "リチウム 20",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/b1dfb9a4-8726-4598-8f8b-f9b254003ff5.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/b1dfb9a4-8726-4598-8f8b-f9b254003ff5.png"
+    },
+    {
+      "id": "5656a1c3-9d4f-41f7-9f71-13f0e62b5683",
+      "brand": "Mammut",
+      "model": "Lithium 25",
+      "name_ja": "リチウム 25",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/5656a1c3-9d4f-41f7-9f71-13f0e62b5683.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/5656a1c3-9d4f-41f7-9f71-13f0e62b5683.png"
+    },
+    {
+      "id": "421e72e8-2d2d-418d-bcf4-c22cc9f1bf48",
+      "brand": "Mammut",
+      "model": "Lithium 30",
+      "name_ja": "リチウム 30",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/421e72e8-2d2d-418d-bcf4-c22cc9f1bf48.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/421e72e8-2d2d-418d-bcf4-c22cc9f1bf48.png"
+    },
+    {
+      "id": "907deb26-a00d-4f66-ba01-b4d1314fb6f6",
+      "brand": "山と道",
+      "model": "MINI",
+      "name_ja": "MINI",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/907deb26-a00d-4f66-ba01-b4d1314fb6f6.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/907deb26-a00d-4f66-ba01-b4d1314fb6f6.png"
+    },
+    {
+      "id": "6e6729e8-6813-487f-bdf5-76792afdce37",
+      "brand": "山と道",
+      "model": "MINI2",
+      "name_ja": "MINI2",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/6e6729e8-6813-487f-bdf5-76792afdce37.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/6e6729e8-6813-487f-bdf5-76792afdce37.png"
+    },
+    {
+      "id": "b29f6998-7b4a-4180-b213-2012d76477dd",
+      "brand": "山と道",
+      "model": "ONE",
+      "name_ja": "ONE",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/b29f6998-7b4a-4180-b213-2012d76477dd.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/b29f6998-7b4a-4180-b213-2012d76477dd.png"
+    },
+    {
+      "id": "d467d631-38cb-4b8f-8bee-a86c9e40bcfa",
+      "brand": "MILLET",
+      "model": "SAAS FEE NX 30+5",
+      "name_ja": "サースフェー NX 30+5",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/d467d631-38cb-4b8f-8bee-a86c9e40bcfa.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/d467d631-38cb-4b8f-8bee-a86c9e40bcfa.png"
+    },
+    {
+      "id": "79c163a6-d0fa-4016-af42-07d5d56dd254",
+      "brand": "MILLET",
+      "model": "SAAS FEE NX 40+5",
+      "name_ja": "サースフェー NX 40+5",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/79c163a6-d0fa-4016-af42-07d5d56dd254.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/79c163a6-d0fa-4016-af42-07d5d56dd254.png"
+    },
+    {
+      "id": "b3950d31-612e-4c96-aa9c-5077ded3f09d",
+      "brand": "山と道",
+      "model": "THREE",
+      "name_ja": "THREE",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/b3950d31-612e-4c96-aa9c-5077ded3f09d.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/b3950d31-612e-4c96-aa9c-5077ded3f09d.png"
+    },
+    {
+      "id": "671b003d-6cdf-4c4c-9975-512953b77270",
+      "brand": "GREGORY",
+      "model": "Zulu 30",
+      "name_ja": "ズール 30",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/671b003d-6cdf-4c4c-9975-512953b77270.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/671b003d-6cdf-4c4c-9975-512953b77270.png"
+    },
+    {
+      "id": "76a73e13-d550-40d5-a325-3db3d08d41de",
+      "brand": "NEMO",
+      "model": "Dragonfly OSMO 1P",
+      "name_ja": "Dragonfly OSMO™ 1P",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/76a73e13-d550-40d5-a325-3db3d08d41de.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/76a73e13-d550-40d5-a325-3db3d08d41de.png"
+    },
+    {
+      "id": "f527b827-fe3f-443c-918d-42a4928a4d93",
+      "brand": "NEMO",
+      "model": "Dragonfly OSMO 2P",
+      "name_ja": "Dragonfly OSMO™ 2P",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/f527b827-fe3f-443c-918d-42a4928a4d93.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/f527b827-fe3f-443c-918d-42a4928a4d93.png"
+    },
+    {
+      "id": "3ec06530-57cb-42ab-b2ab-cd7b902eca8b",
+      "brand": "NEMO",
+      "model": "Dragonfly OSMO 3P",
+      "name_ja": "Dragonfly OSMO™ 3P",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/3ec06530-57cb-42ab-b2ab-cd7b902eca8b.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/3ec06530-57cb-42ab-b2ab-cd7b902eca8b.png"
+    },
+    {
+      "id": "6b2ff5cb-608f-47e4-b402-6740c577efa5",
+      "brand": "NEMO",
+      "model": "Hornet OSMO 1P",
+      "name_ja": "Hornet™ OSMO™ 1P",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/6b2ff5cb-608f-47e4-b402-6740c577efa5.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/6b2ff5cb-608f-47e4-b402-6740c577efa5.png"
+    },
+    {
+      "id": "e17a4827-f12e-44ba-8278-bd1e425bc672",
+      "brand": "NEMO",
+      "model": "Tani OSMO 1P",
+      "name_ja": "Tani™ OSMO™ 1P",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/e17a4827-f12e-44ba-8278-bd1e425bc672.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/e17a4827-f12e-44ba-8278-bd1e425bc672.png"
+    },
+    {
+      "id": "32adc51e-9fbe-4a77-8869-2266f40e5692",
+      "brand": "finetrack",
+      "model": "カミナドーム1",
+      "name_ja": "カミナドーム1",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/32adc51e-9fbe-4a77-8869-2266f40e5692.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/32adc51e-9fbe-4a77-8869-2266f40e5692.png"
+    },
+    {
+      "id": "2e1ddc3a-da38-4e7c-8945-3a636f0e328a",
+      "brand": "finetrack",
+      "model": "カミナドーム2",
+      "name_ja": "カミナドーム2",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/2e1ddc3a-da38-4e7c-8945-3a636f0e328a.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/2e1ddc3a-da38-4e7c-8945-3a636f0e328a.png"
+    },
+    {
+      "id": "48b8f3a1-b189-4e0c-8302-04e667cf9010",
+      "brand": "finetrack",
+      "model": "カミナドーム4",
+      "name_ja": "カミナドーム4",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/48b8f3a1-b189-4e0c-8302-04e667cf9010.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/48b8f3a1-b189-4e0c-8302-04e667cf9010.png"
+    },
+    {
+      "id": "19837f12-fc7a-4f4d-abc5-72d961c8a36d",
+      "brand": "finetrack",
+      "model": "カミナモノポール1",
+      "name_ja": "カミナモノポール1",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/19837f12-fc7a-4f4d-abc5-72d961c8a36d.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/19837f12-fc7a-4f4d-abc5-72d961c8a36d.png"
+    },
+    {
+      "id": "bce09673-644a-4b49-baf0-ef6b5e962642",
+      "brand": "finetrack",
+      "model": "カミナモノポール2",
+      "name_ja": "カミナモノポール2",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/bce09673-644a-4b49-baf0-ef6b5e962642.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/bce09673-644a-4b49-baf0-ef6b5e962642.png"
+    },
+    {
+      "id": "9514f16a-658b-4f9b-97de-9ca230a9501b",
+      "brand": "NEMO",
+      "model": "Fillo",
+      "name_ja": "Fillo™",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/9514f16a-658b-4f9b-97de-9ca230a9501b.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/9514f16a-658b-4f9b-97de-9ca230a9501b.png"
+    },
+    {
+      "id": "213b0565-8926-4ace-9d94-6826c50c1754",
+      "brand": "NEMO",
+      "model": "Fillo Elite",
+      "name_ja": "Fillo™ Elite",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/213b0565-8926-4ace-9d94-6826c50c1754.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/213b0565-8926-4ace-9d94-6826c50c1754.png"
+    },
+    {
+      "id": "95d65bdc-442b-4c1f-8937-15ad450605da",
+      "brand": "NEMO",
+      "model": "Fillo Elite Wide",
+      "name_ja": "Fillo™ Elite Wide",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/95d65bdc-442b-4c1f-8937-15ad450605da.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/95d65bdc-442b-4c1f-8937-15ad450605da.png"
+    },
+    {
+      "id": "bb67aec0-f9c2-4a30-9e84-237e03332717",
+      "brand": "Therm-a-Rest",
+      "model": "NeoAir XLite NXT MAX Regular Wide",
+      "name_ja": "NeoAir XLite NXT MAX レギュラーワイド",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/bb67aec0-f9c2-4a30-9e84-237e03332717.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/bb67aec0-f9c2-4a30-9e84-237e03332717.png"
+    },
+    {
+      "id": "06258fba-df94-48fe-9c47-dab2b378d1cd",
+      "brand": "Therm-a-Rest",
+      "model": "NeoAir XLite NXT Regular",
+      "name_ja": "NeoAir XLite NXT レギュラー",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/06258fba-df94-48fe-9c47-dab2b378d1cd.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/06258fba-df94-48fe-9c47-dab2b378d1cd.png"
+    },
+    {
+      "id": "04b7c025-b597-4d8c-8834-257084f778ea",
+      "brand": "Therm-a-Rest",
+      "model": "NeoAir XTherm NXT MAX Regular Wide",
+      "name_ja": "NeoAir XTherm NXT MAX レギュラーワイド",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/04b7c025-b597-4d8c-8834-257084f778ea.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/04b7c025-b597-4d8c-8834-257084f778ea.png"
+    },
+    {
+      "id": "70408436-1a10-4260-b839-b9e192ac71c8",
+      "brand": "Therm-a-Rest",
+      "model": "NeoAir XTherm NXT Regular",
+      "name_ja": "NeoAir XTherm NXT レギュラー",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/70408436-1a10-4260-b839-b9e192ac71c8.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/70408436-1a10-4260-b839-b9e192ac71c8.png"
+    },
+    {
+      "id": "a875c87d-88b1-4f3c-a693-aee4ebf0a2f2",
+      "brand": "Therm-a-Rest",
+      "model": "Original Z Lite",
+      "name_ja": "Original Z Lite",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/a875c87d-88b1-4f3c-a693-aee4ebf0a2f2.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/a875c87d-88b1-4f3c-a693-aee4ebf0a2f2.png"
+    },
+    {
+      "id": "8db39943-cdf0-4db0-8780-b9e9b845e003",
+      "brand": "山と道",
+      "model": "Pack Liner (3pcs.)",
+      "name_ja": "Pack Liner (3pcs.)",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/8db39943-cdf0-4db0-8780-b9e9b845e003.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/8db39943-cdf0-4db0-8780-b9e9b845e003.png"
+    },
+    {
+      "id": "59273438-5547-4588-8681-0db8468f528a",
+      "brand": "Therm-a-Rest",
+      "model": "ProLite Apex Regular",
+      "name_ja": "ProLite Apex レギュラー",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/59273438-5547-4588-8681-0db8468f528a.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/59273438-5547-4588-8681-0db8468f528a.png"
+    },
+    {
+      "id": "3cfa4e4f-b7cb-488d-ad57-88e778a880bc",
+      "brand": "Therm-a-Rest",
+      "model": "ProLite Plus Regular",
+      "name_ja": "ProLite Plus レギュラー",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/3cfa4e4f-b7cb-488d-ad57-88e778a880bc.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/3cfa4e4f-b7cb-488d-ad57-88e778a880bc.png"
+    },
+    {
+      "id": "4a312956-857a-4aca-9046-d8e8a083aab7",
+      "brand": "Therm-a-Rest",
+      "model": "RidgeRest Classic Regular",
+      "name_ja": "RidgeRest Classic レギュラー",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/4a312956-857a-4aca-9046-d8e8a083aab7.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/4a312956-857a-4aca-9046-d8e8a083aab7.png"
+    },
+    {
+      "id": "71dd593e-f4a5-400d-a859-db589a6a7af6",
+      "brand": "Caravan",
+      "model": "C1_02S",
+      "name_ja": "C1_02S",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/71dd593e-f4a5-400d-a859-db589a6a7af6.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/71dd593e-f4a5-400d-a859-db589a6a7af6.png"
+    },
+    {
+      "id": "e9c40673-76bb-4c0f-b11f-17880158fc7b",
+      "brand": "Caravan",
+      "model": "C4_03",
+      "name_ja": "C4_03",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/e9c40673-76bb-4c0f-b11f-17880158fc7b.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/e9c40673-76bb-4c0f-b11f-17880158fc7b.png"
+    },
+    {
+      "id": "a507f563-20a2-4054-bdb7-3169a6bff066",
+      "brand": "THE NORTH FACE",
+      "model": "クライムライトジャケット（メンズ）",
+      "name_ja": "クライムライトジャケット（メンズ）",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/a507f563-20a2-4054-bdb7-3169a6bff066.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/a507f563-20a2-4054-bdb7-3169a6bff066.png"
+    },
+    {
+      "id": "80ce0129-c378-43a5-abeb-8cb02a77e0d2",
+      "brand": "mont-bell",
+      "model": "サンダーパス ジャケット Men's",
+      "name_ja": "サンダーパス ジャケット Men's",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/80ce0129-c378-43a5-abeb-8cb02a77e0d2.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/80ce0129-c378-43a5-abeb-8cb02a77e0d2.png"
+    },
+    {
+      "id": "53b0a75a-e1ab-4bd2-b919-6890689bbbb7",
+      "brand": "mont-bell",
+      "model": "サンダーパス ジャケット Women's",
+      "name_ja": "サンダーパス ジャケット Women's",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/53b0a75a-e1ab-4bd2-b919-6890689bbbb7.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/53b0a75a-e1ab-4bd2-b919-6890689bbbb7.png"
+    },
+    {
+      "id": "f68a999f-21d4-4091-9dc1-ad33b32019b4",
+      "brand": "mont-bell",
+      "model": "サンダーパス パンツ Men's",
+      "name_ja": "サンダーパス パンツ Men's",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/f68a999f-21d4-4091-9dc1-ad33b32019b4.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/f68a999f-21d4-4091-9dc1-ad33b32019b4.png"
+    },
+    {
+      "id": "9fafe576-5c27-47d2-bd85-f1c85add260f",
+      "brand": "mont-bell",
+      "model": "ストームクルーザー ジャケット Men's",
+      "name_ja": "ストームクルーザー ジャケット Men's",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/9fafe576-5c27-47d2-bd85-f1c85add260f.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/9fafe576-5c27-47d2-bd85-f1c85add260f.png"
+    },
+    {
+      "id": "f443c9f3-dea8-4fb0-ab75-0f865d11e5e2",
+      "brand": "mont-bell",
+      "model": "ストームクルーザー ジャケット Women's",
+      "name_ja": "ストームクルーザー ジャケット Women's",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/f443c9f3-dea8-4fb0-ab75-0f865d11e5e2.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/f443c9f3-dea8-4fb0-ab75-0f865d11e5e2.png"
+    },
+    {
+      "id": "435673ae-ac0e-4fe0-9f67-32b5671c8be7",
+      "brand": "mont-bell",
+      "model": "ストームクルーザー パンツ Men's",
+      "name_ja": "ストームクルーザー パンツ Men's",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/435673ae-ac0e-4fe0-9f67-32b5671c8be7.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/435673ae-ac0e-4fe0-9f67-32b5671c8be7.png"
+    },
+    {
+      "id": "d798689b-450c-4bbb-8340-f218e580a8df",
+      "brand": "mont-bell",
+      "model": "ストームクルーザー パンツ Women's",
+      "name_ja": "ストームクルーザー パンツ Women's",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/d798689b-450c-4bbb-8340-f218e580a8df.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/d798689b-450c-4bbb-8340-f218e580a8df.png"
+    },
+    {
+      "id": "1360c2cf-7dca-449f-b747-f71388d8c14f",
+      "brand": "THE NORTH FACE",
+      "model": "ストライクトレイルジャケット（メンズ）",
+      "name_ja": "ストライクトレイルジャケット（メンズ）",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/1360c2cf-7dca-449f-b747-f71388d8c14f.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/1360c2cf-7dca-449f-b747-f71388d8c14f.png"
+    },
+    {
+      "id": "ed4d1461-8ecc-4b95-9ca3-34896ded4dfc",
+      "brand": "THE NORTH FACE",
+      "model": "ストライクトレイルジャケット（レディース）",
+      "name_ja": "ストライクトレイルジャケット（レディース）",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/ed4d1461-8ecc-4b95-9ca3-34896ded4dfc.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/ed4d1461-8ecc-4b95-9ca3-34896ded4dfc.png"
+    },
+    {
+      "id": "b9503f94-6fd7-48e0-b86b-b7b7b22978cb",
+      "brand": "mont-bell",
+      "model": "バーサライト ジャケット Men's",
+      "name_ja": "バーサライト ジャケット Men's",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/b9503f94-6fd7-48e0-b86b-b7b7b22978cb.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/b9503f94-6fd7-48e0-b86b-b7b7b22978cb.png"
+    },
+    {
+      "id": "ed14cea0-5df6-4f2a-a632-5835899e5355",
+      "brand": "mont-bell",
+      "model": "バーサライト ジャケット Women's",
+      "name_ja": "バーサライト ジャケット Women's",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/ed14cea0-5df6-4f2a-a632-5835899e5355.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/ed14cea0-5df6-4f2a-a632-5835899e5355.png"
+    },
+    {
+      "id": "3755f48c-66c1-49d6-b6eb-f49d5172e9f7",
+      "brand": "SOTO",
+      "model": "SOD-310",
+      "name_ja": "マイクロレギュレーターストーブ ウインドマスター SOD-310",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/3755f48c-66c1-49d6-b6eb-f49d5172e9f7.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/3755f48c-66c1-49d6-b6eb-f49d5172e9f7.png"
+    },
+    {
+      "id": "eaf7f11b-ca65-4c4e-a009-16bfe896263a",
+      "brand": "SOTO",
+      "model": "SOD-320",
+      "name_ja": "アミカス SOD-320",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/eaf7f11b-ca65-4c4e-a009-16bfe896263a.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/eaf7f11b-ca65-4c4e-a009-16bfe896263a.png"
+    },
+    {
+      "id": "0e5648f7-14f7-4dc0-b993-f37ed6ad0b3a",
+      "brand": "SOTO",
+      "model": "SOD-331",
+      "name_ja": "マイクロレギュレーターストーブ FUSION Trek SOD-331",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/0e5648f7-14f7-4dc0-b993-f37ed6ad0b3a.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/0e5648f7-14f7-4dc0-b993-f37ed6ad0b3a.png"
+    },
+    {
+      "id": "c1c994ba-fe91-4c5f-956e-73868a51a05b",
+      "brand": "SOTO",
+      "model": "SOD-460",
+      "name_ja": "ウインドマスター専用4本ゴトク フォーフレックス",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/c1c994ba-fe91-4c5f-956e-73868a51a05b.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/c1c994ba-fe91-4c5f-956e-73868a51a05b.png"
+    },
+    {
+      "id": "35a903f9-785e-435f-aa76-934bfa9f1d93",
+      "brand": "SOTO",
+      "model": "SOD-520",
+      "name_ja": "サーモスタック",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/35a903f9-785e-435f-aa76-934bfa9f1d93.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/35a903f9-785e-435f-aa76-934bfa9f1d93.png"
+    },
+    {
+      "id": "0e6a56df-6bab-48ed-bc16-d1f415843062",
+      "brand": "SOTO",
+      "model": "SOD-521",
+      "name_ja": "サーモスタッククッカーコンボ",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/0e6a56df-6bab-48ed-bc16-d1f415843062.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/0e6a56df-6bab-48ed-bc16-d1f415843062.png"
+    },
+    {
+      "id": "e505785b-9546-4a0d-a1bf-97d5b91cd985",
+      "brand": "SOTO",
+      "model": "SOD-522",
+      "name_ja": "サーモライト",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/e505785b-9546-4a0d-a1bf-97d5b91cd985.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/e505785b-9546-4a0d-a1bf-97d5b91cd985.png"
+    },
+    {
+      "id": "78ca16da-5e8b-426c-8619-543643713b3b",
+      "brand": "SOTO",
+      "model": "SOD-523",
+      "name_ja": "スチームライスクッカー ITADAKI(イタダキ)",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/78ca16da-5e8b-426c-8619-543643713b3b.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/78ca16da-5e8b-426c-8619-543643713b3b.png"
+    },
+    {
+      "id": "1f7ebae0-64c8-490e-898d-edda4d15922b",
+      "brand": "SOTO",
+      "model": "SOD-532",
+      "name_ja": "チタンマグ450",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/1f7ebae0-64c8-490e-898d-edda4d15922b.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/1f7ebae0-64c8-490e-898d-edda4d15922b.png"
+    },
+    {
+      "id": "1cb0a832-4c9c-477e-9e5d-4b79fc10b9bd",
+      "brand": "SOTO",
+      "model": "SOD-533",
+      "name_ja": "チタンマグ600",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/1cb0a832-4c9c-477e-9e5d-4b79fc10b9bd.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/1cb0a832-4c9c-477e-9e5d-4b79fc10b9bd.png"
+    },
+    {
+      "id": "ee82dfbd-7122-4bed-9403-0dcc51748280",
+      "brand": "SOTO",
+      "model": "SOD-710T",
+      "name_ja": "パワーガス105トリプルミックス",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/ee82dfbd-7122-4bed-9403-0dcc51748280.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/ee82dfbd-7122-4bed-9403-0dcc51748280.png"
+    },
+    {
+      "id": "e1686322-bed9-4f87-8934-b8013c036453",
+      "brand": "SOTO",
+      "model": "SOD-725T",
+      "name_ja": "パワーガス250トリプルミックス",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/e1686322-bed9-4f87-8934-b8013c036453.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/e1686322-bed9-4f87-8934-b8013c036453.png"
+    },
+    {
+      "id": "8a686a94-deed-492a-8e8c-e666fa0669d9",
+      "brand": "Petzl",
+      "model": "ACTIK",
+      "name_ja": "ACTIK",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/8a686a94-deed-492a-8e8c-e666fa0669d9.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/8a686a94-deed-492a-8e8c-e666fa0669d9.png"
+    },
+    {
+      "id": "26784443-9cdb-495a-90e6-4b60a892ca59",
+      "brand": "Petzl",
+      "model": "ACTIK CORE",
+      "name_ja": "ACTIK CORE",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/26784443-9cdb-495a-90e6-4b60a892ca59.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/26784443-9cdb-495a-90e6-4b60a892ca59.png"
+    },
+    {
+      "id": "7920db57-54b5-47f7-ab93-d1d2c5e26350",
+      "brand": "Garmin",
+      "model": "eTrex SE",
+      "name_ja": "eTrex SE",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/7920db57-54b5-47f7-ab93-d1d2c5e26350.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/7920db57-54b5-47f7-ab93-d1d2c5e26350.png"
+    },
+    {
+      "id": "c887dd96-c94f-465e-8367-92eeda7bd0b1",
+      "brand": "mont-bell",
+      "model": "EXパワーヘッドランプ",
+      "name_ja": "EXパワーヘッドランプ",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/c887dd96-c94f-465e-8367-92eeda7bd0b1.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/c887dd96-c94f-465e-8367-92eeda7bd0b1.png"
+    },
+    {
+      "id": "b91e74c9-0290-4807-a621-2b39dad8dad9",
+      "brand": "Petzl",
+      "model": "IKO CORE",
+      "name_ja": "IKO CORE",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/b91e74c9-0290-4807-a621-2b39dad8dad9.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/b91e74c9-0290-4807-a621-2b39dad8dad9.png"
+    },
+    {
+      "id": "73172134-dca1-48fb-9811-e51e59221b9f",
+      "brand": "Petzl",
+      "model": "SWIFT RL",
+      "name_ja": "SWIFT RL",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/73172134-dca1-48fb-9811-e51e59221b9f.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/73172134-dca1-48fb-9811-e51e59221b9f.png"
+    },
+    {
+      "id": "640eed16-030e-46eb-950a-b9ef91b63b11",
+      "brand": "mont-bell",
+      "model": "L.W.インナーグローブ Men's",
+      "name_ja": "L.W.インナーグローブ Men's",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/640eed16-030e-46eb-950a-b9ef91b63b11.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/640eed16-030e-46eb-950a-b9ef91b63b11.png"
+    },
+    {
+      "id": "d4ce6133-3fef-438e-b28e-4e8708ca8f20",
+      "brand": "mont-bell",
+      "model": "L.W.チェーンスパイク",
+      "name_ja": "L.W.チェーンスパイク",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/d4ce6133-3fef-438e-b28e-4e8708ca8f20.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/d4ce6133-3fef-438e-b28e-4e8708ca8f20.png"
+    },
+    {
+      "id": "4638a66f-389c-4783-ab0e-d9af3de782e9",
+      "brand": "山と道",
+      "model": "Stuff Pack",
+      "name_ja": "Stuff Pack",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/4638a66f-389c-4783-ab0e-d9af3de782e9.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/4638a66f-389c-4783-ab0e-d9af3de782e9.png"
+    },
+    {
+      "id": "84a27cf9-b4ef-4758-ac9a-27a5456aca67",
+      "brand": "山と道",
+      "model": "Yamatomichi Sacoche",
+      "name_ja": "Yamatomichi Sacoche",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/84a27cf9-b4ef-4758-ac9a-27a5456aca67.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/84a27cf9-b4ef-4758-ac9a-27a5456aca67.png"
+    },
+    {
+      "id": "ca109ad9-2ef8-41ce-b1aa-311cdc2ad15e",
+      "brand": "山と道",
+      "model": "Zip Pack",
+      "name_ja": "Zip Pack",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/ca109ad9-2ef8-41ce-b1aa-311cdc2ad15e.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/ca109ad9-2ef8-41ce-b1aa-311cdc2ad15e.png"
+    },
+    {
+      "id": "5f095fd2-14d0-4d86-b13f-f35bc204d6d6",
+      "brand": "mont-bell",
+      "model": "アルパイン カーボンポール",
+      "name_ja": "アルパイン カーボンポール",
+      "previous_image_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/first-page-visible/5f095fd2-14d0-4d86-b13f-f35bc204d6d6.png",
+      "processed_output_path": "tmp/gear-images/processed/catalog-first-page-visible/5f095fd2-14d0-4d86-b13f-f35bc204d6d6.png"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+brand,name_ja,model,id,verification_status,has_image,current_image_url,official_url,recommended_filename,target_folder
+Petzl,ARIA 1 RGB,ARIA 1 RGB,8539594d-c874-4205-97ef-27329fbca0ad,needs_review,no,,https://www.petzl.com/INT/en/Sport/Headlamps,ARIA 1 RGB - 8539594d.png,tmp/gear-images/manual-image-todo/by-brand/Petzl
+Petzl,ARIA 2 RGB,ARIA 2 RGB,7a1ee0c5-1895-45b7-9143-d07629228b79,needs_review,no,,https://www.petzl.com/INT/en/Sport/Headlamps,ARIA 2 RGB - 7a1ee0c5.png,tmp/gear-images/manual-image-todo/by-brand/Petzl
+Petzl,ARIA 2R,ARIA 2R,3774c498-5ee3-4ab4-a2aa-d7bb072f0b4c,needs_review,no,,https://www.petzl.com/INT/en/Sport/Headlamps,ARIA 2R - 3774c498.png,tmp/gear-images/manual-image-todo/by-brand/Petzl
+Petzl,BINDI,BINDI,37be6e0f-59d3-4870-a80f-3a1b44ad8eb4,needs_review,no,,https://www.petzl.com/INT/en/Sport/Headlamps,BINDI - 37be6e0f.png,tmp/gear-images/manual-image-todo/by-brand/Petzl
+Petzl,BOREO,BOREO,ec43d109-e419-4ccb-904a-f6d6f2347889,needs_review,no,,https://www.petzl.com/INT/en/Sport/Helmets,BOREO - ec43d109.png,tmp/gear-images/manual-image-todo/by-brand/Petzl
+Petzl,IKO,IKO,991ccc85-a1aa-429f-b1c9-589e28b90432,needs_review,no,,https://www.petzl.com/INT/en/Sport/Headlamps,IKO - 991ccc85.png,tmp/gear-images/manual-image-todo/by-brand/Petzl
+Petzl,METEOR,METEOR,aca97990-3dea-4604-b54b-3bc948f73099,needs_review,no,,https://www.petzl.com/INT/en/Sport/Helmets,METEOR - aca97990.png,tmp/gear-images/manual-image-todo/by-brand/Petzl
+Petzl,NAO RL,NAO RL,b9921d1c-586d-44cd-b9ef-b7b67ae121ce,needs_review,no,,https://www.petzl.com/INT/en/Sport/Headlamps,NAO RL - b9921d1c.png,tmp/gear-images/manual-image-todo/by-brand/Petzl
+Petzl,TACTIKKA,TACTIKKA,d5ee928f-64bd-48b3-9ca1-fc1e648ea8ff,needs_review,no,,https://www.petzl.com/INT/en/Sport/Headlamps,TACTIKKA - d5ee928f.png,tmp/gear-images/manual-image-todo/by-brand/Petzl
+Petzl,TACTIKKA CORE,TACTIKKA CORE,68a7a1e0-a09d-4a67-986a-175694fe37fa,needs_review,no,,https://www.petzl.com/INT/en/Sport/Headlamps,TACTIKKA CORE - 68a7a1e0.png,tmp/gear-images/manual-image-todo/by-brand/Petzl
+Petzl,TIKKA,TIKKA,28a64247-d87f-4252-9c50-311b17399e97,verified,yes,https://www.petzl.com/sfc/servlet.shepherd/version/download/068Tx00000BWDtTIAX,https://www.petzl.com/INT/en/Sport/Headlamps/TIKKA,TIKKA - 28a64247.png,tmp/gear-images/manual-image-todo/by-brand/Petzl
+Petzl,TIKKA CORE,TIKKA CORE,8ca84e74-20c5-41e9-8949-ec5a8cf4a449,verified,yes,https://www.petzl.com/sfc/servlet.shepherd/version/download/068Tx000006L5ZAIA0,https://www.petzl.com/INT/en/Sport/Headlamps/TIKKA-CORE,TIKKA CORE - 8ca84e74.png,tmp/gear-images/manual-image-todo/by-brand/Petzl

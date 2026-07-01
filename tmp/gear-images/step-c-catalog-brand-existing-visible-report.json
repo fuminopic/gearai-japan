@@ -1,0 +1,967 @@
+{
+  "generated_at": "2026-06-30T04:48:44.174Z",
+  "dry_run": false,
+  "bucket_status": "existing",
+  "target_count": 119,
+  "uploaded_count": 119,
+  "failure_count": 0,
+  "backup_path": "tmp/gear-images/step-c-catalog-brand-existing-visible-backup.json",
+  "rollback_sql_path": "tmp/gear-images/step-c-catalog-brand-existing-visible-rollback.sql",
+  "report_path": "tmp/gear-images/step-c-catalog-brand-existing-visible-report.json",
+  "storage_prefix": "gear-products/catalog-brand-existing-visible",
+  "uploaded": [
+    {
+      "id": "2f1b2fef-c59f-43b7-bbe4-6e22b11a59f8",
+      "brand": "Black Diamond",
+      "model": "アストロ300-R",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/2f1b2fef-c59f-43b7-bbe4-6e22b11a59f8.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/2f1b2fef-c59f-43b7-bbe4-6e22b11a59f8.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/2f1b2fef-c59f-43b7-bbe4-6e22b11a59f8.png"
+    },
+    {
+      "id": "b9044ada-2cd3-484b-b18f-f61ef26ce419",
+      "brand": "Black Diamond",
+      "model": "ガイドグローブ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/b9044ada-2cd3-484b-b18f-f61ef26ce419.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/b9044ada-2cd3-484b-b18f-f61ef26ce419.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/b9044ada-2cd3-484b-b18f-f61ef26ce419.png"
+    },
+    {
+      "id": "ac1c592e-90cc-43b7-8f6b-1d97740864fd",
+      "brand": "Black Diamond",
+      "model": "キャピタンE",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/ac1c592e-90cc-43b7-8f6b-1d97740864fd.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/ac1c592e-90cc-43b7-8f6b-1d97740864fd.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/ac1c592e-90cc-43b7-8f6b-1d97740864fd.png"
+    },
+    {
+      "id": "ba3ddad5-f0b7-4db0-8ed3-f3dac1332104",
+      "brand": "Black Diamond",
+      "model": "コズモ350",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/ba3ddad5-f0b7-4db0-8ed3-f3dac1332104.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/ba3ddad5-f0b7-4db0-8ed3-f3dac1332104.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/ba3ddad5-f0b7-4db0-8ed3-f3dac1332104.png"
+    },
+    {
+      "id": "012c8512-7a8b-450b-8573-251c7be4b8c8",
+      "brand": "Black Diamond",
+      "model": "コズモ350-R",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/012c8512-7a8b-450b-8573-251c7be4b8c8.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/012c8512-7a8b-450b-8573-251c7be4b8c8.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/012c8512-7a8b-450b-8573-251c7be4b8c8.png"
+    },
+    {
+      "id": "083cb815-82b5-4270-bc8a-eaaf6d969d5b",
+      "brand": "Black Diamond",
+      "model": "コンタクト ストラップ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/083cb815-82b5-4270-bc8a-eaaf6d969d5b.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/083cb815-82b5-4270-bc8a-eaaf6d969d5b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/083cb815-82b5-4270-bc8a-eaaf6d969d5b.png"
+    },
+    {
+      "id": "02163389-ca2b-4734-a7e7-515802fa4bd4",
+      "brand": "Black Diamond",
+      "model": "サイボーグ プロ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/02163389-ca2b-4734-a7e7-515802fa4bd4.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/02163389-ca2b-4734-a7e7-515802fa4bd4.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/02163389-ca2b-4734-a7e7-515802fa4bd4.png"
+    },
+    {
+      "id": "54eabf33-d3cd-4b39-b88b-311b9147dec2",
+      "brand": "Black Diamond",
+      "model": "ストーム450",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/54eabf33-d3cd-4b39-b88b-311b9147dec2.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/54eabf33-d3cd-4b39-b88b-311b9147dec2.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/54eabf33-d3cd-4b39-b88b-311b9147dec2.png"
+    },
+    {
+      "id": "b66c770c-8a36-43ce-955c-9fd7e9db896e",
+      "brand": "Black Diamond",
+      "model": "ストーム500-R",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/b66c770c-8a36-43ce-955c-9fd7e9db896e.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/b66c770c-8a36-43ce-955c-9fd7e9db896e.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/b66c770c-8a36-43ce-955c-9fd7e9db896e.png"
+    },
+    {
+      "id": "68515b6d-60cf-4e86-a2aa-354882913265",
+      "brand": "Black Diamond",
+      "model": "スピード22",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/68515b6d-60cf-4e86-a2aa-354882913265.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/68515b6d-60cf-4e86-a2aa-354882913265.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/68515b6d-60cf-4e86-a2aa-354882913265.png"
+    },
+    {
+      "id": "75a8d5a1-a3c7-40a3-81d4-8cff830735ef",
+      "brand": "Black Diamond",
+      "model": "スピード30",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/75a8d5a1-a3c7-40a3-81d4-8cff830735ef.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/75a8d5a1-a3c7-40a3-81d4-8cff830735ef.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/75a8d5a1-a3c7-40a3-81d4-8cff830735ef.png"
+    },
+    {
+      "id": "e0c93b9d-2298-4d4a-95bc-84f448f9d131",
+      "brand": "Black Diamond",
+      "model": "スピード40",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/e0c93b9d-2298-4d4a-95bc-84f448f9d131.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/e0c93b9d-2298-4d4a-95bc-84f448f9d131.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/e0c93b9d-2298-4d4a-95bc-84f448f9d131.png"
+    },
+    {
+      "id": "8d0fc6d4-f1ae-499f-9c30-13c127e96992",
+      "brand": "Black Diamond",
+      "model": "スポット400",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/8d0fc6d4-f1ae-499f-9c30-13c127e96992.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/8d0fc6d4-f1ae-499f-9c30-13c127e96992.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/8d0fc6d4-f1ae-499f-9c30-13c127e96992.png"
+    },
+    {
+      "id": "e9c3c6a1-530b-4535-9d03-5ad3524be2cd",
+      "brand": "Black Diamond",
+      "model": "スポット400-R",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/e9c3c6a1-530b-4535-9d03-5ad3524be2cd.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/e9c3c6a1-530b-4535-9d03-5ad3524be2cd.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/e9c3c6a1-530b-4535-9d03-5ad3524be2cd.png"
+    },
+    {
+      "id": "b7a39e18-93fa-4c68-83b9-41ee5469d63b",
+      "brand": "Black Diamond",
+      "model": "セイバートゥース プロ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/b7a39e18-93fa-4c68-83b9-41ee5469d63b.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/b7a39e18-93fa-4c68-83b9-41ee5469d63b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/b7a39e18-93fa-4c68-83b9-41ee5469d63b.png"
+    },
+    {
+      "id": "f5b334e7-7c49-4d20-9fcb-8b2080eeecfb",
+      "brand": "Black Diamond",
+      "model": "セラック クリップ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/f5b334e7-7c49-4d20-9fcb-8b2080eeecfb.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/f5b334e7-7c49-4d20-9fcb-8b2080eeecfb.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/f5b334e7-7c49-4d20-9fcb-8b2080eeecfb.png"
+    },
+    {
+      "id": "30967eb4-3875-460e-bc6e-8a7f40e27527",
+      "brand": "Black Diamond",
+      "model": "セラック ストラップ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/30967eb4-3875-460e-bc6e-8a7f40e27527.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/30967eb4-3875-460e-bc6e-8a7f40e27527.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/30967eb4-3875-460e-bc6e-8a7f40e27527.png"
+    },
+    {
+      "id": "41a4c501-7e8c-4a2d-bc65-b5ef79e45dc1",
+      "brand": "Black Diamond",
+      "model": "ソロイストグローブ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/41a4c501-7e8c-4a2d-bc65-b5ef79e45dc1.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/41a4c501-7e8c-4a2d-bc65-b5ef79e45dc1.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/41a4c501-7e8c-4a2d-bc65-b5ef79e45dc1.png"
+    },
+    {
+      "id": "a1c9c69e-c2a7-4a14-8067-9bf0674b755a",
+      "brand": "Black Diamond",
+      "model": "ディスタンス1500",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/a1c9c69e-c2a7-4a14-8067-9bf0674b755a.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/a1c9c69e-c2a7-4a14-8067-9bf0674b755a.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/a1c9c69e-c2a7-4a14-8067-9bf0674b755a.png"
+    },
+    {
+      "id": "e40dd023-208f-4588-a42c-73d88514ac25",
+      "brand": "Black Diamond",
+      "model": "ディスタンスLT1100",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/e40dd023-208f-4588-a42c-73d88514ac25.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/e40dd023-208f-4588-a42c-73d88514ac25.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/e40dd023-208f-4588-a42c-73d88514ac25.png"
+    },
+    {
+      "id": "ec5796b8-3cf6-4c01-b849-208c1fec2a5a",
+      "brand": "Black Diamond",
+      "model": "ディスタンスZ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/ec5796b8-3cf6-4c01-b849-208c1fec2a5a.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/ec5796b8-3cf6-4c01-b849-208c1fec2a5a.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/ec5796b8-3cf6-4c01-b849-208c1fec2a5a.png"
+    },
+    {
+      "id": "035078c0-b02d-4b48-90cb-f00dedbc33b9",
+      "brand": "Black Diamond",
+      "model": "ディスタンスカーボンFLZ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/035078c0-b02d-4b48-90cb-f00dedbc33b9.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/035078c0-b02d-4b48-90cb-f00dedbc33b9.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/035078c0-b02d-4b48-90cb-f00dedbc33b9.png"
+    },
+    {
+      "id": "42746d92-2bba-49c2-b078-8ecce950f414",
+      "brand": "Black Diamond",
+      "model": "ディスタンスカーボンZ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/42746d92-2bba-49c2-b078-8ecce950f414.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/42746d92-2bba-49c2-b078-8ecce950f414.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/42746d92-2bba-49c2-b078-8ecce950f414.png"
+    },
+    {
+      "id": "699ae3b8-114f-4828-a913-7ec17d96008d",
+      "brand": "Black Diamond",
+      "model": "ディスタンスカーボンZ FKT",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/699ae3b8-114f-4828-a913-7ec17d96008d.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/699ae3b8-114f-4828-a913-7ec17d96008d.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/699ae3b8-114f-4828-a913-7ec17d96008d.png"
+    },
+    {
+      "id": "8d26302c-f71f-45ab-a28d-e6dcd2811114",
+      "brand": "Black Diamond",
+      "model": "ディプロイ325",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/8d26302c-f71f-45ab-a28d-e6dcd2811114.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/8d26302c-f71f-45ab-a28d-e6dcd2811114.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/8d26302c-f71f-45ab-a28d-e6dcd2811114.png"
+    },
+    {
+      "id": "e28139e0-a2e7-4545-8887-3009a6cc5ffc",
+      "brand": "Black Diamond",
+      "model": "ディプロイウィンドフードグローブ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/e28139e0-a2e7-4545-8887-3009a6cc5ffc.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/e28139e0-a2e7-4545-8887-3009a6cc5ffc.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/e28139e0-a2e7-4545-8887-3009a6cc5ffc.png"
+    },
+    {
+      "id": "5048da87-4df5-44bc-96f7-c4ef2ce9ecf3",
+      "brand": "Black Diamond",
+      "model": "ディプロイグローブ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/5048da87-4df5-44bc-96f7-c4ef2ce9ecf3.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/5048da87-4df5-44bc-96f7-c4ef2ce9ecf3.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/5048da87-4df5-44bc-96f7-c4ef2ce9ecf3.png"
+    },
+    {
+      "id": "9a330df7-3e19-4575-a073-6046621a7f84",
+      "brand": "Black Diamond",
+      "model": "トレイル",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/9a330df7-3e19-4575-a073-6046621a7f84.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/9a330df7-3e19-4575-a073-6046621a7f84.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/9a330df7-3e19-4575-a073-6046621a7f84.png"
+    },
+    {
+      "id": "4e4e5f35-6a9e-48c5-8151-bfdc762f13d2",
+      "brand": "Black Diamond",
+      "model": "トレイルバック",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/4e4e5f35-6a9e-48c5-8151-bfdc762f13d2.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/4e4e5f35-6a9e-48c5-8151-bfdc762f13d2.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/4e4e5f35-6a9e-48c5-8151-bfdc762f13d2.png"
+    },
+    {
+      "id": "510371ed-7807-48ac-8171-4da7377c8c8f",
+      "brand": "Black Diamond",
+      "model": "トレイルビスタ20",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/510371ed-7807-48ac-8171-4da7377c8c8f.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/510371ed-7807-48ac-8171-4da7377c8c8f.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/510371ed-7807-48ac-8171-4da7377c8c8f.png"
+    },
+    {
+      "id": "236bf030-9c1e-4cef-a611-9a43babb53e9",
+      "brand": "Black Diamond",
+      "model": "トレイルビスタ28",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/236bf030-9c1e-4cef-a611-9a43babb53e9.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/236bf030-9c1e-4cef-a611-9a43babb53e9.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/236bf030-9c1e-4cef-a611-9a43babb53e9.png"
+    },
+    {
+      "id": "b638d162-55be-4ae2-a3e0-c75593bc7aa0",
+      "brand": "Black Diamond",
+      "model": "トレイルビスタFLZ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/b638d162-55be-4ae2-a3e0-c75593bc7aa0.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/b638d162-55be-4ae2-a3e0-c75593bc7aa0.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/b638d162-55be-4ae2-a3e0-c75593bc7aa0.png"
+    },
+    {
+      "id": "9346bc3a-c82f-459e-8a7e-8ef304624961",
+      "brand": "Black Diamond",
+      "model": "ネーベ ストラップ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/9346bc3a-c82f-459e-8a7e-8ef304624961.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/9346bc3a-c82f-459e-8a7e-8ef304624961.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/9346bc3a-c82f-459e-8a7e-8ef304624961.png"
+    },
+    {
+      "id": "9a3bf812-d83e-489b-9ac4-bac07af8cb1b",
+      "brand": "Black Diamond",
+      "model": "ネーベ プロ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/9a3bf812-d83e-489b-9ac4-bac07af8cb1b.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/9a3bf812-d83e-489b-9ac4-bac07af8cb1b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/9a3bf812-d83e-489b-9ac4-bac07af8cb1b.png"
+    },
+    {
+      "id": "65a0c105-b964-4500-9618-28eea07f9951",
+      "brand": "Black Diamond",
+      "model": "パーシュートカーボンFLZ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/65a0c105-b964-4500-9618-28eea07f9951.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/65a0c105-b964-4500-9618-28eea07f9951.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/65a0c105-b964-4500-9618-28eea07f9951.png"
+    },
+    {
+      "id": "9bd1eefd-59d4-4305-a3a3-e21031bedd1c",
+      "brand": "Black Diamond",
+      "model": "ハーフドーム",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/9bd1eefd-59d4-4305-a3a3-e21031bedd1c.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/9bd1eefd-59d4-4305-a3a3-e21031bedd1c.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/9bd1eefd-59d4-4305-a3a3-e21031bedd1c.png"
+    },
+    {
+      "id": "71fca4da-1626-4f99-a240-36bd33ebc393",
+      "brand": "Black Diamond",
+      "model": "ハーフドーム ウィメンズ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/71fca4da-1626-4f99-a240-36bd33ebc393.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/71fca4da-1626-4f99-a240-36bd33ebc393.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/71fca4da-1626-4f99-a240-36bd33ebc393.png"
+    },
+    {
+      "id": "8cad2910-3c87-4a81-9923-dd72413d1d63",
+      "brand": "Black Diamond",
+      "model": "ハイブリッドライトグローブ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/8cad2910-3c87-4a81-9923-dd72413d1d63.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/8cad2910-3c87-4a81-9923-dd72413d1d63.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/8cad2910-3c87-4a81-9923-dd72413d1d63.png"
+    },
+    {
+      "id": "68037d5a-ec2b-4efe-97d8-226830d1c780",
+      "brand": "Black Diamond",
+      "model": "ビジョン",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/68037d5a-ec2b-4efe-97d8-226830d1c780.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/68037d5a-ec2b-4efe-97d8-226830d1c780.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/68037d5a-ec2b-4efe-97d8-226830d1c780.png"
+    },
+    {
+      "id": "82923d32-a686-49d5-b40d-1a9c79a23169",
+      "brand": "Black Diamond",
+      "model": "ビジョン MIPS",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/82923d32-a686-49d5-b40d-1a9c79a23169.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/82923d32-a686-49d5-b40d-1a9c79a23169.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/82923d32-a686-49d5-b40d-1a9c79a23169.png"
+    },
+    {
+      "id": "a4019591-f88f-40f1-a894-3289e4e81a95",
+      "brand": "Black Diamond",
+      "model": "ブリッツ20",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/a4019591-f88f-40f1-a894-3289e4e81a95.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/a4019591-f88f-40f1-a894-3289e4e81a95.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/a4019591-f88f-40f1-a894-3289e4e81a95.png"
+    },
+    {
+      "id": "e1781e4b-0177-4890-942d-50fef4a73958",
+      "brand": "Black Diamond",
+      "model": "ブリッツ28",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/e1781e4b-0177-4890-942d-50fef4a73958.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/e1781e4b-0177-4890-942d-50fef4a73958.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/e1781e4b-0177-4890-942d-50fef4a73958.png"
+    },
+    {
+      "id": "add26c8d-42b3-4090-ba2d-99bdb82585a1",
+      "brand": "Black Diamond",
+      "model": "ベイパー",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/add26c8d-42b3-4090-ba2d-99bdb82585a1.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/add26c8d-42b3-4090-ba2d-99bdb82585a1.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/add26c8d-42b3-4090-ba2d-99bdb82585a1.png"
+    },
+    {
+      "id": "4e05a8b4-9fb1-4ab8-ba8a-fa58cd17e860",
+      "brand": "Black Diamond",
+      "model": "ベノム アッズ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/4e05a8b4-9fb1-4ab8-ba8a-fa58cd17e860.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/4e05a8b4-9fb1-4ab8-ba8a-fa58cd17e860.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/4e05a8b4-9fb1-4ab8-ba8a-fa58cd17e860.png"
+    },
+    {
+      "id": "64d2f750-678f-43fc-a17e-6c2f3ef19da5",
+      "brand": "Black Diamond",
+      "model": "ベノムLT クラシック",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/64d2f750-678f-43fc-a17e-6c2f3ef19da5.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/64d2f750-678f-43fc-a17e-6c2f3ef19da5.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/64d2f750-678f-43fc-a17e-6c2f3ef19da5.png"
+    },
+    {
+      "id": "6eb39336-f220-49cf-ac6a-8eb81a08c09e",
+      "brand": "Black Diamond",
+      "model": "ヘビーウェイト スクリーンタップライナー",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/6eb39336-f220-49cf-ac6a-8eb81a08c09e.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/6eb39336-f220-49cf-ac6a-8eb81a08c09e.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/6eb39336-f220-49cf-ac6a-8eb81a08c09e.png"
+    },
+    {
+      "id": "08e2c811-39d8-4020-8c93-b12345bb8f64",
+      "brand": "Black Diamond",
+      "model": "ミッション55",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/08e2c811-39d8-4020-8c93-b12345bb8f64.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/08e2c811-39d8-4020-8c93-b12345bb8f64.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/08e2c811-39d8-4020-8c93-b12345bb8f64.png"
+    },
+    {
+      "id": "5d9c589d-28ac-4203-9f10-9168bde370c3",
+      "brand": "Black Diamond",
+      "model": "ミッドウェイト スクリーンタップライナー",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/5d9c589d-28ac-4203-9f10-9168bde370c3.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/5d9c589d-28ac-4203-9f10-9168bde370c3.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/5d9c589d-28ac-4203-9f10-9168bde370c3.png"
+    },
+    {
+      "id": "d7fb87ba-9032-4a1b-a523-18e778f5b68a",
+      "brand": "Black Diamond",
+      "model": "ライトウェイト スクリーンタップライナー",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/d7fb87ba-9032-4a1b-a523-18e778f5b68a.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/d7fb87ba-9032-4a1b-a523-18e778f5b68a.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/d7fb87ba-9032-4a1b-a523-18e778f5b68a.png"
+    },
+    {
+      "id": "bf19f828-80ed-4df8-a780-9aa0b50a4f6b",
+      "brand": "Black Diamond",
+      "model": "レイブン",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/bf19f828-80ed-4df8-a780-9aa0b50a4f6b.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/bf19f828-80ed-4df8-a780-9aa0b50a4f6b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/bf19f828-80ed-4df8-a780-9aa0b50a4f6b.png"
+    },
+    {
+      "id": "512e6e13-aeb9-4265-8f4a-7b3bbb2eee50",
+      "brand": "Black Diamond",
+      "model": "レイブン ウィズ グリップ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/512e6e13-aeb9-4265-8f4a-7b3bbb2eee50.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/512e6e13-aeb9-4265-8f4a-7b3bbb2eee50.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/512e6e13-aeb9-4265-8f4a-7b3bbb2eee50.png"
+    },
+    {
+      "id": "ec5bd946-c861-448e-873d-ec7b9d225f5b",
+      "brand": "Black Diamond",
+      "model": "レイブンプロ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/ec5bd946-c861-448e-873d-ec7b9d225f5b.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/ec5bd946-c861-448e-873d-ec7b9d225f5b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/ec5bd946-c861-448e-873d-ec7b9d225f5b.png"
+    },
+    {
+      "id": "3f9dad5b-91a5-4a71-b806-9a2809b5965f",
+      "brand": "ISUKA",
+      "model": "アルファライト NEO 300",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/3f9dad5b-91a5-4a71-b806-9a2809b5965f.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/3f9dad5b-91a5-4a71-b806-9a2809b5965f.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/3f9dad5b-91a5-4a71-b806-9a2809b5965f.png"
+    },
+    {
+      "id": "2fa5b7ae-58e6-4afd-a1d5-a5d096d885f7",
+      "brand": "ISUKA",
+      "model": "アルファライト NEO 500",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/2fa5b7ae-58e6-4afd-a1d5-a5d096d885f7.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/2fa5b7ae-58e6-4afd-a1d5-a5d096d885f7.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/2fa5b7ae-58e6-4afd-a1d5-a5d096d885f7.png"
+    },
+    {
+      "id": "6c3281dd-5f2c-41a0-94e8-132e6b6662c6",
+      "brand": "ISUKA",
+      "model": "エアドライト 290",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/6c3281dd-5f2c-41a0-94e8-132e6b6662c6.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/6c3281dd-5f2c-41a0-94e8-132e6b6662c6.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/6c3281dd-5f2c-41a0-94e8-132e6b6662c6.png"
+    },
+    {
+      "id": "d9ba9f4b-2b5e-422c-bc7c-efffc2d30664",
+      "brand": "ISUKA",
+      "model": "エアドライト 480",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/d9ba9f4b-2b5e-422c-bc7c-efffc2d30664.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/d9ba9f4b-2b5e-422c-bc7c-efffc2d30664.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/d9ba9f4b-2b5e-422c-bc7c-efffc2d30664.png"
+    },
+    {
+      "id": "518932e0-692e-46bd-94d7-d023c9d2f31f",
+      "brand": "ISUKA",
+      "model": "エアドライト 670",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/518932e0-692e-46bd-94d7-d023c9d2f31f.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/518932e0-692e-46bd-94d7-d023c9d2f31f.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/518932e0-692e-46bd-94d7-d023c9d2f31f.png"
+    },
+    {
+      "id": "52d6fb91-0502-4865-940e-f8b95e1d49cc",
+      "brand": "ISUKA",
+      "model": "エアドライト 860",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/52d6fb91-0502-4865-940e-f8b95e1d49cc.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/52d6fb91-0502-4865-940e-f8b95e1d49cc.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/52d6fb91-0502-4865-940e-f8b95e1d49cc.png"
+    },
+    {
+      "id": "0daabc19-1dcb-478a-9f8c-32f28b49a786",
+      "brand": "ISUKA",
+      "model": "エアプラス 280",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/0daabc19-1dcb-478a-9f8c-32f28b49a786.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/0daabc19-1dcb-478a-9f8c-32f28b49a786.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/0daabc19-1dcb-478a-9f8c-32f28b49a786.png"
+    },
+    {
+      "id": "28e31191-604d-418e-96e9-062c47415feb",
+      "brand": "ISUKA",
+      "model": "エアプラス 450",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/28e31191-604d-418e-96e9-062c47415feb.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/28e31191-604d-418e-96e9-062c47415feb.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/28e31191-604d-418e-96e9-062c47415feb.png"
+    },
+    {
+      "id": "5d13ecf7-4914-423c-b370-cf2eeb759053",
+      "brand": "ISUKA",
+      "model": "エアプラス 630",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/5d13ecf7-4914-423c-b370-cf2eeb759053.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/5d13ecf7-4914-423c-b370-cf2eeb759053.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/5d13ecf7-4914-423c-b370-cf2eeb759053.png"
+    },
+    {
+      "id": "89a1e403-26e2-4278-b572-8012160c7faa",
+      "brand": "ISUKA",
+      "model": "エアプラス 810",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/89a1e403-26e2-4278-b572-8012160c7faa.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/89a1e403-26e2-4278-b572-8012160c7faa.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/89a1e403-26e2-4278-b572-8012160c7faa.png"
+    },
+    {
+      "id": "6243c1fa-7e60-4480-b560-ece79c1807f8",
+      "brand": "ISUKA",
+      "model": "ダウンプラス チロル X",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/6243c1fa-7e60-4480-b560-ece79c1807f8.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/6243c1fa-7e60-4480-b560-ece79c1807f8.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/6243c1fa-7e60-4480-b560-ece79c1807f8.png"
+    },
+    {
+      "id": "e8904e1d-64e5-41af-87f2-4ef4df8d3cf9",
+      "brand": "ISUKA",
+      "model": "ダウンプラス ポカラ X",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/e8904e1d-64e5-41af-87f2-4ef4df8d3cf9.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/e8904e1d-64e5-41af-87f2-4ef4df8d3cf9.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/e8904e1d-64e5-41af-87f2-4ef4df8d3cf9.png"
+    },
+    {
+      "id": "457633c0-9e2d-4ed6-a595-76daf7ac7138",
+      "brand": "NANGA",
+      "model": "UDD バッグ 380DX",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/457633c0-9e2d-4ed6-a595-76daf7ac7138.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/457633c0-9e2d-4ed6-a595-76daf7ac7138.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/457633c0-9e2d-4ed6-a595-76daf7ac7138.png"
+    },
+    {
+      "id": "f1bfa303-8e78-4dbb-9dde-a12f640edcb9",
+      "brand": "NANGA",
+      "model": "UDD バッグ 450DX",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/f1bfa303-8e78-4dbb-9dde-a12f640edcb9.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/f1bfa303-8e78-4dbb-9dde-a12f640edcb9.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/f1bfa303-8e78-4dbb-9dde-a12f640edcb9.png"
+    },
+    {
+      "id": "8a440f17-7076-4848-8c34-03a7a901ea81",
+      "brand": "NANGA",
+      "model": "UDD バッグ 630DX",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/8a440f17-7076-4848-8c34-03a7a901ea81.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/8a440f17-7076-4848-8c34-03a7a901ea81.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/8a440f17-7076-4848-8c34-03a7a901ea81.png"
+    },
+    {
+      "id": "3ef9b4cd-08e1-4551-abb1-b5ba9be0b733",
+      "brand": "NANGA",
+      "model": "UDD バッグ 810DX",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/3ef9b4cd-08e1-4551-abb1-b5ba9be0b733.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/3ef9b4cd-08e1-4551-abb1-b5ba9be0b733.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/3ef9b4cd-08e1-4551-abb1-b5ba9be0b733.png"
+    },
+    {
+      "id": "cacec7b1-0a4b-42a9-b081-8cd4ca90b29d",
+      "brand": "NANGA",
+      "model": "オーロラテックス ライト350DX",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/cacec7b1-0a4b-42a9-b081-8cd4ca90b29d.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/cacec7b1-0a4b-42a9-b081-8cd4ca90b29d.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/cacec7b1-0a4b-42a9-b081-8cd4ca90b29d.png"
+    },
+    {
+      "id": "0a2dabc4-d03b-4e44-8b48-f486961c0f9e",
+      "brand": "NANGA",
+      "model": "オーロラテックス ライト450DX",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/0a2dabc4-d03b-4e44-8b48-f486961c0f9e.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/0a2dabc4-d03b-4e44-8b48-f486961c0f9e.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/0a2dabc4-d03b-4e44-8b48-f486961c0f9e.png"
+    },
+    {
+      "id": "91fdf5a5-4d5f-4203-9131-92d580782a2a",
+      "brand": "NANGA",
+      "model": "オーロラテックス ライト600DX",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/91fdf5a5-4d5f-4203-9131-92d580782a2a.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/91fdf5a5-4d5f-4203-9131-92d580782a2a.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/91fdf5a5-4d5f-4203-9131-92d580782a2a.png"
+    },
+    {
+      "id": "f0387fec-7f32-4b01-9aca-ee8fa61f559a",
+      "brand": "NANGA",
+      "model": "オーロラテックス ライト750DX",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/f0387fec-7f32-4b01-9aca-ee8fa61f559a.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/f0387fec-7f32-4b01-9aca-ee8fa61f559a.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/f0387fec-7f32-4b01-9aca-ee8fa61f559a.png"
+    },
+    {
+      "id": "1972efbb-0142-4c58-ac95-52570ec78ab2",
+      "brand": "NANGA",
+      "model": "オーロラテックス ライト900DX",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/1972efbb-0142-4c58-ac95-52570ec78ab2.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/1972efbb-0142-4c58-ac95-52570ec78ab2.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/1972efbb-0142-4c58-ac95-52570ec78ab2.png"
+    },
+    {
+      "id": "f6b5b4d6-69fb-4954-b040-ccd0cc0b1146",
+      "brand": "NANGA",
+      "model": "ミニマリスム 5ビロー",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/f6b5b4d6-69fb-4954-b040-ccd0cc0b1146.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/f6b5b4d6-69fb-4954-b040-ccd0cc0b1146.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/f6b5b4d6-69fb-4954-b040-ccd0cc0b1146.png"
+    },
+    {
+      "id": "23bfee9d-28d5-4941-a2c5-86d9808203e1",
+      "brand": "NANGA",
+      "model": "ミニマリスム ゼロ",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/23bfee9d-28d5-4941-a2c5-86d9808203e1.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/23bfee9d-28d5-4941-a2c5-86d9808203e1.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/23bfee9d-28d5-4941-a2c5-86d9808203e1.png"
+    },
+    {
+      "id": "94b32515-ed01-4831-beb1-9e93af372f7b",
+      "brand": "NANGA",
+      "model": "レベル8 -13 オーロラテックス ライト",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/94b32515-ed01-4831-beb1-9e93af372f7b.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/94b32515-ed01-4831-beb1-9e93af372f7b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/94b32515-ed01-4831-beb1-9e93af372f7b.png"
+    },
+    {
+      "id": "6cb0d9b4-c709-447b-a263-0a7a68bf41ab",
+      "brand": "THE NORTH FACE",
+      "model": "アークティック48",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/6cb0d9b4-c709-447b-a263-0a7a68bf41ab.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/6cb0d9b4-c709-447b-a263-0a7a68bf41ab.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/6cb0d9b4-c709-447b-a263-0a7a68bf41ab.png"
+    },
+    {
+      "id": "07cfc779-a54a-481b-afd4-796c4ed293cc",
+      "brand": "THE NORTH FACE",
+      "model": "エタ 30",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/07cfc779-a54a-481b-afd4-796c4ed293cc.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/07cfc779-a54a-481b-afd4-796c4ed293cc.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/07cfc779-a54a-481b-afd4-796c4ed293cc.png"
+    },
+    {
+      "id": "8e060d40-fd3c-4f26-a7b5-16d20246ae23",
+      "brand": "THE NORTH FACE",
+      "model": "エタ 40",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/8e060d40-fd3c-4f26-a7b5-16d20246ae23.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/8e060d40-fd3c-4f26-a7b5-16d20246ae23.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/8e060d40-fd3c-4f26-a7b5-16d20246ae23.png"
+    },
+    {
+      "id": "001fe9e4-5704-4e36-b615-8301185993d7",
+      "brand": "THE NORTH FACE",
+      "model": "エフピー26",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/001fe9e4-5704-4e36-b615-8301185993d7.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/001fe9e4-5704-4e36-b615-8301185993d7.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/001fe9e4-5704-4e36-b615-8301185993d7.png"
+    },
+    {
+      "id": "00837b12-fb36-4d28-8902-20fa2b14c0f9",
+      "brand": "THE NORTH FACE",
+      "model": "クレストン ネオ ミッド ゴアテックス（ユニセックス）",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/00837b12-fb36-4d28-8902-20fa2b14c0f9.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/00837b12-fb36-4d28-8902-20fa2b14c0f9.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/00837b12-fb36-4d28-8902-20fa2b14c0f9.png"
+    },
+    {
+      "id": "60f4b47d-9b8f-4028-8042-908aed07c107",
+      "brand": "THE NORTH FACE",
+      "model": "クレストン ハイク ウォータープルーフ（メンズ）",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/60f4b47d-9b8f-4028-8042-908aed07c107.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/60f4b47d-9b8f-4028-8042-908aed07c107.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/60f4b47d-9b8f-4028-8042-908aed07c107.png"
+    },
+    {
+      "id": "3c31e9a1-e452-430d-9494-1670c62e79f9",
+      "brand": "THE NORTH FACE",
+      "model": "クレストン ハイク ウォータープルーフ（レディース）",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/3c31e9a1-e452-430d-9494-1670c62e79f9.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/3c31e9a1-e452-430d-9494-1670c62e79f9.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/3c31e9a1-e452-430d-9494-1670c62e79f9.png"
+    },
+    {
+      "id": "ac22ace5-1e03-4f04-bc5f-0ce02ae22ba5",
+      "brand": "THE NORTH FACE",
+      "model": "クレストン ハイク ミッド ウォータープルーフ（メンズ）",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/ac22ace5-1e03-4f04-bc5f-0ce02ae22ba5.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/ac22ace5-1e03-4f04-bc5f-0ce02ae22ba5.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/ac22ace5-1e03-4f04-bc5f-0ce02ae22ba5.png"
+    },
+    {
+      "id": "cc0a0f0f-e5cf-492f-b4af-60e6a9fcbe5a",
+      "brand": "THE NORTH FACE",
+      "model": "クレストン ハイク ミッド ウォータープルーフ（レディース）",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/cc0a0f0f-e5cf-492f-b4af-60e6a9fcbe5a.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/cc0a0f0f-e5cf-492f-b4af-60e6a9fcbe5a.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/cc0a0f0f-e5cf-492f-b4af-60e6a9fcbe5a.png"
+    },
+    {
+      "id": "5e9f598e-fac2-4674-b423-9c3c0dd68f25",
+      "brand": "THE NORTH FACE",
+      "model": "コブラ65",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/5e9f598e-fac2-4674-b423-9c3c0dd68f25.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/5e9f598e-fac2-4674-b423-9c3c0dd68f25.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/5e9f598e-fac2-4674-b423-9c3c0dd68f25.png"
+    },
+    {
+      "id": "b0b926f3-cf7a-4bd8-b200-2fb7f35156fb",
+      "brand": "THE NORTH FACE",
+      "model": "サミットAMK25",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/b0b926f3-cf7a-4bd8-b200-2fb7f35156fb.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/b0b926f3-cf7a-4bd8-b200-2fb7f35156fb.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/b0b926f3-cf7a-4bd8-b200-2fb7f35156fb.png"
+    },
+    {
+      "id": "5367383b-7c25-4faa-8513-c04899620096",
+      "brand": "THE NORTH FACE",
+      "model": "サミットAMK40",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/5367383b-7c25-4faa-8513-c04899620096.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/5367383b-7c25-4faa-8513-c04899620096.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/5367383b-7c25-4faa-8513-c04899620096.png"
+    },
+    {
+      "id": "7524143e-daa1-42eb-8337-8a6d0ee107b2",
+      "brand": "THE NORTH FACE",
+      "model": "サミットAMK55",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/7524143e-daa1-42eb-8337-8a6d0ee107b2.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/7524143e-daa1-42eb-8337-8a6d0ee107b2.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/7524143e-daa1-42eb-8337-8a6d0ee107b2.png"
+    },
+    {
+      "id": "23b8f34c-1e5b-4520-8cbe-543b52134d0b",
+      "brand": "THE NORTH FACE",
+      "model": "サミットAMKスーパーライトー1",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/23b8f34c-1e5b-4520-8cbe-543b52134d0b.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/23b8f34c-1e5b-4520-8cbe-543b52134d0b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/23b8f34c-1e5b-4520-8cbe-543b52134d0b.png"
+    },
+    {
+      "id": "8d149386-c824-4ab1-bc0e-becb4cfe3459",
+      "brand": "THE NORTH FACE",
+      "model": "サム 35",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/8d149386-c824-4ab1-bc0e-becb4cfe3459.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/8d149386-c824-4ab1-bc0e-becb4cfe3459.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/8d149386-c824-4ab1-bc0e-becb4cfe3459.png"
+    },
+    {
+      "id": "89c3a83f-7aa5-4a80-8d87-1b95c61a8a65",
+      "brand": "THE NORTH FACE",
+      "model": "サム 45",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/89c3a83f-7aa5-4a80-8d87-1b95c61a8a65.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/89c3a83f-7aa5-4a80-8d87-1b95c61a8a65.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/89c3a83f-7aa5-4a80-8d87-1b95c61a8a65.png"
+    },
+    {
+      "id": "9d9955a3-c5bf-4662-a3d6-9630ca85dae1",
+      "brand": "THE NORTH FACE",
+      "model": "サンダージャケット（メンズ）",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/9d9955a3-c5bf-4662-a3d6-9630ca85dae1.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/9d9955a3-c5bf-4662-a3d6-9630ca85dae1.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/9d9955a3-c5bf-4662-a3d6-9630ca85dae1.png"
+    },
+    {
+      "id": "22c40e61-744c-4806-8a0a-db65b562a1d9",
+      "brand": "THE NORTH FACE",
+      "model": "サンダーラウンドネックジャケット（メンズ）",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/22c40e61-744c-4806-8a0a-db65b562a1d9.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/22c40e61-744c-4806-8a0a-db65b562a1d9.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/22c40e61-744c-4806-8a0a-db65b562a1d9.png"
+    },
+    {
+      "id": "bcfd61e4-7aa4-4f4e-9b58-322696561a66",
+      "brand": "THE NORTH FACE",
+      "model": "チュガッチ35",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/bcfd61e4-7aa4-4f4e-9b58-322696561a66.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/bcfd61e4-7aa4-4f4e-9b58-322696561a66.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/bcfd61e4-7aa4-4f4e-9b58-322696561a66.png"
+    },
+    {
+      "id": "f4284055-c2c9-41d5-afa8-cf7aff22ef80",
+      "brand": "THE NORTH FACE",
+      "model": "チュガッチガイド45",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/f4284055-c2c9-41d5-afa8-cf7aff22ef80.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/f4284055-c2c9-41d5-afa8-cf7aff22ef80.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/f4284055-c2c9-41d5-afa8-cf7aff22ef80.png"
+    },
+    {
+      "id": "c728ea81-17af-41ef-8b0c-792a28d3c5ae",
+      "brand": "THE NORTH FACE",
+      "model": "テルス35",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/c728ea81-17af-41ef-8b0c-792a28d3c5ae.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/c728ea81-17af-41ef-8b0c-792a28d3c5ae.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/c728ea81-17af-41ef-8b0c-792a28d3c5ae.png"
+    },
+    {
+      "id": "65226b66-000b-4055-8ce9-769dcaf1e5cb",
+      "brand": "THE NORTH FACE",
+      "model": "テルス45",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/65226b66-000b-4055-8ce9-769dcaf1e5cb.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/65226b66-000b-4055-8ce9-769dcaf1e5cb.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/65226b66-000b-4055-8ce9-769dcaf1e5cb.png"
+    },
+    {
+      "id": "3c2f8fca-311d-474a-b223-504637168135",
+      "brand": "THE NORTH FACE",
+      "model": "テルスエアー 22",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/3c2f8fca-311d-474a-b223-504637168135.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/3c2f8fca-311d-474a-b223-504637168135.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/3c2f8fca-311d-474a-b223-504637168135.png"
+    },
+    {
+      "id": "7f27b5dc-5c50-4543-a148-bb309945b6c2",
+      "brand": "THE NORTH FACE",
+      "model": "テルスエアー 35",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/7f27b5dc-5c50-4543-a148-bb309945b6c2.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/7f27b5dc-5c50-4543-a148-bb309945b6c2.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/7f27b5dc-5c50-4543-a148-bb309945b6c2.png"
+    },
+    {
+      "id": "61ca0bae-0af4-4542-8449-92f0365c5c30",
+      "brand": "THE NORTH FACE",
+      "model": "ノーム28",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/61ca0bae-0af4-4542-8449-92f0365c5c30.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/61ca0bae-0af4-4542-8449-92f0365c5c30.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/61ca0bae-0af4-4542-8449-92f0365c5c30.png"
+    },
+    {
+      "id": "6d9e21b0-029b-403e-b3e4-884366a0af7f",
+      "brand": "THE NORTH FACE",
+      "model": "ノーム38",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/6d9e21b0-029b-403e-b3e4-884366a0af7f.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/6d9e21b0-029b-403e-b3e4-884366a0af7f.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/6d9e21b0-029b-403e-b3e4-884366a0af7f.png"
+    },
+    {
+      "id": "e72fcc98-e19c-4789-9e70-e008b0aa4369",
+      "brand": "THE NORTH FACE",
+      "model": "ファクター 28",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/e72fcc98-e19c-4789-9e70-e008b0aa4369.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/e72fcc98-e19c-4789-9e70-e008b0aa4369.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/e72fcc98-e19c-4789-9e70-e008b0aa4369.png"
+    },
+    {
+      "id": "c4fb1516-8527-4640-9009-f5cf7cb9d853",
+      "brand": "THE NORTH FACE",
+      "model": "ファントム38",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/c4fb1516-8527-4640-9009-f5cf7cb9d853.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/c4fb1516-8527-4640-9009-f5cf7cb9d853.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/c4fb1516-8527-4640-9009-f5cf7cb9d853.png"
+    },
+    {
+      "id": "cf40003c-51c6-4b80-8caa-30d35d1ee41a",
+      "brand": "THE NORTH FACE",
+      "model": "ファントム50",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/cf40003c-51c6-4b80-8caa-30d35d1ee41a.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/cf40003c-51c6-4b80-8caa-30d35d1ee41a.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/cf40003c-51c6-4b80-8caa-30d35d1ee41a.png"
+    },
+    {
+      "id": "801dd5bb-d4b2-4574-9921-36429dc3d097",
+      "brand": "THE NORTH FACE",
+      "model": "フットプリント/マウンテンショット1",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/801dd5bb-d4b2-4574-9921-36429dc3d097.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/801dd5bb-d4b2-4574-9921-36429dc3d097.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/801dd5bb-d4b2-4574-9921-36429dc3d097.png"
+    },
+    {
+      "id": "2c8eb353-52e5-48eb-bdce-9b037e192055",
+      "brand": "THE NORTH FACE",
+      "model": "フットプリント/マウンテンショット2",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/2c8eb353-52e5-48eb-bdce-9b037e192055.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/2c8eb353-52e5-48eb-bdce-9b037e192055.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/2c8eb353-52e5-48eb-bdce-9b037e192055.png"
+    },
+    {
+      "id": "7d32d3b4-6001-4419-bd3a-b437c588b508",
+      "brand": "THE NORTH FACE",
+      "model": "フューチャーライトドリズルジャケット（メンズ）",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/7d32d3b4-6001-4419-bd3a-b437c588b508.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/7d32d3b4-6001-4419-bd3a-b437c588b508.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/7d32d3b4-6001-4419-bd3a-b437c588b508.png"
+    },
+    {
+      "id": "23f32f03-0399-4680-9395-8500d6536fd1",
+      "brand": "THE NORTH FACE",
+      "model": "フューチャーライトトレイルピークジャケット（ユニセックス）",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/23f32f03-0399-4680-9395-8500d6536fd1.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/23f32f03-0399-4680-9395-8500d6536fd1.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/23f32f03-0399-4680-9395-8500d6536fd1.png"
+    },
+    {
+      "id": "71ebebac-bcde-4d66-bdcb-fa8186a0904d",
+      "brand": "THE NORTH FACE",
+      "model": "ベクティブ サプル ゴアテックス（ユニセックス）",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/71ebebac-bcde-4d66-bdcb-fa8186a0904d.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/71ebebac-bcde-4d66-bdcb-fa8186a0904d.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/71ebebac-bcde-4d66-bdcb-fa8186a0904d.png"
+    },
+    {
+      "id": "457f303c-77e9-4928-aa1b-57085d10fcfb",
+      "brand": "THE NORTH FACE",
+      "model": "ベクティブ バーサ（ユニセックス）",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/457f303c-77e9-4928-aa1b-57085d10fcfb.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/457f303c-77e9-4928-aa1b-57085d10fcfb.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/457f303c-77e9-4928-aa1b-57085d10fcfb.png"
+    },
+    {
+      "id": "73e3c092-f674-46f8-8ba8-c1558445290b",
+      "brand": "THE NORTH FACE",
+      "model": "ベクティブ フォワード（ユニセックス）",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/73e3c092-f674-46f8-8ba8-c1558445290b.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/73e3c092-f674-46f8-8ba8-c1558445290b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/73e3c092-f674-46f8-8ba8-c1558445290b.png"
+    },
+    {
+      "id": "22bfbf1a-677e-4783-b964-37df58990eed",
+      "brand": "THE NORTH FACE",
+      "model": "ベクティブ ブリーズ 2（ユニセックス）",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/22bfbf1a-677e-4783-b964-37df58990eed.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/22bfbf1a-677e-4783-b964-37df58990eed.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/22bfbf1a-677e-4783-b964-37df58990eed.png"
+    },
+    {
+      "id": "02678a4a-6428-41fc-be88-8538ad80a627",
+      "brand": "THE NORTH FACE",
+      "model": "ベクティブ ブリーズ DCF（ユニセックス）",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/02678a4a-6428-41fc-be88-8538ad80a627.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/02678a4a-6428-41fc-be88-8538ad80a627.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/02678a4a-6428-41fc-be88-8538ad80a627.png"
+    },
+    {
+      "id": "1b7aab48-ae76-4d43-848b-17eb144b9fc8",
+      "brand": "THE NORTH FACE",
+      "model": "マウンテングローリー1",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/1b7aab48-ae76-4d43-848b-17eb144b9fc8.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/1b7aab48-ae76-4d43-848b-17eb144b9fc8.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/1b7aab48-ae76-4d43-848b-17eb144b9fc8.png"
+    },
+    {
+      "id": "6d7d3482-4c16-4944-906d-f2db5ab932e9",
+      "brand": "THE NORTH FACE",
+      "model": "マウンテングローリー2",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/6d7d3482-4c16-4944-906d-f2db5ab932e9.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/6d7d3482-4c16-4944-906d-f2db5ab932e9.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/6d7d3482-4c16-4944-906d-f2db5ab932e9.png"
+    },
+    {
+      "id": "016cd4de-d7c8-43d0-9797-3e6735c5bc9d",
+      "brand": "THE NORTH FACE",
+      "model": "マウンテンショット1",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/016cd4de-d7c8-43d0-9797-3e6735c5bc9d.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/016cd4de-d7c8-43d0-9797-3e6735c5bc9d.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/016cd4de-d7c8-43d0-9797-3e6735c5bc9d.png"
+    },
+    {
+      "id": "4bffe1dd-80ae-4e2b-ad0d-e1a0cef0c6e8",
+      "brand": "THE NORTH FACE",
+      "model": "マウンテンショット2",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/4bffe1dd-80ae-4e2b-ad0d-e1a0cef0c6e8.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/4bffe1dd-80ae-4e2b-ad0d-e1a0cef0c6e8.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/4bffe1dd-80ae-4e2b-ad0d-e1a0cef0c6e8.png"
+    },
+    {
+      "id": "68e78634-87b2-4f7e-8afd-f28774e30957",
+      "brand": "THE NORTH FACE",
+      "model": "ミュアー60",
+      "output_path": "tmp/gear-images/processed/catalog-brand-existing-visible/68e78634-87b2-4f7e-8afd-f28774e30957.png",
+      "storage_path": "gear-products/catalog-brand-existing-visible/68e78634-87b2-4f7e-8afd-f28774e30957.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-brand-existing-visible/68e78634-87b2-4f7e-8afd-f28774e30957.png"
+    }
+  ],
+  "failures": []
+}

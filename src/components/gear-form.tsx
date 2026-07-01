@@ -12,10 +12,10 @@ import {
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import type { FormEvent, ReactNode } from "react";
 
 import { BrandLogo } from "@/components/brand-logo";
-import { SubmitButton } from "@/components/submit-button";
 import {
   compareGearBrands,
   getProductDisplayTitle,
@@ -30,6 +30,7 @@ import {
 } from "@/lib/i18n/labels";
 import { createClient } from "@/lib/supabase/client";
 import type {
+  GearActionResult,
   GearCategory,
   GearProduct,
   GearSubcategory,
@@ -41,7 +42,7 @@ type GearFormProps = {
   categories: GearCategory[];
   subcategories: GearSubcategory[];
   products: GearProduct[];
-  action: (formData: FormData) => void | Promise<void>;
+  action: (formData: FormData) => Promise<GearActionResult>;
   gear?: UserGear;
   error?: string;
 };
@@ -87,7 +88,12 @@ export function GearForm({
     "idle" | "uploading" | "error"
   >("idle");
   const [imageUploadError, setImageUploadError] = useState("");
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "pending" | "success"
+  >("idle");
+  const [submitError, setSubmitError] = useState(error ?? "");
   const manualEntryRef = useRef<HTMLElement>(null);
+  const router = useRouter();
 
   const subcategoriesForCategory = useMemo(
     () => subcategories.filter((item) => item.category_id === categoryId),
@@ -255,6 +261,11 @@ export function GearForm({
   function handleProductCategoryFilter(value: string) {
     setProductCategoryFilter(value);
     setProductListExpanded(false);
+    // 同上:切品类时如果之前锁定了某个具体商品的搜索词,也要清空。
+    if (productId) {
+      setProductId("");
+      setQuery("");
+    }
   }
 
   function confirmProductSearch() {
@@ -272,6 +283,14 @@ export function GearForm({
     setBrandFilter(value);
     setProductCategoryFilter("all");
     setProductListExpanded(false);
+    // 之前选中过具体商品(如 Mont-bell 的某个包)后,query 会被锁定成
+    // 那个商品的准确名称;此时再切品牌/品类,列表还是按那个名字过滤,
+    // 导致"看起来只显示最初点的那一个"。这里切品牌时清空已选商品和搜索词,
+    // 让列表重新按新品牌正常显示。
+    if (productId) {
+      setProductId("");
+      setQuery("");
+    }
   }
 
   function startManualEntry() {
@@ -362,10 +381,46 @@ export function GearForm({
     }
   }
 
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    // 双击/重复提交保护
+    if (submitStatus !== "idle") {
+      return;
+    }
+
+    setSubmitStatus("pending");
+    setSubmitError("");
+
+    const formData = new FormData(event.currentTarget);
+
+    try {
+      const result = await action(formData);
+
+      if (result.ok) {
+        // 先立刻显示"保存しました",不等目标页整个渲染完再消失
+        setSubmitStatus("success");
+        router.push(result.redirectTo);
+      } else {
+        setSubmitStatus("idle");
+        setSubmitError(result.error);
+      }
+    } catch (submitException) {
+      setSubmitStatus("idle");
+      setSubmitError(
+        submitException instanceof Error
+          ? submitException.message
+          : "保存できませんでした"
+      );
+    }
+  }
+
   return (
-    <form action={action} className="space-y-4">
-      {error ? (
-        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {submitError ? (
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          {submitError}
+        </p>
       ) : null}
 
       <input type="hidden" name="product_id" value={productId} />
@@ -503,7 +558,10 @@ export function GearForm({
           </div>
 
           {selectedProduct && !manualMode ? (
-            <SelectedProductConfirmCard product={selectedProduct} />
+            <SelectedProductConfirmCard
+              product={selectedProduct}
+              submitStatus={submitStatus}
+            />
           ) : null}
 
           {categoryProductGroups.length > 0 ? (
@@ -870,12 +928,38 @@ export function GearForm({
           >
             キャンセル
           </Link>
-          <SubmitButton className="flex-1 rounded-xl bg-forest-700 px-5 py-3 text-base font-semibold text-white disabled:opacity-60">
+          <GearSubmitButton
+            status={submitStatus}
+            className="flex-1 rounded-xl bg-forest-700 px-5 py-3 text-base font-semibold text-white disabled:opacity-60"
+          >
             {isEditing ? "保存" : "この装備を登録"}
-          </SubmitButton>
+          </GearSubmitButton>
         </div>
       ) : null}
     </form>
+  );
+}
+
+function GearSubmitButton({
+  status,
+  className,
+  children
+}: {
+  status: "idle" | "pending" | "success";
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <button type="submit" disabled={status !== "idle"} className={className}>
+      <span className="inline-flex items-center justify-center gap-1.5">
+        {status === "success" ? <Check className="h-4 w-4" /> : null}
+        {status === "pending"
+          ? "保存中..."
+          : status === "success"
+            ? "保存しました"
+            : children}
+      </span>
+    </button>
   );
 }
 
@@ -979,7 +1063,13 @@ function ProductResultCard({
   );
 }
 
-function SelectedProductConfirmCard({ product }: { product: GearProduct }) {
+function SelectedProductConfirmCard({
+  product,
+  submitStatus
+}: {
+  product: GearProduct;
+  submitStatus: "idle" | "pending" | "success";
+}) {
   const displayName = getProductDisplayTitle(product);
   const productVolume = getProductVolume(product);
   const productCapacity = isBackpackProduct(product) ? null : product.capacity;
@@ -1016,9 +1106,12 @@ function SelectedProductConfirmCard({ product }: { product: GearProduct }) {
           </dl>
         </div>
       </div>
-      <SubmitButton className="mt-3 w-full rounded-xl bg-forest-700 px-5 py-3 text-base font-semibold text-white disabled:opacity-60">
+      <GearSubmitButton
+        status={submitStatus}
+        className="mt-3 w-full rounded-xl bg-forest-700 px-5 py-3 text-base font-semibold text-white disabled:opacity-60"
+      >
         この装備を登録
-      </SubmitButton>
+      </GearSubmitButton>
     </div>
   );
 }

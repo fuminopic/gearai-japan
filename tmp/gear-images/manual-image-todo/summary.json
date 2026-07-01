@@ -1,0 +1,88 @@
+{
+  "generated_at": "2026-06-30T02:47:37.291Z",
+  "active_catalog_total": 397,
+  "processed_first_page_visible_count": 72,
+  "remaining_count": 325,
+  "remaining_with_current_image_url": 259,
+  "remaining_missing_image_url": 66,
+  "processed_by_brand_directory": "tmp/gear-images/processed/catalog-first-page-visible/by-brand",
+  "remaining_todo_directory": "tmp/gear-images/manual-image-todo",
+  "brand_summary": [
+    {
+      "brand": "mont-bell",
+      "count": 87
+    },
+    {
+      "brand": "Black Diamond",
+      "count": 52
+    },
+    {
+      "brand": "THE NORTH FACE",
+      "count": 43
+    },
+    {
+      "brand": "Osprey",
+      "count": 22
+    },
+    {
+      "brand": "SOTO",
+      "count": 20
+    },
+    {
+      "brand": "finetrack",
+      "count": 18
+    },
+    {
+      "brand": "山と道",
+      "count": 18
+    },
+    {
+      "brand": "Caravan",
+      "count": 15
+    },
+    {
+      "brand": "ISUKA",
+      "count": 12
+    },
+    {
+      "brand": "NANGA",
+      "count": 12
+    },
+    {
+      "brand": "Petzl",
+      "count": 12
+    },
+    {
+      "brand": "NEMO",
+      "count": 4
+    },
+    {
+      "brand": "Columbia",
+      "count": 2
+    },
+    {
+      "brand": "MILLET",
+      "count": 2
+    },
+    {
+      "brand": "patagonia",
+      "count": 2
+    },
+    {
+      "brand": "Nalgene",
+      "count": 1
+    },
+    {
+      "brand": "Sawyer",
+      "count": 1
+    },
+    {
+      "brand": "Snow Peak",
+      "count": 1
+    },
+    {
+      "brand": "Therm-a-Rest",
+      "count": 1
+    }
+  ]
+}

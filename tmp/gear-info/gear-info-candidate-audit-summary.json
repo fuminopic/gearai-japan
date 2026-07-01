@@ -1,0 +1,12 @@
+{
+  "generated_at": "2026-07-01T08:27:19.630Z",
+  "input_count": 91,
+  "safe_apply_count": 0,
+  "review_count": 81,
+  "unsafe_count": 68,
+  "output_files": {
+    "safe": "tmp/gear-info/gear-info-auto-candidates-safe.csv",
+    "review": "tmp/gear-info/gear-info-auto-candidates-review.csv",
+    "summary": "tmp/gear-info/gear-info-candidate-audit-summary.json"
+  }
+}

@@ -4,10 +4,17 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireUser } from "@/lib/data/gear";
-import type { GearStatus, WeightType } from "@/lib/types";
+import type { GearActionResult, GearStatus, WeightType } from "@/lib/types";
 import { toNumber } from "@/lib/utils/format";
 
-export async function createGear(formData: FormData) {
+// 注意:createGear / updateGear 不再在成功时直接 redirect()。
+// 原因:<form action={...}> 原生绑定下,redirect() 会让按钮的"保存中"状态
+// 一直卡到目标页整个渲染完才消失(尤其冷启动/数据慢时体验很差)。
+// 现在改为返回结果,前端(gear-form.tsx)拿到 ok:true 后立刻显示"保存しました",
+// 再自己调用 router.push 跳转,避免"保存中"无限卡住的观感。
+export async function createGear(
+  formData: FormData
+): Promise<GearActionResult> {
   const { supabase, user } = await requireUser();
   const payload = getGearPayload(formData);
 
@@ -17,16 +24,20 @@ export async function createGear(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/gear/new?error=${encodeURIComponent(error.message)}`);
+    return { ok: false, error: error.message };
   }
 
   revalidatePath("/dashboard");
   revalidatePath("/gear");
   revalidatePath("/plan");
-  redirect("/gear?saved=created");
+
+  return { ok: true, redirectTo: "/gear?saved=created" };
 }
 
-export async function updateGear(id: string, formData: FormData) {
+export async function updateGear(
+  id: string,
+  formData: FormData
+): Promise<GearActionResult> {
   const { supabase, user } = await requireUser();
   const payload = getGearPayload(formData);
 
@@ -41,20 +52,19 @@ export async function updateGear(id: string, formData: FormData) {
     .maybeSingle();
 
   if (error) {
-    redirect(`/gear/${id}/edit?error=${encodeURIComponent(error.message)}`);
+    return { ok: false, error: error.message };
   }
 
   if (!data) {
-    redirect(
-      `/gear/${id}/edit?error=${encodeURIComponent("装備を保存できませんでした")}`
-    );
+    return { ok: false, error: "装備を保存できませんでした" };
   }
 
   revalidatePath("/dashboard");
   revalidatePath("/gear");
   revalidatePath("/plan");
   revalidatePath(`/gear/${id}/edit`);
-  redirect("/gear?saved=updated");
+
+  return { ok: true, redirectTo: "/gear?saved=updated" };
 }
 
 export async function deleteGear(id: string) {

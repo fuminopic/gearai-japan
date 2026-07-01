@@ -1,0 +1,1135 @@
+{
+  "generated_at": "2026-06-30T06:53:00.848Z",
+  "dry_run": false,
+  "bucket_status": "existing",
+  "target_count": 140,
+  "uploaded_count": 140,
+  "failure_count": 0,
+  "backup_path": "tmp/gear-images/step-c-catalog-remaining-existing-visible-backup.json",
+  "rollback_sql_path": "tmp/gear-images/step-c-catalog-remaining-existing-visible-rollback.sql",
+  "report_path": "tmp/gear-images/step-c-catalog-remaining-existing-visible-report.json",
+  "storage_prefix": "gear-products/catalog-remaining-existing-visible",
+  "uploaded": [
+    {
+      "id": "92a3b431-78a9-4b2b-9783-877480a8d647",
+      "brand": "Caravan",
+      "model": "GK_ALT HI",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/92a3b431-78a9-4b2b-9783-877480a8d647.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/92a3b431-78a9-4b2b-9783-877480a8d647.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/92a3b431-78a9-4b2b-9783-877480a8d647.png"
+    },
+    {
+      "id": "22028a69-bf0a-4f8d-a205-52e23ef46865",
+      "brand": "Caravan",
+      "model": "GK85",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/22028a69-bf0a-4f8d-a205-52e23ef46865.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/22028a69-bf0a-4f8d-a205-52e23ef46865.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/22028a69-bf0a-4f8d-a205-52e23ef46865.png"
+    },
+    {
+      "id": "3abf2d19-5abc-45e4-acfe-867c17ef99c3",
+      "brand": "Caravan",
+      "model": "GK8X_FFF",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/3abf2d19-5abc-45e4-acfe-867c17ef99c3.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/3abf2d19-5abc-45e4-acfe-867c17ef99c3.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/3abf2d19-5abc-45e4-acfe-867c17ef99c3.png"
+    },
+    {
+      "id": "4cc3465e-dead-4b06-9bde-7f372b9dd27e",
+      "brand": "Columbia",
+      "model": "Saber Six Mid Outdry Wide",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/4cc3465e-dead-4b06-9bde-7f372b9dd27e.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/4cc3465e-dead-4b06-9bde-7f372b9dd27e.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/4cc3465e-dead-4b06-9bde-7f372b9dd27e.png"
+    },
+    {
+      "id": "0a762cc1-6236-4826-853d-d3f17ed1c3f8",
+      "brand": "Columbia",
+      "model": "Saber Six Low Outdry Wide",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/0a762cc1-6236-4826-853d-d3f17ed1c3f8.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/0a762cc1-6236-4826-853d-d3f17ed1c3f8.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/0a762cc1-6236-4826-853d-d3f17ed1c3f8.png"
+    },
+    {
+      "id": "92e9d564-5071-4557-a807-0e5c21c7f9ea",
+      "brand": "finetrack",
+      "model": "ゴージュタープ",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/92e9d564-5071-4557-a807-0e5c21c7f9ea.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/92e9d564-5071-4557-a807-0e5c21c7f9ea.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/92e9d564-5071-4557-a807-0e5c21c7f9ea.png"
+    },
+    {
+      "id": "127d46dd-40ca-4f33-8248-15a702950190",
+      "brand": "finetrack",
+      "model": "ゴージュタープミニ",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/127d46dd-40ca-4f33-8248-15a702950190.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/127d46dd-40ca-4f33-8248-15a702950190.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/127d46dd-40ca-4f33-8248-15a702950190.png"
+    },
+    {
+      "id": "1046a172-2d21-4004-96bd-228b8209e991",
+      "brand": "finetrack",
+      "model": "ツエルト1",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/1046a172-2d21-4004-96bd-228b8209e991.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/1046a172-2d21-4004-96bd-228b8209e991.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/1046a172-2d21-4004-96bd-228b8209e991.png"
+    },
+    {
+      "id": "ad0ea239-891d-4f0c-a49f-39c3172d804c",
+      "brand": "finetrack",
+      "model": "ツエルト2ロング",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/ad0ea239-891d-4f0c-a49f-39c3172d804c.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/ad0ea239-891d-4f0c-a49f-39c3172d804c.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/ad0ea239-891d-4f0c-a49f-39c3172d804c.png"
+    },
+    {
+      "id": "a32a825c-0ad6-4a05-9459-12c2ba87a1d5",
+      "brand": "finetrack",
+      "model": "ピコシェルター",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/a32a825c-0ad6-4a05-9459-12c2ba87a1d5.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/a32a825c-0ad6-4a05-9459-12c2ba87a1d5.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/a32a825c-0ad6-4a05-9459-12c2ba87a1d5.png"
+    },
+    {
+      "id": "3a4280c0-1b98-4d9f-ba0d-420ea60c13a6",
+      "brand": "MILLET",
+      "model": "Drynamic Mesh NS",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/3a4280c0-1b98-4d9f-ba0d-420ea60c13a6.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/3a4280c0-1b98-4d9f-ba0d-420ea60c13a6.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/3a4280c0-1b98-4d9f-ba0d-420ea60c13a6.png"
+    },
+    {
+      "id": "70d70506-b5da-406e-bd45-1f7b8d81e83d",
+      "brand": "MILLET",
+      "model": "Wanaka Stretch Pants",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/70d70506-b5da-406e-bd45-1f7b8d81e83d.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/70d70506-b5da-406e-bd45-1f7b8d81e83d.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/70d70506-b5da-406e-bd45-1f7b8d81e83d.png"
+    },
+    {
+      "id": "9d47048d-32f5-4ed7-be63-5ef33f26ca3d",
+      "brand": "mont-bell",
+      "model": "U.L. コンフォートシステム アルパインパッド25 150",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/9d47048d-32f5-4ed7-be63-5ef33f26ca3d.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/9d47048d-32f5-4ed7-be63-5ef33f26ca3d.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/9d47048d-32f5-4ed7-be63-5ef33f26ca3d.png"
+    },
+    {
+      "id": "ec497f1a-49f2-4c36-aef7-bd53f562dd01",
+      "brand": "mont-bell",
+      "model": "U.L. コンフォートシステム アルパインパッド25 180",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/ec497f1a-49f2-4c36-aef7-bd53f562dd01.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/ec497f1a-49f2-4c36-aef7-bd53f562dd01.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/ec497f1a-49f2-4c36-aef7-bd53f562dd01.png"
+    },
+    {
+      "id": "7cefdf8d-ba76-4968-884b-cdbbd6eb2f38",
+      "brand": "mont-bell",
+      "model": "WIC.ライト シングルポケット ロングスリーブシャツ Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/7cefdf8d-ba76-4968-884b-cdbbd6eb2f38.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/7cefdf8d-ba76-4968-884b-cdbbd6eb2f38.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/7cefdf8d-ba76-4968-884b-cdbbd6eb2f38.png"
+    },
+    {
+      "id": "5616fead-427c-46aa-bc07-71ea269b4cdb",
+      "brand": "mont-bell",
+      "model": "アルパインクッカー 11 ディープ",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/5616fead-427c-46aa-bc07-71ea269b4cdb.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/5616fead-427c-46aa-bc07-71ea269b4cdb.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/5616fead-427c-46aa-bc07-71ea269b4cdb.png"
+    },
+    {
+      "id": "0091ed70-6558-42a7-bda5-651e1cd52975",
+      "brand": "mont-bell",
+      "model": "アルパインクッカー 11+13 セット ディープ",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/0091ed70-6558-42a7-bda5-651e1cd52975.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/0091ed70-6558-42a7-bda5-651e1cd52975.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/0091ed70-6558-42a7-bda5-651e1cd52975.png"
+    },
+    {
+      "id": "fafbeb38-a8b8-4c5d-8e76-14bc06306e37",
+      "brand": "mont-bell",
+      "model": "アルパインクッカー 14",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/fafbeb38-a8b8-4c5d-8e76-14bc06306e37.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/fafbeb38-a8b8-4c5d-8e76-14bc06306e37.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/fafbeb38-a8b8-4c5d-8e76-14bc06306e37.png"
+    },
+    {
+      "id": "24ea793d-b076-4224-851c-ff6d2cd0e451",
+      "brand": "mont-bell",
+      "model": "アルパインクッカー 16",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/24ea793d-b076-4224-851c-ff6d2cd0e451.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/24ea793d-b076-4224-851c-ff6d2cd0e451.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/24ea793d-b076-4224-851c-ff6d2cd0e451.png"
+    },
+    {
+      "id": "e47ec569-5276-4eee-b8d4-2b9548770a50",
+      "brand": "mont-bell",
+      "model": "アルパインクッカー 18",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/e47ec569-5276-4eee-b8d4-2b9548770a50.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/e47ec569-5276-4eee-b8d4-2b9548770a50.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/e47ec569-5276-4eee-b8d4-2b9548770a50.png"
+    },
+    {
+      "id": "bda32281-2044-4232-a7e8-7de51e7f25b0",
+      "brand": "mont-bell",
+      "model": "アルパインクッカー 20",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/bda32281-2044-4232-a7e8-7de51e7f25b0.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/bda32281-2044-4232-a7e8-7de51e7f25b0.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/bda32281-2044-4232-a7e8-7de51e7f25b0.png"
+    },
+    {
+      "id": "d7b83d0c-fdde-4521-9fc5-6a5bf8a9ea81",
+      "brand": "mont-bell",
+      "model": "アルパインクッカー ソロセット",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/d7b83d0c-fdde-4521-9fc5-6a5bf8a9ea81.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/d7b83d0c-fdde-4521-9fc5-6a5bf8a9ea81.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/d7b83d0c-fdde-4521-9fc5-6a5bf8a9ea81.png"
+    },
+    {
+      "id": "dbc5a976-e0f9-4387-b9b2-3cf2a064db70",
+      "brand": "mont-bell",
+      "model": "アルパインダウン パーカ Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/dbc5a976-e0f9-4387-b9b2-3cf2a064db70.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/dbc5a976-e0f9-4387-b9b2-3cf2a064db70.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/dbc5a976-e0f9-4387-b9b2-3cf2a064db70.png"
+    },
+    {
+      "id": "920b6b58-848c-4e15-89f4-7929b7300857",
+      "brand": "mont-bell",
+      "model": "アルパインダウン パーカ Women's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/920b6b58-848c-4e15-89f4-7929b7300857.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/920b6b58-848c-4e15-89f4-7929b7300857.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/920b6b58-848c-4e15-89f4-7929b7300857.png"
+    },
+    {
+      "id": "a175c241-f768-4961-812e-37e4eb2015e4",
+      "brand": "mont-bell",
+      "model": "アルパインパック 40",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/a175c241-f768-4961-812e-37e4eb2015e4.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/a175c241-f768-4961-812e-37e4eb2015e4.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/a175c241-f768-4961-812e-37e4eb2015e4.png"
+    },
+    {
+      "id": "7480c5c8-4617-451b-aef6-6ca42d195967",
+      "brand": "mont-bell",
+      "model": "アルパインフライパン 16 ディープ",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/7480c5c8-4617-451b-aef6-6ca42d195967.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/7480c5c8-4617-451b-aef6-6ca42d195967.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/7480c5c8-4617-451b-aef6-6ca42d195967.png"
+    },
+    {
+      "id": "4a62bfb7-71d2-4772-a652-f5272a8c80d7",
+      "brand": "mont-bell",
+      "model": "ガレナパック 20",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/4a62bfb7-71d2-4772-a652-f5272a8c80d7.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/4a62bfb7-71d2-4772-a652-f5272a8c80d7.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/4a62bfb7-71d2-4772-a652-f5272a8c80d7.png"
+    },
+    {
+      "id": "04c2e389-cb45-4ffa-bbca-274512615526",
+      "brand": "mont-bell",
+      "model": "ガレナパック 25",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/04c2e389-cb45-4ffa-bbca-274512615526.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/04c2e389-cb45-4ffa-bbca-274512615526.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/04c2e389-cb45-4ffa-bbca-274512615526.png"
+    },
+    {
+      "id": "010f04c1-c141-4757-bbee-456ac53bc9ab",
+      "brand": "mont-bell",
+      "model": "ガレナパック 25 Women's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/010f04c1-c141-4757-bbee-456ac53bc9ab.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/010f04c1-c141-4757-bbee-456ac53bc9ab.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/010f04c1-c141-4757-bbee-456ac53bc9ab.png"
+    },
+    {
+      "id": "1201daaf-858e-47dd-9c28-a62adf79ee35",
+      "brand": "mont-bell",
+      "model": "ガレナパック 30",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/1201daaf-858e-47dd-9c28-a62adf79ee35.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/1201daaf-858e-47dd-9c28-a62adf79ee35.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/1201daaf-858e-47dd-9c28-a62adf79ee35.png"
+    },
+    {
+      "id": "456643cc-db1e-4cf9-a01e-f3f5dbbff8c9",
+      "brand": "mont-bell",
+      "model": "ガレナパック 30 Women's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/456643cc-db1e-4cf9-a01e-f3f5dbbff8c9.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/456643cc-db1e-4cf9-a01e-f3f5dbbff8c9.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/456643cc-db1e-4cf9-a01e-f3f5dbbff8c9.png"
+    },
+    {
+      "id": "e3a93409-4f89-4117-9ea6-ab8124ddb747",
+      "brand": "mont-bell",
+      "model": "クリマプラス100 ジャケット Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/e3a93409-4f89-4117-9ea6-ab8124ddb747.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/e3a93409-4f89-4117-9ea6-ab8124ddb747.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/e3a93409-4f89-4117-9ea6-ab8124ddb747.png"
+    },
+    {
+      "id": "e63aa376-9d44-409d-a088-f899d516527a",
+      "brand": "mont-bell",
+      "model": "クリマプラス200 ジャケット Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/e63aa376-9d44-409d-a088-f899d516527a.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/e63aa376-9d44-409d-a088-f899d516527a.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/e63aa376-9d44-409d-a088-f899d516527a.png"
+    },
+    {
+      "id": "29f7d3aa-4f74-4037-8c9b-b5bc5598b4ae",
+      "brand": "mont-bell",
+      "model": "クロノスドーム2",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/29f7d3aa-4f74-4037-8c9b-b5bc5598b4ae.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/29f7d3aa-4f74-4037-8c9b-b5bc5598b4ae.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/29f7d3aa-4f74-4037-8c9b-b5bc5598b4ae.png"
+    },
+    {
+      "id": "63e6d3cc-6d81-4349-ba85-40fc75c55a54",
+      "brand": "mont-bell",
+      "model": "コンパクトヘッドランプ",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/63e6d3cc-6d81-4349-ba85-40fc75c55a54.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/63e6d3cc-6d81-4349-ba85-40fc75c55a54.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/63e6d3cc-6d81-4349-ba85-40fc75c55a54.png"
+    },
+    {
+      "id": "bb528ee0-b72a-4f9d-8736-44fe17505e75",
+      "brand": "mont-bell",
+      "model": "シームレス アルパイン バロウバッグ #0",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/bb528ee0-b72a-4f9d-8736-44fe17505e75.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/bb528ee0-b72a-4f9d-8736-44fe17505e75.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/bb528ee0-b72a-4f9d-8736-44fe17505e75.png"
+    },
+    {
+      "id": "eef0dc6e-64c2-4a85-8088-c439b62793db",
+      "brand": "mont-bell",
+      "model": "シームレス アルパイン バロウバッグ #1",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/eef0dc6e-64c2-4a85-8088-c439b62793db.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/eef0dc6e-64c2-4a85-8088-c439b62793db.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/eef0dc6e-64c2-4a85-8088-c439b62793db.png"
+    },
+    {
+      "id": "8a257791-7ed7-4246-9071-fe906c94e3c9",
+      "brand": "mont-bell",
+      "model": "シームレス アルパイン バロウバッグ #3",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/8a257791-7ed7-4246-9071-fe906c94e3c9.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/8a257791-7ed7-4246-9071-fe906c94e3c9.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/8a257791-7ed7-4246-9071-fe906c94e3c9.png"
+    },
+    {
+      "id": "cad4a9d0-faa3-43f2-9b0f-4005602008f0",
+      "brand": "mont-bell",
+      "model": "シームレス アルパイン バロウバッグ #5",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/cad4a9d0-faa3-43f2-9b0f-4005602008f0.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/cad4a9d0-faa3-43f2-9b0f-4005602008f0.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/cad4a9d0-faa3-43f2-9b0f-4005602008f0.png"
+    },
+    {
+      "id": "e457c25a-2a5e-47bc-bf3a-027c6a71d03d",
+      "brand": "mont-bell",
+      "model": "シームレス ダウンハガー800 #0",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/e457c25a-2a5e-47bc-bf3a-027c6a71d03d.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/e457c25a-2a5e-47bc-bf3a-027c6a71d03d.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/e457c25a-2a5e-47bc-bf3a-027c6a71d03d.png"
+    },
+    {
+      "id": "2defb46c-f9bf-4179-8023-2ec01ea181e1",
+      "brand": "mont-bell",
+      "model": "シームレス ダウンハガー800 #1",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/2defb46c-f9bf-4179-8023-2ec01ea181e1.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/2defb46c-f9bf-4179-8023-2ec01ea181e1.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/2defb46c-f9bf-4179-8023-2ec01ea181e1.png"
+    },
+    {
+      "id": "0e980ec9-0345-4fa0-a07d-0237ef6c5666",
+      "brand": "mont-bell",
+      "model": "シームレス ダウンハガー800 #2",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/0e980ec9-0345-4fa0-a07d-0237ef6c5666.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/0e980ec9-0345-4fa0-a07d-0237ef6c5666.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/0e980ec9-0345-4fa0-a07d-0237ef6c5666.png"
+    },
+    {
+      "id": "df6fa066-9695-43dd-b0c9-0d3cb23288f2",
+      "brand": "mont-bell",
+      "model": "シームレス ダウンハガー800 #3",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/df6fa066-9695-43dd-b0c9-0d3cb23288f2.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/df6fa066-9695-43dd-b0c9-0d3cb23288f2.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/df6fa066-9695-43dd-b0c9-0d3cb23288f2.png"
+    },
+    {
+      "id": "ba7ede3b-4705-4f35-8eb4-f04f9d2043f3",
+      "brand": "mont-bell",
+      "model": "シームレス ダウンハガー800 #5",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/ba7ede3b-4705-4f35-8eb4-f04f9d2043f3.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/ba7ede3b-4705-4f35-8eb4-f04f9d2043f3.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/ba7ede3b-4705-4f35-8eb4-f04f9d2043f3.png"
+    },
+    {
+      "id": "96eec5b4-a241-4b76-9b08-8266fccc360b",
+      "brand": "mont-bell",
+      "model": "シームレス ダウンハガー800 #7",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/96eec5b4-a241-4b76-9b08-8266fccc360b.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/96eec5b4-a241-4b76-9b08-8266fccc360b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/96eec5b4-a241-4b76-9b08-8266fccc360b.png"
+    },
+    {
+      "id": "318ad0b7-f363-456c-b2ba-b591fbb80870",
+      "brand": "mont-bell",
+      "model": "シームレス ダウンハガー800 Women's #1",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/318ad0b7-f363-456c-b2ba-b591fbb80870.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/318ad0b7-f363-456c-b2ba-b591fbb80870.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/318ad0b7-f363-456c-b2ba-b591fbb80870.png"
+    },
+    {
+      "id": "3409a1d0-d385-4cca-8b50-f79397642f0b",
+      "brand": "mont-bell",
+      "model": "シームレス ダウンハガー800 Women's #2",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/3409a1d0-d385-4cca-8b50-f79397642f0b.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/3409a1d0-d385-4cca-8b50-f79397642f0b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/3409a1d0-d385-4cca-8b50-f79397642f0b.png"
+    },
+    {
+      "id": "d3d09dc0-79de-4c96-9212-eafb5b8b71b9",
+      "brand": "mont-bell",
+      "model": "シームレス ダウンハガー800 Women's #3",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/d3d09dc0-79de-4c96-9212-eafb5b8b71b9.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/d3d09dc0-79de-4c96-9212-eafb5b8b71b9.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/d3d09dc0-79de-4c96-9212-eafb5b8b71b9.png"
+    },
+    {
+      "id": "538e98ef-9760-41ff-a35c-50a7916f1e7b",
+      "brand": "mont-bell",
+      "model": "シームレス バロウバッグ #3",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/538e98ef-9760-41ff-a35c-50a7916f1e7b.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/538e98ef-9760-41ff-a35c-50a7916f1e7b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/538e98ef-9760-41ff-a35c-50a7916f1e7b.png"
+    },
+    {
+      "id": "a2187d77-00d8-4c07-83f8-57a02c58960b",
+      "brand": "mont-bell",
+      "model": "シームレス バロウバッグ #5",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/a2187d77-00d8-4c07-83f8-57a02c58960b.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/a2187d77-00d8-4c07-83f8-57a02c58960b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/a2187d77-00d8-4c07-83f8-57a02c58960b.png"
+    },
+    {
+      "id": "608c9f97-09fb-4e2c-b0e9-8782945a6016",
+      "brand": "mont-bell",
+      "model": "ジェットパワー100G",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/608c9f97-09fb-4e2c-b0e9-8782945a6016.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/608c9f97-09fb-4e2c-b0e9-8782945a6016.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/608c9f97-09fb-4e2c-b0e9-8782945a6016.png"
+    },
+    {
+      "id": "29a28eb6-27e9-4b84-863a-2939d3aa20c5",
+      "brand": "mont-bell",
+      "model": "ジェットパワー230G",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/29a28eb6-27e9-4b84-863a-2939d3aa20c5.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/29a28eb6-27e9-4b84-863a-2939d3aa20c5.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/29a28eb6-27e9-4b84-863a-2939d3aa20c5.png"
+    },
+    {
+      "id": "81d3c98b-9c0d-40b9-9983-ba1122eea2d2",
+      "brand": "mont-bell",
+      "model": "ジオライン EXP.タイツ Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/81d3c98b-9c0d-40b9-9983-ba1122eea2d2.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/81d3c98b-9c0d-40b9-9983-ba1122eea2d2.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/81d3c98b-9c0d-40b9-9983-ba1122eea2d2.png"
+    },
+    {
+      "id": "308e64b3-179f-4e05-b055-521dba7f3669",
+      "brand": "mont-bell",
+      "model": "ジオライン EXP.ラウンドネックシャツ Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/308e64b3-179f-4e05-b055-521dba7f3669.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/308e64b3-179f-4e05-b055-521dba7f3669.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/308e64b3-179f-4e05-b055-521dba7f3669.png"
+    },
+    {
+      "id": "66244dff-8e85-4836-8b91-367b34963b15",
+      "brand": "mont-bell",
+      "model": "ジオライン EXP.ラウンドネックシャツ Women's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/66244dff-8e85-4836-8b91-367b34963b15.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/66244dff-8e85-4836-8b91-367b34963b15.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/66244dff-8e85-4836-8b91-367b34963b15.png"
+    },
+    {
+      "id": "a62dedbe-c565-439b-b37c-474c4988dc72",
+      "brand": "mont-bell",
+      "model": "ジオライン L.W.タイツ Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/a62dedbe-c565-439b-b37c-474c4988dc72.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/a62dedbe-c565-439b-b37c-474c4988dc72.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/a62dedbe-c565-439b-b37c-474c4988dc72.png"
+    },
+    {
+      "id": "27074d21-2892-4475-8986-97129e594fb1",
+      "brand": "mont-bell",
+      "model": "ジオライン L.W.ラウンドネックシャツ Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/27074d21-2892-4475-8986-97129e594fb1.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/27074d21-2892-4475-8986-97129e594fb1.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/27074d21-2892-4475-8986-97129e594fb1.png"
+    },
+    {
+      "id": "9796d370-0a28-4eb1-86a0-4cfb4aeb5780",
+      "brand": "mont-bell",
+      "model": "ジオライン M.W.タイツ Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/9796d370-0a28-4eb1-86a0-4cfb4aeb5780.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/9796d370-0a28-4eb1-86a0-4cfb4aeb5780.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/9796d370-0a28-4eb1-86a0-4cfb4aeb5780.png"
+    },
+    {
+      "id": "50fb7311-a47c-4b32-a85c-6f9e3f6ba46a",
+      "brand": "mont-bell",
+      "model": "ジオライン M.W.ラウンドネックシャツ Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/50fb7311-a47c-4b32-a85c-6f9e3f6ba46a.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/50fb7311-a47c-4b32-a85c-6f9e3f6ba46a.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/50fb7311-a47c-4b32-a85c-6f9e3f6ba46a.png"
+    },
+    {
+      "id": "7de475a1-9dba-46c2-b6a6-8e09684ea377",
+      "brand": "mont-bell",
+      "model": "スーパーメリノウール M.W. タイツ Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/7de475a1-9dba-46c2-b6a6-8e09684ea377.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/7de475a1-9dba-46c2-b6a6-8e09684ea377.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/7de475a1-9dba-46c2-b6a6-8e09684ea377.png"
+    },
+    {
+      "id": "dc7674a4-bc50-4011-b286-263ad04d7f48",
+      "brand": "mont-bell",
+      "model": "スーパーメリノウール M.W. ラウンドネックシャツ Women's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/dc7674a4-bc50-4011-b286-263ad04d7f48.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/dc7674a4-bc50-4011-b286-263ad04d7f48.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/dc7674a4-bc50-4011-b286-263ad04d7f48.png"
+    },
+    {
+      "id": "f3544e1c-7c04-4be4-9883-a44f3a182ee0",
+      "brand": "mont-bell",
+      "model": "ステラリッジ テント トレール1 本体",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/f3544e1c-7c04-4be4-9883-a44f3a182ee0.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/f3544e1c-7c04-4be4-9883-a44f3a182ee0.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/f3544e1c-7c04-4be4-9883-a44f3a182ee0.png"
+    },
+    {
+      "id": "0a3653b0-c131-4470-bf23-dd41538dc59c",
+      "brand": "mont-bell",
+      "model": "ステラリッジ テント トレール2 本体",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/0a3653b0-c131-4470-bf23-dd41538dc59c.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/0a3653b0-c131-4470-bf23-dd41538dc59c.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/0a3653b0-c131-4470-bf23-dd41538dc59c.png"
+    },
+    {
+      "id": "440c0281-2e17-46d2-b917-ff44e905cd8e",
+      "brand": "mont-bell",
+      "model": "ステラリッジ テント1 本体",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/440c0281-2e17-46d2-b917-ff44e905cd8e.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/440c0281-2e17-46d2-b917-ff44e905cd8e.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/440c0281-2e17-46d2-b917-ff44e905cd8e.png"
+    },
+    {
+      "id": "a7d04ccb-92e0-48ba-9e11-bcb6bdb9a9fd",
+      "brand": "mont-bell",
+      "model": "ステラリッジ テント2 本体",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/a7d04ccb-92e0-48ba-9e11-bcb6bdb9a9fd.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/a7d04ccb-92e0-48ba-9e11-bcb6bdb9a9fd.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/a7d04ccb-92e0-48ba-9e11-bcb6bdb9a9fd.png"
+    },
+    {
+      "id": "3c671d29-4ce5-48b2-8cd4-50c26ebf9c8b",
+      "brand": "mont-bell",
+      "model": "ステラリッジ テント3 本体",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/3c671d29-4ce5-48b2-8cd4-50c26ebf9c8b.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/3c671d29-4ce5-48b2-8cd4-50c26ebf9c8b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/3c671d29-4ce5-48b2-8cd4-50c26ebf9c8b.png"
+    },
+    {
+      "id": "deae0ec6-9eb9-4618-b125-d3ee4027ff1c",
+      "brand": "mont-bell",
+      "model": "ステラリッジ テント4 本体",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/deae0ec6-9eb9-4618-b125-d3ee4027ff1c.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/deae0ec6-9eb9-4618-b125-d3ee4027ff1c.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/deae0ec6-9eb9-4618-b125-d3ee4027ff1c.png"
+    },
+    {
+      "id": "d9e0c2ac-5c89-453e-b6d6-495d930e9c6e",
+      "brand": "mont-bell",
+      "model": "スペリオダウン ラウンドネックジャケット Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/d9e0c2ac-5c89-453e-b6d6-495d930e9c6e.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/d9e0c2ac-5c89-453e-b6d6-495d930e9c6e.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/d9e0c2ac-5c89-453e-b6d6-495d930e9c6e.png"
+    },
+    {
+      "id": "a708399e-cdfd-4c3c-9b84-1a68e6fc2c5a",
+      "brand": "mont-bell",
+      "model": "スペリオダウン ラウンドネックジャケット Women's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/a708399e-cdfd-4c3c-9b84-1a68e6fc2c5a.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/a708399e-cdfd-4c3c-9b84-1a68e6fc2c5a.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/a708399e-cdfd-4c3c-9b84-1a68e6fc2c5a.png"
+    },
+    {
+      "id": "52e6520e-aa15-4f9c-a363-cbc6b7a4dd43",
+      "brand": "mont-bell",
+      "model": "チェーンスパイク",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/52e6520e-aa15-4f9c-a363-cbc6b7a4dd43.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/52e6520e-aa15-4f9c-a363-cbc6b7a4dd43.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/52e6520e-aa15-4f9c-a363-cbc6b7a4dd43.png"
+    },
+    {
+      "id": "5530358e-eef8-4f52-b52d-640c48d5b590",
+      "brand": "mont-bell",
+      "model": "チャチャパック 30",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/5530358e-eef8-4f52-b52d-640c48d5b590.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/5530358e-eef8-4f52-b52d-640c48d5b590.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/5530358e-eef8-4f52-b52d-640c48d5b590.png"
+    },
+    {
+      "id": "e5e63691-0208-4519-8f4e-1a1e6d3eadd3",
+      "brand": "mont-bell",
+      "model": "チャチャパック 35",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/e5e63691-0208-4519-8f4e-1a1e6d3eadd3.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/e5e63691-0208-4519-8f4e-1a1e6d3eadd3.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/e5e63691-0208-4519-8f4e-1a1e6d3eadd3.png"
+    },
+    {
+      "id": "31a86aa1-7628-41e1-b59a-c565d4c0de4f",
+      "brand": "mont-bell",
+      "model": "チャチャパック 40",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/31a86aa1-7628-41e1-b59a-c565d4c0de4f.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/31a86aa1-7628-41e1-b59a-c565d4c0de4f.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/31a86aa1-7628-41e1-b59a-c565d4c0de4f.png"
+    },
+    {
+      "id": "d7f670f7-a8fe-4da6-922c-bc8eba96ed91",
+      "brand": "mont-bell",
+      "model": "ツオロミー ブーツ Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/d7f670f7-a8fe-4da6-922c-bc8eba96ed91.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/d7f670f7-a8fe-4da6-922c-bc8eba96ed91.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/d7f670f7-a8fe-4da6-922c-bc8eba96ed91.png"
+    },
+    {
+      "id": "eba0e679-cddd-406f-89eb-2d5ba61ad010",
+      "brand": "mont-bell",
+      "model": "ツオロミー ブーツ Women's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/eba0e679-cddd-406f-89eb-2d5ba61ad010.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/eba0e679-cddd-406f-89eb-2d5ba61ad010.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/eba0e679-cddd-406f-89eb-2d5ba61ad010.png"
+    },
+    {
+      "id": "f7bb54ba-fa6b-4477-9b7c-3fd5171329ad",
+      "brand": "mont-bell",
+      "model": "テナヤ ブーツ Women's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/f7bb54ba-fa6b-4477-9b7c-3fd5171329ad.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/f7bb54ba-fa6b-4477-9b7c-3fd5171329ad.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/f7bb54ba-fa6b-4477-9b7c-3fd5171329ad.png"
+    },
+    {
+      "id": "2831e7de-b00e-4a23-b06c-92781716ff8b",
+      "brand": "mont-bell",
+      "model": "ドライ シームレス ダウンハガー900 #1",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/2831e7de-b00e-4a23-b06c-92781716ff8b.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/2831e7de-b00e-4a23-b06c-92781716ff8b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/2831e7de-b00e-4a23-b06c-92781716ff8b.png"
+    },
+    {
+      "id": "d0bf7a61-502c-4bea-a23e-5707301a4e02",
+      "brand": "mont-bell",
+      "model": "ドライ シームレス ダウンハガー900 #2",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/d0bf7a61-502c-4bea-a23e-5707301a4e02.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/d0bf7a61-502c-4bea-a23e-5707301a4e02.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/d0bf7a61-502c-4bea-a23e-5707301a4e02.png"
+    },
+    {
+      "id": "e33ff5fe-0508-4760-8c63-382b60f4fb35",
+      "brand": "mont-bell",
+      "model": "ドライ シームレス ダウンハガー900 #3",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/e33ff5fe-0508-4760-8c63-382b60f4fb35.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/e33ff5fe-0508-4760-8c63-382b60f4fb35.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/e33ff5fe-0508-4760-8c63-382b60f4fb35.png"
+    },
+    {
+      "id": "323b7d45-b083-4e78-9c10-f1b7eb5b4752",
+      "brand": "mont-bell",
+      "model": "バーサライトパック 15",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/323b7d45-b083-4e78-9c10-f1b7eb5b4752.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/323b7d45-b083-4e78-9c10-f1b7eb5b4752.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/323b7d45-b083-4e78-9c10-f1b7eb5b4752.png"
+    },
+    {
+      "id": "1aeed088-10f6-44d8-8b71-f106f149fd28",
+      "brand": "mont-bell",
+      "model": "バーサライトパック 20",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/1aeed088-10f6-44d8-8b71-f106f149fd28.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/1aeed088-10f6-44d8-8b71-f106f149fd28.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/1aeed088-10f6-44d8-8b71-f106f149fd28.png"
+    },
+    {
+      "id": "86fe2125-9362-4303-8067-539f0d5d402b",
+      "brand": "mont-bell",
+      "model": "バーサライトパック 30",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/86fe2125-9362-4303-8067-539f0d5d402b.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/86fe2125-9362-4303-8067-539f0d5d402b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/86fe2125-9362-4303-8067-539f0d5d402b.png"
+    },
+    {
+      "id": "3d67d7c9-6304-42be-bb3c-72b023757ace",
+      "brand": "mont-bell",
+      "model": "バーサライトパック 40",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/3d67d7c9-6304-42be-bb3c-72b023757ace.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/3d67d7c9-6304-42be-bb3c-72b023757ace.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/3d67d7c9-6304-42be-bb3c-72b023757ace.png"
+    },
+    {
+      "id": "3514e2f1-cc61-4712-ae41-e1d287dc6413",
+      "brand": "mont-bell",
+      "model": "バーサライトパンツ Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/3514e2f1-cc61-4712-ae41-e1d287dc6413.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/3514e2f1-cc61-4712-ae41-e1d287dc6413.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/3514e2f1-cc61-4712-ae41-e1d287dc6413.png"
+    },
+    {
+      "id": "f0797749-d601-49ee-99d2-a2ca6be1423d",
+      "brand": "mont-bell",
+      "model": "フォームパッド 120",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/f0797749-d601-49ee-99d2-a2ca6be1423d.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/f0797749-d601-49ee-99d2-a2ca6be1423d.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/f0797749-d601-49ee-99d2-a2ca6be1423d.png"
+    },
+    {
+      "id": "0440e16a-b8c7-45a9-83d1-09c589e00c90",
+      "brand": "mont-bell",
+      "model": "フォームパッド 150",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/0440e16a-b8c7-45a9-83d1-09c589e00c90.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/0440e16a-b8c7-45a9-83d1-09c589e00c90.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/0440e16a-b8c7-45a9-83d1-09c589e00c90.png"
+    },
+    {
+      "id": "cfd1398e-473c-4ea8-8c34-93e525233f6b",
+      "brand": "mont-bell",
+      "model": "フォームパッド 180",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/cfd1398e-473c-4ea8-8c34-93e525233f6b.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/cfd1398e-473c-4ea8-8c34-93e525233f6b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/cfd1398e-473c-4ea8-8c34-93e525233f6b.png"
+    },
+    {
+      "id": "dc45c628-bdbf-43df-9e72-c1a2975aa60b",
+      "brand": "mont-bell",
+      "model": "プラズマ1000 アルパイン ダウンパーカ Women's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/dc45c628-bdbf-43df-9e72-c1a2975aa60b.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/dc45c628-bdbf-43df-9e72-c1a2975aa60b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/dc45c628-bdbf-43df-9e72-c1a2975aa60b.png"
+    },
+    {
+      "id": "c7bf0b86-405e-4692-81e5-16c16c3d0c67",
+      "brand": "mont-bell",
+      "model": "プラズマ1000 アルパインダウン パーカ Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/c7bf0b86-405e-4692-81e5-16c16c3d0c67.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/c7bf0b86-405e-4692-81e5-16c16c3d0c67.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/c7bf0b86-405e-4692-81e5-16c16c3d0c67.png"
+    },
+    {
+      "id": "2e4a0297-8159-4391-b4b6-84994eeaf33d",
+      "brand": "mont-bell",
+      "model": "マウンテンクルーザー400 Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/2e4a0297-8159-4391-b4b6-84994eeaf33d.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/2e4a0297-8159-4391-b4b6-84994eeaf33d.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/2e4a0297-8159-4391-b4b6-84994eeaf33d.png"
+    },
+    {
+      "id": "03e7614e-a2c2-4d3f-aa61-f27ce2b3b2e7",
+      "brand": "mont-bell",
+      "model": "マウンテンクルーザー400 Women's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/03e7614e-a2c2-4d3f-aa61-f27ce2b3b2e7.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/03e7614e-a2c2-4d3f-aa61-f27ce2b3b2e7.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/03e7614e-a2c2-4d3f-aa61-f27ce2b3b2e7.png"
+    },
+    {
+      "id": "6d3cdb3a-3da2-4000-a78a-00c5e1a8423b",
+      "brand": "mont-bell",
+      "model": "マウンテンクルーザー600 Men's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/6d3cdb3a-3da2-4000-a78a-00c5e1a8423b.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/6d3cdb3a-3da2-4000-a78a-00c5e1a8423b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/6d3cdb3a-3da2-4000-a78a-00c5e1a8423b.png"
+    },
+    {
+      "id": "27cd0967-741f-4097-9780-31c299c49fb0",
+      "brand": "mont-bell",
+      "model": "マウンテンクルーザー600 Women's",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/27cd0967-741f-4097-9780-31c299c49fb0.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/27cd0967-741f-4097-9780-31c299c49fb0.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/27cd0967-741f-4097-9780-31c299c49fb0.png"
+    },
+    {
+      "id": "d089fc81-85fc-416d-a871-2c750ebc80cc",
+      "brand": "mont-bell",
+      "model": "マルチパワー ヘッドランプ",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/d089fc81-85fc-416d-a871-2c750ebc80cc.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/d089fc81-85fc-416d-a871-2c750ebc80cc.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/d089fc81-85fc-416d-a871-2c750ebc80cc.png"
+    },
+    {
+      "id": "e6b62d04-1eb5-4de1-b14d-e9497067df9e",
+      "brand": "mont-bell",
+      "model": "ムーンライト テント1",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/e6b62d04-1eb5-4de1-b14d-e9497067df9e.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/e6b62d04-1eb5-4de1-b14d-e9497067df9e.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/e6b62d04-1eb5-4de1-b14d-e9497067df9e.png"
+    },
+    {
+      "id": "fc227538-38ad-46b7-a4c9-1d7770c9ea6e",
+      "brand": "mont-bell",
+      "model": "ムーンライト テント2",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/fc227538-38ad-46b7-a4c9-1d7770c9ea6e.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/fc227538-38ad-46b7-a4c9-1d7770c9ea6e.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/fc227538-38ad-46b7-a4c9-1d7770c9ea6e.png"
+    },
+    {
+      "id": "1ee9cdc8-2fab-47ac-8ff4-ea1a5ebe9074",
+      "brand": "mont-bell",
+      "model": "ムーンライト テント4",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/1ee9cdc8-2fab-47ac-8ff4-ea1a5ebe9074.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/1ee9cdc8-2fab-47ac-8ff4-ea1a5ebe9074.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/1ee9cdc8-2fab-47ac-8ff4-ea1a5ebe9074.png"
+    },
+    {
+      "id": "4188081d-c3d3-4ebf-ac9c-f677ac560f2f",
+      "brand": "mont-bell",
+      "model": "ライトツェルト",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/4188081d-c3d3-4ebf-ac9c-f677ac560f2f.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/4188081d-c3d3-4ebf-ac9c-f677ac560f2f.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/4188081d-c3d3-4ebf-ac9c-f677ac560f2f.png"
+    },
+    {
+      "id": "0bcec559-2fb8-48a7-a57f-bef946033177",
+      "brand": "mont-bell",
+      "model": "ライトツェルト L",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/0bcec559-2fb8-48a7-a57f-bef946033177.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/0bcec559-2fb8-48a7-a57f-bef946033177.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/0bcec559-2fb8-48a7-a57f-bef946033177.png"
+    },
+    {
+      "id": "fcbae488-fe27-4c84-8af4-6a917a5d870f",
+      "brand": "NEMO",
+      "model": "Tensor All-Season Regular Mummy",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/fcbae488-fe27-4c84-8af4-6a917a5d870f.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/fcbae488-fe27-4c84-8af4-6a917a5d870f.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/fcbae488-fe27-4c84-8af4-6a917a5d870f.png"
+    },
+    {
+      "id": "64a56625-ded7-44f8-b9d8-06848ffc9a82",
+      "brand": "NEMO",
+      "model": "Tensor Elite Regular Mummy",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/64a56625-ded7-44f8-b9d8-06848ffc9a82.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/64a56625-ded7-44f8-b9d8-06848ffc9a82.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/64a56625-ded7-44f8-b9d8-06848ffc9a82.png"
+    },
+    {
+      "id": "0cbc5126-0e27-43a4-a9d6-158d640aa317",
+      "brand": "NEMO",
+      "model": "Tensor Extreme Conditions Regular Mummy",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/0cbc5126-0e27-43a4-a9d6-158d640aa317.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/0cbc5126-0e27-43a4-a9d6-158d640aa317.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/0cbc5126-0e27-43a4-a9d6-158d640aa317.png"
+    },
+    {
+      "id": "dc3a3186-3446-4ebf-935d-747995d98528",
+      "brand": "NEMO",
+      "model": "Tensor Trail Regular Mummy",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/dc3a3186-3446-4ebf-935d-747995d98528.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/dc3a3186-3446-4ebf-935d-747995d98528.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/dc3a3186-3446-4ebf-935d-747995d98528.png"
+    },
+    {
+      "id": "7ac2f965-0551-49de-99ef-ede4fbf21928",
+      "brand": "Osprey",
+      "model": "エクソスプロ55",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/7ac2f965-0551-49de-99ef-ede4fbf21928.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/7ac2f965-0551-49de-99ef-ede4fbf21928.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/7ac2f965-0551-49de-99ef-ede4fbf21928.png"
+    },
+    {
+      "id": "ffe22c2c-f312-4c43-8189-7654b839523f",
+      "brand": "Osprey",
+      "model": "ケストレル38",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/ffe22c2c-f312-4c43-8189-7654b839523f.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/ffe22c2c-f312-4c43-8189-7654b839523f.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/ffe22c2c-f312-4c43-8189-7654b839523f.png"
+    },
+    {
+      "id": "9e876b9a-0c9a-45e2-9816-3e35afb28fc5",
+      "brand": "Osprey",
+      "model": "ケストレル48",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/9e876b9a-0c9a-45e2-9816-3e35afb28fc5.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/9e876b9a-0c9a-45e2-9816-3e35afb28fc5.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/9e876b9a-0c9a-45e2-9816-3e35afb28fc5.png"
+    },
+    {
+      "id": "60e24ca8-fd65-4022-97c8-33ee2a20311c",
+      "brand": "Osprey",
+      "model": "ケストレルLT35",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/60e24ca8-fd65-4022-97c8-33ee2a20311c.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/60e24ca8-fd65-4022-97c8-33ee2a20311c.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/60e24ca8-fd65-4022-97c8-33ee2a20311c.png"
+    },
+    {
+      "id": "08d71495-409a-4f1e-a05a-68a3d8695ff7",
+      "brand": "Osprey",
+      "model": "ケストレルLT45",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/08d71495-409a-4f1e-a05a-68a3d8695ff7.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/08d71495-409a-4f1e-a05a-68a3d8695ff7.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/08d71495-409a-4f1e-a05a-68a3d8695ff7.png"
+    },
+    {
+      "id": "cde77e2d-3263-41c0-9c57-0137f38a4c18",
+      "brand": "Osprey",
+      "model": "タロンプロ40",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/cde77e2d-3263-41c0-9c57-0137f38a4c18.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/cde77e2d-3263-41c0-9c57-0137f38a4c18.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/cde77e2d-3263-41c0-9c57-0137f38a4c18.png"
+    },
+    {
+      "id": "833a0f31-c5a6-481e-9543-6d3a471eaed5",
+      "brand": "Osprey",
+      "model": "タロンベロシティ20",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/833a0f31-c5a6-481e-9543-6d3a471eaed5.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/833a0f31-c5a6-481e-9543-6d3a471eaed5.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/833a0f31-c5a6-481e-9543-6d3a471eaed5.png"
+    },
+    {
+      "id": "c5809356-b95a-494c-b2d3-e1a1bede15cf",
+      "brand": "Osprey",
+      "model": "テンペストベロシティ20",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/c5809356-b95a-494c-b2d3-e1a1bede15cf.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/c5809356-b95a-494c-b2d3-e1a1bede15cf.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/c5809356-b95a-494c-b2d3-e1a1bede15cf.png"
+    },
+    {
+      "id": "610379a2-999f-4b59-aa27-20233d18358c",
+      "brand": "patagonia",
+      "model": "Torrentshell 3L Jacket",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/610379a2-999f-4b59-aa27-20233d18358c.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/610379a2-999f-4b59-aa27-20233d18358c.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/610379a2-999f-4b59-aa27-20233d18358c.png"
+    },
+    {
+      "id": "b27ed510-2b70-4e1a-9d36-fa0234a53e81",
+      "brand": "patagonia",
+      "model": "Houdini Jacket",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/b27ed510-2b70-4e1a-9d36-fa0234a53e81.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/b27ed510-2b70-4e1a-9d36-fa0234a53e81.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/b27ed510-2b70-4e1a-9d36-fa0234a53e81.png"
+    },
+    {
+      "id": "28a64247-d87f-4252-9c50-311b17399e97",
+      "brand": "Petzl",
+      "model": "TIKKA",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/28a64247-d87f-4252-9c50-311b17399e97.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/28a64247-d87f-4252-9c50-311b17399e97.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/28a64247-d87f-4252-9c50-311b17399e97.png"
+    },
+    {
+      "id": "8ca84e74-20c5-41e9-8949-ec5a8cf4a449",
+      "brand": "Petzl",
+      "model": "TIKKA CORE",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/8ca84e74-20c5-41e9-8949-ec5a8cf4a449.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/8ca84e74-20c5-41e9-8949-ec5a8cf4a449.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/8ca84e74-20c5-41e9-8949-ec5a8cf4a449.png"
+    },
+    {
+      "id": "dee97fc3-0e88-4d2f-9c91-41eb53fd0846",
+      "brand": "SOTO",
+      "model": "ST-711",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/dee97fc3-0e88-4d2f-9c91-41eb53fd0846.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/dee97fc3-0e88-4d2f-9c91-41eb53fd0846.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/dee97fc3-0e88-4d2f-9c91-41eb53fd0846.png"
+    },
+    {
+      "id": "260e1757-dfca-4df2-901c-60fc7290680b",
+      "brand": "SOTO",
+      "model": "ST-712",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/260e1757-dfca-4df2-901c-60fc7290680b.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/260e1757-dfca-4df2-901c-60fc7290680b.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/260e1757-dfca-4df2-901c-60fc7290680b.png"
+    },
+    {
+      "id": "5cd7e352-0dd0-4790-9736-c04d0f3abf35",
+      "brand": "SOTO",
+      "model": "ST-320",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/5cd7e352-0dd0-4790-9736-c04d0f3abf35.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/5cd7e352-0dd0-4790-9736-c04d0f3abf35.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/5cd7e352-0dd0-4790-9736-c04d0f3abf35.png"
+    },
+    {
+      "id": "66d18a5e-8e82-44dd-8ca0-cbf695986ddc",
+      "brand": "SOTO",
+      "model": "ST-950P",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/66d18a5e-8e82-44dd-8ca0-cbf695986ddc.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/66d18a5e-8e82-44dd-8ca0-cbf695986ddc.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/66d18a5e-8e82-44dd-8ca0-cbf695986ddc.png"
+    },
+    {
+      "id": "df6833ab-71a2-4399-83dd-d3112ec51176",
+      "brand": "SOTO",
+      "model": "ST-950FP16",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/df6833ab-71a2-4399-83dd-d3112ec51176.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/df6833ab-71a2-4399-83dd-d3112ec51176.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/df6833ab-71a2-4399-83dd-d3112ec51176.png"
+    },
+    {
+      "id": "77113dbd-4ae0-4202-95e4-20e0d0350a2c",
+      "brand": "SOTO",
+      "model": "ST-950FP22",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/77113dbd-4ae0-4202-95e4-20e0d0350a2c.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/77113dbd-4ae0-4202-95e4-20e0d0350a2c.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/77113dbd-4ae0-4202-95e4-20e0d0350a2c.png"
+    },
+    {
+      "id": "a747dbe4-5002-4f65-ab29-013813573296",
+      "brand": "SOTO",
+      "model": "ST-526T",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/a747dbe4-5002-4f65-ab29-013813573296.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/a747dbe4-5002-4f65-ab29-013813573296.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/a747dbe4-5002-4f65-ab29-013813573296.png"
+    },
+    {
+      "id": "84bdcb2c-1083-409b-9ebd-ee3b6e63f2f2",
+      "brand": "SOTO",
+      "model": "ST-331",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/84bdcb2c-1083-409b-9ebd-ee3b6e63f2f2.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/84bdcb2c-1083-409b-9ebd-ee3b6e63f2f2.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/84bdcb2c-1083-409b-9ebd-ee3b6e63f2f2.png"
+    },
+    {
+      "id": "a0fdac12-a5be-4730-8bad-7e114b505ddc",
+      "brand": "SOTO",
+      "model": "ST-770LU",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/a0fdac12-a5be-4730-8bad-7e114b505ddc.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/a0fdac12-a5be-4730-8bad-7e114b505ddc.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/a0fdac12-a5be-4730-8bad-7e114b505ddc.png"
+    },
+    {
+      "id": "3b2a5022-ca26-4223-8c4c-20c849350f86",
+      "brand": "SOTO",
+      "model": "ST-770LUBL",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/3b2a5022-ca26-4223-8c4c-20c849350f86.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/3b2a5022-ca26-4223-8c4c-20c849350f86.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/3b2a5022-ca26-4223-8c4c-20c849350f86.png"
+    },
+    {
+      "id": "d2603e55-b675-45f4-80e7-2d5cf0059a4d",
+      "brand": "SOTO",
+      "model": "ST-950",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/d2603e55-b675-45f4-80e7-2d5cf0059a4d.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/d2603e55-b675-45f4-80e7-2d5cf0059a4d.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/d2603e55-b675-45f4-80e7-2d5cf0059a4d.png"
+    },
+    {
+      "id": "c8f8398a-3b0e-4a34-8e9a-84969d5f3faa",
+      "brand": "SOTO",
+      "model": "SOD-750T",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/c8f8398a-3b0e-4a34-8e9a-84969d5f3faa.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/c8f8398a-3b0e-4a34-8e9a-84969d5f3faa.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/c8f8398a-3b0e-4a34-8e9a-84969d5f3faa.png"
+    },
+    {
+      "id": "585b6aa0-4a54-4ee9-81fb-56bea6bb1c11",
+      "brand": "SOTO",
+      "model": "ST-4891KK",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/585b6aa0-4a54-4ee9-81fb-56bea6bb1c11.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/585b6aa0-4a54-4ee9-81fb-56bea6bb1c11.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/585b6aa0-4a54-4ee9-81fb-56bea6bb1c11.png"
+    },
+    {
+      "id": "de05011e-8ba5-4b5e-9cde-250dcd2c1a7a",
+      "brand": "SOTO",
+      "model": "ST-3108",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/de05011e-8ba5-4b5e-9cde-250dcd2c1a7a.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/de05011e-8ba5-4b5e-9cde-250dcd2c1a7a.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/de05011e-8ba5-4b5e-9cde-250dcd2c1a7a.png"
+    },
+    {
+      "id": "189ef945-c105-41e7-a04e-ce9796c0f2ac",
+      "brand": "SOTO",
+      "model": "ST-330",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/189ef945-c105-41e7-a04e-ce9796c0f2ac.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/189ef945-c105-41e7-a04e-ce9796c0f2ac.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/189ef945-c105-41e7-a04e-ce9796c0f2ac.png"
+    },
+    {
+      "id": "c098eaa3-3137-4f83-9c29-9b675650ad8d",
+      "brand": "SOTO",
+      "model": "ST-340",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/c098eaa3-3137-4f83-9c29-9b675650ad8d.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/c098eaa3-3137-4f83-9c29-9b675650ad8d.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/c098eaa3-3137-4f83-9c29-9b675650ad8d.png"
+    },
+    {
+      "id": "6d2697c0-e63e-4585-9077-a7dce1c30bff",
+      "brand": "SOTO",
+      "model": "ST-310",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/6d2697c0-e63e-4585-9077-a7dce1c30bff.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/6d2697c0-e63e-4585-9077-a7dce1c30bff.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/6d2697c0-e63e-4585-9077-a7dce1c30bff.png"
+    },
+    {
+      "id": "e6a9b1a3-0adf-4c08-8d39-7d87f2d79344",
+      "brand": "SOTO",
+      "model": "ST-350",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/e6a9b1a3-0adf-4c08-8d39-7d87f2d79344.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/e6a9b1a3-0adf-4c08-8d39-7d87f2d79344.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/e6a9b1a3-0adf-4c08-8d39-7d87f2d79344.png"
+    },
+    {
+      "id": "9b0414c4-42d6-4665-862b-2a64a3426f96",
+      "brand": "SOTO",
+      "model": "ST-3105LU",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/9b0414c4-42d6-4665-862b-2a64a3426f96.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/9b0414c4-42d6-4665-862b-2a64a3426f96.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/9b0414c4-42d6-4665-862b-2a64a3426f96.png"
+    },
+    {
+      "id": "275b5e3d-c86a-4f43-a287-cefac0e40800",
+      "brand": "SOTO",
+      "model": "ST-3105LUBL",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/275b5e3d-c86a-4f43-a287-cefac0e40800.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/275b5e3d-c86a-4f43-a287-cefac0e40800.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/275b5e3d-c86a-4f43-a287-cefac0e40800.png"
+    },
+    {
+      "id": "72cf086e-c764-461d-b4b3-41d03315c1b8",
+      "brand": "Therm-a-Rest",
+      "model": "Z Lite SOL Regular",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/72cf086e-c764-461d-b4b3-41d03315c1b8.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/72cf086e-c764-461d-b4b3-41d03315c1b8.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/72cf086e-c764-461d-b4b3-41d03315c1b8.png"
+    },
+    {
+      "id": "15e437f6-5b4b-417b-957d-310b015613a8",
+      "brand": "山と道",
+      "model": "Light Alpha Vest/Jacket",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/15e437f6-5b4b-417b-957d-310b015613a8.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/15e437f6-5b4b-417b-957d-310b015613a8.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/15e437f6-5b4b-417b-957d-310b015613a8.png"
+    },
+    {
+      "id": "82be8638-5e21-42ab-8a48-6d7356147245",
+      "brand": "山と道",
+      "model": "UL All-weather Hoody",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/82be8638-5e21-42ab-8a48-6d7356147245.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/82be8638-5e21-42ab-8a48-6d7356147245.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/82be8638-5e21-42ab-8a48-6d7356147245.png"
+    },
+    {
+      "id": "0e99825e-2817-4445-95cd-d321a1cb4ec9",
+      "brand": "山と道",
+      "model": "UL All-weather Jacket",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/0e99825e-2817-4445-95cd-d321a1cb4ec9.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/0e99825e-2817-4445-95cd-d321a1cb4ec9.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/0e99825e-2817-4445-95cd-d321a1cb4ec9.png"
+    },
+    {
+      "id": "4f1183d2-7603-4a89-9b19-1554f4bec2fb",
+      "brand": "山と道",
+      "model": "UL Shirt",
+      "output_path": "tmp/gear-images/processed/catalog-remaining-existing-visible/4f1183d2-7603-4a89-9b19-1554f4bec2fb.png",
+      "storage_path": "gear-products/catalog-remaining-existing-visible/4f1183d2-7603-4a89-9b19-1554f4bec2fb.png",
+      "public_url": "https://fdakykmfsrsnuwnhdwmw.supabase.co/storage/v1/object/public/gear-images-processed/gear-products/catalog-remaining-existing-visible/4f1183d2-7603-4a89-9b19-1554f4bec2fb.png"
+    }
+  ],
+  "failures": []
+}

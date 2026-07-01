@@ -1,8 +1,0 @@
-{
-  "generated_at": "2026-07-01T08:58:54.923Z",
-  "target_count": 91,
-  "candidate_count": 298,
-  "reviewable_count": 164,
-  "output_file": "tmp/gear-info/gear-info-official-probe-candidates.csv",
-  "summary_file": "tmp/gear-info/gear-info-official-probe-summary.json"
-}

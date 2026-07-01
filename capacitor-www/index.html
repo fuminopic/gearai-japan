@@ -261,9 +261,8 @@
           url.searchParams.set("app", "ios");
           url.searchParams.set("next", "/dashboard");
           url.searchParams.set("local", "1");
-          // Let the splash paint, then navigate; the remote shows its own splash
-          // over the load, so the brand mark stays continuous.
-          setTimeout(function () { window.location.href = url.toString(); }, 1500);
+          // Let the splash paint, then navigate (short delay is enough).
+          setTimeout(function () { window.location.href = url.toString(); }, 250);
         }
 
         function setBusy(b) {
@@ -407,14 +406,17 @@
             .then(function () { handoff(oauthSession); })
             .catch(function () { handoff(oauthSession); });
         } else if (document.documentElement.classList.contains("has-session")) {
-          client.auth.getSession().then(function (res) {
-            var session = res && res.data && res.data.session;
-            if (!session) { revealLogin(); return; }
-            client.auth.getUser().then(function (u) {
-              if (u && u.data && u.data.user) { handoff(session); }
-              else { revealLogin(); }
-            }).catch(function () { revealLogin(); });
-          }).catch(function () { revealLogin(); });
+          // Reopen (signed in before): do NOT validate/refresh the local token
+          // here. After prolonged use it can be stale/rotated; refreshing it may
+          // fail (and can revoke the whole session), causing a false logout.
+          // Instead go straight to the remote dashboard and let the remote's own
+          // cookie session authenticate (the fresher, authoritative copy). The
+          // service worker serves the cached dashboard for a near-instant open.
+          // If the remote session is genuinely expired, /dashboard bounces to
+          // /login -> back here (?login=1) to sign in again.
+          try { window.name = "yamajitaku-native"; } catch (e) {}
+          $("splash").classList.add("show");
+          window.location.replace(REMOTE + "/dashboard");
         }
       })();
     </script>

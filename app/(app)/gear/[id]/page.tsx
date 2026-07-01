@@ -40,6 +40,8 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
   const dataSourceDescription = gear.gear_products
     ? "製品カタログの確認情報をもとに表示しています。"
     : "自分で登録した情報をもとに表示しています。必要に応じて編集してください。";
+  // 官方目录装备(有 gear_products 关联)= 只读;自己添加的才可编辑
+  const isCatalog = Boolean(gear.gear_products);
 
   return (
     <div className="space-y-5">
@@ -51,12 +53,14 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
           <ArrowLeft className="h-4 w-4" />
           装備一覧へ
         </Link>
-        <Link
-          href={`/gear/${gear.id}/edit`}
-          className="rounded-lg bg-forest-700 px-5 py-3 text-sm font-semibold text-white shadow-soft"
-        >
-          編集
-        </Link>
+        {!isCatalog ? (
+          <Link
+            href={`/gear/${gear.id}/edit`}
+            className="rounded-lg bg-forest-700 px-5 py-3 text-sm font-semibold text-white shadow-soft"
+          >
+            編集
+          </Link>
+        ) : null}
       </section>
 
       <section className="overflow-hidden rounded-lg border border-white/70 bg-white/90 shadow-soft">
@@ -77,12 +81,14 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
               <div className="flex h-72 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-stone-300 bg-white text-center text-stone-400 sm:h-80 lg:h-96">
                 <ImagePlus className="h-8 w-8" />
                 <p className="text-sm font-semibold">写真未登録</p>
-                <Link
-                  href={`/gear/${gear.id}/edit`}
-                  className="text-xs font-semibold text-forest-700"
-                >
-                  写真を追加
-                </Link>
+                {!isCatalog ? (
+                  <Link
+                    href={`/gear/${gear.id}/edit`}
+                    className="text-xs font-semibold text-forest-700"
+                  >
+                    写真を追加
+                  </Link>
+                ) : null}
               </div>
             )}
           </div>
@@ -109,7 +115,6 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
               <DetailRow label="サイズ" value={gear.size} />
               <DetailRow label="対応人数" value={gear.capacity} />
               <DetailRow label="カラー" value={gear.color} />
-              <DetailRow label="素材" value={gear.material} />
               <DetailRow
                 label="重量タイプ"
                 value={weightTypeLabels[gear.weight_type]}

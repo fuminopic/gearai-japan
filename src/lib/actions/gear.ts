@@ -35,6 +35,8 @@ export async function updateGear(id: string, formData: FormData) {
     .update(payload)
     .eq("id", id)
     .eq("user_id", user.id)
+    // 官方目录装备(product_id 非空)只读,不允许编辑;仅自己添加的可改
+    .is("product_id", null)
     .select("id")
     .maybeSingle();
 

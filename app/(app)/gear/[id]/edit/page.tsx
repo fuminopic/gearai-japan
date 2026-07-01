@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 import { GearForm } from "@/components/gear-form";
 import { updateGear } from "@/lib/actions/gear";
 import {
@@ -27,6 +29,11 @@ export default async function EditGearPage({
     getGearProducts(),
     getUserGearById(id)
   ]);
+
+  // 官方目录装备只读:不允许编辑,跳回详细页。自己添加的(product_id 为空)才可编辑。
+  if (gear.gear_products) {
+    redirect(`/gear/${id}`);
+  }
 
   return (
     <div className="space-y-5">

@@ -11,6 +11,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FormEvent, ReactNode } from "react";
@@ -400,7 +401,7 @@ export function GearForm({
       if (result.ok) {
         // 先立刻显示"保存しました",不等目标页整个渲染完再消失
         setSubmitStatus("success");
-        router.push(result.redirectTo);
+        router.push(result.redirectTo as Route);
       } else {
         setSubmitStatus("idle");
         setSubmitError(result.error);

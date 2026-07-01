@@ -11,3 +11,6 @@ coverage
 
 .vercel
 supabase/.temp
+tmp/
+build/
+*.patch

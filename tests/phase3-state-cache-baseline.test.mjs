@@ -73,12 +73,13 @@ test("gear and trip mutations keep their current revalidation boundaries", () =>
   assert.doesNotMatch(tripActionsSource, /revalidatePath\("\/gear"\)/);
 });
 
-test("service worker cache boundary stays limited to the current dashboard page policy", () => {
-  assert.match(serviceWorkerSource, /const PAGE_CACHE_PATHS = \["\/dashboard"\];/);
-  assert.match(
-    serviceWorkerSource,
-    /request\.mode === "navigate" && PAGE_CACHE_PATHS\.includes\(url\.pathname\)/
-  );
+test("service worker cache boundary keeps dashboard html network-first", () => {
+  assert.match(serviceWorkerSource, /const PAGE_CACHE_PATHS = \[\];/);
+  assert.match(serviceWorkerSource, /用户数据页面\(例如 \/dashboard\)不缓存 HTML/);
+  assert.match(serviceWorkerSource, /url\.pathname\.startsWith\("\/_next\/static\/"\)/);
+  assert.match(serviceWorkerSource, /url\.pathname\.startsWith\("\/fonts\/"\)/);
+  assert.match(serviceWorkerSource, /event\.respondWith\(cacheFirst\(request\)\)/);
+  assert.match(serviceWorkerSource, /event\.respondWith\(cacheFirstCrossOriginImage\(request\)\)/);
   assert.match(serviceWorkerSource, /function isSupabaseStorageHost\(hostname\)/);
   assert.match(serviceWorkerSource, /hostname\.endsWith\("\.supabase\.co"\)/);
   assert.match(
@@ -86,6 +87,7 @@ test("service worker cache boundary stays limited to the current dashboard page 
     /looksLikeImage\(url\.pathname\) && !isSupabaseStorageHost\(url\.hostname\)/
   );
 
+  assert.doesNotMatch(serviceWorkerSource, /PAGE_CACHE_PATHS = \[[^\]]*\/dashboard/);
   assert.doesNotMatch(serviceWorkerSource, /PAGE_CACHE_PATHS = \[[^\]]*\/login/);
   assert.doesNotMatch(serviceWorkerSource, /PAGE_CACHE_PATHS = \[[^\]]*\/auth/);
   assert.doesNotMatch(serviceWorkerSource, /PAGE_CACHE_PATHS = \[[^\]]*\/api/);

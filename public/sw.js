@@ -1,8 +1,8 @@
 /*
- * 山支度 Service Worker —— 让 reopen 秒显首页。
+ * 山支度 Service Worker —— 缓存静态资源与公开目录图片。
  * 策略(保守、自愈):
  *  - /_next/static、/fonts、图片/字体 → cache-first(内容带 hash,不可变)。
- *  - /dashboard 导航 → stale-while-revalidate(先返回缓存的首页=秒显,后台拉新更新缓存)。
+ *  - 用户数据页面(例如 /dashboard)不缓存 HTML,确保每次导航都走网络拿最新服务端数据。
  *  - 跨域的目录商品图(montbell/北面/gregory 等官网图) → cache-first,且带数量上限。
  *    注意:不缓存 Supabase 存储域名(*.supabase.co)的图片,因为那些是用户私有装备照片的
  *    签名 URL,1 小时后会过期,缓存了反而会导致图片"过期变灰图"。
@@ -14,7 +14,7 @@ const CACHE_VERSION = "v2";
 const STATIC_CACHE = `yj-static-${CACHE_VERSION}`;
 const PAGE_CACHE = `yj-pages-${CACHE_VERSION}`;
 const IMAGE_CACHE = `yj-images-${CACHE_VERSION}`;
-const PAGE_CACHE_PATHS = ["/dashboard"];
+const PAGE_CACHE_PATHS = [];
 const MAX_IMAGE_CACHE_ENTRIES = 300;
 
 self.addEventListener("install", () => {

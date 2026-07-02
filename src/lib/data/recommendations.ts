@@ -1,6 +1,9 @@
 import { requireUser } from "@/lib/data/gear";
 import type { AIRecommendationRecord, Mountain } from "@/lib/types";
 
+type MountainRow = Mountain;
+type RecommendationRow = AIRecommendationRecord;
+
 export async function getMountains() {
   const { supabase } = await requireUser();
   const { data, error } = await supabase
@@ -12,7 +15,7 @@ export async function getMountains() {
     throw new Error(error.message);
   }
 
-  return data as Mountain[];
+  return data as MountainRow[];
 }
 
 export async function findMountainByName(name: string) {
@@ -34,7 +37,7 @@ export async function findMountainByName(name: string) {
     throw new Error(error.message);
   }
 
-  return data as Mountain | null;
+  return data as MountainRow | null;
 }
 
 export async function getRecommendationHistory(limit = 20) {
@@ -50,7 +53,7 @@ export async function getRecommendationHistory(limit = 20) {
     throw new Error(error.message);
   }
 
-  return data as AIRecommendationRecord[];
+  return data as RecommendationRow[];
 }
 
 export async function getRecommendationById(id: string) {
@@ -66,6 +69,5 @@ export async function getRecommendationById(id: string) {
     throw new Error(error.message);
   }
 
-  return data as AIRecommendationRecord;
+  return data as RecommendationRow;
 }
-

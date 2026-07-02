@@ -1,6 +1,9 @@
 import { requireUser } from "@/lib/data/gear";
 import type { AIRecommendationRecord, SavedTripPlan } from "@/lib/types";
 
+type TripPlanRow = SavedTripPlan;
+type LegacyRecommendationRow = AIRecommendationRecord;
+
 export async function getLatestTripPlan() {
   const { supabase, user } = await requireUser();
   const { data, error } = await supabase
@@ -15,7 +18,7 @@ export async function getLatestTripPlan() {
     return fallback;
   }
 
-  return (data?.[0] ?? null) as SavedTripPlan | null;
+  return (data?.[0] ?? null) as TripPlanRow | null;
 }
 
 export async function getTripPlans() {
@@ -30,7 +33,7 @@ export async function getTripPlans() {
     return [];
   }
 
-  return data as SavedTripPlan[];
+  return data as TripPlanRow[];
 }
 
 async function getLatestLegacyRecommendationPlan(
@@ -48,7 +51,7 @@ async function getLatestLegacyRecommendationPlan(
     return null;
   }
 
-  return legacyRecommendationToTripPlan(data[0] as AIRecommendationRecord);
+  return legacyRecommendationToTripPlan(data[0] as LegacyRecommendationRow);
 }
 
 function legacyRecommendationToTripPlan(record: AIRecommendationRecord): SavedTripPlan {

@@ -9,7 +9,7 @@ function readSource(relativePath) {
 }
 
 const planChecklistSource = readSource("src/lib/plan-checklist.ts");
-const tripPlanLocalMetaSource = readSource("src/lib/trip-plan-local-meta.ts");
+const tripPlanStorageSource = readSource("src/lib/trip-plan-storage.ts");
 const tripPlanningUiSource = readSource("src/components/trip-planning-ui.tsx");
 const heroGaugeSource = readSource("src/components/hero-gauge.tsx");
 const dashboardChecklistSource = readSource(
@@ -65,7 +65,7 @@ function getDocumentedLegacyCleanupKeys(planId) {
   ];
 }
 
-test("current localStorage keys are legacy plan-id-only keys", () => {
+test("current checklist localStorage keys remain legacy plan-id-only keys", () => {
   assert.match(
     planChecklistSource,
     /const checkedSlotsStoragePrefix = "yamajitaku:trip-plan:checked-slots:";/
@@ -78,22 +78,15 @@ test("current localStorage keys are legacy plan-id-only keys", () => {
     planChecklistSource,
     /return `\$\{checkedSlotsStoragePrefix\}\$\{planId\}`;/
   );
-  assert.match(
-    tripPlanLocalMetaSource,
-    /return `yamajitaku:trip-plan-meta:\$\{planId\}`;/
-  );
 });
 
-test("current localStorage payloads do not yet include user scope, version, or ttl", () => {
-  for (const source of [planChecklistSource, tripPlanLocalMetaSource]) {
-    assert.doesNotMatch(source, /schemaVersion/);
-    assert.doesNotMatch(source, /expiresAt/);
-    assert.doesNotMatch(source, /updatedAt/);
-    assert.doesNotMatch(source, /userId|user_id/);
-  }
+test("current checklist payloads do not yet include user scope, version, or ttl", () => {
+  assert.doesNotMatch(planChecklistSource, /schemaVersion/);
+  assert.doesNotMatch(planChecklistSource, /expiresAt/);
+  assert.doesNotMatch(planChecklistSource, /updatedAt/);
+  assert.doesNotMatch(planChecklistSource, /userId|user_id/);
 
   assert.match(tripPlanningUiSource, /window\.localStorage\.setItem/);
-  assert.match(tripPlanLocalMetaSource, /window\.localStorage\.setItem/);
 });
 
 test("future scoped key contract includes version, user id, plan id, and value kind", () => {
@@ -122,6 +115,18 @@ test("future scoped key contract includes version, user id, plan id, and value k
   );
 });
 
+test("trip plan meta storage now exposes the scoped key contract", () => {
+  assert.match(tripPlanStorageSource, /const TRIP_PLAN_STORAGE_VERSION = "v1";/);
+  assert.match(
+    tripPlanStorageSource,
+    /yamajitaku:\$\{TRIP_PLAN_STORAGE_VERSION\}:user:\$\{userId\}:trip-plan:\$\{planId\}:meta/
+  );
+  assert.match(
+    tripPlanStorageSource,
+    /return `yamajitaku:trip-plan-meta:\$\{planId\}`;/
+  );
+});
+
 test("future payload envelope contract includes version, timestamps, ttl, and value", () => {
   const nowMs = Date.parse("2026-07-02T00:00:00.000Z");
   const envelope = makeDocumentedEnvelope({
@@ -142,6 +147,14 @@ test("future payload envelope contract includes version, timestamps, ttl, and va
   assert.deepEqual(envelope.value, ["WATER_STORAGE"]);
 });
 
+test("trip plan meta storage now writes the scoped payload envelope", () => {
+  for (const field of ["schemaVersion", "updatedAt", "expiresAt", "value"]) {
+    assert.match(tripPlanStorageSource, new RegExp(`${field}:`));
+  }
+
+  assert.match(tripPlanStorageSource, /JSON\.stringify\(envelope\)/);
+});
+
 test("future ttl contract accepts fresh values and rejects expired values", () => {
   const nowMs = Date.parse("2026-07-02T00:00:00.000Z");
   const freshEnvelope = makeDocumentedEnvelope({
@@ -160,6 +173,12 @@ test("future ttl contract accepts fresh values and rejects expired values", () =
   ]);
   assert.deepEqual(readDocumentedEnvelope(expiredEnvelope, nowMs, []), []);
   assert.equal(readDocumentedEnvelope(expiredEnvelope, nowMs, null), null);
+});
+
+test("trip plan meta storage now applies ttl expiry and removes expired scoped keys", () => {
+  assert.match(tripPlanStorageSource, /Date\.parse\(parsed\.expiresAt\) <= Date\.now\(\)/);
+  assert.match(tripPlanStorageSource, /storage\.removeItem\(storageKey\)/);
+  assert.match(tripPlanStorageSource, /return \{ status: "found", value: null \};/);
 });
 
 test("future legacy fallback contract prefers scoped keys and cleans only the current plan", () => {
@@ -184,6 +203,13 @@ test("future legacy fallback contract prefers scoped keys and cleans only the cu
   ]);
 });
 
+test("trip plan meta storage now falls back to legacy and migrates only the current plan", () => {
+  assert.match(tripPlanStorageSource, /const legacyKey = buildLegacyTripPlanMetaStorageKey\(planId\);/);
+  assert.match(tripPlanStorageSource, /writeTripPlanMeta\(\{ userId, planId, value: legacyValue \}\);/);
+  assert.match(tripPlanStorageSource, /storage\.removeItem\(legacyKey\);/);
+  assert.doesNotMatch(tripPlanStorageSource, /for\s*\([^)]*localStorage|Object\.keys\(localStorage\)/);
+});
+
 test("current localStorage reads can affect dashboard, hero, and checklist displays", () => {
   assert.match(tripPlanningUiSource, /readStoredCheckedSlots\(planId\)/);
   assert.match(tripPlanningUiSource, /readStoredChecklistOnlyIds\(planId\)/);
@@ -191,4 +217,12 @@ test("current localStorage reads can affect dashboard, hero, and checklist displ
   assert.match(dashboardChecklistSource, /window\.localStorage\.getItem/);
   assert.match(dashboardPlanMetaSource, /readTripPlanLocalMeta\(planId\)/);
   assert.match(heroCountdownSource, /readTripPlanLocalMeta\(planId\)/);
+});
+
+test("trip planning meta calls can pass user scope without migrating checklist calls", () => {
+  assert.match(tripPlanningUiSource, /readTripPlanLocalMeta\(planId, \{ userId: currentPlanUserId \}\)/);
+  assert.match(tripPlanningUiSource, /writeTripPlanLocalMeta\([\s\S]*\{ userId: currentPlanUserId \}/);
+  assert.match(tripPlanningUiSource, /writeTripPlanLocalMeta\([\s\S]*\{ userId \}/);
+  assert.match(tripPlanningUiSource, /writeStoredCheckedSlots\(savedPlanId, checkedSlots\)/);
+  assert.match(tripPlanningUiSource, /writeStoredChecklistOnlyIds\(savedPlanId, checklistOnlyIds\)/);
 });

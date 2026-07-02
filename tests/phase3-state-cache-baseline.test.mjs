@@ -41,6 +41,7 @@ const tripActionsSource = readSource("src/lib/actions/trip-plans.ts");
 const serviceWorkerSource = readSource("public/sw.js");
 const planChecklistSource = readSource("src/lib/plan-checklist.ts");
 const tripPlanLocalMetaSource = readSource("src/lib/trip-plan-local-meta.ts");
+const tripPlanStorageSource = readSource("src/lib/trip-plan-storage.ts");
 const tripPlanningUiSource = readSource("src/components/trip-planning-ui.tsx");
 const recommendationDeleteControlsSource = readSource(
   "src/components/recommendation-delete-controls.tsx"
@@ -104,14 +105,15 @@ test("trip checklist localStorage keys keep their legacy plan-id-only shape", ()
     /return `yamajitaku:trip-plan:checklist-only:\$\{planId\}`;/
   );
   assert.match(planChecklistSource, /return `\$\{checkedSlotsStoragePrefix\}\$\{planId\}`;/);
-  assert.match(
-    tripPlanLocalMetaSource,
-    /return `yamajitaku:trip-plan-meta:\$\{planId\}`;/
-  );
-
-  for (const source of [planChecklistSource, tripPlanLocalMetaSource]) {
+  for (const source of [planChecklistSource]) {
     assert.doesNotMatch(source, /schemaVersion|expiresAt|yamajitaku:v1:user:/);
   }
+
+  assert.match(tripPlanLocalMetaSource, /readTripPlanMeta\(\{ planId, userId: options\.userId \}\)/);
+  assert.match(
+    tripPlanStorageSource,
+    /return `yamajitaku:trip-plan-meta:\$\{planId\}`;/
+  );
 });
 
 test("state, refresh, and cache primitives are visible at their current boundaries", () => {
@@ -128,7 +130,7 @@ test("state, refresh, and cache primitives are visible at their current boundari
     tripPlanningUiSource,
     heroGaugeSource,
     dashboardChecklistSource,
-    tripPlanLocalMetaSource
+    tripPlanStorageSource
   ]) {
     assert.match(source, /localStorage/);
   }

@@ -166,10 +166,13 @@ export function TripPlanningUI({
   const [dateSaveState, setDateSaveState] = useState<
     "idle" | "saving" | "success" | "error"
   >("idle");
+  const currentPlanUserId = hydratedPlan?.user_id ?? initialSavedPlan?.user_id ?? null;
   const effectiveMountainSlug = hydratedPlan?.mountain_slug ?? selectedMountainSlug;
   const effectiveSeason = hydratedPlan?.season ?? selectedSeason;
   const effectiveStyle = hydratedPlan?.style ?? selectedStyle;
-  const localPlanMeta = planId ? readTripPlanLocalMeta(planId) : null;
+  const localPlanMeta = planId
+    ? readTripPlanLocalMeta(planId, { userId: currentPlanUserId })
+    : null;
   const resolvedPlannedDate = planId
     ? hydratedPlan?.planned_date ??
       sanitizeDateParam(searchParams.get("date")) ??
@@ -394,7 +397,7 @@ export function TripPlanningUI({
           plannedDate: nextStartDate,
           plannedEndDate: normalizedEndDate,
           tripMemo: planDetailsDraft.tripMemo
-        });
+        }, { userId: currentPlanUserId });
         setHydratedPlan((current) =>
           current
             ? {
@@ -495,6 +498,7 @@ export function TripPlanningUI({
               checkedSlots={currentCheckedSlots}
               checklistOnlyIds={currentChecklistOnlyIds}
               planId={planId}
+              userId={currentPlanUserId}
             />
           ) : null}
         </>
@@ -754,9 +758,11 @@ function SavePlanButton({
   hasMountainInsurance,
   progress,
   checkedSlots,
-  checklistOnlyIds
+  checklistOnlyIds,
+  userId
 }: {
   planId: string | null;
+  userId: string | null;
   mountainSlug: string;
   mountainName: string;
   season: MountainFoundationSeason;
@@ -800,7 +806,7 @@ function SavePlanButton({
           plannedDate,
           plannedEndDate,
           tripMemo
-        });
+        }, { userId });
       }
 
       router.push("/dashboard");

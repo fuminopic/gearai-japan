@@ -1,74 +1,47 @@
+import {
+  buildLegacyTripPlanMetaStorageKey,
+  readTripPlanMeta,
+  removeTripPlanMeta,
+  writeTripPlanMeta,
+  type TripPlanMetaStorageValue
+} from "@/lib/trip-plan-storage";
+
 export type TripPlanLocalMeta = {
   plannedDate: string;
   plannedEndDate: string;
   tripMemo: string;
 };
 
+type TripPlanLocalMetaOptions = {
+  userId?: string | null;
+};
+
 export function getTripPlanMetaStorageKey(planId: string) {
-  return `yamajitaku:trip-plan-meta:${planId}`;
+  return buildLegacyTripPlanMetaStorageKey(planId);
 }
 
-export function readTripPlanLocalMeta(planId: string): TripPlanLocalMeta | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  try {
-    const storedValue = window.localStorage.getItem(getTripPlanMetaStorageKey(planId));
-
-    if (!storedValue) {
-      return null;
-    }
-
-    const parsed = JSON.parse(storedValue);
-
-    if (!parsed || typeof parsed !== "object") {
-      return null;
-    }
-
-    return {
-      plannedDate:
-        typeof parsed.plannedDate === "string" ? parsed.plannedDate : "",
-      plannedEndDate:
-        typeof parsed.plannedEndDate === "string" ? parsed.plannedEndDate : "",
-      tripMemo: typeof parsed.tripMemo === "string" ? parsed.tripMemo : ""
-    };
-  } catch {
-    return null;
-  }
+export function readTripPlanLocalMeta(
+  planId: string,
+  options: TripPlanLocalMetaOptions = {}
+): TripPlanLocalMeta | null {
+  return readTripPlanMeta({ planId, userId: options.userId });
 }
 
-export function writeTripPlanLocalMeta(planId: string, meta: TripPlanLocalMeta) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  const plannedDate = sanitizeLocalDate(meta.plannedDate);
-  const plannedEndDate = sanitizeLocalDate(meta.plannedEndDate);
-  const tripMemo = sanitizeLocalMemo(meta.tripMemo);
-  const storageKey = getTripPlanMetaStorageKey(planId);
-
-  if (!plannedDate && !plannedEndDate && !tripMemo) {
-    window.localStorage.removeItem(storageKey);
-    return;
-  }
-
-  window.localStorage.setItem(
-    storageKey,
-    JSON.stringify({
-      plannedDate,
-      plannedEndDate,
-      tripMemo
-    })
-  );
+export function writeTripPlanLocalMeta(
+  planId: string,
+  meta: TripPlanLocalMeta,
+  options: TripPlanLocalMetaOptions = {}
+) {
+  writeTripPlanMeta({
+    planId,
+    userId: options.userId,
+    value: meta satisfies TripPlanMetaStorageValue
+  });
 }
 
-function sanitizeLocalDate(value: string) {
-  const trimmed = value.trim();
-
-  return /^\d{4}-\d{2}-\d{2}$/.test(trimmed) ? trimmed : "";
-}
-
-function sanitizeLocalMemo(value: string) {
-  return value.trim().slice(0, 200);
+export function removeTripPlanLocalMeta(
+  planId: string,
+  options: TripPlanLocalMetaOptions = {}
+) {
+  removeTripPlanMeta({ planId, userId: options.userId });
 }

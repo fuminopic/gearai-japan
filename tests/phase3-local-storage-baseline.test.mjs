@@ -127,6 +127,41 @@ test("trip plan meta storage now exposes the scoped key contract", () => {
   );
 });
 
+test("checklist storage helpers expose scoped and legacy key builders", () => {
+  assert.match(
+    tripPlanStorageSource,
+    /export function buildTripPlanCheckedSlotsStorageKey/
+  );
+  assert.match(
+    tripPlanStorageSource,
+    /yamajitaku:\$\{TRIP_PLAN_STORAGE_VERSION\}:user:\$\{userId\}:trip-plan:\$\{planId\}:checked-slots/
+  );
+  assert.match(
+    tripPlanStorageSource,
+    /export function buildLegacyTripPlanCheckedSlotsStorageKey/
+  );
+  assert.match(
+    tripPlanStorageSource,
+    /return `yamajitaku:trip-plan:checked-slots:\$\{planId\}`;/
+  );
+  assert.match(
+    tripPlanStorageSource,
+    /export function buildTripPlanChecklistOnlyStorageKey/
+  );
+  assert.match(
+    tripPlanStorageSource,
+    /yamajitaku:\$\{TRIP_PLAN_STORAGE_VERSION\}:user:\$\{userId\}:trip-plan:\$\{planId\}:checklist-only/
+  );
+  assert.match(
+    tripPlanStorageSource,
+    /export function buildLegacyTripPlanChecklistOnlyStorageKey/
+  );
+  assert.match(
+    tripPlanStorageSource,
+    /return `yamajitaku:trip-plan:checklist-only:\$\{planId\}`;/
+  );
+});
+
 test("future payload envelope contract includes version, timestamps, ttl, and value", () => {
   const nowMs = Date.parse("2026-07-02T00:00:00.000Z");
   const envelope = makeDocumentedEnvelope({
@@ -178,6 +213,31 @@ test("trip plan meta storage now writes the scoped payload envelope", () => {
   assert.match(tripPlanStorageSource, /JSON\.stringify\(envelope\)/);
 });
 
+test("checklist storage helpers expose read, write, and remove operations", () => {
+  for (const functionName of [
+    "readTripPlanCheckedSlots",
+    "writeTripPlanCheckedSlots",
+    "removeTripPlanCheckedSlots",
+    "readTripPlanChecklistOnlyIds",
+    "writeTripPlanChecklistOnlyIds",
+    "removeTripPlanChecklistOnlyIds"
+  ]) {
+    assert.match(tripPlanStorageSource, new RegExp(`export function ${functionName}`));
+  }
+});
+
+test("checklist storage helpers write scoped payload envelopes", () => {
+  assert.match(
+    tripPlanStorageSource,
+    /const TRIP_PLAN_CHECKLIST_TTL_MS = 90 \* 24 \* 60 \* 60 \* 1000;/
+  );
+  assert.match(tripPlanStorageSource, /const envelope: StorageEnvelope<T\[]> = \{/);
+  for (const field of ["schemaVersion", "updatedAt", "expiresAt", "value"]) {
+    assert.match(tripPlanStorageSource, new RegExp(`${field}:`));
+  }
+  assert.match(tripPlanStorageSource, /JSON\.stringify\(envelope\)/);
+});
+
 test("future ttl contract accepts fresh values and rejects expired values", () => {
   const nowMs = Date.parse("2026-07-02T00:00:00.000Z");
   const freshEnvelope = makeDocumentedEnvelope({
@@ -209,6 +269,16 @@ test("trip plan meta storage now applies ttl expiry and removes expired scoped k
   assert.match(tripPlanStorageSource, /Date\.parse\(parsed\.expiresAt\) <= Date\.now\(\)/);
   assert.match(tripPlanStorageSource, /storage\.removeItem\(storageKey\)/);
   assert.match(tripPlanStorageSource, /return \{ status: "found", value: null \};/);
+});
+
+test("checklist storage helpers expire and remove only the current scoped key", () => {
+  assert.match(
+    tripPlanStorageSource,
+    /Date\.parse\(parsed\.expiresAt\) <= Date\.now\(\)/
+  );
+  assert.match(tripPlanStorageSource, /storage\.removeItem\(storageKey\)/);
+  assert.match(tripPlanStorageSource, /status: "expired"/);
+  assert.match(tripPlanStorageSource, /source: "scoped"/);
 });
 
 test("future legacy fallback contract prefers scoped keys and cleans only the current plan", () => {
@@ -306,6 +376,35 @@ test("trip plan meta storage now falls back to legacy and migrates only the curr
   assert.doesNotMatch(tripPlanStorageSource, /for\s*\([^)]*localStorage|Object\.keys\(localStorage\)/);
 });
 
+test("checklist storage helpers fall back to legacy and migrate only the current plan", () => {
+  assert.match(
+    tripPlanStorageSource,
+    /const legacyKey = buildLegacyKey\(planId\);/
+  );
+  assert.match(
+    tripPlanStorageSource,
+    /if \(legacyResult\.status !== "found" \|\| !userId\)/
+  );
+  assert.match(tripPlanStorageSource, /writeTripPlanChecklistStorageArray\(\{/);
+  assert.match(tripPlanStorageSource, /storage\.removeItem\(legacyKey\);/);
+  assert.doesNotMatch(
+    tripPlanStorageSource,
+    /for\s*\([^)]*localStorage|Object\.keys\(localStorage\)/
+  );
+});
+
+test("checklist storage helper read status distinguishes missing, found, expired, and invalid", () => {
+  assert.match(
+    tripPlanStorageSource,
+    /type TripPlanChecklistStorageReadStatus =[\s\S]*"found"[\s\S]*"missing"[\s\S]*"expired"[\s\S]*"invalid";/
+  );
+  assert.match(tripPlanStorageSource, /export type TripPlanChecklistStorageReadResult<T>/);
+  assert.match(tripPlanStorageSource, /status: "missing"/);
+  assert.match(tripPlanStorageSource, /status: "found"/);
+  assert.match(tripPlanStorageSource, /status: "expired"/);
+  assert.match(tripPlanStorageSource, /status: "invalid"/);
+});
+
 test("current localStorage reads can affect dashboard, hero, and checklist displays", () => {
   assert.match(tripPlanningUiSource, /readStoredCheckedSlots\(planId\)/);
   assert.match(tripPlanningUiSource, /readStoredChecklistOnlyIds\(planId\)/);
@@ -351,7 +450,7 @@ test("current checklist-only state is localStorage-only and requires legacy fall
   assert.match(tripPlanningUiSource, /writeStoredChecklistOnlyIds\(savedPlanId, checklistOnlyIds\)/);
   assert.match(tripPlanningUiSource, /name="checked_slots"/);
   assert.doesNotMatch(tripPlanningUiSource, /name="checklist_only|checklist_only_ids/);
-  assert.doesNotMatch(tripPlanStorageSource, /checklist-only/);
+  assert.match(tripPlanStorageSource, /buildLegacyTripPlanChecklistOnlyStorageKey/);
 });
 
 test("trip planning meta calls can pass user scope without migrating checklist calls", () => {
@@ -360,4 +459,10 @@ test("trip planning meta calls can pass user scope without migrating checklist c
   assert.match(tripPlanningUiSource, /writeTripPlanLocalMeta\([\s\S]*\{ userId \}/);
   assert.match(tripPlanningUiSource, /writeStoredCheckedSlots\(savedPlanId, checkedSlots\)/);
   assert.match(tripPlanningUiSource, /writeStoredChecklistOnlyIds\(savedPlanId, checklistOnlyIds\)/);
+  assert.doesNotMatch(tripPlanningUiSource, /readTripPlanCheckedSlots/);
+  assert.doesNotMatch(tripPlanningUiSource, /readTripPlanChecklistOnlyIds/);
+  assert.doesNotMatch(heroGaugeSource, /readTripPlanCheckedSlots/);
+  assert.doesNotMatch(heroGaugeSource, /readTripPlanChecklistOnlyIds/);
+  assert.doesNotMatch(dashboardChecklistSource, /readTripPlanCheckedSlots/);
+  assert.doesNotMatch(dashboardChecklistSource, /readTripPlanChecklistOnlyIds/);
 });

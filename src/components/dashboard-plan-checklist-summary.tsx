@@ -4,21 +4,25 @@ import { useEffect, useState } from "react";
 
 import {
   applyChecklistStateToChecklist,
-  getCheckedSlotsStorageKey,
-  getChecklistOnlyStorageKey,
   isSupportedChecklistOnlyId,
   isSupportedRequirementSlot,
   type ChecklistCategory,
   type ChecklistView
 } from "@/lib/plan-checklist";
+import {
+  readTripPlanCheckedSlots,
+  readTripPlanChecklistOnlyIds
+} from "@/lib/trip-plan-storage";
 import type { RequirementSlot } from "@/lib/types";
 
 export function DashboardPlanChecklistSummary({
   planId,
+  userId,
   checklist,
   fallbackProgress
 }: {
   planId: string;
+  userId?: string | null;
   checklist: ChecklistView | null;
   fallbackProgress: number;
 }) {
@@ -29,8 +33,11 @@ export function DashboardPlanChecklistSummary({
       return;
     }
 
-    const checkedSlots = readStoredCheckedSlots(planId);
-    const checkedChecklistOnlyIds = readStoredChecklistOnlyIds(planId);
+    const checkedSlots = readStoredCheckedSlots(planId, userId ?? null);
+    const checkedChecklistOnlyIds = readStoredChecklistOnlyIds(
+      planId,
+      userId ?? null
+    );
 
     if (!checkedSlots && !checkedChecklistOnlyIds) {
       setHydratedChecklist(checklist);
@@ -44,7 +51,7 @@ export function DashboardPlanChecklistSummary({
         checkedChecklistOnlyIds
       })
     );
-  }, [checklist, planId]);
+  }, [checklist, planId, userId]);
 
   const progress = hydratedChecklist?.summary.percent ?? fallbackProgress;
   return (
@@ -70,44 +77,30 @@ export function DashboardPlanChecklistSummary({
   );
 }
 
-function readStoredCheckedSlots(planId: string): RequirementSlot[] | undefined {
-  try {
-    const storedValue = window.localStorage.getItem(getCheckedSlotsStorageKey(planId));
+function readStoredCheckedSlots(
+  planId: string,
+  userId: string | null
+): RequirementSlot[] | undefined {
+  const result = readTripPlanCheckedSlots({ userId, planId });
 
-    if (!storedValue) {
-      return undefined;
-    }
-
-    const parsed = JSON.parse(storedValue);
-
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed.filter(isSupportedRequirementSlot);
-  } catch {
-    return [];
+  if (result.status === "missing") {
+    return undefined;
   }
+
+  return result.value.filter(isSupportedRequirementSlot);
 }
 
-function readStoredChecklistOnlyIds(planId: string): string[] | undefined {
-  try {
-    const storedValue = window.localStorage.getItem(getChecklistOnlyStorageKey(planId));
+function readStoredChecklistOnlyIds(
+  planId: string,
+  userId: string | null
+): string[] | undefined {
+  const result = readTripPlanChecklistOnlyIds({ userId, planId });
 
-    if (!storedValue) {
-      return undefined;
-    }
-
-    const parsed = JSON.parse(storedValue);
-
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed.filter(isSupportedChecklistOnlyId);
-  } catch {
-    return [];
+  if (result.status === "missing") {
+    return undefined;
   }
+
+  return result.value.filter(isSupportedChecklistOnlyId);
 }
 
 function PlanCategorySummary({

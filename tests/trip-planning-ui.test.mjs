@@ -412,7 +412,7 @@ test("pack planning checklist fixes first-round readiness issues", () => {
   assert.doesNotMatch(planChecklistSource, /shouldShowGpsDevice/);
   assert.match(planChecklistSource, /label: "保険証"/);
   assert.match(planChecklistSource, /priority: "ESSENTIAL"/);
-  assert.match(dashboardPlanChecklistSummarySource, /getCheckedSlotsStorageKey/);
+  assert.match(dashboardPlanChecklistSummarySource, /readTripPlanCheckedSlots/);
   assert.match(dashboardPlanChecklistSummarySource, /applyChecklistStateToChecklist/);
 });
 

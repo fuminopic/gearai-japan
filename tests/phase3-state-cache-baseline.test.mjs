@@ -128,8 +128,10 @@ test("state, refresh, and cache primitives are visible at their current boundari
 
   assert.match(tripPlanningUiSource, /readTripPlanCheckedSlots/);
   assert.match(tripPlanningUiSource, /writeTripPlanChecklistOnlyIds/);
+  assert.match(heroGaugeSource, /readTripPlanCheckedSlots/);
+  assert.match(dashboardChecklistSource, /readTripPlanChecklistOnlyIds/);
 
-  for (const source of [heroGaugeSource, dashboardChecklistSource, tripPlanStorageSource]) {
+  for (const source of [heroGaugeSource, tripPlanStorageSource]) {
     assert.match(source, /localStorage/);
   }
 

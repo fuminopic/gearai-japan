@@ -163,11 +163,12 @@ test("home hero streams the saved plan checklist gauge without blocking first pa
   assert.match(dashboardSource, /出発前確認へ/);
   assert.match(dashboardSource, /trip\.progress/);
   assert.match(dashboardSource, /trip\.mountain_name/);
+  assert.match(dashboardSource, /userId=\{trip\.user_id\}/);
   assert.match(dashboardSource, /src="\/generic-hills\.jpg"/);
   assert.doesNotMatch(dashboardSource, /getTripMountainImageUrl/);
   assert.doesNotMatch(dashboardSource, /getMountainImageUrl/);
   assert.doesNotMatch(dashboardSource, /getMountainHeroImage/);
-  assert.match(dashboardPlanChecklistSummarySource, /getChecklistOnlyStorageKey/);
+  assert.match(dashboardPlanChecklistSummarySource, /readTripPlanChecklistOnlyIds/);
 });
 
 test("home rebuild follows the requested recent gear image layout", () => {

@@ -4,13 +4,15 @@ import { useEffect, useState } from "react";
 
 import {
   applyChecklistStateToChecklist,
-  getCheckedSlotsStorageKey,
-  getChecklistOnlyStorageKey,
   isSupportedChecklistOnlyId,
   isSupportedRequirementSlot,
   type ChecklistCategoryId,
   type ChecklistView
 } from "@/lib/plan-checklist";
+import {
+  readTripPlanCheckedSlots,
+  readTripPlanChecklistOnlyIds
+} from "@/lib/trip-plan-storage";
 import type { RequirementSlot } from "@/lib/types";
 
 import { HeroCountdown } from "./hero-countdown";
@@ -27,12 +29,14 @@ const HERO_STATUS_ROWS: { id: ChecklistCategoryId; label: string; color: string 
 export function HeroGauge({
   checklist,
   planId,
+  userId,
   fallbackPercent,
   mountainName,
   plannedDate
 }: {
   checklist: ChecklistView | null;
   planId: string;
+  userId?: string | null;
   fallbackPercent: number;
   mountainName: string;
   plannedDate: string | null;
@@ -45,8 +49,11 @@ export function HeroGauge({
       return;
     }
 
-    const checkedSlots = readStoredCheckedSlots(planId);
-    const checkedChecklistOnlyIds = readStoredChecklistOnlyIds(planId);
+    const checkedSlots = readStoredCheckedSlots(planId, userId ?? null);
+    const checkedChecklistOnlyIds = readStoredChecklistOnlyIds(
+      planId,
+      userId ?? null
+    );
 
     if (!checkedSlots && !checkedChecklistOnlyIds) {
       setHydrated(checklist);
@@ -60,7 +67,7 @@ export function HeroGauge({
         checkedChecklistOnlyIds
       })
     );
-  }, [checklist, planId]);
+  }, [checklist, planId, userId]);
 
   // 完成度以持久化的 trip.progress(fallbackPercent)为底线,避免 localStorage / DB checked_slots
   // 丢失时回退;重算值更高时(如后来新增装备)仍取更高。
@@ -189,34 +196,28 @@ export function HeroGauge({
   );
 }
 
-function readStoredCheckedSlots(planId: string): RequirementSlot[] | undefined {
-  try {
-    const storedValue = window.localStorage.getItem(getCheckedSlotsStorageKey(planId));
-    if (!storedValue) {
-      return undefined;
-    }
-    const parsed = JSON.parse(storedValue);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-    return parsed.filter(isSupportedRequirementSlot);
-  } catch {
-    return [];
+function readStoredCheckedSlots(
+  planId: string,
+  userId: string | null
+): RequirementSlot[] | undefined {
+  const result = readTripPlanCheckedSlots({ userId, planId });
+
+  if (result.status === "missing") {
+    return undefined;
   }
+
+  return result.value.filter(isSupportedRequirementSlot);
 }
 
-function readStoredChecklistOnlyIds(planId: string): string[] | undefined {
-  try {
-    const storedValue = window.localStorage.getItem(getChecklistOnlyStorageKey(planId));
-    if (!storedValue) {
-      return undefined;
-    }
-    const parsed = JSON.parse(storedValue);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-    return parsed.filter(isSupportedChecklistOnlyId);
-  } catch {
-    return [];
+function readStoredChecklistOnlyIds(
+  planId: string,
+  userId: string | null
+): string[] | undefined {
+  const result = readTripPlanChecklistOnlyIds({ userId, planId });
+
+  if (result.status === "missing") {
+    return undefined;
   }
+
+  return result.value.filter(isSupportedChecklistOnlyId);
 }

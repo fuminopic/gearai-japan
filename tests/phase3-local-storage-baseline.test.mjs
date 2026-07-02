@@ -412,8 +412,10 @@ test("current localStorage reads can affect dashboard, hero, and checklist displ
     tripPlanningUiSource,
     /readStoredChecklistOnlyIds\(planId, currentPlanUserId\)/
   );
-  assert.match(heroGaugeSource, /window\.localStorage\.getItem/);
-  assert.match(dashboardChecklistSource, /window\.localStorage\.getItem/);
+  assert.match(heroGaugeSource, /readTripPlanCheckedSlots/);
+  assert.match(heroGaugeSource, /readTripPlanChecklistOnlyIds/);
+  assert.match(dashboardChecklistSource, /readTripPlanCheckedSlots/);
+  assert.match(dashboardChecklistSource, /readTripPlanChecklistOnlyIds/);
   assert.match(dashboardPlanMetaSource, /readTripPlanLocalMeta\(planId\)/);
   assert.match(heroCountdownSource, /readTripPlanLocalMeta\(planId\)/);
 });
@@ -433,10 +435,19 @@ test("current checklist storage reads and writes stay in plan, hero, and dashboa
     /writeStoredChecklistOnlyIds\(savedPlanId, checklistOnlyIds, userId\)/
   );
 
-  assert.match(heroGaugeSource, /readStoredCheckedSlots\(planId\)/);
-  assert.match(heroGaugeSource, /readStoredChecklistOnlyIds\(planId\)/);
-  assert.match(dashboardChecklistSource, /readStoredCheckedSlots\(planId\)/);
-  assert.match(dashboardChecklistSource, /readStoredChecklistOnlyIds\(planId\)/);
+  assert.match(heroGaugeSource, /readStoredCheckedSlots\(planId, userId \?\? null\)/);
+  assert.match(
+    heroGaugeSource,
+    /readStoredChecklistOnlyIds\(\s*planId,\s*userId \?\? null\s*\)/
+  );
+  assert.match(
+    dashboardChecklistSource,
+    /readStoredCheckedSlots\(planId, userId \?\? null\)/
+  );
+  assert.match(
+    dashboardChecklistSource,
+    /readStoredChecklistOnlyIds\(\s*planId,\s*userId \?\? null\s*\)/
+  );
 });
 
 test("current checked-slots priority differs between plan page and dashboard hydration", () => {
@@ -509,9 +520,14 @@ test("trip planning page keeps checklist helper reads sanitized for current plan
   );
 });
 
-test("dashboard and hero checklist hydration are not migrated in the plan page step", () => {
-  assert.doesNotMatch(heroGaugeSource, /readTripPlanCheckedSlots/);
-  assert.doesNotMatch(heroGaugeSource, /readTripPlanChecklistOnlyIds/);
-  assert.doesNotMatch(dashboardChecklistSource, /readTripPlanCheckedSlots/);
-  assert.doesNotMatch(dashboardChecklistSource, /readTripPlanChecklistOnlyIds/);
+test("dashboard and hero checklist hydration use scoped helper reads", () => {
+  for (const source of [heroGaugeSource, dashboardChecklistSource]) {
+    assert.match(source, /readTripPlanCheckedSlots\(\{ userId, planId \}\)/);
+    assert.match(source, /readTripPlanChecklistOnlyIds\(\{ userId, planId \}\)/);
+    assert.match(source, /if \(result\.status === "missing"\)/);
+    assert.match(source, /return undefined;/);
+    assert.match(source, /result\.value\.filter\(isSupportedRequirementSlot\)/);
+    assert.match(source, /result\.value\.filter\(isSupportedChecklistOnlyId\)/);
+    assert.match(source, /userId\?: string \| null;/);
+  }
 });

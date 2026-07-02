@@ -214,6 +214,7 @@ async function HeroGaugeAsync({
     <HeroGauge
       checklist={checklist}
       planId={trip.id}
+      userId={trip.user_id}
       fallbackPercent={fallbackPercent}
       mountainName={trip.mountain_name}
       plannedDate={trip.planned_date}

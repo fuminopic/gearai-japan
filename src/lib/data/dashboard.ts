@@ -8,11 +8,23 @@ import type { DashboardRecentGear, DashboardSummary, UserGear } from "@/lib/type
 const DASHBOARD_GEAR_SELECT =
   "id,name,brand,model,image_url,image_storage_path,status,category_id,subcategory_id,weight_grams,weight_type,created_at,gear_categories:category_id(id,name_ja,name_en),gear_subcategories:subcategory_id(id,name_ja,name_en)";
 
-type DashboardGear = DashboardRecentGear &
+type DashboardGearRelationRow = {
+  id: string;
+  name_ja: string;
+  name_en: string;
+};
+type DashboardGearRow = DashboardRecentGear &
   Pick<UserGear, "brand" | "model" | "status" | "weight_type" | "category_id" | "subcategory_id"> & {
     gear_categories?: UserGear["gear_categories"];
     gear_subcategories?: UserGear["gear_subcategories"];
   };
+type SupabaseDashboardGearRow = Omit<
+  DashboardGearRow,
+  "gear_categories" | "gear_subcategories"
+> & {
+  gear_categories?: DashboardGearRelationRow[] | null;
+  gear_subcategories?: DashboardGearRelationRow[] | null;
+};
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
   const gear = await getDashboardGear();
@@ -84,10 +96,12 @@ async function getDashboardGear() {
     throw new Error(error.message);
   }
 
-  return signDashboardGearImageUrls(supabase, data as unknown as DashboardGear[]);
+  const rows = data as SupabaseDashboardGearRow[] as DashboardGearRow[];
+
+  return signDashboardGearImageUrls(supabase, rows);
 }
 
-function toDashboardRecentGear(item: DashboardGear): DashboardRecentGear {
+function toDashboardRecentGear(item: DashboardGearRow): DashboardRecentGear {
   return {
     id: item.id,
     name: item.name,
@@ -99,7 +113,7 @@ function toDashboardRecentGear(item: DashboardGear): DashboardRecentGear {
 
 async function signDashboardGearImageUrls(
   supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
-  gear: DashboardGear[]
+  gear: DashboardGearRow[]
 ) {
   return Promise.all(
     gear.map(async (item) => {
@@ -119,7 +133,7 @@ async function signDashboardGearImageUrls(
   );
 }
 
-function sumWeight(items: DashboardGear[]) {
+function sumWeight(items: DashboardGearRow[]) {
   return items.reduce((total, item) => total + Number(item.weight_grams ?? 0), 0);
 }
 

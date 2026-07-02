@@ -32,6 +32,61 @@ const USER_GEAR_SELECT =
 const USER_GEAR_MATCHING_SELECT =
   "id, user_id, product_id, category_id, subcategory_id, name, brand, model, status, weight_grams, weight_type, created_at, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_products:product_id(id, brand, model, name_ja, category_id, subcategory_id, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en))";
 
+type GearCategoryRow = GearCategory;
+type GearSubcategoryRow = GearSubcategory;
+type GearProductRow = GearProduct;
+type GearCategoryRelationRow = Pick<GearCategory, "id" | "name_ja" | "name_en">;
+type GearSubcategoryRelationRow = Pick<GearSubcategory, "id" | "name_ja" | "name_en">;
+type UserGearProductRelationRow = Pick<
+  GearProduct,
+  | "id"
+  | "brand"
+  | "model"
+  | "name_ja"
+  | "category_id"
+  | "subcategory_id"
+  | "official_url"
+  | "msrp_source_url"
+  | "last_verified_at"
+  | "verification_status"
+> & {
+  gear_categories?: GearCategoryRelationRow | null;
+  gear_subcategories?: GearSubcategoryRelationRow | null;
+};
+type UserGearRow = Omit<
+  UserGear,
+  "gear_categories" | "gear_subcategories" | "gear_products"
+> & {
+  gear_categories?: GearCategoryRelationRow | null;
+  gear_subcategories?: GearSubcategoryRelationRow | null;
+  gear_products?: UserGearProductRelationRow | null;
+};
+type SupabaseUserGearPlanningRow = Pick<
+  UserGear,
+  | "id"
+  | "user_id"
+  | "product_id"
+  | "category_id"
+  | "subcategory_id"
+  | "name"
+  | "brand"
+  | "model"
+  | "status"
+  | "weight_grams"
+  | "weight_type"
+  | "created_at"
+> & {
+  gear_categories?: GearCategoryRelationRow[] | null;
+  gear_subcategories?: GearSubcategoryRelationRow[] | null;
+  gear_products?: Array<
+    Pick<GearProduct, "id" | "brand" | "model" | "name_ja" | "category_id" | "subcategory_id"> & {
+      gear_categories?: GearCategoryRelationRow[] | null;
+      gear_subcategories?: GearSubcategoryRelationRow[] | null;
+    }
+  > | null;
+};
+type UserGearPlanningRow = UserGear;
+
 export const requireUser = cache(async function requireUser() {
   const supabase = await createClient();
   const {
@@ -57,7 +112,7 @@ export const getGearCategories = cache(async function getGearCategories() {
     throw new Error(error.message);
   }
 
-  return data as GearCategory[];
+  return data as GearCategoryRow[];
 });
 
 export const getGearSubcategories = cache(async function getGearSubcategories() {
@@ -71,7 +126,7 @@ export const getGearSubcategories = cache(async function getGearSubcategories() 
     throw new Error(error.message);
   }
 
-  return data as GearSubcategory[];
+  return data as GearSubcategoryRow[];
 });
 
 export const getGearProducts = cache(async function getGearProducts() {
@@ -89,7 +144,7 @@ export const getGearProducts = cache(async function getGearProducts() {
     throw new Error(error.message);
   }
 
-  return data as GearProduct[];
+  return data as GearProductRow[];
 });
 
 export async function getUserGear(filters: GearFilters = {}) {
@@ -132,7 +187,8 @@ export async function getUserGear(filters: GearFilters = {}) {
     throw new Error(error.message);
   }
 
-  const signedGear = await signGearImageUrls(supabase, data as unknown as UserGear[]);
+  const rows = data as UserGearRow[];
+  const signedGear = await signGearImageUrls(supabase, rows);
 
   if (filters.category && isRetailGearCategoryId(filters.category)) {
     return signedGear.filter((item) => getRetailGearCategory(item)?.id === filters.category);
@@ -176,7 +232,7 @@ export const getOwnedGearForPlanning = cache(async function getOwnedGearForPlann
     throw new Error(error.message);
   }
 
-  return data as unknown as UserGear[];
+  return data as SupabaseUserGearPlanningRow[] as UserGearPlanningRow[];
 });
 
 export async function getUserGearById(id: string) {
@@ -192,7 +248,7 @@ export async function getUserGearById(id: string) {
     throw new Error(error.message);
   }
 
-  return (await signGearImageUrls(supabase, [data as UserGear]))[0];
+  return (await signGearImageUrls(supabase, [data as UserGearRow]))[0];
 }
 
 async function signGearImageUrls(

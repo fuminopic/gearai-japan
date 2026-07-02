@@ -104,7 +104,7 @@ export const getGearCategories = cache(async function getGearCategories() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("gear_categories")
-    .select("*")
+    .select("id, name_ja, name_en, sort_order, is_default, created_at")
     .in("name_en", PRODUCT_CATEGORY_KEYS)
     .order("sort_order", { ascending: true });
 
@@ -119,7 +119,7 @@ export const getGearSubcategories = cache(async function getGearSubcategories() 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("gear_subcategories")
-    .select("*")
+    .select("id, category_id, name_ja, name_en, sort_order, created_at")
     .order("sort_order", { ascending: true });
 
   if (error) {

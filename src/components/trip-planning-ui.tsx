@@ -65,8 +65,6 @@ import {
   buildPreDepartureSummary,
   calculateChecklistProgress,
   checklistPriorityLabels,
-  getChecklistOnlyStorageKey,
-  getCheckedSlotsStorageKey,
   getPreDepartureItemActionStatus,
   isImportantPreDepartureItem,
   isSupportedChecklistOnlyId,
@@ -83,6 +81,14 @@ import {
   readTripPlanLocalMeta,
   writeTripPlanLocalMeta
 } from "@/lib/trip-plan-local-meta";
+import {
+  readTripPlanCheckedSlots,
+  readTripPlanChecklistOnlyIds,
+  removeTripPlanCheckedSlots,
+  removeTripPlanChecklistOnlyIds,
+  writeTripPlanCheckedSlots,
+  writeTripPlanChecklistOnlyIds
+} from "@/lib/trip-plan-storage";
 import type {
   GearMatchingOwnedGearMatch,
   GearMatchingResult,
@@ -233,9 +239,13 @@ export function TripPlanningUI({
     setInteractiveProgress(null);
     setInteractiveCheckedSlots(null);
     setInteractiveChecklistOnlyIds(null);
-    setStoredCheckedSlots(planId ? readStoredCheckedSlots(planId) : []);
-    setStoredChecklistOnlyIds(planId ? readStoredChecklistOnlyIds(planId) : []);
-  }, [planId, planStateKey]);
+    setStoredCheckedSlots(
+      planId ? readStoredCheckedSlots(planId, currentPlanUserId) : []
+    );
+    setStoredChecklistOnlyIds(
+      planId ? readStoredChecklistOnlyIds(planId, currentPlanUserId) : []
+    );
+  }, [currentPlanUserId, planId, planStateKey]);
 
   useEffect(() => {
     setPlanDetailsDraft({
@@ -481,6 +491,7 @@ export function TripPlanningUI({
               onCheckedSlotsChange={setInteractiveCheckedSlots}
               onChecklistOnlyIdsChange={setInteractiveChecklistOnlyIds}
               planId={planId}
+              userId={currentPlanUserId}
             />
           </div>
           {selectedMountain ? (
@@ -800,8 +811,8 @@ function SavePlanButton({
       const savedPlanId = result?.id ?? planId;
 
       if (savedPlanId) {
-        writeStoredCheckedSlots(savedPlanId, checkedSlots);
-        writeStoredChecklistOnlyIds(savedPlanId, checklistOnlyIds);
+        writeStoredCheckedSlots(savedPlanId, checkedSlots, userId);
+        writeStoredChecklistOnlyIds(savedPlanId, checklistOnlyIds, userId);
         writeTripPlanLocalMeta(savedPlanId, {
           plannedDate,
           plannedEndDate,
@@ -1058,85 +1069,40 @@ function getSavedPlanCheckedSlots(plan: SavedTripPlan | null) {
   return uniqueRequirementSlots(plan.checked_slots);
 }
 
-function readStoredCheckedSlots(planId: string) {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const storedValue = window.localStorage.getItem(getCheckedSlotsStorageKey(planId));
-
-    if (!storedValue) {
-      return [];
-    }
-
-    const parsed = JSON.parse(storedValue);
-
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return uniqueRequirementSlots(parsed);
-  } catch {
-    return [];
-  }
+function readStoredCheckedSlots(planId: string, userId: string | null) {
+  return uniqueRequirementSlots(readTripPlanCheckedSlots({ userId, planId }).value);
 }
 
-function writeStoredCheckedSlots(planId: string, checkedSlots: RequirementSlot[]) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  const storageKey = getCheckedSlotsStorageKey(planId);
-
+function writeStoredCheckedSlots(
+  planId: string,
+  checkedSlots: RequirementSlot[],
+  userId: string | null
+) {
   if (checkedSlots.length === 0) {
-    window.localStorage.removeItem(storageKey);
+    removeTripPlanCheckedSlots({ userId, planId });
     return;
   }
 
-  window.localStorage.setItem(storageKey, JSON.stringify(checkedSlots));
+  writeTripPlanCheckedSlots({ userId, planId, value: checkedSlots });
 }
 
-function readStoredChecklistOnlyIds(planId: string) {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const storedValue = window.localStorage.getItem(getChecklistOnlyStorageKey(planId));
-
-    if (!storedValue) {
-      return [];
-    }
-
-    const parsed = JSON.parse(storedValue);
-
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return uniqueChecklistOnlyIds(parsed);
-  } catch {
-    return [];
-  }
-}
-
-function writeStoredChecklistOnlyIds(planId: string, checklistOnlyIds: string[]) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  const storageKey = getChecklistOnlyStorageKey(planId);
-
-  if (checklistOnlyIds.length === 0) {
-    window.localStorage.removeItem(storageKey);
-    return;
-  }
-
-  window.localStorage.setItem(
-    storageKey,
-    JSON.stringify(uniqueChecklistOnlyIds(checklistOnlyIds))
+function readStoredChecklistOnlyIds(planId: string, userId: string | null) {
+  return uniqueChecklistOnlyIds(
+    readTripPlanChecklistOnlyIds({ userId, planId }).value
   );
+}
+
+function writeStoredChecklistOnlyIds(
+  planId: string,
+  checklistOnlyIds: string[],
+  userId: string | null
+) {
+  if (checklistOnlyIds.length === 0) {
+    removeTripPlanChecklistOnlyIds({ userId, planId });
+    return;
+  }
+
+  writeTripPlanChecklistOnlyIds({ userId, planId, value: checklistOnlyIds });
 }
 
 function TripPlanningResult({
@@ -1147,6 +1113,7 @@ function TripPlanningResult({
   plannedEndDate,
   isSavedPlanDetail,
   planId,
+  userId,
   initialCheckedSlots = emptyCheckedSlots,
   initialChecklistOnlyIds = emptyChecklistOnlyIds,
   onProgressChange,
@@ -1160,6 +1127,7 @@ function TripPlanningResult({
   plannedEndDate: string;
   isSavedPlanDetail: boolean;
   planId: string | null;
+  userId: string | null;
   initialCheckedSlots?: RequirementSlot[];
   initialChecklistOnlyIds?: string[];
   onProgressChange?: (progress: number) => void;
@@ -1235,7 +1203,7 @@ function TripPlanningResult({
       const nextCheckedSlots = filterCheckedSlotsForPlan(Array.from(nextSlots), plan);
 
       if (planId) {
-        writeStoredCheckedSlots(planId, nextCheckedSlots);
+        writeStoredCheckedSlots(planId, nextCheckedSlots, userId);
       }
 
       onCheckedSlotsChange?.(nextCheckedSlots);
@@ -1257,7 +1225,7 @@ function TripPlanningResult({
       const nextChecklistOnlyIds = uniqueChecklistOnlyIds(Array.from(nextIds));
 
       if (planId) {
-        writeStoredChecklistOnlyIds(planId, nextChecklistOnlyIds);
+        writeStoredChecklistOnlyIds(planId, nextChecklistOnlyIds, userId);
       }
 
       onChecklistOnlyIdsChange?.(nextChecklistOnlyIds);

@@ -126,12 +126,10 @@ test("state, refresh, and cache primitives are visible at their current boundari
   assert.match(gearDataSource, /cache\(async function getGearProducts/);
   assert.match(mountainFoundationDataSource, /cache\(/);
 
-  for (const source of [
-    tripPlanningUiSource,
-    heroGaugeSource,
-    dashboardChecklistSource,
-    tripPlanStorageSource
-  ]) {
+  assert.match(tripPlanningUiSource, /readTripPlanCheckedSlots/);
+  assert.match(tripPlanningUiSource, /writeTripPlanChecklistOnlyIds/);
+
+  for (const source of [heroGaugeSource, dashboardChecklistSource, tripPlanStorageSource]) {
     assert.match(source, /localStorage/);
   }
 

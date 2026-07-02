@@ -74,8 +74,8 @@ test("home rebuild exposes a master state component for the four home states", (
   assert.match(dashboardSource, /hasTrip: boolean/);
   assert.match(dashboardSource, /hasGear: boolean/);
   assert.match(dashboardSource, /<HeroCard hasTrip={hasTrip} trip={trip}/);
-  assert.match(dashboardSource, /<main className="home-redesign min-h-screen bg-\[#FAFAFA\] pb-32/);
-  assert.match(dashboardSource, /<div className="mt-6 space-y-6 px-4">/);
+  assert.match(dashboardSource, /<main className="home-redesign min-h-screen bg-\[#E5EBE9\] pb-32/);
+  assert.match(dashboardSource, /<div className="relative z-20 -mt-\[107px\] space-y-\[11px\] px-4">/);
 });
 
 test("home redesign v2 uses shared bottom navigation", () => {
@@ -83,15 +83,15 @@ test("home redesign v2 uses shared bottom navigation", () => {
   assert.match(appBottomNavSource, /usePathname/);
   assert.match(
     appBottomNavSource,
-    /fixed inset-x-6 bottom-8 z-50 bg-white\/25 backdrop-blur-\[24px\] border border-white\/50 shadow-\[0_20px_40px_rgba\(0,0,0,0\.1\)\] rounded-full px-6 py-2\.5 flex justify-between items-center/
+    /fixed inset-x-6 bottom-8 z-50 overflow-hidden rounded-full border border-white\/40 px-2 py-2 shadow-\[0_20px_40px_rgba\(0,0,0,0\.1\)\] backdrop-blur-2xl/
   );
   assert.match(appBottomNavSource, /rounded-full/);
-  assert.match(appBottomNavSource, /px-6/);
-  assert.match(appBottomNavSource, /py-2\.5/);
-  assert.match(appBottomNavSource, /transition-all duration-150 ease-out/);
+  assert.match(appBottomNavSource, /px-2/);
+  assert.match(appBottomNavSource, /py-2/);
+  assert.match(appBottomNavSource, /transition-colors duration-200/);
   assert.match(appBottomNavSource, /touch-manipulation/);
   assert.match(appBottomNavSource, /prefetch/);
-  assert.match(appBottomNavSource, /scale-110 text-\[#14724e\]/);
+  assert.match(appBottomNavSource, /active:scale-95/);
   assert.match(appBottomNavSource, /text-\[#14724e\]/);
   assert.match(appBottomNavSource, /text-gray-400/);
   assert.match(appBottomNavSource, /h-5 w-5/);
@@ -119,16 +119,18 @@ test("home redesign uses the requested YAMAJITAKU header and trip states", () =>
   ]) {
     assert.match(dashboardSource, new RegExp(copy));
   }
-  assert.match(dashboardSource, /AppLogo/);
+  assert.match(dashboardSource, /yamajitaku-wordmark-white\.png/);
+  assert.match(dashboardSource, /alt="山支度 YAMAJITAKU"/);
   assert.match(appNavSource, /AppLogo/);
   assert.match(appLogoSource, /\/yamajitaku-logo\.png/);
   assert.match(appLogoSource, /alt="山支度 YAMAJITAKU"/);
 });
 
 test("home redesign v2 removes hero secondary actions and replaces bell with menu", () => {
-  assert.match(dashboardSource, /sticky top-0 z-50/);
+  assert.match(dashboardSource, /relative z-10 flex w-full items-start justify-between bg-gradient-to-br/);
   assert.match(dashboardSource, /pt-\[max\(env\(safe-area-inset-top\),20px\)\]/);
   assert.match(dashboardSource, /AppMenuDrawer/);
+  assert.match(dashboardSource, /yamajitaku-wordmark-white\.png/);
   assert.doesNotMatch(dashboardSource, /M4 6h16M4 12h16M4 18h16/);
   assert.doesNotMatch(dashboardSource, /Bell/);
   assert.doesNotMatch(dashboardSource, /<details/);
@@ -142,50 +144,38 @@ test("home background fills the iOS safe area during scroll", () => {
   assert.match(rootLayoutSource, /themeColor: "#FAFAFA"/);
   assert.match(globalsSource, /html \{[\s\S]*background: #fafafa;/);
   assert.match(globalsSource, /body \{[\s\S]*background: #fafafa;/);
-  assert.match(globalsSource, /body:has\(main\.home-redesign\)::before/);
-  assert.match(globalsSource, /height: env\(safe-area-inset-top\);/);
-  assert.match(globalsSource, /position: fixed;/);
-  assert.match(globalsSource, /z-index: 60;/);
+  assert.match(globalsSource, /body:has\(main\.home-redesign\) \{[\s\S]*background: #e5ebe9;/);
+  assert.match(dashboardSource, /style=\{\{ minHeight: "calc\(max\(env\(safe-area-inset-top\), 20px\) \+ 206px\)" \}\}/);
+  assert.doesNotMatch(globalsSource, /body:has\(main\.home-redesign\)::before/);
 });
 
-test("home hero shows the saved plan checklist summary over the static hills background", () => {
-  assert.match(dashboardSource, /relative min-h-\[252px\] w-full overflow-hidden rounded-\[28px\]/);
-  assert.match(dashboardSource, /absolute inset-0 z-0/);
-  assert.match(dashboardSource, /src="\/generic-hills\.jpg"/);
-  assert.match(dashboardSource, /object-cover object-bottom opacity-80/);
-  assert.match(dashboardSource, /absolute inset-0 z-10 bg-gradient-to-t from-\[#E8F0E8\]\/40 via-white\/90 to-white/);
-  assert.match(dashboardSource, /relative z-20 flex min-h-\[252px\] flex-col justify-between gap-3 p-5/);
-  assert.match(dashboardSource, /font-maru text-\[45px\]/);
-  assert.match(dashboardSource, /tracking-\[0\.04em\]/);
-  assert.match(dashboardSource, /bg-\[#14724e\]/);
-  assert.match(dashboardSource, /w-\[184px\].*rounded-2xl.*bg-\[#14724e\]/s);
-  assert.match(dashboardSource, /DashboardPlanChecklistSummary/);
+test("home hero streams the saved plan checklist gauge without blocking first paint", () => {
+  assert.match(dashboardSource, /rounded-\[20px\] bg-white px-5 pt-5 pb-3 shadow-sm/);
+  assert.match(dashboardSource, /Suspense fallback=\{<HeroGaugeSkeleton/);
+  assert.match(dashboardSource, /HeroGaugeAsync/);
+  assert.match(dashboardSource, /HeroGauge/);
   assert.match(dashboardSource, /getPackRequirementPlan/);
   assert.match(dashboardSource, /buildPlanChecklist/);
-  assert.match(dashboardPlanChecklistSummarySource, /getChecklistOnlyStorageKey/);
-  assert.match(dashboardPlanChecklistSummarySource, /getCheckedSlotsStorageKey/);
-  assert.match(dashboardPlanChecklistSummarySource, /applyChecklistStateToChecklist/);
-  assert.match(dashboardPlanChecklistSummarySource, /PlanCategorySummary/);
-  assert.doesNotMatch(dashboardPlanChecklistSummarySource, /buildPreDepartureSummary/);
-  assert.doesNotMatch(dashboardPlanChecklistSummarySource, /重要確認/);
-  assert.match(dashboardPlanChecklistSummarySource, /category\.progress\.percent/);
+  assert.match(dashboardSource, /fallbackPercent/);
+  assert.match(dashboardSource, /trip\.checked_slots/);
   assert.match(dashboardSource, /`\/plan\?id=\$\{trip\.id\}`/);
   assert.doesNotMatch(dashboardSource, /focus=predeparture/);
   assert.match(dashboardSource, /出発前確認へ/);
   assert.match(dashboardSource, /trip\.progress/);
   assert.match(dashboardSource, /trip\.mountain_name/);
+  assert.match(dashboardSource, /src="\/generic-hills\.jpg"/);
   assert.doesNotMatch(dashboardSource, /getTripMountainImageUrl/);
   assert.doesNotMatch(dashboardSource, /getMountainImageUrl/);
   assert.doesNotMatch(dashboardSource, /getMountainHeroImage/);
+  assert.match(dashboardPlanChecklistSummarySource, /getChecklistOnlyStorageKey/);
 });
 
 test("home rebuild follows the requested recent gear image layout", () => {
-  assert.match(dashboardSource, /<section>\s*<div className="mb-4 flex items-center justify-between">/);
-  assert.match(dashboardSource, /hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4/);
-  assert.match(dashboardSource, /w-\[100px\] flex-none snap-start flex-col/);
-  assert.match(dashboardSource, /aspect-square w-full.*rounded-2xl.*border border-gray-100 bg-white p-3 shadow-sm/s);
-  assert.match(dashboardSource, /truncate text-xs font-bold text-gray-800/);
-  assert.match(dashboardSource, /text-\[10px\] font-medium text-gray-400/);
+  assert.match(dashboardSource, /hide-scrollbar flex snap-x snap-mandatory gap-\[11px\] overflow-x-auto pb-4/);
+  assert.match(dashboardSource, /h-\[150px\] w-\[126px\] flex-none snap-start/);
+  assert.match(dashboardSource, /rounded-2xl bg-white px-3 pt-\[17px\] pb-\[52px\] shadow-sm/);
+  assert.match(dashboardSource, /bottom-\[27px\] truncate text-center text-\[12px\] font-bold/);
+  assert.match(dashboardSource, /bottom-\[14px\] text-center font-din text-\[11px\]/);
   assert.match(dashboardSource, /object-contain/);
   assert.doesNotMatch(dashboardSource, /relativeAddedDate/);
   assert.doesNotMatch(dashboardSource, /日前/);
@@ -198,7 +188,7 @@ test("home gear summary uses the retail category composition bar", () => {
   assert.match(dashboardSource, /MAJOR_GEAR_CATEGORIES/);
   assert.match(dashboardSource, /装備構成/);
   assert.match(dashboardSource, /flex h-3 overflow-hidden rounded-full bg-stone-100/);
-  assert.match(dashboardSource, /grid grid-cols-2 gap-x-4 gap-y-2/);
+  assert.match(dashboardSource, /grid grid-cols-3 gap-x-4 gap-y-3/);
   assert.match(dashboardSource, /MAJOR_GEAR_CATEGORIES\.map/);
   assert.doesNotMatch(dashboardSource, /topCategories/);
   assert.doesNotMatch(dashboardSource, /CategoryDistribution/);
@@ -263,14 +253,11 @@ test("home hero can display saved trip date and memo without price information",
   assert.match(dashboardSource, /plannedEndDate=\{trip\.planned_end_date\}/);
   assert.match(dashboardSource, /tripMemo=\{trip\.trip_memo\}/);
   assert.match(dashboardSource, /style=\{trip\.style\}/);
-  assert.match(dashboardSource, /variant="memo"/);
   assert.match(dashboardPlanMetaSource, /readTripPlanLocalMeta/);
   assert.match(dashboardPlanMetaSource, /plannedEndDate\?: string \| null/);
   assert.match(dashboardPlanMetaSource, /localMeta\?\.plannedEndDate/);
   assert.match(dashboardPlanMetaSource, /formatPlanDate\(displayDate, displayEndDate, style\)/);
   assert.match(dashboardPlanMetaSource, /function PlanDatePart/);
-  assert.match(dashboardSource, /items-end gap-x-4 gap-y-3/);
-  assert.match(dashboardSource, /pb-1 font-maru/);
   assert.match(dashboardSource, /flex items-end gap-2 overflow-hidden/);
   assert.match(dashboardPlanMetaSource, /text-\[18px\]/);
   assert.match(dashboardPlanMetaSource, /h-\[18px\] w-\[18px\]/);
@@ -285,7 +272,8 @@ test("home typography and green palette follow the latest visual direction", () 
   assert.match(tailwindConfigSource, /fontFamily/);
   assert.match(tailwindConfigSource, /maru/);
   assert.match(dashboardSource, /font-sans text-\[#14724e\]/);
-  assert.match(dashboardSource, /font-maru/);
+  assert.match(dashboardSource, /font-din/);
+  assert.match(dashboardSource, /from-\[#1F7950\] to-\[#81AB44\]/);
   assert.doesNotMatch(dashboardSource, /#3B5B44|#3A5A40/);
   assert.doesNotMatch(appBottomNavSource, /#3B5B44|#3A5A40/);
   assert.doesNotMatch(dashboardPlanChecklistSummarySource, /#3B5B44|#3A5A40/);

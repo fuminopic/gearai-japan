@@ -661,7 +661,8 @@ test("user-facing branding uses YAMAJITAKU hierarchy", () => {
   }
 
   assert.match(appNavSource, /AppLogo/);
-  assert.match(dashboardPageSource, /AppLogo/);
+  assert.match(dashboardPageSource, /yamajitaku-wordmark-white\.png/);
+  assert.match(dashboardPageSource, /alt="山支度 YAMAJITAKU"/);
   assert.match(appLogoSource, /\/yamajitaku-logo\.png/);
   assert.match(rootLayoutSource, /openGraph/);
   assert.match(rootLayoutSource, /siteName: "山支度"/);

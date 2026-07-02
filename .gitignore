@@ -13,4 +13,5 @@ coverage
 supabase/.temp
 tmp/
 build/
+XcodeDerivedData/
 *.patch

@@ -1,0 +1,18 @@
+export type {
+  GearActionResult,
+  GearCategory,
+  GearCompatibilityRule,
+  GearCompatibilityTarget,
+  GearFilters,
+  GearMatchingConfidence,
+  GearMatchingDatabaseGearMatch,
+  GearMatchingInput,
+  GearMatchingOwnedGearMatch,
+  GearMatchingResult,
+  GearProduct,
+  GearStatus,
+  GearSubcategory,
+  UserGear,
+  VerificationStatus,
+  WeightType,
+} from "../types";

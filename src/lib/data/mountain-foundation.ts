@@ -3,6 +3,8 @@ import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { MountainFoundationProfile } from "@/lib/types";
 
+type MountainFoundationFallbackRow = Partial<MountainFoundationProfile>;
+
 const MOUNTAIN_FOUNDATION_BASE_COLUMNS = [
   "slug",
   "name_ja",
@@ -266,16 +268,14 @@ export const getMountainFoundationProfiles = cache(
           throw new Error(coreFallbackError.message);
         }
 
-        return ((coreFallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
-          .map(withMountainFoundationDefaults);
+        return withMountainFoundationDefaultsForRows(coreFallbackData);
       }
 
       if (fallbackError) {
         throw new Error(fallbackError.message);
       }
 
-      return ((fallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
-        .map(withMountainFoundationDefaults);
+      return withMountainFoundationDefaultsForRows(fallbackData);
     }
 
     if (error && isMissingMountainFoundationSupplementaryColumnError(error)) {
@@ -294,16 +294,14 @@ export const getMountainFoundationProfiles = cache(
           throw new Error(legacyFallbackError.message);
         }
 
-        return ((legacyFallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
-          .map(withMountainFoundationDefaults);
+        return withMountainFoundationDefaultsForRows(legacyFallbackData);
       }
 
       if (fallbackError) {
         throw new Error(fallbackError.message);
       }
 
-      return ((fallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
-        .map(withMountainFoundationDefaults);
+      return withMountainFoundationDefaultsForRows(fallbackData);
     }
 
     if (error && isMissingMountainFoundationV21ColumnError(error)) {
@@ -322,8 +320,7 @@ export const getMountainFoundationProfiles = cache(
           throw new Error(legacyFallbackError.message);
         }
 
-        return ((legacyFallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
-          .map(withMountainFoundationDefaults);
+        return withMountainFoundationDefaultsForRows(legacyFallbackData);
       }
 
       if (fallbackError && isMissingMountainFoundationV2ColumnError(fallbackError)) {
@@ -342,24 +339,21 @@ export const getMountainFoundationProfiles = cache(
             throw new Error(legacyBaseError.message);
           }
 
-          return ((legacyBaseData ?? []) as unknown as Partial<MountainFoundationProfile>[])
-            .map(withMountainFoundationDefaults);
+          return withMountainFoundationDefaultsForRows(legacyBaseData);
         }
 
         if (baseFallbackError) {
           throw new Error(baseFallbackError.message);
         }
 
-        return ((baseFallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
-          .map(withMountainFoundationDefaults);
+        return withMountainFoundationDefaultsForRows(baseFallbackData);
       }
 
       if (fallbackError) {
         throw new Error(fallbackError.message);
       }
 
-      return ((fallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
-        .map(withMountainFoundationDefaults);
+      return withMountainFoundationDefaultsForRows(fallbackData);
     }
 
     if (error && isMissingMountainFoundationV2ColumnError(error)) {
@@ -378,16 +372,14 @@ export const getMountainFoundationProfiles = cache(
           throw new Error(legacyFallbackError.message);
         }
 
-        return ((legacyFallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
-          .map(withMountainFoundationDefaults);
+        return withMountainFoundationDefaultsForRows(legacyFallbackData);
       }
 
       if (fallbackError) {
         throw new Error(fallbackError.message);
       }
 
-      return ((fallbackData ?? []) as unknown as Partial<MountainFoundationProfile>[])
-        .map(withMountainFoundationDefaults);
+      return withMountainFoundationDefaultsForRows(fallbackData);
     }
 
     if (error) {
@@ -426,22 +418,14 @@ export const getMountainFoundationProfileBySlug = cache(
           throw new Error(coreFallbackError.message);
         }
 
-        return coreFallbackData
-          ? withMountainFoundationDefaults(
-              coreFallbackData as unknown as Partial<MountainFoundationProfile>
-            )
-          : null;
+        return withMountainFoundationDefaultsForNullableRow(coreFallbackData);
       }
 
       if (fallbackError) {
         throw new Error(fallbackError.message);
       }
 
-      return fallbackData
-        ? withMountainFoundationDefaults(
-            fallbackData as unknown as Partial<MountainFoundationProfile>
-          )
-        : null;
+      return withMountainFoundationDefaultsForNullableRow(fallbackData);
     }
 
     if (error && isMissingMountainFoundationSupplementaryColumnError(error)) {
@@ -462,22 +446,14 @@ export const getMountainFoundationProfileBySlug = cache(
           throw new Error(legacyFallbackError.message);
         }
 
-        return legacyFallbackData
-          ? withMountainFoundationDefaults(
-              legacyFallbackData as unknown as Partial<MountainFoundationProfile>
-            )
-          : null;
+        return withMountainFoundationDefaultsForNullableRow(legacyFallbackData);
       }
 
       if (fallbackError) {
         throw new Error(fallbackError.message);
       }
 
-      return fallbackData
-        ? withMountainFoundationDefaults(
-            fallbackData as unknown as Partial<MountainFoundationProfile>
-          )
-        : null;
+      return withMountainFoundationDefaultsForNullableRow(fallbackData);
     }
 
     if (error && isMissingMountainFoundationV21ColumnError(error)) {
@@ -498,11 +474,7 @@ export const getMountainFoundationProfileBySlug = cache(
           throw new Error(legacyFallbackError.message);
         }
 
-        return legacyFallbackData
-          ? withMountainFoundationDefaults(
-              legacyFallbackData as unknown as Partial<MountainFoundationProfile>
-            )
-          : null;
+        return withMountainFoundationDefaultsForNullableRow(legacyFallbackData);
       }
 
       if (fallbackError && isMissingMountainFoundationV2ColumnError(fallbackError)) {
@@ -523,33 +495,21 @@ export const getMountainFoundationProfileBySlug = cache(
             throw new Error(legacyBaseError.message);
           }
 
-          return legacyBaseData
-            ? withMountainFoundationDefaults(
-                legacyBaseData as unknown as Partial<MountainFoundationProfile>
-              )
-            : null;
+          return withMountainFoundationDefaultsForNullableRow(legacyBaseData);
         }
 
         if (baseFallbackError) {
           throw new Error(baseFallbackError.message);
         }
 
-        return baseFallbackData
-          ? withMountainFoundationDefaults(
-              baseFallbackData as unknown as Partial<MountainFoundationProfile>
-            )
-          : null;
+        return withMountainFoundationDefaultsForNullableRow(baseFallbackData);
       }
 
       if (fallbackError) {
         throw new Error(fallbackError.message);
       }
 
-      return fallbackData
-        ? withMountainFoundationDefaults(
-            fallbackData as unknown as Partial<MountainFoundationProfile>
-          )
-        : null;
+      return withMountainFoundationDefaultsForNullableRow(fallbackData);
     }
 
     if (error && isMissingMountainFoundationV2ColumnError(error)) {
@@ -570,22 +530,14 @@ export const getMountainFoundationProfileBySlug = cache(
           throw new Error(legacyFallbackError.message);
         }
 
-        return legacyFallbackData
-          ? withMountainFoundationDefaults(
-              legacyFallbackData as unknown as Partial<MountainFoundationProfile>
-            )
-          : null;
+        return withMountainFoundationDefaultsForNullableRow(legacyFallbackData);
       }
 
       if (fallbackError) {
         throw new Error(fallbackError.message);
       }
 
-      return fallbackData
-        ? withMountainFoundationDefaults(
-            fallbackData as unknown as Partial<MountainFoundationProfile>
-          )
-        : null;
+      return withMountainFoundationDefaultsForNullableRow(fallbackData);
     }
 
     if (error) {
@@ -595,6 +547,22 @@ export const getMountainFoundationProfileBySlug = cache(
     return data ? withMountainFoundationDefaults(data) : null;
   }
 );
+
+function withMountainFoundationDefaultsForRows(
+  rows: unknown[] | null | undefined
+) {
+  return ((rows ?? []) as MountainFoundationFallbackRow[]).map(
+    withMountainFoundationDefaults
+  );
+}
+
+function withMountainFoundationDefaultsForNullableRow(
+  row: unknown | null
+) {
+  return row
+    ? withMountainFoundationDefaults(row as MountainFoundationFallbackRow)
+    : null;
+}
 
 function withMountainFoundationDefaults(
   profile: Partial<MountainFoundationProfile>

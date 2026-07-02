@@ -7,6 +7,7 @@ const appLoadingSource = readSource("app/(app)/loading.tsx");
 const gearPageSource = readSource("app/(app)/gear/page.tsx");
 const gearListSource = readSource("src/components/gear-list.tsx");
 const gearFormSource = readSource("src/components/gear-form.tsx");
+const statCardSource = readSource("src/components/stat-card.tsx");
 const tripPlanningUiSource = readSource("src/components/trip-planning-ui.tsx");
 const tripPlanningFormSource = readSource("src/components/trip-planning-form.tsx");
 const planChecklistSource = readSource("src/lib/plan-checklist.ts");
@@ -14,6 +15,13 @@ const authFormSource = readSource("src/components/auth-form.tsx");
 const recommendationHistoryListSource = readSource(
   "src/components/recommendation-history-list.tsx"
 );
+const uiButtonSource = readSource("src/components/ui/button.tsx");
+const uiCardSource = readSource("src/components/ui/card.tsx");
+const uiNoticeSource = readSource("src/components/ui/notice.tsx");
+const uiEmptyStateSource = readSource("src/components/ui/empty-state.tsx");
+const uiLoadingBlockSource = readSource("src/components/ui/loading-block.tsx");
+const uiBadgeSource = readSource("src/components/ui/badge.tsx");
+const uiIndexSource = readSource("src/components/ui/index.ts");
 
 function readSource(relativePath) {
   return readFileSync(new URL(`../${relativePath}`, import.meta.url), "utf8");
@@ -58,7 +66,53 @@ test("dashboard component baseline keeps the current hero, checklist, and gear s
   }
 
   assert.match(appLoadingSource, /AppLoadingFallback/);
-  assert.match(appLoadingSource, /animate-spin/);
+  assert.match(appLoadingSource, /LoadingBlock/);
+  assert.match(uiLoadingBlockSource, /animate-spin/);
+});
+
+test("shared ui primitives exist and keep className passthrough", () => {
+  const primitiveSources = [
+    ["Button", uiButtonSource],
+    ["Card", uiCardSource],
+    ["Notice", uiNoticeSource],
+    ["EmptyState", uiEmptyStateSource],
+    ["LoadingBlock", uiLoadingBlockSource],
+    ["Badge", uiBadgeSource]
+  ];
+
+  for (const [componentName, source] of primitiveSources) {
+    assert.match(source, new RegExp(`export function ${componentName}\\b`));
+    assert.match(source, /\bclassName\b/);
+    assert.match(source, /\bcn\(/);
+  }
+
+  assert.match(uiButtonSource, /ComponentPropsWithoutRef<"button">/);
+  assert.match(uiCardSource, /ComponentPropsWithoutRef<"section">/);
+  assert.match(uiNoticeSource, /ComponentPropsWithoutRef<"p">/);
+  assert.match(uiEmptyStateSource, /title: ReactNode/);
+  assert.match(uiLoadingBlockSource, /spinnerClassName/);
+  assert.match(uiBadgeSource, /ComponentPropsWithoutRef<"span">/);
+
+  for (const exportName of ["Badge", "Button", "Card", "EmptyState", "LoadingBlock", "Notice"]) {
+    assert.match(uiIndexSource, new RegExp(`export \\{ ${exportName} \\}`));
+  }
+});
+
+test("shared ui primitives are tried only in low-risk static components", () => {
+  assert.match(statCardSource, /import \{ Card \} from "@\/components\/ui\/card"/);
+  assert.match(statCardSource, /<Card className="p-5">/);
+  assert.match(statCardSource, /text-sm font-medium text-stone-500/);
+  assert.match(statCardSource, /text-3xl font-semibold tracking-normal text-ink/);
+  assert.match(statCardSource, /rounded-lg bg-forest-50 p-3 text-forest-700/);
+
+  assert.match(appLoadingSource, /import \{ LoadingBlock \} from "@\/components\/ui\/loading-block"/);
+  assert.match(appLoadingSource, /return <LoadingBlock aria-hidden="true" \/>/);
+  assert.match(uiLoadingBlockSource, /flex min-h-\[100dvh\] items-center justify-center bg-\[#FAFAF8\]/);
+  assert.match(uiLoadingBlockSource, /h-7 w-7 animate-spin rounded-full border-2/);
+
+  assert.doesNotMatch(tripPlanningUiSource, /@\/components\/ui\//);
+  assert.doesNotMatch(gearFormSource, /@\/components\/ui\//);
+  assert.doesNotMatch(planChecklistSource, /@\/components\/ui\//);
 });
 
 test("gear list component baseline keeps filters, badges, cards, and feedback states", () => {

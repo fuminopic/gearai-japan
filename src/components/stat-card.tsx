@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { Card } from "@/components/ui/card";
+
 type StatCardProps = {
   label: string;
   value: string;
@@ -9,7 +11,7 @@ type StatCardProps = {
 
 export function StatCard({ label, value, detail, icon }: StatCardProps) {
   return (
-    <section className="rounded-lg bg-white p-5 shadow-soft">
+    <Card className="p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-stone-500">{label}</p>
@@ -20,6 +22,6 @@ export function StatCard({ label, value, detail, icon }: StatCardProps) {
         ) : null}
       </div>
       {detail ? <p className="mt-4 text-sm text-stone-500">{detail}</p> : null}
-    </section>
+    </Card>
   );
 }

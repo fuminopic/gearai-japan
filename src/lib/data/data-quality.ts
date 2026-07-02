@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { DataQualitySummary, VerificationStatus } from "@/lib/types";
+import { assertNoSupabaseError } from "@/lib/data/errors";
 
 type ProductQualityRow = {
   msrp_jpy: number | null;
@@ -18,9 +19,7 @@ export async function getDataQualitySummary(): Promise<DataQualitySummary> {
       "msrp_jpy, official_weight_grams, weight_grams, official_url, category_id, verification_status"
     );
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  assertNoSupabaseError(error);
 
   const products = (data ?? []) as ProductQualityRow[];
 

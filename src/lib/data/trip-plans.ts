@@ -8,7 +8,9 @@ export async function getLatestTripPlan() {
   const { supabase, user } = await requireUser();
   const { data, error } = await supabase
     .from("trip_plans")
-    .select("*")
+    .select(
+      "id, user_id, mountain_slug, mountain_name, season, style, image_url, progress, checked_slots, planned_date, planned_end_date, trip_memo, bring_cash, has_mountain_insurance, created_at"
+    )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(1);
@@ -25,7 +27,9 @@ export async function getTripPlans() {
   const { supabase, user } = await requireUser();
   const { data, error } = await supabase
     .from("trip_plans")
-    .select("*")
+    .select(
+      "id, user_id, mountain_slug, mountain_name, season, style, image_url, progress, checked_slots, planned_date, planned_end_date, trip_memo, bring_cash, has_mountain_insurance, created_at"
+    )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -42,7 +46,9 @@ async function getLatestLegacyRecommendationPlan(
 ) {
   const { data, error } = await supabase
     .from("ai_recommendations")
-    .select("*")
+    .select(
+      "id, user_id, mountain_id, input, output, owned_analysis, missing_analysis, model, prompt_tokens, completion_tokens, created_at"
+    )
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(1);

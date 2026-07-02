@@ -1,5 +1,22 @@
-export type GearStatus = "owned" | "wishlist";
-export type WeightType = "base" | "consumable" | "worn";
+import type {
+  GearCategory,
+  GearProduct,
+  GearSubcategory,
+  UserGear,
+  WeightType,
+} from "./types/gear";
+
+export type {
+  GearActionResult,
+  GearCategory,
+  GearFilters,
+  GearProduct,
+  GearStatus,
+  GearSubcategory,
+  UserGear,
+  WeightType,
+} from "./types/gear";
+
 export type VerificationStatus = "verified" | "unverified" | "needs_review";
 export type ExperienceLevel = "beginner" | "intermediate" | "advanced" | "expert";
 export type AccommodationStyle = "day_hike" | "hut" | "tent";
@@ -154,109 +171,6 @@ export type MountainFoundationPrimaryRegion =
   | "KYUSHU"
   | "YAKUSHIMA"
   | "JOSHU";
-
-export type GearCategory = {
-  id: string;
-  name_ja: string;
-  name_en: string;
-  sort_order: number;
-  is_default: boolean;
-  created_at: string;
-};
-
-export type GearSubcategory = {
-  id: string;
-  category_id: string;
-  name_ja: string;
-  name_en: string;
-  sort_order: number;
-  created_at: string;
-};
-
-export type GearProduct = {
-  id: string;
-  brand: string;
-  model: string;
-  name_ja: string | null;
-  category_id: string;
-  subcategory_id: string | null;
-  weight_grams: number | null;
-  official_weight_grams: number | null;
-  measured_weight_grams: number | null;
-  msrp_jpy: number | null;
-  size: string | null;
-  volume: string | null;
-  color: string | null;
-  material: string | null;
-  capacity: string | null;
-  official_url: string | null;
-  image_url: string | null;
-  released_at: string | null;
-  discontinued: boolean;
-  msrp_source_url: string | null;
-  last_verified_at: string | null;
-  verification_status: VerificationStatus;
-  created_at: string;
-  gear_categories?: Pick<GearCategory, "id" | "name_ja" | "name_en"> | null;
-  gear_subcategories?: Pick<GearSubcategory, "id" | "name_ja" | "name_en"> | null;
-  gear_product_aliases?: Array<{ alias: string }> | null;
-};
-
-export type UserGear = {
-  id: string;
-  user_id: string;
-  product_id: string | null;
-  category_id: string;
-  subcategory_id: string | null;
-  name: string;
-  brand: string | null;
-  model: string | null;
-  weight_grams: number;
-  official_weight_grams: number | null;
-  measured_weight_grams: number | null;
-  msrp_jpy: number | null;
-  purchase_price_jpy: number | null;
-  size: string | null;
-  volume: string | null;
-  color: string | null;
-  material: string | null;
-  capacity: string | null;
-  official_url: string | null;
-  image_url: string | null;
-  image_storage_path: string | null;
-  purchase_date: string | null;
-  status: GearStatus;
-  weight_type: WeightType;
-  memo: string | null;
-  created_at: string;
-  updated_at: string;
-  gear_categories?: Pick<GearCategory, "id" | "name_ja" | "name_en"> | null;
-  gear_subcategories?: Pick<GearSubcategory, "id" | "name_ja" | "name_en"> | null;
-  gear_products?: Pick<
-    GearProduct,
-    | "id"
-    | "brand"
-    | "model"
-    | "name_ja"
-    | "category_id"
-    | "subcategory_id"
-    | "official_url"
-    | "msrp_source_url"
-    | "last_verified_at"
-    | "verification_status"
-  > & {
-    gear_categories?: Pick<GearCategory, "id" | "name_ja" | "name_en"> | null;
-    gear_subcategories?: Pick<GearSubcategory, "id" | "name_ja" | "name_en"> | null;
-  } | null;
-};
-
-export type GearFilters = {
-  q?: string;
-  status?: GearStatus | "all";
-  category?: string;
-  brand?: string;
-  sort?: "newest" | "weight";
-};
 
 export type DashboardRecentGear = Pick<
   UserGear,
@@ -518,10 +432,6 @@ export type MissingGearAnalysis = {
   estimated_missing_weight_g: number;
   estimated_missing_budget_jpy: number;
 };
-
-export type GearActionResult =
-  | { ok: true; redirectTo: string }
-  | { ok: false; error: string };
 
 export type AIRecommendationRecord = {
   id: string;

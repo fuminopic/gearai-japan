@@ -34,10 +34,13 @@ const brandLogoSource = readFileSync(
   new URL("../src/components/brand-logo.tsx", import.meta.url),
   "utf8"
 );
-const typesSource = readFileSync(new URL("../src/lib/types.ts", import.meta.url), "utf8");
+const gearTypesSource = readFileSync(
+  new URL("../src/lib/types/gear.ts", import.meta.url),
+  "utf8"
+);
 
 test("gear list supports brand filtering from the gear page query", () => {
-  assert.match(typesSource, /brand\?: string/);
+  assert.match(gearTypesSource, /brand\?: string/);
   assert.match(gearPageSource, /brand\?: string/);
   assert.match(gearPageSource, /brand: params\.brand/);
   assert.match(gearDataSource, /filters\.brand/);

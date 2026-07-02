@@ -40,14 +40,14 @@ function makeDocumentedEnvelope({ value, nowMs, ttlMs }) {
 
 function readDocumentedEnvelope(envelope, nowMs, emptyValue) {
   if (!envelope || envelope.schemaVersion !== targetStorageVersion) {
-    return emptyValue;
+    return { value: emptyValue, shouldRemoveCurrentKey: false };
   }
 
   if (Date.parse(envelope.expiresAt) <= nowMs) {
-    return emptyValue;
+    return { value: emptyValue, shouldRemoveCurrentKey: true };
   }
 
-  return envelope.value;
+  return { value: envelope.value, shouldRemoveCurrentKey: false };
 }
 
 function getDocumentedReadCandidates({ userId, planId, kind, legacyKey }) {
@@ -147,6 +147,29 @@ test("future payload envelope contract includes version, timestamps, ttl, and va
   assert.deepEqual(envelope.value, ["WATER_STORAGE"]);
 });
 
+test("future checklist payload values document checked slot and checklist-only shapes", () => {
+  const nowMs = Date.parse("2026-07-02T00:00:00.000Z");
+  const checkedSlotsEnvelope = makeDocumentedEnvelope({
+    value: ["WATER_STORAGE", "FIRST_AID_KIT"],
+    nowMs,
+    ttlMs: 30 * 24 * 60 * 60 * 1000
+  });
+  const checklistOnlyEnvelope = makeDocumentedEnvelope({
+    value: ["insurance", "weather-confirmation"],
+    nowMs,
+    ttlMs: 30 * 24 * 60 * 60 * 1000
+  });
+
+  assert.deepEqual(checkedSlotsEnvelope.value, [
+    "WATER_STORAGE",
+    "FIRST_AID_KIT"
+  ]);
+  assert.deepEqual(checklistOnlyEnvelope.value, [
+    "insurance",
+    "weather-confirmation"
+  ]);
+});
+
 test("trip plan meta storage now writes the scoped payload envelope", () => {
   for (const field of ["schemaVersion", "updatedAt", "expiresAt", "value"]) {
     assert.match(tripPlanStorageSource, new RegExp(`${field}:`));
@@ -168,11 +191,18 @@ test("future ttl contract accepts fresh values and rejects expired values", () =
     ttlMs: -1
   });
 
-  assert.deepEqual(readDocumentedEnvelope(freshEnvelope, nowMs, []), [
-    "FIRST_AID_KIT"
-  ]);
-  assert.deepEqual(readDocumentedEnvelope(expiredEnvelope, nowMs, []), []);
-  assert.equal(readDocumentedEnvelope(expiredEnvelope, nowMs, null), null);
+  assert.deepEqual(readDocumentedEnvelope(freshEnvelope, nowMs, []), {
+    value: ["FIRST_AID_KIT"],
+    shouldRemoveCurrentKey: false
+  });
+  assert.deepEqual(readDocumentedEnvelope(expiredEnvelope, nowMs, []), {
+    value: [],
+    shouldRemoveCurrentKey: true
+  });
+  assert.deepEqual(readDocumentedEnvelope(expiredEnvelope, nowMs, null), {
+    value: null,
+    shouldRemoveCurrentKey: true
+  });
 });
 
 test("trip plan meta storage now applies ttl expiry and removes expired scoped keys", () => {
@@ -203,6 +233,72 @@ test("future legacy fallback contract prefers scoped keys and cleans only the cu
   ]);
 });
 
+test("future checklist legacy migration keeps other plan keys untouched", () => {
+  const currentPlanId = "plan_456";
+  const otherPlanId = "plan_789";
+  const currentPlanCleanupKeys = getDocumentedLegacyCleanupKeys(currentPlanId);
+
+  assert.deepEqual(currentPlanCleanupKeys, [
+    "yamajitaku:trip-plan:checked-slots:plan_456",
+    "yamajitaku:trip-plan:checklist-only:plan_456",
+    "yamajitaku:trip-plan-meta:plan_456"
+  ]);
+  assert.ok(
+    !currentPlanCleanupKeys.includes(
+      `yamajitaku:trip-plan:checked-slots:${otherPlanId}`
+    )
+  );
+  assert.ok(
+    !currentPlanCleanupKeys.includes(
+      `yamajitaku:trip-plan:checklist-only:${otherPlanId}`
+    )
+  );
+});
+
+test("future checklist storage contract distinguishes missing, empty, and expired keys", () => {
+  const nowMs = Date.parse("2026-07-02T00:00:00.000Z");
+  const emptyEnvelope = makeDocumentedEnvelope({
+    value: [],
+    nowMs,
+    ttlMs: 60_000
+  });
+  const expiredEnvelope = makeDocumentedEnvelope({
+    value: ["WATER_STORAGE"],
+    nowMs,
+    ttlMs: -1
+  });
+
+  const missingResult = {
+    status: "missing",
+    value: [],
+    shouldRemoveCurrentKey: false
+  };
+  const emptyResult = {
+    status: "found",
+    ...readDocumentedEnvelope(emptyEnvelope, nowMs, [])
+  };
+  const expiredResult = {
+    status: "expired",
+    ...readDocumentedEnvelope(expiredEnvelope, nowMs, [])
+  };
+
+  assert.deepEqual(missingResult, {
+    status: "missing",
+    value: [],
+    shouldRemoveCurrentKey: false
+  });
+  assert.deepEqual(emptyResult, {
+    status: "found",
+    value: [],
+    shouldRemoveCurrentKey: false
+  });
+  assert.deepEqual(expiredResult, {
+    status: "expired",
+    value: [],
+    shouldRemoveCurrentKey: true
+  });
+});
+
 test("trip plan meta storage now falls back to legacy and migrates only the current plan", () => {
   assert.match(tripPlanStorageSource, /const legacyKey = buildLegacyTripPlanMetaStorageKey\(planId\);/);
   assert.match(tripPlanStorageSource, /writeTripPlanMeta\(\{ userId, planId, value: legacyValue \}\);/);
@@ -217,6 +313,45 @@ test("current localStorage reads can affect dashboard, hero, and checklist displ
   assert.match(dashboardChecklistSource, /window\.localStorage\.getItem/);
   assert.match(dashboardPlanMetaSource, /readTripPlanLocalMeta\(planId\)/);
   assert.match(heroCountdownSource, /readTripPlanLocalMeta\(planId\)/);
+});
+
+test("current checklist storage reads and writes stay in plan, hero, and dashboard boundaries", () => {
+  assert.match(tripPlanningUiSource, /readStoredCheckedSlots\(planId\)/);
+  assert.match(tripPlanningUiSource, /readStoredChecklistOnlyIds\(planId\)/);
+  assert.match(tripPlanningUiSource, /writeStoredCheckedSlots\(savedPlanId, checkedSlots\)/);
+  assert.match(
+    tripPlanningUiSource,
+    /writeStoredChecklistOnlyIds\(savedPlanId, checklistOnlyIds\)/
+  );
+
+  assert.match(heroGaugeSource, /readStoredCheckedSlots\(planId\)/);
+  assert.match(heroGaugeSource, /readStoredChecklistOnlyIds\(planId\)/);
+  assert.match(dashboardChecklistSource, /readStoredCheckedSlots\(planId\)/);
+  assert.match(dashboardChecklistSource, /readStoredChecklistOnlyIds\(planId\)/);
+});
+
+test("current checked-slots priority differs between plan page and dashboard hydration", () => {
+  assert.match(
+    tripPlanningUiSource,
+    /storedCheckedSlots\.length > 0 \? storedCheckedSlots : savedCheckedSlots \?\? \[\]/
+  );
+  assert.match(tripPlanningUiSource, /getSavedPlanCheckedSlots\(hydratedPlan\)/);
+  assert.match(tripPlanningUiSource, /if \(!plan \|\| !Array\.isArray\(plan\.checked_slots\)\)/);
+
+  for (const source of [heroGaugeSource, dashboardChecklistSource]) {
+    assert.match(source, /if \(!checkedSlots && !checkedChecklistOnlyIds\)/);
+    assert.match(source, /applyChecklistStateToChecklist\(\{/);
+    assert.match(source, /checkedSlots,/);
+    assert.match(source, /checkedChecklistOnlyIds/);
+  }
+});
+
+test("current checklist-only state is localStorage-only and requires legacy fallback", () => {
+  assert.match(tripPlanningUiSource, /const currentChecklistOnlyIds =\s+interactiveChecklistOnlyIds \?\? storedChecklistOnlyIds;/);
+  assert.match(tripPlanningUiSource, /writeStoredChecklistOnlyIds\(savedPlanId, checklistOnlyIds\)/);
+  assert.match(tripPlanningUiSource, /name="checked_slots"/);
+  assert.doesNotMatch(tripPlanningUiSource, /name="checklist_only|checklist_only_ids/);
+  assert.doesNotMatch(tripPlanStorageSource, /checklist-only/);
 });
 
 test("trip planning meta calls can pass user scope without migrating checklist calls", () => {

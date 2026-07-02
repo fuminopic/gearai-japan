@@ -94,7 +94,7 @@ test("service worker cache boundary keeps dashboard html network-first", () => {
   assert.doesNotMatch(serviceWorkerSource, /\buser_gear\b|\btrip_plans\b|\bai_recommendations\b/);
 });
 
-test("trip checklist localStorage keys keep their current plan-id-only shape", () => {
+test("trip checklist localStorage keys keep their legacy plan-id-only shape", () => {
   assert.match(
     planChecklistSource,
     /const checkedSlotsStoragePrefix = "yamajitaku:trip-plan:checked-slots:";/
@@ -108,6 +108,10 @@ test("trip checklist localStorage keys keep their current plan-id-only shape", (
     tripPlanLocalMetaSource,
     /return `yamajitaku:trip-plan-meta:\$\{planId\}`;/
   );
+
+  for (const source of [planChecklistSource, tripPlanLocalMetaSource]) {
+    assert.doesNotMatch(source, /schemaVersion|expiresAt|yamajitaku:v1:user:/);
+  }
 });
 
 test("state, refresh, and cache primitives are visible at their current boundaries", () => {

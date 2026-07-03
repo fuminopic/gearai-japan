@@ -17,6 +17,7 @@ const authFormSource = readSource("src/components/auth-form.tsx");
 const recommendationHistoryListSource = readSource(
   "src/components/recommendation-history-list.tsx"
 );
+const recommendationDetailSource = readSource("src/components/recommendation-detail.tsx");
 const recommendationDeleteControlsSource = readSource(
   "src/components/recommendation-delete-controls.tsx"
 );
@@ -140,6 +141,19 @@ test("shared ui primitives are tried only in low-risk static components", () => 
   assert.doesNotMatch(recommendationDeleteControlsSource, /@\/components\/ui\//);
   assert.match(recommendationDeleteControlsSource, /window\.confirm/);
   assert.match(recommendationDeleteControlsSource, /router\.refresh/);
+
+  assert.match(recommendationDetailSource, /import \{ Badge \} from "@\/components\/ui\/badge"/);
+  assert.match(recommendationDetailSource, /import \{ Card \} from "@\/components\/ui\/card"/);
+  assert.match(recommendationDetailSource, /import \{ Notice \} from "@\/components\/ui\/notice"/);
+  assert.match(recommendationDetailSource, /<Notice/);
+  assert.match(recommendationDetailSource, /tone="success"/);
+  assert.match(recommendationDetailSource, /<Card className="p-5">/);
+  assert.match(recommendationDetailSource, /<Badge className="bg-stone-50 py-1">/);
+  assert.match(recommendationDetailSource, /旧推薦の詳細/);
+  assert.match(recommendationDetailSource, /当時の判断メモ/);
+  assert.match(recommendationDetailSource, /当時の所持装備照合/);
+  assert.match(recommendationDetailSource, /不足装備/);
+  assert.match(recommendationDetailSource, /リスク注意/);
 
   assert.doesNotMatch(tripPlanningUiSource, /@\/components\/ui\//);
   assert.doesNotMatch(gearFormSource, /@\/components\/ui\//);
@@ -267,7 +281,8 @@ test("phase 4 records current repeated ui patterns before extracting shared prim
     tripPlanningUiSource,
     tripPlanningFormSource,
     authFormSource,
-    recommendationHistoryListSource
+    recommendationHistoryListSource,
+    recommendationDetailSource
   ].join("\n");
 
   assert.ok(countMatches(uiSources, /rounded-(?:lg|xl|2xl|\[\d+px\])/g) > 40);

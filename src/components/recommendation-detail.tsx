@@ -1,5 +1,8 @@
 import Link from "next/link";
 
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Notice } from "@/components/ui/notice";
 import type {
   AIRecommendationRecord,
   AIRecommendedItem,
@@ -34,36 +37,39 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
         </p>
       </section>
 
-      <section className="rounded-lg border border-forest-100 bg-forest-50 p-4 text-sm leading-6 text-forest-900">
+      <Notice
+        tone="success"
+        className="border border-forest-100 p-4 font-normal leading-6 text-forest-900"
+      >
         現在は山行計画のチェックリストを主に利用してください。新しい準備確認は山行計画から作成できます。
-      </section>
+      </Notice>
 
       <section className="grid grid-cols-3 gap-3">
-        <div className="rounded-lg bg-white p-4 shadow-soft">
+        <Card className="p-4">
           <p className="text-sm text-stone-500">推定総重量</p>
           <p className="mt-2 text-2xl font-semibold text-ink">
             {formatWeight(record.output.estimated_total_weight_g)}
           </p>
-        </div>
-        <div className="rounded-lg bg-white p-4 shadow-soft">
+        </Card>
+        <Card className="p-4">
           <p className="text-sm text-stone-500">不足必須</p>
           <p className="mt-2 text-2xl font-semibold text-ink">
             {missingRequiredCount.toLocaleString("ja-JP")} 点
           </p>
-        </div>
-        <div className="rounded-lg bg-white p-4 shadow-soft">
+        </Card>
+        <Card className="p-4">
           <p className="text-sm text-stone-500">記録項目</p>
           <p className="mt-2 text-2xl font-semibold text-ink">
             {getRecommendedItemCount(record).toLocaleString("ja-JP")} 点
           </p>
-        </div>
+        </Card>
       </section>
 
-      <section className="rounded-lg bg-white p-5 shadow-soft">
+      <Card className="p-5">
         <p className="text-sm leading-6 text-stone-700">{record.output.trip_summary}</p>
-      </section>
+      </Card>
 
-      <section className="rounded-lg bg-white p-5 shadow-soft">
+      <Card className="p-5">
         <h2 className="text-lg font-semibold text-ink">当時の判断メモ</h2>
         <div className="mt-4 grid gap-3">
           {[...record.output.mountain_rules, ...record.output.season_rules].map(
@@ -78,9 +84,9 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
             {record.output.bear_risk_reason}
           </p>
         </div>
-      </section>
+      </Card>
 
-      <section className="rounded-lg bg-white p-5 shadow-soft">
+      <Card className="p-5">
         <h2 className="text-lg font-semibold text-ink">当時の所持装備照合</h2>
         {owned && (owned.owned_items.length > 0 || owned.maybe_owned_items.length > 0) ? (
           <div className="mt-4 space-y-3">
@@ -108,9 +114,9 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
         ) : (
           <p className="mt-3 text-sm text-stone-500">一致する所有装備は見つかりませんでした。</p>
         )}
-      </section>
+      </Card>
 
-      <section className="rounded-lg bg-white p-5 shadow-soft">
+      <Card className="p-5">
         <h2 className="text-lg font-semibold text-ink">不足装備</h2>
         {missing ? (
           <>
@@ -129,13 +135,13 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
         ) : (
           <p className="mt-3 text-sm text-stone-500">不足装備の分析はありません。</p>
         )}
-      </section>
+      </Card>
 
       <RecommendationItems title="必須として記録" items={record.output.required_items} />
       <RecommendationItems title="推奨として記録" items={record.output.recommended_items} />
       <RecommendationItems title="任意として記録" items={record.output.optional_items} />
 
-      <section className="rounded-lg bg-white p-5 shadow-soft">
+      <Card className="p-5">
         <h2 className="text-lg font-semibold text-ink">リスク注意</h2>
         <div className="mt-4 space-y-3">
           {record.output.risk_warnings.map((warning, index) => (
@@ -147,7 +153,7 @@ export function RecommendationDetail({ record }: RecommendationDetailProps) {
         <p className="mt-4 rounded-lg bg-forest-50 p-3 text-sm leading-6 text-forest-900">
           {record.output.safety_note}
         </p>
-      </section>
+      </Card>
 
       <div className="grid grid-cols-2 gap-3">
         <Link
@@ -175,7 +181,7 @@ function RecommendationItems({
   items: AIRecommendedItem[];
 }) {
   return (
-    <section className="rounded-lg bg-white p-5 shadow-soft">
+    <Card className="p-5">
       <h2 className="text-lg font-semibold text-ink">{title}</h2>
       <div className="mt-4 space-y-3">
         {items.map((item) => (
@@ -185,9 +191,9 @@ function RecommendationItems({
                 <p className="font-semibold text-ink">{item.name}</p>
                 <p className="mt-1 text-sm leading-6 text-stone-600">{item.reason}</p>
               </div>
-              <span className="rounded-lg bg-stone-50 px-2 py-1 text-xs font-semibold text-stone-600">
+              <Badge className="bg-stone-50 py-1">
                 {priorityLabel(item.priority)}
-              </span>
+              </Badge>
             </div>
             <p className="mt-3 text-xs text-stone-500">
               {item.rule_basis} / {item.subcategory} /{" "}
@@ -197,7 +203,7 @@ function RecommendationItems({
           </article>
         ))}
       </div>
-    </section>
+    </Card>
   );
 }
 

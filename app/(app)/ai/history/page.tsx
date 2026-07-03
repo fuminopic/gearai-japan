@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { RecommendationHistoryList } from "@/components/recommendation-history-list";
+import { Notice } from "@/components/ui/notice";
 import { getRecommendationHistory } from "@/lib/data/recommendations";
 
 type RecommendationHistoryPageProps = {
@@ -32,9 +33,9 @@ export default async function RecommendationHistoryPage({
         </Link>
       </section>
       {params.error ? (
-        <p className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+        <Notice tone="error" className="border border-red-100">
           {params.error}
-        </p>
+        </Notice>
       ) : null}
       <RecommendationHistoryList records={records} />
     </div>

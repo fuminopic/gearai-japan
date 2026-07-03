@@ -6,6 +6,7 @@ const dashboardSource = readSource("app/(app)/dashboard/page.tsx");
 const rootLoadingSource = readSource("app/loading.tsx");
 const appLoadingSource = readSource("app/(app)/loading.tsx");
 const helpPageSource = readSource("app/(app)/help/page.tsx");
+const aiHistoryPageSource = readSource("app/(app)/ai/history/page.tsx");
 const gearPageSource = readSource("app/(app)/gear/page.tsx");
 const gearListSource = readSource("src/components/gear-list.tsx");
 const gearFormSource = readSource("src/components/gear-form.tsx");
@@ -127,6 +128,15 @@ test("shared ui primitives are tried only in low-risk static components", () => 
   assert.match(helpPageSource, /ヘルプ/);
   assert.match(helpPageSource, /山支度は、山行計画に合わせて装備の準備状況を確認するためのアプリです。/);
   assert.match(helpPageSource, /山・季節・スタイルを選んで計画を作成し、装備チェックリストで準備状況を確認してください。/);
+
+  assert.match(aiHistoryPageSource, /import \{ Notice \} from "@\/components\/ui\/notice"/);
+  assert.match(aiHistoryPageSource, /<Notice tone="error" className="border border-red-100">/);
+  assert.match(aiHistoryPageSource, /過去の記録/);
+  assert.match(aiHistoryPageSource, /過去の推薦履歴/);
+  assert.match(aiHistoryPageSource, /href="\/plan"/);
+  assert.match(aiHistoryPageSource, /山行計画を作成/);
+  assert.match(aiHistoryPageSource, /getRecommendationHistory\(\)/);
+  assert.match(aiHistoryPageSource, /<RecommendationHistoryList records=\{records\} \/>/);
 
   assert.match(recommendationHistoryListSource, /import \{ Card \} from "@\/components\/ui\/card"/);
   assert.match(recommendationHistoryListSource, /import \{ EmptyState \} from "@\/components\/ui\/empty-state"/);
@@ -281,6 +291,7 @@ test("phase 4 records current repeated ui patterns before extracting shared prim
     tripPlanningUiSource,
     tripPlanningFormSource,
     authFormSource,
+    aiHistoryPageSource,
     recommendationHistoryListSource,
     recommendationDetailSource
   ].join("\n");

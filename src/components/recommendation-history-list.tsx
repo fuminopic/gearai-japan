@@ -5,6 +5,8 @@ import {
   RecommendationDeleteAllButton,
   RecommendationDeleteButton
 } from "@/components/recommendation-delete-controls";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { AIRecommendationRecord } from "@/lib/types";
 import {
   accommodationStyleLabels,
@@ -20,18 +22,18 @@ type RecommendationHistoryListProps = {
 export function RecommendationHistoryList({ records }: RecommendationHistoryListProps) {
   if (records.length === 0) {
     return (
-      <section className="rounded-lg bg-white p-6 text-center shadow-soft">
-        <p className="text-lg font-semibold text-ink">過去の推薦履歴はまだありません</p>
-        <p className="mt-2 text-sm leading-6 text-stone-500">
-          現在は山行計画のチェックリストを主に利用してください。
-        </p>
-        <Link
-          href="/plan"
-          className="mt-5 inline-flex rounded-lg bg-forest-700 px-5 py-3 text-sm font-semibold text-white"
-        >
-          山行計画を作成
-        </Link>
-      </section>
+      <EmptyState
+        title="過去の推薦履歴はまだありません"
+        description="現在は山行計画のチェックリストを主に利用してください。"
+        action={
+          <Link
+            href="/plan"
+            className="inline-flex rounded-lg bg-forest-700 px-5 py-3 text-sm font-semibold text-white"
+          >
+            山行計画を作成
+          </Link>
+        }
+      />
     );
   }
 
@@ -39,7 +41,7 @@ export function RecommendationHistoryList({ records }: RecommendationHistoryList
     <div className="space-y-3">
       <RecommendationDeleteAllButton />
       {records.map((record) => (
-        <article key={record.id} className="rounded-lg bg-white p-4 shadow-soft">
+        <Card key={record.id} className="p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-lg font-semibold text-ink">{record.input.mountain_region}</p>
@@ -77,7 +79,7 @@ export function RecommendationHistoryList({ records }: RecommendationHistoryList
             </Link>
             <RecommendationDeleteButton id={record.id} />
           </div>
-        </article>
+        </Card>
       ))}
     </div>
   );

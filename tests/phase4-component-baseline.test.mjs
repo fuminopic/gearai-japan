@@ -17,6 +17,9 @@ const authFormSource = readSource("src/components/auth-form.tsx");
 const recommendationHistoryListSource = readSource(
   "src/components/recommendation-history-list.tsx"
 );
+const recommendationDeleteControlsSource = readSource(
+  "src/components/recommendation-delete-controls.tsx"
+);
 const uiButtonSource = readSource("src/components/ui/button.tsx");
 const uiCardSource = readSource("src/components/ui/card.tsx");
 const uiNoticeSource = readSource("src/components/ui/notice.tsx");
@@ -123,6 +126,20 @@ test("shared ui primitives are tried only in low-risk static components", () => 
   assert.match(helpPageSource, /ヘルプ/);
   assert.match(helpPageSource, /山支度は、山行計画に合わせて装備の準備状況を確認するためのアプリです。/);
   assert.match(helpPageSource, /山・季節・スタイルを選んで計画を作成し、装備チェックリストで準備状況を確認してください。/);
+
+  assert.match(recommendationHistoryListSource, /import \{ Card \} from "@\/components\/ui\/card"/);
+  assert.match(recommendationHistoryListSource, /import \{ EmptyState \} from "@\/components\/ui\/empty-state"/);
+  assert.match(recommendationHistoryListSource, /<EmptyState/);
+  assert.match(recommendationHistoryListSource, /title="過去の推薦履歴はまだありません"/);
+  assert.match(recommendationHistoryListSource, /description="現在は山行計画のチェックリストを主に利用してください。"/);
+  assert.match(recommendationHistoryListSource, /<Card key=\{record\.id\} className="p-4">/);
+  assert.match(recommendationHistoryListSource, /推定重量/);
+  assert.match(recommendationHistoryListSource, /必須装備/);
+  assert.match(recommendationHistoryListSource, /詳細/);
+  assert.match(recommendationHistoryListSource, /RecommendationDeleteButton id=\{record\.id\}/);
+  assert.doesNotMatch(recommendationDeleteControlsSource, /@\/components\/ui\//);
+  assert.match(recommendationDeleteControlsSource, /window\.confirm/);
+  assert.match(recommendationDeleteControlsSource, /router\.refresh/);
 
   assert.doesNotMatch(tripPlanningUiSource, /@\/components\/ui\//);
   assert.doesNotMatch(gearFormSource, /@\/components\/ui\//);

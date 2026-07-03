@@ -3,7 +3,9 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 const dashboardSource = readSource("app/(app)/dashboard/page.tsx");
+const rootLoadingSource = readSource("app/loading.tsx");
 const appLoadingSource = readSource("app/(app)/loading.tsx");
+const helpPageSource = readSource("app/(app)/help/page.tsx");
 const gearPageSource = readSource("app/(app)/gear/page.tsx");
 const gearListSource = readSource("src/components/gear-list.tsx");
 const gearFormSource = readSource("src/components/gear-form.tsx");
@@ -107,8 +109,20 @@ test("shared ui primitives are tried only in low-risk static components", () => 
 
   assert.match(appLoadingSource, /import \{ LoadingBlock \} from "@\/components\/ui\/loading-block"/);
   assert.match(appLoadingSource, /return <LoadingBlock aria-hidden="true" \/>/);
+  assert.match(rootLoadingSource, /import \{ LoadingBlock \} from "@\/components\/ui\/loading-block"/);
+  assert.match(rootLoadingSource, /<LoadingBlock/);
+  assert.match(rootLoadingSource, /aria-hidden="true"/);
+  assert.match(rootLoadingSource, /className="flex min-h-\[100dvh\] items-center justify-center bg-\[#FAFAF8\]"/);
+  assert.match(rootLoadingSource, /spinnerClassName="h-7 w-7 animate-spin rounded-full border-2/);
   assert.match(uiLoadingBlockSource, /flex min-h-\[100dvh\] items-center justify-center bg-\[#FAFAF8\]/);
   assert.match(uiLoadingBlockSource, /h-7 w-7 animate-spin rounded-full border-2/);
+
+  assert.match(helpPageSource, /import \{ Card \} from "@\/components\/ui\/card"/);
+  assert.match(helpPageSource, /<Card className="rounded-\[24px\] p-6 shadow-sm">/);
+  assert.match(helpPageSource, /サポート/);
+  assert.match(helpPageSource, /ヘルプ/);
+  assert.match(helpPageSource, /山支度は、山行計画に合わせて装備の準備状況を確認するためのアプリです。/);
+  assert.match(helpPageSource, /山・季節・スタイルを選んで計画を作成し、装備チェックリストで準備状況を確認してください。/);
 
   assert.doesNotMatch(tripPlanningUiSource, /@\/components\/ui\//);
   assert.doesNotMatch(gearFormSource, /@\/components\/ui\//);

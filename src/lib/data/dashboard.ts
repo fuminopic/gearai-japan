@@ -79,7 +79,12 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     totalPackWeightG: baseWeightG + consumableWeightG,
     categoryWeights: Array.from(categoryWeights.values())
       .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map(({ sortOrder, ...category }) => category),
+      .map(({ categoryId, nameJa, weightG, count }) => ({
+        categoryId,
+        nameJa,
+        weightG,
+        count
+      })),
     recentGear: gear.slice(0, 8).map(toDashboardRecentGear)
   };
 }

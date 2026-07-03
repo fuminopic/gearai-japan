@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 
 import { GearList } from "@/components/gear-list";
+import { Notice } from "@/components/ui/notice";
 import { getUserGear, getUserGearBrands } from "@/lib/data/gear";
 import type { GearFilters, GearStatus } from "@/lib/types";
 
@@ -54,15 +55,13 @@ export default async function GearPage({ searchParams }: GearPageProps) {
       </section>
 
       {params.error ? (
-        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          {params.error}
-        </p>
+        <Notice tone="error">{params.error}</Notice>
       ) : null}
 
       {savedMessage && !params.error ? (
-        <p className="rounded-lg border border-forest-100 bg-forest-50 px-4 py-3 text-sm font-semibold text-forest-800">
+        <Notice tone="success" className="border border-forest-100">
           {savedMessage}
-        </p>
+        </Notice>
       ) : null}
 
       <GearList

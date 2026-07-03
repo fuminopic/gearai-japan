@@ -162,7 +162,7 @@ export function AppMenuDrawer({ userEmail, buttonClassName }: AppMenuDrawerProps
             // 退登时清掉 service worker 缓存的首页,避免下次串到上个账号/过期态
             try {
               navigator.serviceWorker?.controller?.postMessage("yj-clear-pages");
-            } catch (e) {
+            } catch {
               /* noop */
             }
           }}

@@ -20,7 +20,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const planRoute = "/plan" as Route;
-type DashboardTripChecklist = ReturnType<typeof buildPlanChecklist>;
 // 首页装備構成配色:规范 v1「米色系」6 色,按 id 覆盖 MAJOR_GEAR_CATEGORIES 旧色(仅首页用)
 const categoryColorById = new Map<string, string>([
   ["clothing", "#C05A86"],

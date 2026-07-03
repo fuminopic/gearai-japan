@@ -11,6 +11,7 @@ import type { Route } from "next";
 import type { ReactNode } from "react";
 
 import { BrandLogo } from "@/components/brand-logo";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   compareGearBrands,
   getGearDisplayWeightGrams,
@@ -203,18 +204,19 @@ export function GearList({
       </section>
 
       {gear.length === 0 ? (
-        <section className="rounded-2xl bg-white p-6 text-center shadow-sm">
-          <p className="text-lg font-semibold text-ink">まだ装備がありません</p>
-          <p className="mt-2 text-sm leading-6 text-stone-500">
-            まずはバックパック、レインウェア、ヘッドライトなどから登録してみましょう。
-          </p>
-          <Link
-            href="/gear/new"
-            className="mt-5 inline-flex rounded-xl bg-forest-700 px-5 py-3 text-sm font-semibold text-white"
-          >
-            装備を追加
-          </Link>
-        </section>
+        <EmptyState
+          className="rounded-2xl shadow-sm"
+          title="まだ装備がありません"
+          description="まずはバックパック、レインウェア、ヘッドライトなどから登録してみましょう。"
+          action={
+            <Link
+              href="/gear/new"
+              className="inline-flex rounded-xl bg-forest-700 px-5 py-3 text-sm font-semibold text-white"
+            >
+              装備を追加
+            </Link>
+          }
+        />
       ) : (
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3 px-1">

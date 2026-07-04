@@ -288,6 +288,170 @@ test("groundsheet checklist matcher still marks owned groundsheets as ready", ()
   );
 });
 
+test("owned whistle category and names mark the whistle checklist item as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan(),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-whistle-category",
+        name: "Emergency whistle",
+        categoryName: "first_aid",
+        categoryLabel: "ファーストエイド",
+        subcategoryName: "whistle",
+        subcategoryLabel: "ホイッスル"
+      }),
+      makeOwnedGear({
+        id: "owned-whistle-name",
+        name: "山用の笛",
+        categoryName: "other",
+        categoryLabel: "その他（Other）",
+        subcategoryName: "other",
+        subcategoryLabel: "その他"
+      })
+    ]
+  });
+  const whistle = itemByLabel(checklist, "ホイッスル");
+
+  assert.equal(whistle?.source, "GEAR_BACKED");
+  assert.equal(whistle?.checked, true);
+  assert.deepEqual(
+    whistle?.matchingOwnedGear.map((item) => item.id),
+    ["owned-whistle-category", "owned-whistle-name"]
+  );
+});
+
+test("owned emergency sheet category marks the emergency sheet checklist item as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan(),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-emergency-sheet",
+        name: "サバイバルシート",
+        categoryName: "first_aid",
+        categoryLabel: "ファーストエイド",
+        subcategoryName: "emergency_sheet",
+        subcategoryLabel: "エマージェンシーシート"
+      })
+    ]
+  });
+  const emergencySheet = itemByLabel(checklist, "エマージェンシーシート");
+
+  assert.equal(emergencySheet?.source, "GEAR_BACKED");
+  assert.equal(emergencySheet?.checked, true);
+  assert.deepEqual(
+    emergencySheet?.matchingOwnedGear.map((item) => item.id),
+    ["owned-emergency-sheet"]
+  );
+});
+
+test("owned bear bell and bear spray mark the bear protection checklist item as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      mountain: {
+        bear_or_wildlife_risk: "HIGH"
+      }
+    }),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-bear-bell",
+        name: "熊鈴",
+        categoryName: "bear_safety",
+        categoryLabel: "熊対策",
+        subcategoryName: "bear_bell",
+        subcategoryLabel: "熊鈴"
+      }),
+      makeOwnedGear({
+        id: "owned-bear-spray",
+        name: "Bear spray",
+        categoryName: "bear_safety",
+        categoryLabel: "熊対策",
+        subcategoryName: "bear_spray",
+        subcategoryLabel: "熊スプレー"
+      })
+    ]
+  });
+  const bearProtection = itemByLabel(checklist, "熊対策装備");
+
+  assert.equal(bearProtection?.source, "GEAR_BACKED");
+  assert.equal(bearProtection?.checked, true);
+  assert.deepEqual(
+    bearProtection?.matchingOwnedGear.map((item) => item.id),
+    ["owned-bear-bell", "owned-bear-spray"]
+  );
+});
+
+test("owned portable toilet category marks the portable toilet checklist item as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      mountain: {
+        mandatory_gear_note: "携帯トイレ必携"
+      }
+    }),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-portable-toilet",
+        name: "Portable toilet kit",
+        categoryName: "first_aid",
+        categoryLabel: "ファーストエイド",
+        subcategoryName: "portable_toilet",
+        subcategoryLabel: "携帯トイレ"
+      })
+    ]
+  });
+  const portableToilet = itemByLabel(checklist, "携帯トイレ");
+
+  assert.equal(portableToilet?.source, "GEAR_BACKED");
+  assert.equal(portableToilet?.checked, true);
+  assert.deepEqual(
+    portableToilet?.matchingOwnedGear.map((item) => item.id),
+    ["owned-portable-toilet"]
+  );
+});
+
+test("generic sheet, bell, spray, and toilet text does not match safety essentials", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      mountain: {
+        bear_or_wildlife_risk: "HIGH",
+        mandatory_gear_note: "携帯トイレ必携"
+      }
+    }),
+    ownedGear: [
+      makeOwnedGear({
+        id: "generic-sheet",
+        name: "Picnic sheet",
+        categoryName: "other",
+        subcategoryName: "other"
+      }),
+      makeOwnedGear({
+        id: "generic-bell",
+        name: "Bike bell",
+        categoryName: "other",
+        subcategoryName: "other"
+      }),
+      makeOwnedGear({
+        id: "generic-spray",
+        name: "Waterproof spray",
+        categoryName: "other",
+        subcategoryName: "other"
+      }),
+      makeOwnedGear({
+        id: "generic-toilet",
+        name: "Toilet pouch",
+        categoryName: "other",
+        subcategoryName: "other"
+      })
+    ]
+  });
+
+  assert.equal(itemByLabel(checklist, "エマージェンシーシート")?.source, "CHECKLIST_ONLY");
+  assert.equal(itemByLabel(checklist, "エマージェンシーシート")?.checked, false);
+  assert.equal(itemByLabel(checklist, "熊対策装備")?.source, "CHECKLIST_ONLY");
+  assert.equal(itemByLabel(checklist, "熊対策装備")?.checked, false);
+  assert.equal(itemByLabel(checklist, "携帯トイレ")?.source, "CHECKLIST_ONLY");
+  assert.equal(itemByLabel(checklist, "携帯トイレ")?.checked, false);
+});
+
 test("low mountain winter trips show optional chain spikes without crampons or ice axe", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan({

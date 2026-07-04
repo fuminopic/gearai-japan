@@ -1,6 +1,13 @@
 import type { GearMatchingOwnedGearMatch, UserGear } from "@/lib/types";
 
-export type ChecklistOwnedGearMatcher = "BACKPACK" | "TREKKING_POLES" | "GROUNDSHEET";
+export type ChecklistOwnedGearMatcher =
+  | "BACKPACK"
+  | "TREKKING_POLES"
+  | "WHISTLE"
+  | "EMERGENCY_SHEET"
+  | "BEAR_PROTECTION"
+  | "PORTABLE_TOILET"
+  | "GROUNDSHEET";
 
 type ChecklistOwnedGearItem = GearMatchingOwnedGearMatch & {
   gear_products?: UserGear["gear_products"];
@@ -23,6 +30,22 @@ function matchesChecklistOwnedGear(
 
   if (matcher === "TREKKING_POLES") {
     return isTrekkingPoleGear(item);
+  }
+
+  if (matcher === "WHISTLE") {
+    return isWhistleGear(item);
+  }
+
+  if (matcher === "EMERGENCY_SHEET") {
+    return isEmergencySheetGear(item);
+  }
+
+  if (matcher === "BEAR_PROTECTION") {
+    return isBearProtectionGear(item);
+  }
+
+  if (matcher === "PORTABLE_TOILET") {
+    return isPortableToiletGear(item);
   }
 
   return isGroundsheetGear(item);
@@ -65,6 +88,52 @@ function isGroundsheetGear(item: ChecklistOwnedGearItem) {
     /ground\s*sheet|groundsheet|foot\s*print|footprint/i.test(text) ||
     /グラウンドシート|グランドシート|フットプリント|地布/.test(text)
   );
+}
+
+function isWhistleGear(item: ChecklistOwnedGearItem) {
+  if (hasSubcategory(item, ["whistle"])) {
+    return true;
+  }
+
+  const text = getGearSearchText(item);
+
+  return /\bwhistle\b/i.test(text) || /ホイッスル|笛/.test(text);
+}
+
+function isEmergencySheetGear(item: ChecklistOwnedGearItem) {
+  if (hasSubcategory(item, ["emergency_sheet"])) {
+    return true;
+  }
+
+  const text = getGearSearchText(item);
+
+  return (
+    /\b(emergency|survival)\s*(sheet|blanket)\b/i.test(text) ||
+    /エマージェンシーシート|サバイバルシート/.test(text)
+  );
+}
+
+function isBearProtectionGear(item: ChecklistOwnedGearItem) {
+  if (hasCategory(item, ["bear_safety"]) || hasSubcategory(item, ["bear_bell", "bear_spray"])) {
+    return true;
+  }
+
+  const text = getGearSearchText(item);
+
+  return (
+    /\bbear\s*(bell|spray)\b/i.test(text) ||
+    /熊鈴|熊スプレー|熊よけ|熊除け/.test(text)
+  );
+}
+
+function isPortableToiletGear(item: ChecklistOwnedGearItem) {
+  if (hasSubcategory(item, ["portable_toilet"])) {
+    return true;
+  }
+
+  const text = getGearSearchText(item);
+
+  return /\bportable\s*toilet\b/i.test(text) || /携帯トイレ/.test(text);
 }
 
 function hasCategory(item: ChecklistOwnedGearItem, values: readonly string[]) {

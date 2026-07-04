@@ -261,13 +261,15 @@ function getBaseCategories(plan: PackRequirementPlan): ChecklistCategoryDefiniti
           id: "safety-whistle",
           label: "ホイッスル",
           priority: "SUGGESTED",
-          icon: "whistle"
+          icon: "whistle",
+          ownedGearMatcher: "WHISTLE"
         },
         {
           id: "safety-emergency-sheet",
           label: "エマージェンシーシート",
           priority: getEmergencySheetPriority(plan),
-          icon: "emergencySheet"
+          icon: "emergencySheet",
+          ownedGearMatcher: "EMERGENCY_SHEET"
         }
       ]
     }
@@ -760,7 +762,8 @@ function getSpecialGearItems(plan: PackRequirementPlan): ChecklistItemDefinition
       id: "special-bear-protection",
       label: "熊対策装備",
       priority: mountain.bear_or_wildlife_risk === "HIGH" ? "ESSENTIAL" : "SUGGESTED",
-      icon: "bearProtection"
+      icon: "bearProtection",
+      ownedGearMatcher: "BEAR_PROTECTION"
     });
   }
 
@@ -778,7 +781,8 @@ function getSpecialGearItems(plan: PackRequirementPlan): ChecklistItemDefinition
       id: "special-portable-toilet",
       label: "携帯トイレ",
       priority: "ESSENTIAL",
-      icon: "portableToilet"
+      icon: "portableToilet",
+      ownedGearMatcher: "PORTABLE_TOILET"
     });
   }
 

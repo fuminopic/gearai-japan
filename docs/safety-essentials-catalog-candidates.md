@@ -50,11 +50,11 @@ Leave unknown fields blank. Do not invent missing data.
 
 | target_item | brand | model | name_ja | category_en | subcategory_en | official_weight_grams | msrp_jpy | official_url | msrp_source_url | image_url | aliases | verification_status | evidence_note |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ホイッスル |  |  |  | first_aid | whistle |  |  |  |  |  |  |  |  |
-| エマージェンシーシート |  |  |  | first_aid | emergency_sheet |  |  |  |  |  |  |  |  |
-| 熊鈴 |  |  |  | bear_safety | bear_bell |  |  |  |  |  |  |  |  |
-| 熊スプレー |  |  |  | bear_safety | bear_spray |  |  |  |  |  |  |  |  |
-| 携帯トイレ |  |  |  | first_aid | portable_toilet |  |  |  |  |  |  |  |  |
+| ホイッスル | mont-bell | アルミホイッスル S | アルミホイッスル S | first_aid | whistle | 11 | 880 | https://webshop.montbell.jp/goods/disp.php?product_id=1124946 | https://webshop.montbell.jp/goods/disp.php?product_id=1124946 | TODO_CONFIRM_OFFICIAL_IMAGE_URL | ホイッスル, 笛, whistle, aluminum whistle | needs_review | mont-bell official product page confirms price ¥880, product #1124946, brand モンベル, weight 11g. |
+| エマージェンシーシート | mont-bell | エマージェンシーシート | エマージェンシーシート | first_aid | emergency_sheet | 50 | 594 | https://webshop.montbell.jp/goods/disp.php?product_id=1124306 | https://webshop.montbell.jp/goods/disp.php?product_id=1124306 | TODO_CONFIRM_OFFICIAL_IMAGE_URL | エマージェンシーシート, サバイバルシート, emergency sheet, emergency blanket, survival sheet | needs_review | mont-bell official product page confirms price ¥594, product #1124306, brand モンベル, weight 50g. |
+| 熊鈴 | mont-bell | トレッキングベル サイレント | トレッキングベル サイレント | bear_safety | bear_bell | 43 | 2200 | https://webshop.montbell.jp/goods/disp.php?product_id=1124928 | https://webshop.montbell.jp/goods/disp.php?product_id=1124928 | TODO_CONFIRM_OFFICIAL_IMAGE_URL | 熊鈴, クマ鈴, トレッキングベル, bear bell, trekking bell | needs_review | mont-bell official product page confirms weight 43g and list page confirms price ¥2,200, product #1124928, brand モンベル. |
+| 熊スプレー | SABRE | フロンティアーズマン マックス ベアスプレー234mL | フロンティアーズマン マックス ベアスプレー234mL | bear_safety | bear_spray | 304 | 12100 | https://webshop.montbell.jp/goods/disp.php?product_id=1899175 | https://webshop.montbell.jp/goods/disp.php?product_id=1899175 | TODO_CONFIRM_OFFICIAL_IMAGE_URL | 熊スプレー, クマよけスプレー, 熊よけスプレー, bear spray, Frontiersman Max Bear Spray | needs_review | mont-bell product page confirms price ¥12,100, product #1899175, brand SABRE(セイバー), weight about 304g, content 234mL. |
+| 携帯トイレ | mont-bell | O.D.トイレキット | O.D.トイレキット | first_aid | portable_toilet | 43 | 330 | https://webshop.montbell.jp/goods/disp.php?product_id=1150111 | https://webshop.montbell.jp/goods/disp.php?product_id=1150111 | TODO_CONFIRM_OFFICIAL_IMAGE_URL | 携帯トイレ, O.D.トイレキット, portable toilet, toilet kit | needs_review | mont-bell official product page confirms price ¥330, product #1150111, brand モンベル, weight 43g. |
 
 ## Evidence Rules
 

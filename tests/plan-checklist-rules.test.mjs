@@ -8,6 +8,23 @@ const planChecklistSource = readFileSync(
   new URL("../src/lib/plan-checklist.ts", import.meta.url),
   "utf8"
 );
+const checklistOwnedGearMatchersSource = readFileSync(
+  new URL("../src/lib/checklist-owned-gear-matchers.ts", import.meta.url),
+  "utf8"
+);
+
+const { outputText: checklistOwnedGearMatchersOutputText } = ts.transpileModule(
+  checklistOwnedGearMatchersSource,
+  {
+    compilerOptions: {
+      module: ts.ModuleKind.ES2022,
+      target: ts.ScriptTarget.ES2022
+    }
+  }
+);
+const checklistOwnedGearMatchersDataUrl = `data:text/javascript;base64,${Buffer.from(
+  checklistOwnedGearMatchersOutputText
+).toString("base64")}`;
 
 const { outputText } = ts.transpileModule(planChecklistSource, {
   compilerOptions: {
@@ -16,7 +33,12 @@ const { outputText } = ts.transpileModule(planChecklistSource, {
   }
 });
 const planChecklistModule = await import(
-  `data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`
+  `data:text/javascript;base64,${Buffer.from(
+    outputText.replace(
+      'from "@/lib/checklist-owned-gear-matchers"',
+      `from "${checklistOwnedGearMatchersDataUrl}"`
+    )
+  ).toString("base64")}`
 );
 const {
   buildPlanChecklist,
@@ -99,6 +121,172 @@ function checklistItems(checklist) {
 function itemByLabel(checklist, label) {
   return checklistItems(checklist).find((item) => item.label === label);
 }
+
+function makeOwnedGear({
+  id,
+  name,
+  brand = null,
+  model = null,
+  categoryName,
+  categoryLabel = categoryName,
+  subcategoryName,
+  subcategoryLabel = subcategoryName,
+  product = null
+}) {
+  return {
+    id,
+    name,
+    brand,
+    model,
+    category_id: `${categoryName}-category-id`,
+    subcategory_id: subcategoryName ? `${subcategoryName}-subcategory-id` : null,
+    gear_categories: {
+      id: `${categoryName}-category-id`,
+      name_en: categoryName,
+      name_ja: categoryLabel
+    },
+    gear_subcategories: subcategoryName
+      ? {
+          id: `${subcategoryName}-subcategory-id`,
+          name_en: subcategoryName,
+          name_ja: subcategoryLabel
+        }
+      : null,
+    gear_products: product
+  };
+}
+
+test("owned backpack category marks the action backpack checklist item as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan(),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-backpack",
+        name: "サム 45",
+        brand: "THE NORTH FACE",
+        model: "サム 45",
+        categoryName: "backpack",
+        categoryLabel: "バックパック（Backpack）",
+        subcategoryName: "backpack",
+        subcategoryLabel: "バックパック"
+      })
+    ]
+  });
+  const backpack = itemByLabel(checklist, "ザック");
+
+  assert.equal(backpack?.source, "GEAR_BACKED");
+  assert.equal(backpack?.checked, true);
+  assert.deepEqual(
+    backpack?.matchingOwnedGear.map((item) => item.id),
+    ["owned-backpack"]
+  );
+});
+
+test("legacy carry backpack category also marks the action backpack checklist item as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan(),
+    ownedGear: [
+      makeOwnedGear({
+        id: "legacy-carry-backpack",
+        name: "Legacy Pack",
+        categoryName: "carry",
+        categoryLabel: "Carry",
+        subcategoryName: "backpack",
+        subcategoryLabel: "Backpack"
+      })
+    ]
+  });
+  const backpack = itemByLabel(checklist, "ザック");
+
+  assert.equal(backpack?.source, "GEAR_BACKED");
+  assert.equal(backpack?.checked, true);
+  assert.deepEqual(
+    backpack?.matchingOwnedGear.map((item) => item.id),
+    ["legacy-carry-backpack"]
+  );
+});
+
+test("owned trekking pole category marks the trekking poles checklist item as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan(),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-trekking-poles",
+        name: "アルパイン カーボンポール",
+        brand: "mont-bell",
+        model: "アルパイン カーボンポール",
+        categoryName: "other",
+        categoryLabel: "その他（Other）",
+        subcategoryName: "trekking_pole",
+        subcategoryLabel: "トレッキングポール"
+      })
+    ]
+  });
+  const trekkingPoles = itemByLabel(checklist, "トレッキングポール");
+
+  assert.equal(trekkingPoles?.source, "GEAR_BACKED");
+  assert.equal(trekkingPoles?.checked, true);
+  assert.deepEqual(
+    trekkingPoles?.matchingOwnedGear.map((item) => item.id),
+    ["owned-trekking-poles"]
+  );
+});
+
+test("unrelated pack and pole text does not mark backpack or trekking poles as owned", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan(),
+    ownedGear: [
+      makeOwnedGear({
+        id: "battery-pack",
+        name: "Battery Pack",
+        categoryName: "electronics",
+        categoryLabel: "電子機器（Electronics）",
+        subcategoryName: "power_bank",
+        subcategoryLabel: "モバイルバッテリー"
+      }),
+      makeOwnedGear({
+        id: "tent-pole",
+        name: "テントポールセット",
+        categoryName: "shelter",
+        categoryLabel: "テント・シェルター（Tent / Shelter）",
+        subcategoryName: "tent",
+        subcategoryLabel: "テント"
+      })
+    ]
+  });
+
+  assert.equal(itemByLabel(checklist, "ザック")?.source, "CHECKLIST_ONLY");
+  assert.equal(itemByLabel(checklist, "ザック")?.checked, false);
+  assert.equal(itemByLabel(checklist, "トレッキングポール")?.source, "CHECKLIST_ONLY");
+  assert.equal(itemByLabel(checklist, "トレッキングポール")?.checked, false);
+});
+
+test("groundsheet checklist matcher still marks owned groundsheets as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      style: "OVERNIGHT_TENT",
+      requiredSlots: ["TENT", "SLEEP_INSULATION", "SLEEP_PAD"]
+    }),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-groundsheet",
+        name: "ステラリッジ グラウンドシート",
+        categoryName: "shelter",
+        categoryLabel: "テント・シェルター（Tent / Shelter）",
+        subcategoryName: "groundsheet",
+        subcategoryLabel: "グラウンドシート"
+      })
+    ]
+  });
+  const groundsheet = itemByLabel(checklist, "グランドシート");
+
+  assert.equal(groundsheet?.source, "GEAR_BACKED");
+  assert.equal(groundsheet?.checked, true);
+  assert.deepEqual(
+    groundsheet?.matchingOwnedGear.map((item) => item.id),
+    ["owned-groundsheet"]
+  );
+});
 
 test("low mountain winter trips show optional chain spikes without crampons or ice axe", () => {
   const checklist = buildPlanChecklist({

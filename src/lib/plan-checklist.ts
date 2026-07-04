@@ -5,6 +5,10 @@ import type {
   PackRequirementSlotPlan,
   RequirementSlot
 } from "@/lib/types";
+import {
+  matchOwnedGearForChecklist,
+  type ChecklistOwnedGearMatcher
+} from "@/lib/checklist-owned-gear-matchers";
 
 export type ChecklistPriority = "ESSENTIAL" | "SUGGESTED" | "OPTIONAL";
 export type ChecklistItemSource = "GEAR_BACKED" | "CHECKLIST_ONLY";
@@ -63,7 +67,7 @@ export type ChecklistItemDefinition = {
   priority: ChecklistPriority;
   icon: ChecklistItemIcon;
   slots?: RequirementSlot[];
-  ownedGearMatcher?: "GROUNDSHEET";
+  ownedGearMatcher?: ChecklistOwnedGearMatcher;
 };
 
 export type ChecklistItem = ChecklistItemDefinition & {
@@ -211,13 +215,15 @@ function getBaseCategories(plan: PackRequirementPlan): ChecklistCategoryDefiniti
           id: "action-backpack",
           label: "ザック",
           priority: "ESSENTIAL",
-          icon: "backpack"
+          icon: "backpack",
+          ownedGearMatcher: "BACKPACK"
         },
         {
           id: "action-trekking-poles",
           label: "トレッキングポール",
           priority: "SUGGESTED",
-          icon: "trekkingPoles"
+          icon: "trekkingPoles",
+          ownedGearMatcher: "TREKKING_POLES"
         },
         {
           id: "action-sunglasses",
@@ -1336,31 +1342,11 @@ function matchChecklistOwnedGear(
   definition: ChecklistItemDefinition,
   ownedGear: readonly GearMatchingOwnedGearMatch[]
 ) {
-  if (definition.ownedGearMatcher !== "GROUNDSHEET") {
+  if (!definition.ownedGearMatcher) {
     return [];
   }
 
-  return ownedGear.filter(isGroundsheetGear);
-}
-
-function isGroundsheetGear(item: GearMatchingOwnedGearMatch) {
-  const text = [
-    item.name,
-    item.brand,
-    item.model,
-    item.gear_categories?.name_en,
-    item.gear_categories?.name_ja,
-    item.gear_subcategories?.name_en,
-    item.gear_subcategories?.name_ja
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .normalize("NFKC");
-
-  return (
-    /ground\s*sheet|groundsheet|foot\s*print|footprint/i.test(text) ||
-    /グラウンドシート|グランドシート|フットプリント|地布/.test(text)
-  );
+  return matchOwnedGearForChecklist(definition.ownedGearMatcher, ownedGear);
 }
 
 function uniqueOwnedGear(matches: GearMatchingOwnedGearMatch[]) {

@@ -24,16 +24,28 @@ const planChecklistSource = readFileSync(
   new URL("../src/lib/plan-checklist.ts", import.meta.url),
   "utf8"
 );
+const checklistOwnedGearMatchersSource = readFileSync(
+  new URL("../src/lib/checklist-owned-gear-matchers.ts", import.meta.url),
+  "utf8"
+);
 
 const { getRequiredSystemsForTrip } = await importTranspiled(tripRequirementEngineSource);
 const gearMatchingDataUrl = await toTranspiledDataUrl(gearMatchingSource);
+const checklistOwnedGearMatchersDataUrl = await toTranspiledDataUrl(
+  checklistOwnedGearMatchersSource
+);
 const { generatePackRequirementPlan } = await importTranspiled(
   packRequirementEngineSource.replace(
     'from "@/lib/gear-matching/engine"',
     `from "${gearMatchingDataUrl}"`
   )
 );
-const { buildPlanChecklist } = await importTranspiled(planChecklistSource);
+const { buildPlanChecklist } = await importTranspiled(
+  planChecklistSource.replace(
+    'from "@/lib/checklist-owned-gear-matchers"',
+    `from "${checklistOwnedGearMatchersDataUrl}"`
+  )
+);
 
 const officialMountains = applyReviewedStaticFixes(parseMeizan200Profiles(meizan200Migration))
   .filter((mountain) => {

@@ -118,21 +118,19 @@ test("gear add form treats backpack liters as volume, not people capacity", () =
   assert.match(gearFormSource, /isBackpackProduct\(product\) \? null : product\.capacity/);
 });
 
-test("gear add form keeps common Japanese outdoor brands at the top", () => {
-  for (const brand of [
-    "mont-bell",
-    "THE NORTH FACE",
-    "Black Diamond",
-    "NANGA",
-    "ISUKA",
-    "NEMO",
-    "Therm-a-Rest",
-    "SOTO"
-  ]) {
-    assert.match(gearDisplaySource, new RegExp(`"${brand}"`));
-  }
-
-  assert.match(gearDisplaySource, /compareGearBrands/);
+test("gear add form sorts product brand filters by visible product count", () => {
+  assert.match(gearFormSource, /const brandOptions = useMemo/);
+  assert.match(gearFormSource, /getProductBrandOptions\(products\)/);
+  assert.match(gearFormSource, /const productCountByBrand = new Map<string, number>\(\)/);
+  assert.match(gearFormSource, /if \(!product\.brand\)/);
+  assert.match(gearFormSource, /productCountByBrand\.set/);
+  assert.match(gearFormSource, /return countB - countA/);
+  assert.match(gearFormSource, /brandCollator\.compare\(brandA, brandB\)/);
+  assert.doesNotMatch(gearFormSource, /sort\(compareGearBrands\)/);
+  assert.match(
+    gearFormSource,
+    /handleBrandFilter\("all"\)[\s\S]*>\s*すべて\s*<\/ProductFilterChip>[\s\S]*brandOptions\.map/
+  );
 });
 
 test("gear actions canonicalize manually entered brand names without changing the form UI", () => {

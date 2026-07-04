@@ -18,7 +18,6 @@ import type { FormEvent, ReactNode } from "react";
 
 import { BrandLogo } from "@/components/brand-logo";
 import {
-  compareGearBrands,
   getProductDisplayTitle,
   getProductVolume,
   isBackpackProduct,
@@ -144,11 +143,7 @@ export function GearForm({
     ];
   }, [gear, subcategoriesForCategory]);
   const brandOptions = useMemo(() => {
-    const brands = Array.from(new Set(products.map((product) => product.brand)))
-      .filter(Boolean)
-      .sort(compareGearBrands);
-
-    return brands;
+    return getProductBrandOptions(products);
   }, [products]);
   const categorySortOrder = useMemo(() => {
     return new Map(categories.map((category, index) => [
@@ -1190,6 +1185,31 @@ function compareProductPickerItems(
   }
 
   return brandCollator.compare(a.model, b.model);
+}
+
+function getProductBrandOptions(products: GearProduct[]) {
+  const productCountByBrand = new Map<string, number>();
+
+  for (const product of products) {
+    if (!product.brand) {
+      continue;
+    }
+
+    productCountByBrand.set(
+      product.brand,
+      (productCountByBrand.get(product.brand) ?? 0) + 1
+    );
+  }
+
+  return [...productCountByBrand.entries()]
+    .sort(([brandA, countA], [brandB, countB]) => {
+      if (countA !== countB) {
+        return countB - countA;
+      }
+
+      return brandCollator.compare(brandA, brandB);
+    })
+    .map(([brand]) => brand);
 }
 
 const brandCollator = new Intl.Collator("ja");

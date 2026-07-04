@@ -229,7 +229,8 @@ function getBaseCategories(plan: PackRequirementPlan): ChecklistCategoryDefiniti
           id: "action-sunglasses",
           label: "サングラス",
           priority: "SUGGESTED",
-          icon: "sunglasses"
+          icon: "sunglasses",
+          ownedGearMatcher: "SUNGLASSES"
         }
       ]
     },
@@ -309,19 +310,22 @@ function getClothingItems(plan: PackRequirementPlan): ChecklistItemDefinition[] 
         id: "clothing-hat",
         label: "帽子",
         priority: "SUGGESTED",
-        icon: "hat"
+        icon: "hat",
+        ownedGearMatcher: "HAT"
       },
       {
         id: "clothing-gloves",
         label: "手袋",
         priority: getGlovesPriority(plan),
-        icon: "gloves"
+        icon: "gloves",
+        ownedGearMatcher: "GLOVES"
       },
       {
         id: "clothing-gaiters",
         label: "ゲイター",
         priority: "OPTIONAL",
-        icon: "gaiters"
+        icon: "gaiters",
+        ownedGearMatcher: "GAITERS"
       }
   ];
 }
@@ -392,7 +396,8 @@ function getNavigationItems(plan: PackRequirementPlan): ChecklistItemDefinition[
       id: "nav-map-compass",
       label: "紙地図・コンパス",
       priority: getBackupNavigationPriority(plan),
-      icon: "mapCompass"
+      icon: "mapCompass",
+      ownedGearMatcher: "MAP_COMPASS"
     }
   ];
 
@@ -741,7 +746,8 @@ function getSpecialGearItems(plan: PackRequirementPlan): ChecklistItemDefinition
       id: "special-crampons",
       label: "アイゼン",
       priority: mountain.snow_or_ice_risk === "WINTER_ALPINE" ? "ESSENTIAL" : "SUGGESTED",
-      icon: "crampons"
+      icon: "crampons",
+      ownedGearMatcher: "CRAMPONS"
     });
   }
 
@@ -750,7 +756,8 @@ function getSpecialGearItems(plan: PackRequirementPlan): ChecklistItemDefinition
       id: "special-ice-axe",
       label: "ピッケル",
       priority: mountain.snow_or_ice_risk === "WINTER_ALPINE" ? "SUGGESTED" : "OPTIONAL",
-      icon: "iceAxe"
+      icon: "iceAxe",
+      ownedGearMatcher: "ICE_AXE"
     });
   }
 
@@ -772,7 +779,8 @@ function getSpecialGearItems(plan: PackRequirementPlan): ChecklistItemDefinition
       id: "special-river-crossing-shoes",
       label: "渡渉用シューズ（沢靴・替え靴）",
       priority: "ESSENTIAL",
-      icon: "riverShoes"
+      icon: "riverShoes",
+      ownedGearMatcher: "WATER_CROSSING_SHOES"
     });
   }
 
@@ -821,7 +829,8 @@ function getOvernightGearItems(plan: PackRequirementPlan): ChecklistItemDefiniti
         id: "overnight-pegs",
         label: "ペグ",
         priority: "SUGGESTED",
-        icon: "pegs"
+        icon: "pegs",
+        ownedGearMatcher: "PEGS"
       },
       {
         id: "overnight-groundsheet",
@@ -865,7 +874,8 @@ function getHutSleepItem(plan: PackRequirementPlan): ChecklistItemDefinition {
     id: "overnight-inner-sheet",
     label: "インナーシーツ",
     priority: "ESSENTIAL",
-    icon: "innerSheet"
+    icon: "innerSheet",
+    ownedGearMatcher: "INNER_SHEET"
   };
 }
 

@@ -452,6 +452,482 @@ test("generic sheet, bell, spray, and toilet text does not match safety essentia
   assert.equal(itemByLabel(checklist, "携帯トイレ")?.checked, false);
 });
 
+test("owned hat category and names mark the hat checklist item as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan(),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-hat-category",
+        name: "Trail Cap",
+        categoryName: "clothing",
+        categoryLabel: "ウェア",
+        subcategoryName: "hat",
+        subcategoryLabel: "帽子"
+      }),
+      makeOwnedGear({
+        id: "owned-hat-name",
+        name: "メリノ ニット帽",
+        categoryName: "other",
+        subcategoryName: "other"
+      })
+    ]
+  });
+  const hat = itemByLabel(checklist, "帽子");
+
+  assert.equal(hat?.source, "GEAR_BACKED");
+  assert.equal(hat?.checked, true);
+  assert.deepEqual(
+    hat?.matchingOwnedGear.map((item) => item.id),
+    ["owned-hat-category", "owned-hat-name"]
+  );
+});
+
+test("owned gloves category and names mark the gloves checklist item as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan(),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-gloves-category",
+        name: "Winter Gloves",
+        categoryName: "clothing",
+        categoryLabel: "ウェア",
+        subcategoryName: "gloves",
+        subcategoryLabel: "手袋"
+      }),
+      makeOwnedGear({
+        id: "owned-gloves-name",
+        name: "防寒グローブ",
+        categoryName: "other",
+        subcategoryName: "other"
+      })
+    ]
+  });
+  const gloves = itemByLabel(checklist, "手袋");
+
+  assert.equal(gloves?.source, "GEAR_BACKED");
+  assert.equal(gloves?.checked, true);
+  assert.deepEqual(
+    gloves?.matchingOwnedGear.map((item) => item.id),
+    ["owned-gloves-category", "owned-gloves-name"]
+  );
+});
+
+test("owned gaiters category and names mark the gaiters checklist item as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan(),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-gaiters-category",
+        name: "Trail Gaiters",
+        categoryName: "clothing",
+        categoryLabel: "ウェア",
+        subcategoryName: "gaiters",
+        subcategoryLabel: "ゲイター"
+      }),
+      makeOwnedGear({
+        id: "owned-gaiters-name",
+        name: "泥よけスパッツ",
+        categoryName: "other",
+        subcategoryName: "other"
+      })
+    ]
+  });
+  const gaiters = itemByLabel(checklist, "ゲイター");
+
+  assert.equal(gaiters?.source, "GEAR_BACKED");
+  assert.equal(gaiters?.checked, true);
+  assert.deepEqual(
+    gaiters?.matchingOwnedGear.map((item) => item.id),
+    ["owned-gaiters-category", "owned-gaiters-name"]
+  );
+});
+
+test("owned sunglasses category and names mark the sunglasses checklist item as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan(),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-sunglasses-category",
+        name: "Mountain Sunglasses",
+        categoryName: "clothing",
+        categoryLabel: "ウェア",
+        subcategoryName: "sunglasses",
+        subcategoryLabel: "サングラス"
+      }),
+      makeOwnedGear({
+        id: "owned-sunglasses-name",
+        name: "偏光サングラス",
+        categoryName: "other",
+        subcategoryName: "other"
+      })
+    ]
+  });
+  const sunglasses = itemByLabel(checklist, "サングラス");
+
+  assert.equal(sunglasses?.source, "GEAR_BACKED");
+  assert.equal(sunglasses?.checked, true);
+  assert.deepEqual(
+    sunglasses?.matchingOwnedGear.map((item) => item.id),
+    ["owned-sunglasses-category", "owned-sunglasses-name"]
+  );
+});
+
+test("owned map or compass category and names mark backup navigation as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan(),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-map-category",
+        name: "紙地図",
+        categoryName: "navigation",
+        categoryLabel: "ナビゲーション",
+        subcategoryName: "map",
+        subcategoryLabel: "地図"
+      }),
+      makeOwnedGear({
+        id: "owned-compass-name",
+        name: "シルバ コンパス",
+        categoryName: "other",
+        subcategoryName: "other"
+      })
+    ]
+  });
+  const mapCompass = itemByLabel(checklist, "紙地図・コンパス");
+
+  assert.equal(mapCompass?.source, "GEAR_BACKED");
+  assert.equal(mapCompass?.checked, true);
+  assert.deepEqual(
+    mapCompass?.matchingOwnedGear.map((item) => item.id),
+    ["owned-map-category", "owned-compass-name"]
+  );
+});
+
+test("owned crampons and ice axe categories mark alpine winter checklist items as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      season: "WINTER",
+      mountain: {
+        elevation_m: 2500,
+        route_seriousness: "HIGH",
+        technical_terrain: "STEEP_ROCKY",
+        alpine_environment: "HIGH_ALPINE_EXPOSED",
+        snow_or_ice_risk: "WINTER_ALPINE"
+      },
+      requiredSlots: ["TRACTION_DEVICE"]
+    }),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-crampons-category",
+        name: "12本爪アイゼン",
+        categoryName: "snow",
+        categoryLabel: "雪山",
+        subcategoryName: "crampons",
+        subcategoryLabel: "アイゼン"
+      }),
+      makeOwnedGear({
+        id: "owned-ice-axe-category",
+        name: "Alpine Ice Axe",
+        categoryName: "climbing",
+        categoryLabel: "クライミング",
+        subcategoryName: "ice_axe",
+        subcategoryLabel: "ピッケル"
+      }),
+      makeOwnedGear({
+        id: "owned-crampons-name",
+        name: "10本爪 crampons",
+        categoryName: "other",
+        subcategoryName: "other"
+      }),
+      makeOwnedGear({
+        id: "owned-ice-axe-name",
+        name: "ピッケル",
+        categoryName: "other",
+        subcategoryName: "other"
+      })
+    ]
+  });
+  const crampons = itemByLabel(checklist, "アイゼン");
+  const iceAxe = itemByLabel(checklist, "ピッケル");
+
+  assert.equal(crampons?.source, "GEAR_BACKED");
+  assert.equal(crampons?.checked, true);
+  assert.deepEqual(
+    crampons?.matchingOwnedGear.map((item) => item.id),
+    ["owned-crampons-category", "owned-crampons-name"]
+  );
+  assert.equal(iceAxe?.source, "GEAR_BACKED");
+  assert.equal(iceAxe?.checked, true);
+  assert.deepEqual(
+    iceAxe?.matchingOwnedGear.map((item) => item.id),
+    ["owned-ice-axe-category", "owned-ice-axe-name"]
+  );
+});
+
+test("owned river shoes category marks the river crossing checklist item as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      mountain: {
+        mandatory_gear_note: "渡渉用シューズ必携"
+      }
+    }),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-water-shoes-category",
+        name: "沢靴",
+        categoryName: "footwear",
+        categoryLabel: "フットウェア",
+        subcategoryName: "water_shoes",
+        subcategoryLabel: "渡渉用シューズ"
+      }),
+      makeOwnedGear({
+        id: "owned-water-shoes-name",
+        name: "ウォーターシューズ",
+        categoryName: "other",
+        subcategoryName: "other"
+      })
+    ]
+  });
+  const riverShoes = itemByLabel(checklist, "渡渉用シューズ（沢靴・替え靴）");
+
+  assert.equal(riverShoes?.source, "GEAR_BACKED");
+  assert.equal(riverShoes?.checked, true);
+  assert.deepEqual(
+    riverShoes?.matchingOwnedGear.map((item) => item.id),
+    ["owned-water-shoes-category", "owned-water-shoes-name"]
+  );
+});
+
+test("owned pegs category and names mark the pegs checklist item as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      style: "OVERNIGHT_TENT",
+      requiredSlots: ["TENT", "SLEEP_INSULATION", "SLEEP_PAD"]
+    }),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-pegs-category",
+        name: "アルミペグ",
+        categoryName: "shelter",
+        categoryLabel: "テント・シェルター",
+        subcategoryName: "pegs",
+        subcategoryLabel: "ペグ"
+      }),
+      makeOwnedGear({
+        id: "owned-pegs-name",
+        name: "Tent stakes",
+        categoryName: "other",
+        subcategoryName: "other"
+      })
+    ]
+  });
+  const pegs = itemByLabel(checklist, "ペグ");
+
+  assert.equal(pegs?.source, "GEAR_BACKED");
+  assert.equal(pegs?.checked, true);
+  assert.deepEqual(
+    pegs?.matchingOwnedGear.map((item) => item.id),
+    ["owned-pegs-category", "owned-pegs-name"]
+  );
+});
+
+test("owned inner sheet category and explicit liner names mark the inner sheet item as ready", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      style: "OVERNIGHT_HUT",
+      mountain: {
+        hut_support: "FULL_SERVICE"
+      }
+    }),
+    ownedGear: [
+      makeOwnedGear({
+        id: "owned-inner-sheet-category",
+        name: "インナーシーツ",
+        categoryName: "sleep",
+        categoryLabel: "寝具",
+        subcategoryName: "inner_sheet",
+        subcategoryLabel: "インナーシーツ"
+      }),
+      makeOwnedGear({
+        id: "owned-inner-sheet-name",
+        name: "Sleeping bag liner",
+        categoryName: "other",
+        subcategoryName: "other"
+      })
+    ]
+  });
+  const innerSheet = itemByLabel(checklist, "インナーシーツ");
+
+  assert.equal(innerSheet?.source, "GEAR_BACKED");
+  assert.equal(innerSheet?.checked, true);
+  assert.deepEqual(
+    innerSheet?.matchingOwnedGear.map((item) => item.id),
+    ["owned-inner-sheet-category", "owned-inner-sheet-name"]
+  );
+});
+
+test("new checklist matchers do not match unrelated equipment", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      season: "WINTER",
+      style: "OVERNIGHT_TENT",
+      mountain: {
+        elevation_m: 2500,
+        route_seriousness: "HIGH",
+        technical_terrain: "STEEP_ROCKY",
+        alpine_environment: "HIGH_ALPINE_EXPOSED",
+        snow_or_ice_risk: "WINTER_ALPINE",
+        mandatory_gear_note: "渡渉用シューズ必携"
+      },
+      requiredSlots: ["TENT", "SLEEP_INSULATION", "SLEEP_PAD", "TRACTION_DEVICE"]
+    }),
+    ownedGear: [
+      makeOwnedGear({
+        id: "map-app",
+        name: "登山地図アプリ YAMAP",
+        categoryName: "electronics",
+        subcategoryName: "map"
+      }),
+      makeOwnedGear({
+        id: "chain-spikes",
+        name: "チェーンスパイク",
+        categoryName: "other",
+        subcategoryName: "traction_device"
+      }),
+      makeOwnedGear({
+        id: "hiking-shoes",
+        name: "Hiking shoes",
+        categoryName: "shoes",
+        subcategoryName: "hiking_shoes"
+      }),
+      makeOwnedGear({
+        id: "generic-peg",
+        name: "PEG adapter",
+        categoryName: "electronics",
+        subcategoryName: "other"
+      }),
+      makeOwnedGear({
+        id: "generic-liner",
+        name: "Pack liner",
+        categoryName: "other",
+        subcategoryName: "other"
+      })
+    ]
+  });
+
+  assert.equal(itemByLabel(checklist, "紙地図・コンパス")?.source, "CHECKLIST_ONLY");
+  assert.equal(itemByLabel(checklist, "アイゼン")?.source, "CHECKLIST_ONLY");
+  assert.equal(
+    itemByLabel(checklist, "渡渉用シューズ（沢靴・替え靴）")?.source,
+    "CHECKLIST_ONLY"
+  );
+  assert.equal(itemByLabel(checklist, "ペグ")?.source, "CHECKLIST_ONLY");
+});
+
+test("generic liner text does not mark hut inner sheets as owned", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      style: "OVERNIGHT_HUT",
+      mountain: {
+        hut_support: "FULL_SERVICE"
+      }
+    }),
+    ownedGear: [
+      makeOwnedGear({
+        id: "generic-liner",
+        name: "Pack liner",
+        categoryName: "other",
+        subcategoryName: "other"
+      })
+    ]
+  });
+
+  assert.equal(itemByLabel(checklist, "インナーシーツ")?.source, "CHECKLIST_ONLY");
+  assert.equal(itemByLabel(checklist, "インナーシーツ")?.checked, false);
+});
+
+test("fixed checklist items are covered by slots, owned matchers, or manual-only lists", () => {
+  const manualOnlyItemIds = new Set([
+    "food-trail-snacks",
+    "food-meals",
+    "safety-insurance-card",
+    "nav-map-app",
+    "clothing-mid-layer",
+    "nav-spare-battery",
+    "overnight-toiletries",
+    "overnight-earplugs"
+  ]);
+  const explicitlyDeferredItemIds = new Set([]);
+  const checklistScenarios = [
+    makePlan({
+      requiredSlots: [
+        "WATER_STORAGE",
+        "WATER_TREATMENT",
+        "RAIN_JACKET",
+        "RAIN_PANTS",
+        "INSULATION_LAYER",
+        "BASE_LAYER",
+        "FIRST_AID_KIT",
+        "HEADLAMP",
+        "POWER_BANK",
+        "STOVE",
+        "COOK_POT",
+        "FUEL"
+      ]
+    }),
+    makePlan({
+      season: "WINTER",
+      mountain: {
+        elevation_m: 2500,
+        route_seriousness: "HIGH",
+        technical_terrain: "STEEP_ROCKY",
+        alpine_environment: "HIGH_ALPINE_EXPOSED",
+        snow_or_ice_risk: "WINTER_ALPINE",
+        helmet_guidance: "REQUIRED",
+        bear_or_wildlife_risk: "HIGH",
+        mandatory_gear_note: "渡渉用シューズと携帯トイレ必携"
+      },
+      requiredSlots: ["HELMET", "TRACTION_DEVICE"]
+    }),
+    makePlan({
+      style: "OVERNIGHT_TENT",
+      requiredSlots: ["TENT", "SLEEP_INSULATION", "SLEEP_PAD"]
+    }),
+    makePlan({
+      style: "OVERNIGHT_HUT",
+      mountain: {
+        hut_support: "FULL_SERVICE"
+      }
+    })
+  ];
+  const coverageByItemId = new Map();
+
+  for (const plan of checklistScenarios) {
+    for (const item of checklistItems(buildPlanChecklist({ plan }))) {
+      const current = coverageByItemId.get(item.id) ?? {
+        label: item.label,
+        covered: false
+      };
+
+      coverageByItemId.set(item.id, {
+        label: item.label,
+        covered: current.covered || item.slots.length > 0 || Boolean(item.ownedGearMatcher)
+      });
+    }
+  }
+
+  const uncoveredItems = [...coverageByItemId]
+    .filter(([id, item]) => {
+      return (
+        !item.covered &&
+        !manualOnlyItemIds.has(id) &&
+        !explicitlyDeferredItemIds.has(id)
+      );
+    })
+    .map(([id, item]) => `${id}:${item.label}`);
+
+  assert.deepEqual([...new Set(uncoveredItems)].sort(), []);
+});
+
 test("low mountain winter trips show optional chain spikes without crampons or ice axe", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan({

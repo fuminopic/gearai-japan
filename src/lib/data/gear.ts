@@ -5,6 +5,11 @@ import {
   getRetailGearCategory,
   isRetailGearCategoryId
 } from "@/lib/gear-major-categories";
+import {
+  canonicalizeBrandName,
+  getBrandAliasesForQuery,
+  normalizeBrandKey
+} from "@/lib/brand-normalization";
 import { createClient } from "@/lib/supabase/server";
 import type {
   GearCategory,
@@ -172,7 +177,12 @@ export async function getUserGear(filters: GearFilters = {}) {
   }
 
   if (filters.brand) {
-    query = query.eq("brand", filters.brand);
+    const brandAliases = getBrandAliasesForQuery(filters.brand);
+
+    query =
+      brandAliases.length > 1
+        ? query.in("brand", brandAliases)
+        : query.eq("brand", brandAliases[0] ?? filters.brand);
   }
 
   if (filters.sort === "weight") {
@@ -188,7 +198,7 @@ export async function getUserGear(filters: GearFilters = {}) {
   }
 
   const rows = data as UserGearRow[];
-  const signedGear = await signGearImageUrls(supabase, rows);
+  const signedGear = canonicalizeUserGearBrands(await signGearImageUrls(supabase, rows));
 
   if (filters.category && isRetailGearCategoryId(filters.category)) {
     return signedGear.filter((item) => getRetailGearCategory(item)?.id === filters.category);
@@ -211,11 +221,14 @@ export async function getUserGearBrands() {
   }
 
   return Array.from(
-    new Set(
-      (data ?? [])
-        .map((item) => item.brand?.trim())
-        .filter((brand): brand is string => Boolean(brand))
-    )
+    (data ?? [])
+      .map((item) => canonicalizeBrandName(item.brand))
+      .filter((brand): brand is string => Boolean(brand))
+      .reduce((brands, brand) => {
+        brands.set(normalizeBrandKey(brand), brand);
+        return brands;
+      }, new Map<string, string>())
+      .values()
   ).sort((a, b) => a.localeCompare(b, "ja"));
 }
 
@@ -248,7 +261,22 @@ export async function getUserGearById(id: string) {
     throw new Error(error.message);
   }
 
-  return (await signGearImageUrls(supabase, [data as UserGearRow]))[0];
+  return canonicalizeUserGearBrands(await signGearImageUrls(supabase, [data as UserGearRow]))[0];
+}
+
+function canonicalizeUserGearBrands(gear: UserGear[]) {
+  return gear.map((item) => {
+    const brand = item.brand ? canonicalizeBrandName(item.brand) : null;
+
+    if (brand === item.brand) {
+      return item;
+    }
+
+    return {
+      ...item,
+      brand
+    };
+  });
 }
 
 async function signGearImageUrls(

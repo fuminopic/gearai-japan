@@ -134,3 +134,11 @@ test("gear add form keeps common Japanese outdoor brands at the top", () => {
 
   assert.match(gearDisplaySource, /compareGearBrands/);
 });
+
+test("gear actions canonicalize manually entered brand names without changing the form UI", () => {
+  assert.match(gearActionSource, /canonicalizeBrandName/);
+  assert.match(gearActionSource, /const brand = optionalString\(formData\.get\("brand"\)\)/);
+  assert.match(gearActionSource, /brand: brand \? canonicalizeBrandName\(brand\) : null/);
+  assert.match(gearFormSource, /value=\{brand\}/);
+  assert.match(gearFormSource, /onChange=\{\(event\) => setBrand\(event\.target\.value\)\}/);
+});

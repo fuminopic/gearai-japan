@@ -44,8 +44,18 @@ test("gear list supports brand filtering from the gear page query", () => {
   assert.match(gearPageSource, /brand\?: string/);
   assert.match(gearPageSource, /brand: params\.brand/);
   assert.match(gearDataSource, /filters\.brand/);
-  assert.match(gearDataSource, /\.eq\("brand", filters\.brand\)/);
+  assert.match(gearDataSource, /getBrandAliasesForQuery/);
+  assert.match(gearDataSource, /\.in\("brand", brandAliases\)/);
   assert.match(gearDataSource, /getUserGearBrands/);
+});
+
+test("gear list normalizes brand filters and historical brand aliases in data layer", () => {
+  assert.match(gearDataSource, /canonicalizeBrandName/);
+  assert.match(gearDataSource, /normalizeBrandKey/);
+  assert.match(gearDataSource, /canonicalizeUserGearBrands/);
+  assert.match(gearDataSource, /new Map<string, string>/);
+  assert.match(gearActionSource, /canonicalizeBrandName/);
+  assert.match(gearActionSource, /brand \? canonicalizeBrandName\(brand\) : null/);
 });
 
 test("gear list exposes brand and category-oriented list controls", () => {

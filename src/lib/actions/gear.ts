@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { canonicalizeBrandName } from "@/lib/brand-normalization";
 import { requireUser } from "@/lib/data/gear";
 import type { GearActionResult, GearStatus, WeightType } from "@/lib/types";
 import { toNumber } from "@/lib/utils/format";
@@ -90,13 +91,14 @@ function getGearPayload(formData: FormData) {
   const officialWeight = toNumber(formData.get("official_weight_grams"));
   const msrp = toNumber(formData.get("msrp_jpy"));
   const storedWeight = officialWeight ?? 0;
+  const brand = optionalString(formData.get("brand"));
 
   return {
     product_id: optionalString(formData.get("product_id")),
     category_id: String(formData.get("category_id") ?? ""),
     subcategory_id: optionalString(formData.get("subcategory_id")),
     name: String(formData.get("name") ?? "").trim(),
-    brand: optionalString(formData.get("brand")),
+    brand: brand ? canonicalizeBrandName(brand) : null,
     model: optionalString(formData.get("model")),
     weight_grams: Math.max(0, Math.round(storedWeight)),
     official_weight_grams:

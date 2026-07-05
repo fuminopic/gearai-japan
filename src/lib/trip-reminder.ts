@@ -309,15 +309,16 @@ async function requestReminderPermissionForPlugin(
   try {
     const current = await notifications.checkPermissions();
 
+    console.debug("[TripReminder] checkPermissions result", current);
+
     if (current.display === "granted") {
       return true;
     }
 
-    if (current.display === "denied") {
-      return false;
-    }
-
+    console.debug("[TripReminder] requestPermissions called");
     const requested = await notifications.requestPermissions();
+
+    console.debug("[TripReminder] requestPermissions result", requested);
 
     return requested.display === "granted";
   } catch {

@@ -92,6 +92,16 @@ test("trip reminders request permission and schedule from the current plan page"
   assert.match(planPageContentSource, /planTitle=\{selectedSavedPlan\?\.mountain_name \?\? null\}/);
 });
 
+test("trip reminders request native notification permission whenever not granted", () => {
+  assert.match(tripReminderSource, /notifications\.checkPermissions\(\)/);
+  assert.match(tripReminderSource, /console\.debug\("\[TripReminder\] checkPermissions result"/);
+  assert.match(tripReminderSource, /if \(current\.display === "granted"\) \{/);
+  assert.match(tripReminderSource, /console\.debug\("\[TripReminder\] requestPermissions called"\)/);
+  assert.match(tripReminderSource, /notifications\.requestPermissions\(\)/);
+  assert.match(tripReminderSource, /console\.debug\("\[TripReminder\] requestPermissions result"/);
+  assert.doesNotMatch(tripReminderSource, /if \(current\.display === "denied"\) \{\s*return false;/);
+});
+
 test("trip reminder v1 does not touch the trip planning ui save flow", () => {
   assert.doesNotMatch(tripPlanningUiSource, /TripReminderSync/);
   assert.doesNotMatch(tripPlanningUiSource, /PlanTripReminderSync/);

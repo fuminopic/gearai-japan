@@ -39,6 +39,10 @@ type DesiredReminder = {
   notifyAt: Date;
 };
 
+type TripReminderPermissionOptions = {
+  diagnostics?: boolean;
+};
+
 export function readTripReminderPlansFromLocalStorage(userId: string): TripReminderPlan[] {
   if (!userId || typeof window === "undefined") {
     return [];
@@ -102,14 +106,16 @@ export function getTripReminderNotificationDate(plannedDate: string) {
   return reminderDate;
 }
 
-export async function requestReminderPermission() {
-  const notifications = await loadNativeLocalNotifications();
+export async function requestReminderPermission(
+  options: TripReminderPermissionOptions = {}
+) {
+  const notifications = await loadNativeLocalNotifications(options);
 
   if (!notifications) {
     return false;
   }
 
-  return requestReminderPermissionForPlugin(notifications);
+  return requestReminderPermissionForPlugin(notifications, options);
 }
 
 export async function scheduleTripReminder(planId: string, plannedDate: string) {
@@ -282,47 +288,87 @@ function buildNotificationSchema(reminder: DesiredReminder) {
   };
 }
 
-async function loadNativeLocalNotifications(): Promise<LocalNotificationsPlugin | null> {
+async function loadNativeLocalNotifications(
+  options: TripReminderPermissionOptions = {}
+): Promise<LocalNotificationsPlugin | null> {
   if (typeof window === "undefined") {
     return null;
   }
 
   try {
-    const [{ Capacitor }, { LocalNotifications }] = await Promise.all([
-      import("@capacitor/core"),
-      import("@capacitor/local-notifications")
-    ]);
+    const { Capacitor } = await import("@capacitor/core");
+    const isNativePlatform = Capacitor.isNativePlatform();
 
-    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "ios") {
+    if (!isNativePlatform || Capacitor.getPlatform() !== "ios") {
       return null;
     }
 
-    return LocalNotifications;
+    logTripReminderPermissionDiagnostic(
+      options,
+      "Capacitor.isNativePlatform()",
+      isNativePlatform
+    );
+
+    try {
+      const { LocalNotifications } = await import("@capacitor/local-notifications");
+
+      logTripReminderPermissionDiagnostic(
+        options,
+        "LocalNotifications import succeeded",
+        true
+      );
+
+      return LocalNotifications;
+    } catch (error) {
+      logTripReminderPermissionDiagnostic(options, "catch error", error);
+      return null;
+    }
   } catch {
     return null;
   }
 }
 
 async function requestReminderPermissionForPlugin(
-  notifications: LocalNotificationsPlugin
+  notifications: LocalNotificationsPlugin,
+  options: TripReminderPermissionOptions = {}
 ) {
   try {
     const current = await notifications.checkPermissions();
 
+    logTripReminderPermissionDiagnostic(options, "checkPermissions result", current);
+
     if (current.display === "granted") {
+      logTripReminderPermissionDiagnostic(options, "requestPermissions called", false);
       return true;
     }
 
     if (current.display === "denied") {
+      logTripReminderPermissionDiagnostic(options, "requestPermissions called", false);
       return false;
     }
 
+    logTripReminderPermissionDiagnostic(options, "requestPermissions called", true);
     const requested = await notifications.requestPermissions();
 
+    logTripReminderPermissionDiagnostic(options, "requestPermissions result", requested);
+
     return requested.display === "granted";
-  } catch {
+  } catch (error) {
+    logTripReminderPermissionDiagnostic(options, "catch error", error);
     return false;
   }
+}
+
+function logTripReminderPermissionDiagnostic(
+  options: TripReminderPermissionOptions,
+  message: string,
+  value: unknown
+) {
+  if (!options.diagnostics) {
+    return;
+  }
+
+  console.debug("[TripReminder]", message, value);
 }
 
 function isTripReminderNotification(notification: PendingLocalNotificationSchema) {

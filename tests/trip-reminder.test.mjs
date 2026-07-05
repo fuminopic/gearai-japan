@@ -31,7 +31,7 @@ test("trip reminders use the Capacitor local notifications plugin dynamically", 
   assert.match(tripReminderSource, /import\("@capacitor\/core"\)/);
   assert.match(tripReminderSource, /Capacitor\.isNativePlatform\(\)/);
   assert.match(tripReminderSource, /Capacitor\.getPlatform\(\) !== "ios"/);
-  assert.match(tripReminderSource, /catch \{/);
+  assert.match(tripReminderSource, /catch \(error\)/);
 });
 
 test("trip reminders derive stable ids and schedule previous-day local 20:00", () => {
@@ -62,12 +62,29 @@ test("trip reminder sync mounts in the authenticated app layout", () => {
   assert.match(tripReminderSyncSource, /requestReminderPermission/);
   assert.match(tripReminderSyncSource, /reconcileTripReminders/);
   assert.match(tripReminderSyncSource, /readTripReminderPlansFromLocalStorage\(userId\)/);
-  assert.match(tripReminderSyncSource, /requestReminderPermission\(\)\.then/);
+  assert.match(tripReminderSyncSource, /window\.setTimeout/);
+  assert.match(tripReminderSyncSource, /TRIP_REMINDER_PERMISSION_DELAY_MS = 1000/);
+  assert.match(tripReminderSyncSource, /requestReminderPermission\(\{ diagnostics: true \}\)\.then/);
   assert.match(
     tripReminderSyncSource,
     /router\.push\(`\/plan\?id=\$\{encodeURIComponent\(planId\)\}&focus=checklist`\)/
   );
   assert.match(appLayoutSource, /<TripReminderSync userId=\{user\.id\} \/>/);
+});
+
+test("trip reminder permission diagnostics stay native-only and catch plugin errors", () => {
+  assert.match(tripReminderSyncSource, /logNativeTripReminderMount/);
+  assert.match(tripReminderSyncSource, /Capacitor\.isNativePlatform\(\)/);
+  assert.match(tripReminderSyncSource, /Capacitor\.getPlatform\(\) === "ios"/);
+  assert.match(tripReminderSyncSource, /console\.debug\("\[TripReminderSync\]", "component mounted"\)/);
+  assert.match(tripReminderSyncSource, /catch\(\(\) => \{/);
+  assert.match(tripReminderSource, /"Capacitor\.isNativePlatform\(\)"/);
+  assert.match(tripReminderSource, /"LocalNotifications import succeeded"/);
+  assert.match(tripReminderSource, /"checkPermissions result"/);
+  assert.match(tripReminderSource, /"requestPermissions called"/);
+  assert.match(tripReminderSource, /"requestPermissions result"/);
+  assert.match(tripReminderSource, /"catch error"/);
+  assert.match(tripReminderSource, /console\.debug\("\[TripReminder\]", message, value\)/);
 });
 
 test("trip reminder v1 does not touch the trip planning ui save flow", () => {

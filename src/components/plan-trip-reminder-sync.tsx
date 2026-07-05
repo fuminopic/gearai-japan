@@ -3,32 +3,46 @@
 import { useEffect } from "react";
 
 import {
-  readTripReminderPlansFromLocalStorage,
-  reconcileTripReminders,
-  requestReminderPermission
+  requestReminderPermission,
+  scheduleTripReminder
 } from "@/lib/trip-reminder";
 
 type PlanTripReminderSyncProps = {
   userId: string;
+  planId: string | null;
+  plannedDate: string | null;
+  planTitle?: string | null;
 };
 
-export function PlanTripReminderSync({ userId }: PlanTripReminderSyncProps) {
+export function PlanTripReminderSync({
+  userId,
+  planId,
+  plannedDate,
+  planTitle
+}: PlanTripReminderSyncProps) {
   useEffect(() => {
     let isMounted = true;
+
+    if (!userId || !planId) {
+      return () => {
+        isMounted = false;
+      };
+    }
 
     void requestReminderPermission().then(() => {
       if (!isMounted) {
         return;
       }
 
-      const plans = readTripReminderPlansFromLocalStorage(userId);
-      void reconcileTripReminders(plans);
+      if (plannedDate) {
+        void scheduleTripReminder(planId, plannedDate);
+      }
     });
 
     return () => {
       isMounted = false;
     };
-  }, [userId]);
+  }, [planId, planTitle, plannedDate, userId]);
 
   return null;
 }

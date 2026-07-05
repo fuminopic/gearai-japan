@@ -114,7 +114,12 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
 
   return (
     <>
-      <PlanTripReminderSync userId={user.id} />
+      <PlanTripReminderSync
+        userId={user.id}
+        planId={selectedSavedPlan?.id ?? null}
+        plannedDate={selectedSavedPlan?.planned_date ?? null}
+        planTitle={selectedSavedPlan?.mountain_name ?? null}
+      />
       <TripPlanningUI
         mountains={mountains}
         selectedMountainSlug={selectedMountainSlug}

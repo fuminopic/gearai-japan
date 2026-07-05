@@ -77,13 +77,19 @@ test("trip reminder sync mounts in the authenticated app layout", () => {
   assert.match(appLayoutSource, /<TripReminderSync userId=\{user\.id\} \/>/);
 });
 
-test("trip reminders request permission and reconcile when entering the plan page", () => {
+test("trip reminders request permission and schedule from the current plan page", () => {
   assert.match(planTripReminderSyncSource, /"use client"/);
   assert.match(planTripReminderSyncSource, /requestReminderPermission/);
   assert.match(planTripReminderSyncSource, /requestReminderPermission\(\)\.then/);
-  assert.match(planTripReminderSyncSource, /readTripReminderPlansFromLocalStorage\(userId\)/);
-  assert.match(planTripReminderSyncSource, /reconcileTripReminders\(plans\)/);
-  assert.match(planPageContentSource, /<PlanTripReminderSync userId=\{user\.id\} \/>/);
+  assert.match(planTripReminderSyncSource, /scheduleTripReminder/);
+  assert.match(planTripReminderSyncSource, /scheduleTripReminder\(planId, plannedDate\)/);
+  assert.match(planTripReminderSyncSource, /planId: string \| null/);
+  assert.match(planTripReminderSyncSource, /plannedDate: string \| null/);
+  assert.match(planTripReminderSyncSource, /planTitle\?: string \| null/);
+  assert.doesNotMatch(planTripReminderSyncSource, /readTripReminderPlansFromLocalStorage/);
+  assert.match(planPageContentSource, /planId=\{selectedSavedPlan\?\.id \?\? null\}/);
+  assert.match(planPageContentSource, /plannedDate=\{selectedSavedPlan\?\.planned_date \?\? null\}/);
+  assert.match(planPageContentSource, /planTitle=\{selectedSavedPlan\?\.mountain_name \?\? null\}/);
 });
 
 test("trip reminder v1 does not touch the trip planning ui save flow", () => {

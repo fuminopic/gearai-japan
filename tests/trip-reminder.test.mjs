@@ -59,8 +59,10 @@ test("trip reminders reconcile scoped local plan metadata without server push", 
 test("trip reminder sync mounts in the authenticated app layout", () => {
   assert.match(tripReminderSyncSource, /"use client"/);
   assert.match(tripReminderSyncSource, /registerTripReminderActionListener/);
+  assert.match(tripReminderSyncSource, /requestReminderPermission/);
   assert.match(tripReminderSyncSource, /reconcileTripReminders/);
   assert.match(tripReminderSyncSource, /readTripReminderPlansFromLocalStorage\(userId\)/);
+  assert.match(tripReminderSyncSource, /requestReminderPermission\(\)\.then/);
   assert.match(
     tripReminderSyncSource,
     /router\.push\(`\/plan\?id=\$\{encodeURIComponent\(planId\)\}&focus=checklist`\)/

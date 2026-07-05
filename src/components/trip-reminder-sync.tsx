@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import {
   readTripReminderPlansFromLocalStorage,
   reconcileTripReminders,
-  registerTripReminderActionListener
+  registerTripReminderActionListener,
+  requestReminderPermission
 } from "@/lib/trip-reminder";
 
 type TripReminderSyncProps = {
@@ -36,6 +37,11 @@ export function TripReminderSync({ userId }: TripReminderSyncProps) {
       cleanup();
     });
 
+    void requestReminderPermission().then(() => {
+      if (isMounted) {
+        syncReminders();
+      }
+    });
     syncReminders();
 
     function syncWhenVisible() {

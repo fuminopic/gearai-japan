@@ -1,3 +1,4 @@
+import { PlanTripReminderSync } from "@/components/plan-trip-reminder-sync";
 import { TripPlanningUI } from "@/components/trip-planning-ui";
 import { getGearProducts, getOwnedGearForPlanning, requireUser } from "@/lib/data/gear";
 import { getMountainFoundationProfiles } from "@/lib/data/mountain-foundation";
@@ -31,7 +32,7 @@ export type PlanPageContentProps = {
 
 export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   const params = await searchParams;
-  await requireUser();
+  const { user } = await requireUser();
 
   let error = params.error;
   let mountains: MountainFoundationProfile[] = [];
@@ -112,20 +113,23 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   }
 
   return (
-    <TripPlanningUI
-      mountains={mountains}
-      selectedMountainSlug={selectedMountainSlug}
-      selectedSeason={selectedSeason}
-      selectedStyle={selectedStyle}
-      plan={plan}
-      ownedGear={ownedGear}
-      compatibilityBySlot={compatibilityBySlot}
-      planHistory={planHistory}
-      savedPlans={savedPlans}
-      selectedPlanId={params.id ?? null}
-      selectedSavedPlan={selectedSavedPlan}
-      error={error}
-    />
+    <>
+      <PlanTripReminderSync userId={user.id} />
+      <TripPlanningUI
+        mountains={mountains}
+        selectedMountainSlug={selectedMountainSlug}
+        selectedSeason={selectedSeason}
+        selectedStyle={selectedStyle}
+        plan={plan}
+        ownedGear={ownedGear}
+        compatibilityBySlot={compatibilityBySlot}
+        planHistory={planHistory}
+        savedPlans={savedPlans}
+        selectedPlanId={params.id ?? null}
+        selectedSavedPlan={selectedSavedPlan}
+        error={error}
+      />
+    </>
   );
 }
 

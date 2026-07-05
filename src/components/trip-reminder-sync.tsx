@@ -3,12 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-import {
-  readTripReminderPlansFromLocalStorage,
-  reconcileTripReminders,
-  registerTripReminderActionListener,
-  requestReminderPermission
-} from "@/lib/trip-reminder";
+import { registerTripReminderActionListener } from "@/lib/trip-reminder";
 
 type TripReminderSyncProps = {
   userId: string;
@@ -21,11 +16,6 @@ export function TripReminderSync({ userId }: TripReminderSyncProps) {
     let isMounted = true;
     let removeNotificationListener: (() => void) | undefined;
 
-    function syncReminders() {
-      const plans = readTripReminderPlansFromLocalStorage(userId);
-      void reconcileTripReminders(plans);
-    }
-
     void registerTripReminderActionListener((planId) => {
       router.push(`/plan?id=${encodeURIComponent(planId)}&focus=checklist`);
     }).then((cleanup) => {
@@ -37,27 +27,9 @@ export function TripReminderSync({ userId }: TripReminderSyncProps) {
       cleanup();
     });
 
-    void requestReminderPermission().then(() => {
-      if (isMounted) {
-        syncReminders();
-      }
-    });
-    syncReminders();
-
-    function syncWhenVisible() {
-      if (document.visibilityState === "visible") {
-        syncReminders();
-      }
-    }
-
-    window.addEventListener("focus", syncReminders);
-    document.addEventListener("visibilitychange", syncWhenVisible);
-
     return () => {
       isMounted = false;
       removeNotificationListener?.();
-      window.removeEventListener("focus", syncReminders);
-      document.removeEventListener("visibilitychange", syncWhenVisible);
     };
   }, [router, userId]);
 

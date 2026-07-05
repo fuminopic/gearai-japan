@@ -13,6 +13,14 @@ const tripReminderSyncSource = readFileSync(
   new URL("../src/components/trip-reminder-sync.tsx", import.meta.url),
   "utf8"
 );
+const planTripReminderSyncSource = readFileSync(
+  new URL("../src/components/plan-trip-reminder-sync.tsx", import.meta.url),
+  "utf8"
+);
+const planPageContentSource = readFileSync(
+  new URL("../src/components/plan-page-content.tsx", import.meta.url),
+  "utf8"
+);
 const appLayoutSource = readFileSync(
   new URL("../app/(app)/layout.tsx", import.meta.url),
   "utf8"
@@ -59,10 +67,9 @@ test("trip reminders reconcile scoped local plan metadata without server push", 
 test("trip reminder sync mounts in the authenticated app layout", () => {
   assert.match(tripReminderSyncSource, /"use client"/);
   assert.match(tripReminderSyncSource, /registerTripReminderActionListener/);
-  assert.match(tripReminderSyncSource, /requestReminderPermission/);
-  assert.match(tripReminderSyncSource, /reconcileTripReminders/);
-  assert.match(tripReminderSyncSource, /readTripReminderPlansFromLocalStorage\(userId\)/);
-  assert.match(tripReminderSyncSource, /requestReminderPermission\(\)\.then/);
+  assert.doesNotMatch(tripReminderSyncSource, /requestReminderPermission/);
+  assert.doesNotMatch(tripReminderSyncSource, /reconcileTripReminders/);
+  assert.doesNotMatch(tripReminderSyncSource, /readTripReminderPlansFromLocalStorage/);
   assert.match(
     tripReminderSyncSource,
     /router\.push\(`\/plan\?id=\$\{encodeURIComponent\(planId\)\}&focus=checklist`\)/
@@ -70,8 +77,18 @@ test("trip reminder sync mounts in the authenticated app layout", () => {
   assert.match(appLayoutSource, /<TripReminderSync userId=\{user\.id\} \/>/);
 });
 
+test("trip reminders request permission and reconcile when entering the plan page", () => {
+  assert.match(planTripReminderSyncSource, /"use client"/);
+  assert.match(planTripReminderSyncSource, /requestReminderPermission/);
+  assert.match(planTripReminderSyncSource, /requestReminderPermission\(\)\.then/);
+  assert.match(planTripReminderSyncSource, /readTripReminderPlansFromLocalStorage\(userId\)/);
+  assert.match(planTripReminderSyncSource, /reconcileTripReminders\(plans\)/);
+  assert.match(planPageContentSource, /<PlanTripReminderSync userId=\{user\.id\} \/>/);
+});
+
 test("trip reminder v1 does not touch the trip planning ui save flow", () => {
   assert.doesNotMatch(tripPlanningUiSource, /TripReminderSync/);
+  assert.doesNotMatch(tripPlanningUiSource, /PlanTripReminderSync/);
   assert.doesNotMatch(tripPlanningUiSource, /reconcileTripReminders/);
   assert.doesNotMatch(tripPlanningUiSource, /scheduleTripReminder/);
 });

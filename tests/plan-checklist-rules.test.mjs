@@ -928,6 +928,7 @@ test("fixed checklist items are covered by slots, owned matchers, or manual-only
     "nav-map-app",
     "clothing-mid-layer",
     "nav-spare-battery",
+    "special-volcano-information",
     "overnight-toiletries",
     "overnight-earplugs"
   ]);
@@ -962,6 +963,12 @@ test("fixed checklist items are covered by slots, owned matchers, or manual-only
         mandatory_gear_note: "渡渉用シューズと携帯トイレ必携"
       },
       requiredSlots: ["HELMET", "TRACTION_DEVICE"]
+    }),
+    makePlan({
+      mountain: {
+        volcanic_risk: "ACTIVE_MONITORED",
+        active_volcano_status: "ACTIVE"
+      }
     }),
     makePlan({
       style: "OVERNIGHT_TENT",
@@ -1074,6 +1081,64 @@ test("alpine winter contexts still keep crampons and ice axe visible", () => {
     itemByLabel(checklist, "ピッケル")?.reason ?? "",
     /ピッケル等が必要な本格的な雪山は経験者判断が必要/
   );
+});
+
+test("active monitored volcanoes show official volcano information guidance", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      mountain: {
+        volcanic_risk: "ACTIVE_MONITORED",
+        active_volcano_status: "NONE"
+      }
+    })
+  });
+  const volcanoInfo = itemByLabel(checklist, "火山情報の確認");
+
+  assert.equal(volcanoInfo?.priority, "ESSENTIAL");
+  assert.match(volcanoInfo?.reason ?? "", /噴火警戒レベル/);
+  assert.match(volcanoInfo?.reason ?? "", /入山規制/);
+  assert.match(volcanoInfo?.reason ?? "", /気象庁/);
+  assert.match(volcanoInfo?.reason ?? "", /自治体/);
+  assert.match(volcanoInfo?.reason ?? "", /公式情報/);
+});
+
+test("active volcano status shows volcano information guidance even without monitored risk", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      mountain: {
+        volcanic_risk: "NONE",
+        active_volcano_status: "ACTIVE"
+      }
+    })
+  });
+
+  assert.equal(itemByLabel(checklist, "火山情報の確認")?.priority, "ESSENTIAL");
+});
+
+test("active restricted volcanoes do not add checklist guidance because planning is blocked", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      mountain: {
+        volcanic_risk: "ACTIVE_RESTRICTED",
+        active_volcano_status: "ACTIVE"
+      }
+    })
+  });
+
+  assert.equal(itemByLabel(checklist, "火山情報の確認"), undefined);
+});
+
+test("ordinary non-volcanic mountains do not show volcano information guidance", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      mountain: {
+        volcanic_risk: "NONE",
+        active_volcano_status: "NONE"
+      }
+    })
+  });
+
+  assert.equal(itemByLabel(checklist, "火山情報の確認"), undefined);
 });
 
 test("long remote day hikes promote forced-bivouac emergency items", () => {

@@ -487,6 +487,7 @@ const importantPreDepartureItemIds = new Set<string>([
   "special-chain-spikes",
   "special-crampons",
   "special-ice-axe",
+  "special-volcano-information",
   "special-bear-protection",
   "special-river-crossing-shoes",
   "special-portable-toilet"
@@ -761,6 +762,15 @@ function getSpecialGearItems(plan: PackRequirementPlan): ChecklistItemDefinition
     });
   }
 
+  if (requiresVolcanoInformationCheck(plan)) {
+    items.push({
+      id: "special-volcano-information",
+      label: "火山情報の確認",
+      priority: "ESSENTIAL",
+      icon: "firstAid"
+    });
+  }
+
   if (
     mountain.bear_or_wildlife_risk === "MODERATE" ||
     mountain.bear_or_wildlife_risk === "HIGH"
@@ -1007,6 +1017,10 @@ function getChecklistItemReason(
     return "ピッケル等が必要な本格的な雪山は経験者判断が必要です。直前の山行記録・現地情報で条件を確認してください。";
   }
 
+  if (definition.id === "special-volcano-information") {
+    return "活火山・火山監視対象の山です。噴火警戒レベル、入山規制、気象庁・自治体などの公式情報を出発前に必ず確認してください。";
+  }
+
   if (definition.id === "special-bear-protection") {
     return getBearProtectionReason(mountain);
   }
@@ -1049,6 +1063,19 @@ function getBearProtectionReason(mountain: PackRequirementPlan["mountain"]): str
   }
 
   return "ツキノワグマなどの出没情報確認を行い、熊鈴の携行と行動中の注意を徹底してください。";
+}
+
+function requiresVolcanoInformationCheck(plan: PackRequirementPlan): boolean {
+  const { mountain } = plan;
+
+  if (mountain.volcanic_risk === "ACTIVE_RESTRICTED") {
+    return false;
+  }
+
+  return (
+    mountain.volcanic_risk === "ACTIVE_MONITORED" ||
+    mountain.active_volcano_status === "ACTIVE"
+  );
 }
 
 export function buildPlanDecisionChips(plan: PackRequirementPlan): PlanDecisionChip[] {

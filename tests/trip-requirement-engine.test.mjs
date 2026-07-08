@@ -177,6 +177,7 @@ test("trip requirement engine applies generic season and style rules only within
       "RAIN_SYSTEM",
       "COLD_WEATHER_LAYER",
       "NAVIGATION_SYSTEM",
+      "TECHNICAL_SAFETY_SYSTEM",
       "EMERGENCY_SYSTEM"
     ]
   );
@@ -194,6 +195,7 @@ test("trip requirement engine treats safety rules as additive over mountain defa
       "RAIN_SYSTEM",
       "COLD_WEATHER_LAYER",
       "NAVIGATION_SYSTEM",
+      "TECHNICAL_SAFETY_SYSTEM",
       "EMERGENCY_SYSTEM"
     ]
   );

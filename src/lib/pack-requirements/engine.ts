@@ -230,8 +230,12 @@ function requiresTractionDevice(
     return true;
   }
 
+  if (season === "WINTER") {
+    return true;
+  }
+
   return (
     mountain.snow_or_ice_risk === "SEASONAL_PATCHES" &&
-    (season === "SPRING" || season === "AUTUMN" || season === "WINTER")
+    (season === "SPRING" || season === "AUTUMN")
   );
 }

@@ -324,6 +324,34 @@ test("pack requirement generator requires sleeping pads for huts without bedding
   );
 });
 
+test("pack requirement generator requires traction for winter low-snow trips", () => {
+  assert.deepEqual(
+    getRequirementSlotsForTrip(["TECHNICAL_SAFETY_SYSTEM"], "DAY_HIKE", {
+      mountain: {
+        ...alpineV2Mountain,
+        helmet_guidance: "NOT_NEEDED",
+        technical_terrain: "MAINTAINED_TRAIL",
+        snow_or_ice_risk: "LOW"
+      },
+      season: "WINTER"
+    }),
+    ["TRACTION_DEVICE"]
+  );
+
+  assert.deepEqual(
+    getRequirementSlotsForTrip(["TECHNICAL_SAFETY_SYSTEM"], "DAY_HIKE", {
+      mountain: {
+        ...alpineV2Mountain,
+        helmet_guidance: "NOT_NEEDED",
+        technical_terrain: "MAINTAINED_TRAIL",
+        snow_or_ice_risk: "LOW"
+      },
+      season: "SUMMER"
+    }),
+    []
+  );
+});
+
 test("pack requirement generator applies V2 mountain attributes to concrete slots", () => {
   assert.deepEqual(
     getRequirementSlotsForTrip(

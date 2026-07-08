@@ -180,6 +180,26 @@ test("trip planning page always refreshes gear-derived pack coverage", () => {
   assert.match(planPageContentSource, /matchGearForRequirementSlot/);
 });
 
+test("trip planning blocks active restricted volcanoes before generating a plan", () => {
+  assert.match(planPageContentSource, /restrictedVolcanoPlanningMessage/);
+  assert.match(
+    planPageContentSource,
+    /この山は現在、火山活動または入山規制により通常の登山計画を作成できません。気象庁・自治体などの公式情報を確認してください。/
+  );
+  assert.match(
+    planPageContentSource,
+    /mountain\?\.volcanic_risk === "ACTIVE_RESTRICTED"/
+  );
+  assert.match(planPageContentSource, /const plannableMountains = mountains\.filter/);
+  assert.match(planPageContentSource, /isRestrictedMountainRequest/);
+  assert.match(
+    planPageContentSource,
+    /if \(isRestrictedMountainRequest\) \{\s*error = restrictedVolcanoPlanningMessage;[\s\S]*\} else if \(shouldGeneratePlan && plannableMountains\.length > 0\)/
+  );
+  assert.match(planPageContentSource, /mountains=\{plannableMountains\}/);
+  assert.doesNotMatch(planPageContentSource, /sakurajima/);
+});
+
 test("app navigation responds immediately during dynamic route loading", () => {
   assert.match(appLayoutSource, /<Suspense fallback=\{<AppAuthLoading \/>/);
   assert.match(appLayoutSource, /function AppLayout/);
@@ -497,7 +517,10 @@ test("trip planning form filters seasons and styles by selected mountain", () =>
 });
 
 test("trip planning page normalizes direct URL parameters against the mountain", () => {
-  assert.match(planPageContentSource, /getSelectedMountain\(selectedMountainSlug, mountains\)/);
+  assert.match(
+    planPageContentSource,
+    /getSelectedMountain\(selectedMountainSlug, plannableMountains\)/
+  );
   assert.match(planPageContentSource, /getSelectedSeason\(hydratedSeasonParam, selectedMountain\)/);
   assert.match(planPageContentSource, /getSelectedStyle\(hydratedStyleParam, selectedMountain\)/);
   assert.match(planPageContentSource, /supported_seasons\.includes\(season\)/);

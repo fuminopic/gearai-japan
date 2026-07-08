@@ -29,6 +29,9 @@ export type PlanPageContentProps = {
   }>;
 };
 
+const restrictedVolcanoPlanningMessage =
+  "この山は現在、火山活動または入山規制により通常の登山計画を作成できません。気象庁・自治体などの公式情報を確認してください。";
+
 export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   const params = await searchParams;
   await requireUser();
@@ -52,6 +55,9 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
     mountains = mountainResult.data;
   }
 
+  const plannableMountains = mountains.filter(
+    (mountain) => !isPlanningRestrictedMountain(mountain)
+  );
   const selectedSavedPlan =
     params.id && savedPlans.length > 0
       ? savedPlans.find((record) => record.id === params.id) ?? null
@@ -59,8 +65,13 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   const hydratedMountainParam = params.mountain ?? selectedSavedPlan?.mountain_slug ?? undefined;
   const hydratedSeasonParam = params.season ?? selectedSavedPlan?.season;
   const hydratedStyleParam = params.style ?? selectedSavedPlan?.style;
-  const selectedMountainSlug = getSelectedMountainSlug(hydratedMountainParam, mountains);
-  const selectedMountain = getSelectedMountain(selectedMountainSlug, mountains);
+  const requestedMountain = getRequestedMountain(hydratedMountainParam, mountains);
+  const isRestrictedMountainRequest = isPlanningRestrictedMountain(requestedMountain);
+  const selectedMountainSlug = getSelectedMountainSlug(
+    isRestrictedMountainRequest ? undefined : hydratedMountainParam,
+    plannableMountains
+  );
+  const selectedMountain = getSelectedMountain(selectedMountainSlug, plannableMountains);
   const selectedSeason = getSelectedSeason(hydratedSeasonParam, selectedMountain);
   const selectedStyle = getSelectedStyle(hydratedStyleParam, selectedMountain);
   const shouldGeneratePlan = Boolean(
@@ -73,7 +84,9 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   let compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>> = {};
   let ownedGear: UserGear[] = [];
 
-  if (shouldGeneratePlan && mountains.length > 0) {
+  if (isRestrictedMountainRequest) {
+    error = restrictedVolcanoPlanningMessage;
+  } else if (shouldGeneratePlan && plannableMountains.length > 0) {
     try {
       const [generatedPlan, databaseGear, planningOwnedGear] = await Promise.all([
         getPackRequirementPlan({
@@ -113,7 +126,7 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
 
   return (
     <TripPlanningUI
-      mountains={mountains}
+      mountains={plannableMountains}
       selectedMountainSlug={selectedMountainSlug}
       selectedSeason={selectedSeason}
       selectedStyle={selectedStyle}
@@ -127,6 +140,23 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
       error={error}
     />
   );
+}
+
+function isPlanningRestrictedMountain(
+  mountain: MountainFoundationProfile | null | undefined
+) {
+  return mountain?.volcanic_risk === "ACTIVE_RESTRICTED";
+}
+
+function getRequestedMountain(
+  slug: string | undefined,
+  mountains: readonly MountainFoundationProfile[]
+) {
+  if (!slug) {
+    return null;
+  }
+
+  return mountains.find((mountain) => mountain.slug === slug) ?? null;
 }
 
 function getSelectedMountainSlug(

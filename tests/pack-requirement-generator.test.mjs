@@ -277,6 +277,28 @@ test("pack requirement generator covers category-only tent and sleeping bag reco
   assert.ok(!plan.missing_slots.some((slot) => slot.slot === "SLEEP_INSULATION"));
 });
 
+test("pack requirement generator requires water treatment for unreliable water sources", () => {
+  const waterSlotsFor = (waterAvailability) =>
+    getRequirementSlotsForTrip(["WATER_SYSTEM"], "DAY_HIKE", {
+      mountain: {
+        ...alpineV2Mountain,
+        water_availability: waterAvailability
+      },
+      season: "SUMMER"
+    });
+
+  assert.deepEqual(waterSlotsFor("LIMITED_OR_SEASONAL"), [
+    "WATER_STORAGE",
+    "WATER_TREATMENT"
+  ]);
+  assert.deepEqual(waterSlotsFor("UNRELIABLE"), [
+    "WATER_STORAGE",
+    "WATER_TREATMENT"
+  ]);
+  assert.deepEqual(waterSlotsFor("TREATED_RELIABLE"), ["WATER_STORAGE"]);
+  assert.deepEqual(waterSlotsFor("HUT_OR_SHOP_RELIABLE"), ["WATER_STORAGE"]);
+});
+
 test("pack requirement generator applies V2 mountain attributes to concrete slots", () => {
   assert.deepEqual(
     getRequirementSlotsForTrip(

@@ -204,7 +204,7 @@ function requiresWaterTreatment(mountain?: PackRequirementInput["mountain"]) {
     return true;
   }
 
-  return ["NATURAL_RELIABLE", "LIMITED_OR_SEASONAL"].includes(
+  return ["NATURAL_RELIABLE", "LIMITED_OR_SEASONAL", "UNRELIABLE"].includes(
     mountain.water_availability ?? "NATURAL_RELIABLE"
   );
 }

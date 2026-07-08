@@ -1032,6 +1032,14 @@ test("low mountain winter trips show optional chain spikes without crampons or i
   });
 
   assert.equal(itemByLabel(checklist, "チェーンスパイク")?.priority, "OPTIONAL");
+  assert.match(
+    itemByLabel(checklist, "チェーンスパイク")?.reason ?? "",
+    /チェーンスパイク等の滑り止めを確認/
+  );
+  assert.match(
+    itemByLabel(checklist, "チェーンスパイク")?.reason ?? "",
+    /積雪・凍結状況により必要装備が変わります/
+  );
   assert.equal(itemByLabel(checklist, "アイゼン"), undefined);
   assert.equal(itemByLabel(checklist, "ピッケル"), undefined);
 });
@@ -1054,6 +1062,18 @@ test("alpine winter contexts still keep crampons and ice axe visible", () => {
   assert.equal(itemByLabel(checklist, "チェーンスパイク")?.priority, "ESSENTIAL");
   assert.equal(itemByLabel(checklist, "アイゼン")?.priority, "ESSENTIAL");
   assert.equal(itemByLabel(checklist, "ピッケル")?.priority, "SUGGESTED");
+  assert.match(
+    itemByLabel(checklist, "チェーンスパイク")?.reason ?? "",
+    /アイゼン等の要否は直前の山行記録・現地情報で確認/
+  );
+  assert.match(
+    itemByLabel(checklist, "アイゼン")?.reason ?? "",
+    /アイゼン等の要否は直前の山行記録・現地情報で確認/
+  );
+  assert.match(
+    itemByLabel(checklist, "ピッケル")?.reason ?? "",
+    /ピッケル等が必要な本格的な雪山は経験者判断が必要/
+  );
 });
 
 test("long remote day hikes promote forced-bivouac emergency items", () => {

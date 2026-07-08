@@ -995,16 +995,16 @@ function getChecklistItemReason(
   if (definition.id === "special-chain-spikes") {
     return mountain.snow_or_ice_risk === "WINTER_ALPINE" ||
       mountain.snow_or_ice_risk === "LIKELY"
-      ? "雪や凍結を前提に、足元の滑り止めを必ず確認してください。"
-      : "季節や標高によって凍結が残ることがあるため、チェーンスパイクを確認してください。";
+      ? "雪や凍結の可能性があるため、チェーンスパイク等の滑り止めを確認してください。アイゼン等の要否は直前の山行記録・現地情報で確認してください。"
+      : "冬季や季節・標高によって凍結が残ることがあるため、チェーンスパイク等の滑り止めを確認してください。積雪・凍結状況により必要装備が変わります。";
   }
 
   if (definition.id === "special-crampons") {
-    return "冬季高山や硬い雪面に備えて、アイゼンが必要な条件か確認してください。";
+    return "アイゼン等の要否は直前の山行記録・現地情報で確認してください。本格的な雪山は経験者判断が必要です。";
   }
 
   if (definition.id === "special-ice-axe") {
-    return "急な雪面や滑落停止が必要な条件に備えて、ピッケルを確認してください。";
+    return "ピッケル等が必要な本格的な雪山は経験者判断が必要です。直前の山行記録・現地情報で条件を確認してください。";
   }
 
   if (definition.id === "special-bear-protection") {

@@ -1008,7 +1008,7 @@ function getChecklistItemReason(
   }
 
   if (definition.id === "special-bear-protection") {
-    return "熊や野生動物との遭遇リスクがあるため、熊鈴などの対策装備を確認してください。";
+    return getBearProtectionReason(mountain);
   }
 
   if (definition.id === "overnight-tent") {
@@ -1033,6 +1033,22 @@ function getChecklistItemReason(
   }
 
   return `${mountain.name_ja}の${seasonLabel}・${getStyleReasonLabel(style)}計画に合わせて、出発前に確認してください。`;
+}
+
+function isHokkaidoMountain(mountain: PackRequirementPlan["mountain"]): boolean {
+  return (
+    mountain.primary_region === "HOKKAIDO" ||
+    mountain.region === "HOKKAIDO" ||
+    mountain.prefectures.includes("北海道")
+  );
+}
+
+function getBearProtectionReason(mountain: PackRequirementPlan["mountain"]): string {
+  if (isHokkaidoMountain(mountain)) {
+    return "ヒグマとの遭遇リスクに備えて、熊スプレー、食料管理、出没情報確認を必ず行ってください。";
+  }
+
+  return "ツキノワグマなどの出没情報確認を行い、熊鈴の携行と行動中の注意を徹底してください。";
 }
 
 export function buildPlanDecisionChips(plan: PackRequirementPlan): PlanDecisionChip[] {

@@ -380,6 +380,81 @@ test("owned bear bell and bear spray mark the bear protection checklist item as 
   );
 });
 
+test("hokkaido high bear risk highlights brown bear spray and food management", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      mountain: {
+        primary_region: "HOKKAIDO",
+        prefectures: ["北海道"],
+        bear_or_wildlife_risk: "HIGH"
+      }
+    }),
+    ownedGear: []
+  });
+  const bearProtection = itemByLabel(checklist, "熊対策装備");
+
+  assert.equal(bearProtection?.priority, "ESSENTIAL");
+  assert.match(bearProtection?.reason ?? "", /ヒグマ/);
+  assert.match(bearProtection?.reason ?? "", /熊スプレー/);
+  assert.match(bearProtection?.reason ?? "", /食料管理/);
+  assert.match(bearProtection?.reason ?? "", /出没情報確認/);
+});
+
+test("hokkaido moderate bear risk keeps suggested priority with brown bear guidance", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      mountain: {
+        region: "HOKKAIDO",
+        prefectures: ["北海道"],
+        bear_or_wildlife_risk: "MODERATE"
+      }
+    }),
+    ownedGear: []
+  });
+  const bearProtection = itemByLabel(checklist, "熊対策装備");
+
+  assert.equal(bearProtection?.priority, "SUGGESTED");
+  assert.match(bearProtection?.reason ?? "", /ヒグマ/);
+  assert.match(bearProtection?.reason ?? "", /熊スプレー/);
+  assert.match(bearProtection?.reason ?? "", /食料管理/);
+});
+
+test("honshu high bear risk highlights bear bell and active caution", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      mountain: {
+        primary_region: "CHUBU",
+        region: "CHUBU",
+        prefectures: ["長野県"],
+        bear_or_wildlife_risk: "HIGH"
+      }
+    }),
+    ownedGear: []
+  });
+  const bearProtection = itemByLabel(checklist, "熊対策装備");
+
+  assert.equal(bearProtection?.priority, "ESSENTIAL");
+  assert.match(bearProtection?.reason ?? "", /ツキノワグマ/);
+  assert.match(bearProtection?.reason ?? "", /熊鈴/);
+  assert.match(bearProtection?.reason ?? "", /出没情報確認/);
+  assert.match(bearProtection?.reason ?? "", /行動中の注意/);
+});
+
+test("low bear risk does not add bear protection guidance", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      mountain: {
+        primary_region: "HOKKAIDO",
+        prefectures: ["北海道"],
+        bear_or_wildlife_risk: "LOW"
+      }
+    }),
+    ownedGear: []
+  });
+
+  assert.equal(itemByLabel(checklist, "熊対策装備"), undefined);
+});
+
 test("owned portable toilet category marks the portable toilet checklist item as ready", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan({

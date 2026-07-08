@@ -286,7 +286,7 @@ test("trip planning UI presents a professional gear checklist", () => {
   assert.doesNotMatch(tripPlanningUiSource, /Checklist-only/);
   assert.doesNotMatch(planChecklistSource, /nav-smartphone/);
   assert.doesNotMatch(planChecklistSource, /label: "スマホ"/);
-  assert.doesNotMatch(planChecklistSource, /GPS端末/);
+  assert.doesNotMatch(labelsSource, /GPS_DEVICE: "GPS デバイス"/);
   assert.doesNotMatch(planChecklistSource, /gpsDevice/);
   assert.doesNotMatch(tripPlanningUiSource, /未登録/);
   assert.match(tripPlanningUiSource, /buildPlanChecklist/);
@@ -453,6 +453,7 @@ test("pack planning UI deduplicates merged slot labels and supports checklist pr
   assert.match(labelsSource, /WATER_TREATMENT: "水（飲料水・容器・浄水）"/);
   assert.match(labelsSource, /RAIN_JACKET: "雨具（レインギア）"/);
   assert.match(labelsSource, /RAIN_PANTS: "雨具（レインギア）"/);
+  assert.match(labelsSource, /GPS_DEVICE: "専用GPS端末（必要に応じて）"/);
 
   assert.match(tripPlanningUiSource, /function dedupeDisplaySlots/);
   assert.match(tripPlanningUiSource, /getRequirementSlotDisplayKey/);

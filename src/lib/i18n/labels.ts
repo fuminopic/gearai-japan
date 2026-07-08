@@ -130,7 +130,7 @@ export const requirementSlotLabels: Record<RequirementSlot, string> = {
   BASE_LAYER: "ベースレイヤー",
   HELMET: "ヘルメット",
   TRACTION_DEVICE: "軽アイゼン・チェーンスパイク",
-  GPS_DEVICE: "GPS デバイス",
+  GPS_DEVICE: "専用GPS端末（必要に応じて）",
   POWER_BANK: "モバイルバッテリー",
   FIRST_AID_KIT: "ファーストエイド",
   HEADLAMP: "ヘッドランプ"

@@ -245,7 +245,10 @@ test("trip planning UI presents a professional gear checklist", () => {
     "すべての持ち物を確認",
     "今回不要なもの",
     "登山地図アプリ（YAMAP・ヤマレコ等）",
-    "紙地図・コンパス"
+    "紙地図・コンパス",
+    "このリストは山・季節・山行スタイルに基づく一般的な目安です",
+    "当日の天気予報、具体的なルート状況、入山規制の最新情報は反映されません",
+    "自治体・山小屋などの公式情報をご確認ください"
   ]) {
     assert.match(`${tripPlanningUiSource}\n${planChecklistSource}`, new RegExp(copy));
   }

@@ -1258,6 +1258,10 @@ function TripPlanningResult({
           </div>
         </div>
 
+        <p className="rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-xs font-semibold leading-relaxed text-amber-900">
+          このリストは山・季節・山行スタイルに基づく一般的な目安です。当日の天気予報、具体的なルート状況、入山規制の最新情報は反映されません。出発前に必ず気象情報、登山道情報、自治体・山小屋などの公式情報をご確認ください。
+        </p>
+
         <ChecklistScanControls
           activeFilter={scanFilter}
           summary={preDepartureSummary}

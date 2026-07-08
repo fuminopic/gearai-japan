@@ -47,7 +47,10 @@ const STYLE_REQUIREMENT_SLOTS: Record<
   readonly { system: PlanningSystem; slot: RequirementSlot }[]
 > = {
   DAY_HIKE: [],
-  OVERNIGHT_HUT: [{ system: "SLEEP_SYSTEM", slot: "SLEEP_INSULATION" }],
+  OVERNIGHT_HUT: [
+    { system: "SLEEP_SYSTEM", slot: "SLEEP_INSULATION" },
+    { system: "SLEEP_SYSTEM", slot: "SLEEP_PAD" }
+  ],
   OVERNIGHT_TENT: [
     { system: "SHELTER_SYSTEM", slot: "TENT" },
     { system: "SLEEP_SYSTEM", slot: "SLEEP_INSULATION" },
@@ -165,7 +168,7 @@ function shouldIncludeStyleSlot({
 }) {
   if (
     style === "OVERNIGHT_HUT" &&
-    slot === "SLEEP_INSULATION" &&
+    (slot === "SLEEP_INSULATION" || slot === "SLEEP_PAD") &&
     !requiresHutSleepInsulation(context?.mountain)
   ) {
     return false;

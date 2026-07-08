@@ -166,7 +166,8 @@ test("pack requirement generator activates slots from required systems and style
   );
 
   assert.deepEqual(getRequirementSlotsForTrip(["SLEEP_SYSTEM"], "OVERNIGHT_HUT"), [
-    "SLEEP_INSULATION"
+    "SLEEP_INSULATION",
+    "SLEEP_PAD"
   ]);
 
   assert.deepEqual(getRequirementSlotsForTrip(["SHELTER_SYSTEM"], "OVERNIGHT_HUT"), []);
@@ -297,6 +298,30 @@ test("pack requirement generator requires water treatment for unreliable water s
   ]);
   assert.deepEqual(waterSlotsFor("TREATED_RELIABLE"), ["WATER_STORAGE"]);
   assert.deepEqual(waterSlotsFor("HUT_OR_SHOP_RELIABLE"), ["WATER_STORAGE"]);
+});
+
+test("pack requirement generator requires sleeping pads for huts without bedding", () => {
+  assert.deepEqual(
+    getRequirementSlotsForTrip(["SLEEP_SYSTEM"], "OVERNIGHT_HUT", {
+      mountain: {
+        ...alpineV2Mountain,
+        hut_support: "BASIC_NO_BEDDING"
+      },
+      season: "SUMMER"
+    }),
+    ["SLEEP_INSULATION", "SLEEP_PAD"]
+  );
+
+  assert.deepEqual(
+    getRequirementSlotsForTrip(["SLEEP_SYSTEM"], "OVERNIGHT_HUT", {
+      mountain: {
+        ...alpineV2Mountain,
+        hut_support: "FULL_SERVICE"
+      },
+      season: "SUMMER"
+    }),
+    []
+  );
 });
 
 test("pack requirement generator applies V2 mountain attributes to concrete slots", () => {

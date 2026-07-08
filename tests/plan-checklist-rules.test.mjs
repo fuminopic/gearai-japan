@@ -1036,11 +1036,12 @@ test("hut stays without bedding ask for a sleeping bag instead of an inner sheet
       mountain: {
         hut_support: "BASIC_NO_BEDDING"
       },
-      requiredSlots: ["SLEEP_INSULATION"]
+      requiredSlots: ["SLEEP_INSULATION", "SLEEP_PAD"]
     })
   });
 
   assert.equal(itemByLabel(checklist, "シュラフ（寝袋）")?.priority, "ESSENTIAL");
+  assert.equal(itemByLabel(checklist, "スリーピングマット")?.priority, "ESSENTIAL");
   assert.equal(itemByLabel(checklist, "インナーシーツ"), undefined);
 });
 
@@ -1057,6 +1058,7 @@ test("full-service hut stays keep the inner sheet checklist item", () => {
 
   assert.equal(itemByLabel(checklist, "インナーシーツ")?.priority, "ESSENTIAL");
   assert.equal(itemByLabel(checklist, "シュラフ（寝袋）"), undefined);
+  assert.equal(itemByLabel(checklist, "スリーピングマット"), undefined);
 });
 
 test("checklist exposes user-facing reasons and M0.8 trust hints", () => {

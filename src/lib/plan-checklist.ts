@@ -844,6 +844,17 @@ function getOvernightGearItems(plan: PackRequirementPlan): ChecklistItemDefiniti
 
   return [
     getHutSleepItem(plan),
+    ...(hasRequiredSlot(plan, "SLEEP_PAD")
+      ? [
+          {
+            id: "overnight-hut-sleeping-pad",
+            label: "スリーピングマット",
+            priority: "ESSENTIAL" as const,
+            icon: "sleepingPad" as const,
+            slots: ["SLEEP_PAD" as const]
+          }
+        ]
+      : []),
     {
       id: "overnight-toiletries",
       label: "洗面用品",

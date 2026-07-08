@@ -1188,6 +1188,93 @@ test("river-crossing and portable-toilet notes create special checklist items", 
   assert.equal(itemByLabel(checklist, "携帯トイレ")?.priority, "ESSENTIAL");
 });
 
+test("okue-yama river-crossing notes create river shoes without portable toilet", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      season: "SUMMER",
+      mountain: {
+        slug: "okue-yama",
+        name_ja: "大崩山",
+        mandatory_gear_note: "岩場・渡渉・梯子区間に対応できる装備確認",
+        supplementary_notes: "岩場・渡渉・梯子区間が続くため装備確認が必要。"
+      }
+    })
+  });
+
+  assert.equal(
+    itemByLabel(checklist, "渡渉用シューズ（沢靴・替え靴）")?.priority,
+    "ESSENTIAL"
+  );
+  assert.equal(itemByLabel(checklist, "携帯トイレ"), undefined);
+});
+
+test("rishiri-zan portable-toilet notes create portable toilet without river shoes", () => {
+  const checklist = buildPlanChecklist({
+    plan: makePlan({
+      season: "SUMMER",
+      mountain: {
+        slug: "rishiri-zan",
+        name_ja: "利尻山",
+        mandatory_gear_note: "携帯トイレ必携（山中トイレ無）",
+        supplementary_notes: "離島・長時間。公式情報を確認。"
+      }
+    })
+  });
+
+  assert.equal(itemByLabel(checklist, "携帯トイレ")?.priority, "ESSENTIAL");
+  assert.equal(itemByLabel(checklist, "渡渉用シューズ（沢靴・替え靴）"), undefined);
+});
+
+test("mountain notes without explicit river-crossing or portable-toilet keywords do not create those items", () => {
+  const cases = [
+    {
+      slug: "miyanoura-dake",
+      name_ja: "宮之浦岳",
+      mandatory_gear_note: "雨具必須（多雨）",
+      supplementary_notes: "荒川登山口は時期によりマイカー規制（バス）。屋久島・非火山"
+    },
+    {
+      slug: "tomuraushi-yama",
+      name_ja: "トムラウシ山",
+      mandatory_gear_note: "防寒・気象急変対策（長丁場）",
+      supplementary_notes: "2009年遭難の地。短縮路でも長時間"
+    },
+    {
+      slug: "iide-san",
+      name_ja: "飯豊山",
+      mandatory_gear_note: null,
+      supplementary_notes: null
+    },
+    {
+      slug: "sukai-san",
+      name_ja: "皇海山",
+      mandatory_gear_note: "（現状）長大ルート・読図・熊対策",
+      supplementary_notes:
+        "栗原川林道が恒久閉鎖。短絡路(不動沢)廃道。庚申山経由の長大ルートのみ。日帰り前提は危険"
+    }
+  ];
+
+  for (const mountain of cases) {
+    const checklist = buildPlanChecklist({
+      plan: makePlan({
+        season: "SUMMER",
+        mountain
+      })
+    });
+
+    assert.equal(
+      itemByLabel(checklist, "渡渉用シューズ（沢靴・替え靴）"),
+      undefined,
+      `${mountain.name_ja} should not require river-crossing shoes`
+    );
+    assert.equal(
+      itemByLabel(checklist, "携帯トイレ"),
+      undefined,
+      `${mountain.name_ja} should not require portable toilet`
+    );
+  }
+});
+
 test("hut stays without bedding ask for a sleeping bag instead of an inner sheet", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan({

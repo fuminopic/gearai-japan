@@ -190,13 +190,22 @@ test("trip planning blocks active restricted volcanoes before generating a plan"
     planPageContentSource,
     /mountain\?\.volcanic_risk === "ACTIVE_RESTRICTED"/
   );
-  assert.match(planPageContentSource, /const plannableMountains = mountains\.filter/);
   assert.match(planPageContentSource, /isRestrictedMountainRequest/);
   assert.match(
     planPageContentSource,
-    /if \(isRestrictedMountainRequest\) \{\s*error = restrictedVolcanoPlanningMessage;[\s\S]*\} else if \(shouldGeneratePlan && plannableMountains\.length > 0\)/
+    /if \(isRestrictedMountainRequest\) \{\s*error = restrictedVolcanoPlanningMessage;[\s\S]*\} else if \(shouldGeneratePlan && selectedMountain\)/
   );
-  assert.match(planPageContentSource, /mountains=\{plannableMountains\}/);
+  assert.match(planPageContentSource, /mountains=\{mountains\}/);
+  assert.match(planPageContentSource, /getSelectedMountainSlug\(/);
+  assert.match(
+    planPageContentSource,
+    /mountain\.slug === slug && !isPlanningRestrictedMountain\(mountain\)/
+  );
+  assert.doesNotMatch(planPageContentSource, /plannableMountains/);
+  assert.match(tripPlanningFormSource, /disabled=\{isRestrictedMountain\}/);
+  assert.match(tripPlanningFormSource, /aria-disabled=\{isRestrictedMountain\}/);
+  assert.match(tripPlanningFormSource, /getMountainListCounts\(selectableMountains\)/);
+  assert.match(tripPlanningFormSource, /getMountainAreaOptions\(selectableMountains\)/);
   assert.doesNotMatch(planPageContentSource, /sakurajima/);
 });
 
@@ -519,7 +528,7 @@ test("trip planning form filters seasons and styles by selected mountain", () =>
 test("trip planning page normalizes direct URL parameters against the mountain", () => {
   assert.match(
     planPageContentSource,
-    /getSelectedMountain\(selectedMountainSlug, plannableMountains\)/
+    /getSelectedMountain\(selectedMountainSlug, mountains\)/
   );
   assert.match(planPageContentSource, /getSelectedSeason\(hydratedSeasonParam, selectedMountain\)/);
   assert.match(planPageContentSource, /getSelectedStyle\(hydratedStyleParam, selectedMountain\)/);

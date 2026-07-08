@@ -55,9 +55,6 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
     mountains = mountainResult.data;
   }
 
-  const plannableMountains = mountains.filter(
-    (mountain) => !isPlanningRestrictedMountain(mountain)
-  );
   const selectedSavedPlan =
     params.id && savedPlans.length > 0
       ? savedPlans.find((record) => record.id === params.id) ?? null
@@ -69,9 +66,9 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   const isRestrictedMountainRequest = isPlanningRestrictedMountain(requestedMountain);
   const selectedMountainSlug = getSelectedMountainSlug(
     isRestrictedMountainRequest ? undefined : hydratedMountainParam,
-    plannableMountains
+    mountains
   );
-  const selectedMountain = getSelectedMountain(selectedMountainSlug, plannableMountains);
+  const selectedMountain = getSelectedMountain(selectedMountainSlug, mountains);
   const selectedSeason = getSelectedSeason(hydratedSeasonParam, selectedMountain);
   const selectedStyle = getSelectedStyle(hydratedStyleParam, selectedMountain);
   const shouldGeneratePlan = Boolean(
@@ -86,7 +83,7 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
 
   if (isRestrictedMountainRequest) {
     error = restrictedVolcanoPlanningMessage;
-  } else if (shouldGeneratePlan && plannableMountains.length > 0) {
+  } else if (shouldGeneratePlan && selectedMountain) {
     try {
       const [generatedPlan, databaseGear, planningOwnedGear] = await Promise.all([
         getPackRequirementPlan({
@@ -126,7 +123,7 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
 
   return (
     <TripPlanningUI
-      mountains={plannableMountains}
+      mountains={mountains}
       selectedMountainSlug={selectedMountainSlug}
       selectedSeason={selectedSeason}
       selectedStyle={selectedStyle}
@@ -161,24 +158,39 @@ function getRequestedMountain(
 
 function getSelectedMountainSlug(
   slug: string | undefined,
-  mountains: Array<{ slug: string }>
+  mountains: readonly MountainFoundationProfile[]
 ) {
-  if (slug && mountains.some((mountain) => mountain.slug === slug)) {
+  if (
+    slug &&
+    mountains.some(
+      (mountain) => mountain.slug === slug && !isPlanningRestrictedMountain(mountain)
+    )
+  ) {
     return slug;
   }
 
-  if (mountains.some((mountain) => mountain.slug === "takao-san")) {
+  if (
+    mountains.some(
+      (mountain) => mountain.slug === "takao-san" && !isPlanningRestrictedMountain(mountain)
+    )
+  ) {
     return "takao-san";
   }
 
-  return mountains[0]?.slug ?? "";
+  return mountains.find((mountain) => !isPlanningRestrictedMountain(mountain))?.slug ?? "";
 }
 
 function getSelectedMountain(
   slug: string,
   mountains: readonly MountainFoundationProfile[]
 ) {
-  return mountains.find((mountain) => mountain.slug === slug) ?? mountains[0] ?? null;
+  return (
+    mountains.find(
+      (mountain) => mountain.slug === slug && !isPlanningRestrictedMountain(mountain)
+    ) ??
+    mountains.find((mountain) => !isPlanningRestrictedMountain(mountain)) ??
+    null
+  );
 }
 
 function getSelectedSeason(

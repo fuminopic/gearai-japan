@@ -141,7 +141,7 @@ export function TripPlanningForm({
   const selectedMountain = useMemo(() => {
     return (
       selectableMountains.find((mountain) => mountain.slug === mountainSlug) ??
-      selectableMountains[0]
+      selectableMountains.find((mountain) => !isPlanningRestrictedMountain(mountain))
     );
   }, [mountainSlug, selectableMountains]);
   const filteredMountains = useMemo(() => {
@@ -232,7 +232,7 @@ export function TripPlanningForm({
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (selectableMountains.length === 0) {
+    if (!mountainSlug || selectableMountains.length === 0) {
       return;
     }
 
@@ -346,49 +346,55 @@ export function TripPlanningForm({
 
           <div className="mt-2 space-y-2">
             {filteredMountains.length > 0 ? (
-              visibleMountains.map((mountain) => (
-                <button
-                  key={mountain.slug}
-                  type="button"
-                  onClick={() => setMountainSlug(mountain.slug)}
-                  aria-pressed={mountain.slug === mountainSlug}
-                  className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left transition ${
-                    mountain.slug === mountainSlug
-                      ? "border-forest-200 bg-forest-50"
-                      : "border-stone-100 bg-stone-50 hover:border-stone-200 hover:bg-white"
-                  }`}
-                >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-forest-700">
-                    <Mountain className="h-4 w-4" aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-semibold text-ink">
-                        {mountain.name_ja}
-                      </span>
-                      <span className="text-xs font-semibold text-stone-500">
-                        {mountain.elevation_m.toLocaleString("ja-JP")}m
-                      </span>
-                    </span>
-                    <span className="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium text-stone-500">
-                      <span>{formatMountainArea(mountain)}</span>
-                      <MountainListBadge mountain={mountain} />
-                    </span>
-                  </span>
-                  <span
-                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition ${
+              visibleMountains.map((mountain) => {
+                const isRestrictedMountain = isPlanningRestrictedMountain(mountain);
+
+                return (
+                  <button
+                    key={mountain.slug}
+                    type="button"
+                    onClick={() => setMountainSlug(mountain.slug)}
+                    aria-pressed={mountain.slug === mountainSlug}
+                    aria-disabled={isRestrictedMountain}
+                    disabled={isRestrictedMountain}
+                    className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left transition ${
                       mountain.slug === mountainSlug
-                        ? "border-forest-700 bg-forest-700 text-white"
-                        : "border-stone-300 bg-white"
-                    }`}
-                    aria-hidden="true"
+                        ? "border-forest-200 bg-forest-50"
+                        : "border-stone-100 bg-stone-50 hover:border-stone-200 hover:bg-white"
+                    } ${isRestrictedMountain ? "cursor-not-allowed opacity-60 hover:border-stone-100 hover:bg-stone-50" : ""}`}
                   >
-                    {mountain.slug === mountainSlug ? (
-                      <Check className="h-3.5 w-3.5" />
-                    ) : null}
-                  </span>
-                </button>
-              ))
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-forest-700">
+                      <Mountain className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex flex-wrap items-center gap-2">
+                        <span className="text-sm font-semibold text-ink">
+                          {mountain.name_ja}
+                        </span>
+                        <span className="text-xs font-semibold text-stone-500">
+                          {mountain.elevation_m.toLocaleString("ja-JP")}m
+                        </span>
+                      </span>
+                      <span className="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium text-stone-500">
+                        <span>{formatMountainArea(mountain)}</span>
+                        <MountainListBadge mountain={mountain} />
+                      </span>
+                    </span>
+                    <span
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition ${
+                        mountain.slug === mountainSlug
+                          ? "border-forest-700 bg-forest-700 text-white"
+                          : "border-stone-300 bg-white"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      {mountain.slug === mountainSlug ? (
+                        <Check className="h-3.5 w-3.5" />
+                      ) : null}
+                    </span>
+                  </button>
+                );
+              })
             ) : (
               <div className="rounded-lg border border-stone-100 bg-stone-50 px-3 py-3 text-sm font-medium text-stone-500">
                 該当する山がありません。
@@ -515,7 +521,7 @@ export function TripPlanningForm({
       </label>
 
       <button
-        disabled={selectableMountains.length === 0 || isPending}
+        disabled={!mountainSlug || selectableMountains.length === 0 || isPending}
         className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-forest-700 px-5 py-3 text-base font-semibold text-white transition hover:bg-forest-900 disabled:opacity-60 sm:mt-4 sm:py-4"
       >
         <ClipboardCheck className="h-5 w-5" />
@@ -529,11 +535,21 @@ function getAvailableMountainSlug(
   slug: string,
   mountains: readonly MountainFoundationProfile[]
 ) {
-  if (mountains.some((mountain) => mountain.slug === slug)) {
+  if (
+    mountains.some(
+      (mountain) => mountain.slug === slug && !isPlanningRestrictedMountain(mountain)
+    )
+  ) {
     return slug;
   }
 
-  return mountains[0]?.slug ?? "";
+  return mountains.find((mountain) => !isPlanningRestrictedMountain(mountain))?.slug ?? "";
+}
+
+function isPlanningRestrictedMountain(
+  mountain: MountainFoundationProfile | null | undefined
+) {
+  return mountain?.volcanic_risk === "ACTIVE_RESTRICTED";
 }
 
 function getOfficialMeizanMountains(

@@ -936,10 +936,11 @@ function getChecklistItemReason(
   }
 
   if (definition.id === "food-water") {
-    if (
-      mountain.water_availability === "LIMITED_OR_SEASONAL" ||
-      mountain.water_availability === "UNRELIABLE"
-    ) {
+    if (mountain.water_availability === "UNRELIABLE") {
+      return "水場が涸れる可能性があるため、水を多めに携行し、必要に応じた浄水手段も確認してください。";
+    }
+
+    if (mountain.water_availability === "LIMITED_OR_SEASONAL") {
       return "水場が限られるため、飲み水と必要に応じた浄水手段を多めに確認してください。";
     }
 
@@ -1122,7 +1123,10 @@ export function buildPlanDecisionChips(plan: PackRequirementPlan): PlanDecisionC
   ) {
     chips.push({
       label: "水場限定",
-      reason: "飲み水の補給しづらさを考慮"
+      reason:
+        mountain.water_availability === "UNRELIABLE"
+          ? "水場が涸れる可能性と水を多めに携行する必要性を考慮"
+          : "飲み水の補給しづらさを考慮"
     });
   }
 

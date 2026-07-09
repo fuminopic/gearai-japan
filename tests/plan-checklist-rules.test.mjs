@@ -1328,6 +1328,10 @@ test("checklist exposes user-facing reasons and M0.8 trust hints", () => {
   const lowRiskChecklist = buildPlanChecklist({ plan: lowRiskDayPlan });
 
   assert.match(itemByLabel(lowRiskChecklist, "レインウェア")?.reason ?? "", /天候/);
+  assert.doesNotMatch(
+    itemByLabel(lowRiskChecklist, "飲み水")?.reason ?? "",
+    /水場が涸れる可能性|水を多めに携行/
+  );
   assert.deepEqual(
     buildPlanNotNeededItems(lowRiskDayPlan).map((item) => item.label),
     ["テント", "シュラフ", "キャンプ装備", "ヘルメット"]
@@ -1359,6 +1363,38 @@ test("checklist exposes user-facing reasons and M0.8 trust hints", () => {
       "長時間行動"
     ]
   );
+
+  const unreliableWaterPlan = makePlan({
+    season: "SUMMER",
+    mountain: {
+      water_availability: "UNRELIABLE"
+    },
+    requiredSlots: ["WATER_STORAGE", "WATER_TREATMENT"]
+  });
+  const unreliableWaterChecklist = buildPlanChecklist({ plan: unreliableWaterPlan });
+  const unreliableWaterReason = itemByLabel(unreliableWaterChecklist, "飲み水")?.reason ?? "";
+
+  assert.match(unreliableWaterReason, /水場が涸れる可能性/);
+  assert.match(unreliableWaterReason, /水を多めに携行/);
+  assert.match(
+    buildPlanDecisionChips(unreliableWaterPlan).find((chip) => chip.label === "水場限定")
+      ?.reason ?? "",
+    /水場が涸れる可能性.*水を多めに携行/
+  );
+
+  const hutWaterPlan = makePlan({
+    season: "SUMMER",
+    mountain: {
+      water_availability: "HUT_OR_SHOP_RELIABLE"
+    },
+    requiredSlots: ["WATER_STORAGE"]
+  });
+  const hutWaterReason = itemByLabel(
+    buildPlanChecklist({ plan: hutWaterPlan }),
+    "飲み水"
+  )?.reason ?? "";
+
+  assert.doesNotMatch(hutWaterReason, /水場が涸れる可能性|水を多めに携行/);
 });
 
 test("reviewed static mountain fixes flow through the checklist without stale risk gear", () => {

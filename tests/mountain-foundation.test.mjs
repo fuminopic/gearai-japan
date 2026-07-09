@@ -77,6 +77,13 @@ const opus48StaticFixesMigration = readFileSync(
   ),
   "utf8"
 );
+const tohokuRegionProfileCorrectionsMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/051_tohoku_region_mountain_profile_corrections.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -611,4 +618,59 @@ test("mountain foundation layer exposes planning profile and systems without pac
     migration,
     /\b(description|weather_integration|weather_source|hut_system|water_source|regulation|risk_assessment)\b/i
   );
+});
+
+test("mountain foundation Tohoku region correction stays scoped to two profiles", () => {
+  assert.match(
+    tohokuRegionProfileCorrectionsMigration,
+    /update public\.mountain_foundation_profiles/i
+  );
+  assert.match(tohokuRegionProfileCorrectionsMigration, /region = 'TOHOKU'/);
+  assert.match(tohokuRegionProfileCorrectionsMigration, /primary_region = 'TOHOKU'/);
+  assert.match(
+    tohokuRegionProfileCorrectionsMigration,
+    /where slug in \('asahi-dake-tohoku', 'iide-san'\)/i
+  );
+  assert.match(tohokuRegionProfileCorrectionsMigration, /updated_at = now\(\)/);
+
+  for (const slug of ["asahi-dake-tohoku", "iide-san"]) {
+    assert.match(tohokuRegionProfileCorrectionsMigration, new RegExp(`'${slug}'`));
+  }
+
+  for (const untouchedSlug of [
+    "taishaku-san",
+    "oizuru-gatake",
+    "hokkaido-komagatake",
+    "kamuro-san",
+    "shokanbetsu-dake"
+  ]) {
+    assert.doesNotMatch(
+      tohokuRegionProfileCorrectionsMigration,
+      new RegExp(`'${untouchedSlug}'`)
+    );
+  }
+
+  for (const untouchedField of [
+    "mandatory_gear_note",
+    "supplementary_notes",
+    "restriction_status_note",
+    "mountain_range",
+    "prefectures",
+    "name_ja"
+  ]) {
+    assert.doesNotMatch(
+      tohokuRegionProfileCorrectionsMigration,
+      new RegExp(untouchedField)
+    );
+  }
+
+  assert.doesNotMatch(tohokuRegionProfileCorrectionsMigration, /\bcreate\b/i);
+  assert.doesNotMatch(tohokuRegionProfileCorrectionsMigration, /\balter\b/i);
+  assert.doesNotMatch(tohokuRegionProfileCorrectionsMigration, /\bdrop\b/i);
+  assert.doesNotMatch(tohokuRegionProfileCorrectionsMigration, /\binsert\b/i);
+  assert.doesNotMatch(tohokuRegionProfileCorrectionsMigration, /\bdelete\b/i);
+  assert.doesNotMatch(tohokuRegionProfileCorrectionsMigration, /\btruncate\b/i);
+  assert.doesNotMatch(tohokuRegionProfileCorrectionsMigration, /\buser_gear\b/i);
+  assert.doesNotMatch(tohokuRegionProfileCorrectionsMigration, /\bpolicy\b/i);
+  assert.doesNotMatch(tohokuRegionProfileCorrectionsMigration, /\brls\b/i);
 });

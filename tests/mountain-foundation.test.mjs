@@ -84,6 +84,13 @@ const tohokuRegionProfileCorrectionsMigration = readFileSync(
   ),
   "utf8"
 );
+const taishakuProfileCorrectionMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/053_correct_taishaku_mountain_profile.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -673,4 +680,62 @@ test("mountain foundation Tohoku region correction stays scoped to two profiles"
   assert.doesNotMatch(tohokuRegionProfileCorrectionsMigration, /\buser_gear\b/i);
   assert.doesNotMatch(tohokuRegionProfileCorrectionsMigration, /\bpolicy\b/i);
   assert.doesNotMatch(tohokuRegionProfileCorrectionsMigration, /\brls\b/i);
+});
+
+test("mountain foundation Taishaku profile correction stays scoped and profile-only", () => {
+  assert.match(
+    taishakuProfileCorrectionMigration,
+    /update public\.mountain_foundation_profiles/i
+  );
+  assert.match(taishakuProfileCorrectionMigration, /where slug = 'taishaku-san'/);
+  assert.match(
+    taishakuProfileCorrectionMigration,
+    /supported_styles = array\['DAY_HIKE'\]::text\[\]/
+  );
+  assert.match(taishakuProfileCorrectionMigration, /route_seriousness = 'LOW'/);
+  assert.match(taishakuProfileCorrectionMigration, /technical_terrain = 'MAINTAINED_TRAIL'/);
+  assert.match(taishakuProfileCorrectionMigration, /water_availability = 'TREATED_RELIABLE'/);
+  assert.match(taishakuProfileCorrectionMigration, /hut_support = 'NONE'/);
+  assert.match(taishakuProfileCorrectionMigration, /route_duration_band = 'SHORT'/);
+  assert.match(taishakuProfileCorrectionMigration, /escape_options = 'EASY'/);
+
+  for (const untouchedSlug of [
+    "aizu-asahi-dake",
+    "asahi-dake-tohoku",
+    "iide-san",
+    "hokkaido-komagatake",
+    "kamuro-san",
+    "shokanbetsu-dake",
+    "togakushi-yama",
+    "oizuru-gatake"
+  ]) {
+    assert.doesNotMatch(
+      taishakuProfileCorrectionMigration,
+      new RegExp(`'${untouchedSlug}'`)
+    );
+  }
+
+  for (const untouchedField of [
+    "mandatory_gear_note",
+    "supplementary_notes",
+    "restriction_status_note",
+    "region",
+    "primary_region",
+    "updated_at"
+  ]) {
+    assert.doesNotMatch(
+      taishakuProfileCorrectionMigration,
+      new RegExp(`\\b${untouchedField}\\b`)
+    );
+  }
+
+  assert.doesNotMatch(taishakuProfileCorrectionMigration, /\bcreate\b/i);
+  assert.doesNotMatch(taishakuProfileCorrectionMigration, /\balter\b/i);
+  assert.doesNotMatch(taishakuProfileCorrectionMigration, /\bdrop\b/i);
+  assert.doesNotMatch(taishakuProfileCorrectionMigration, /\binsert\b/i);
+  assert.doesNotMatch(taishakuProfileCorrectionMigration, /\bdelete\b/i);
+  assert.doesNotMatch(taishakuProfileCorrectionMigration, /\btruncate\b/i);
+  assert.doesNotMatch(taishakuProfileCorrectionMigration, /\buser_gear\b/i);
+  assert.doesNotMatch(taishakuProfileCorrectionMigration, /\bpolicy\b/i);
+  assert.doesNotMatch(taishakuProfileCorrectionMigration, /\brls\b/i);
 });

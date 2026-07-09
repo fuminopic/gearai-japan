@@ -87,6 +87,7 @@ export type MountainSeasonOpeningWindow =
   | "HUT_SEASON"
   | "WINTER_EXPERT_ONLY";
 export type MountainActiveVolcanoStatus = "NONE" | "ACTIVE" | "ADJACENT";
+export type MountainPlanningStatus = "PLANNABLE" | "NOT_STANDARD_ROUTE";
 export type MountainMeizanList =
   | "JAPAN_HYAKUMEIZAN"
   | "JAPAN_NIHYAKUMEIZAN_EXTRA"
@@ -258,6 +259,7 @@ export type MountainFoundationProfile = {
   snow_free_month_guide: number | null;
   mandatory_gear_note: string | null;
   supplementary_notes: string | null;
+  planning_status: MountainPlanningStatus;
 };
 
 export type SavedTripPlan = {

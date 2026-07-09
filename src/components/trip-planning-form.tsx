@@ -141,7 +141,7 @@ export function TripPlanningForm({
   const selectedMountain = useMemo(() => {
     return (
       selectableMountains.find((mountain) => mountain.slug === mountainSlug) ??
-      selectableMountains.find((mountain) => !isPlanningRestrictedMountain(mountain))
+      selectableMountains.find((mountain) => !isPlanningBlockedMountain(mountain))
     );
   }, [mountainSlug, selectableMountains]);
   const filteredMountains = useMemo(() => {
@@ -347,7 +347,7 @@ export function TripPlanningForm({
           <div className="mt-2 space-y-2">
             {filteredMountains.length > 0 ? (
               visibleMountains.map((mountain) => {
-                const isRestrictedMountain = isPlanningRestrictedMountain(mountain);
+                const isBlockedMountain = isPlanningBlockedMountain(mountain);
 
                 return (
                   <button
@@ -355,13 +355,13 @@ export function TripPlanningForm({
                     type="button"
                     onClick={() => setMountainSlug(mountain.slug)}
                     aria-pressed={mountain.slug === mountainSlug}
-                    aria-disabled={isRestrictedMountain}
-                    disabled={isRestrictedMountain}
+                    aria-disabled={isBlockedMountain}
+                    disabled={isBlockedMountain}
                     className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left transition ${
                       mountain.slug === mountainSlug
                         ? "border-forest-200 bg-forest-50"
                         : "border-stone-100 bg-stone-50 hover:border-stone-200 hover:bg-white"
-                    } ${isRestrictedMountain ? "cursor-not-allowed opacity-60 hover:border-stone-100 hover:bg-stone-50" : ""}`}
+                    } ${isBlockedMountain ? "cursor-not-allowed opacity-60 hover:border-stone-100 hover:bg-stone-50" : ""}`}
                   >
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-forest-700">
                       <Mountain className="h-4 w-4" aria-hidden="true" />
@@ -537,19 +537,22 @@ function getAvailableMountainSlug(
 ) {
   if (
     mountains.some(
-      (mountain) => mountain.slug === slug && !isPlanningRestrictedMountain(mountain)
+      (mountain) => mountain.slug === slug && !isPlanningBlockedMountain(mountain)
     )
   ) {
     return slug;
   }
 
-  return mountains.find((mountain) => !isPlanningRestrictedMountain(mountain))?.slug ?? "";
+  return mountains.find((mountain) => !isPlanningBlockedMountain(mountain))?.slug ?? "";
 }
 
-function isPlanningRestrictedMountain(
+function isPlanningBlockedMountain(
   mountain: MountainFoundationProfile | null | undefined
 ) {
-  return mountain?.volcanic_risk === "ACTIVE_RESTRICTED";
+  return (
+    mountain?.volcanic_risk === "ACTIVE_RESTRICTED" ||
+    mountain?.planning_status === "NOT_STANDARD_ROUTE"
+  );
 }
 
 function getOfficialMeizanMountains(

@@ -190,23 +190,51 @@ test("trip planning blocks active restricted volcanoes before generating a plan"
     planPageContentSource,
     /mountain\?\.volcanic_risk === "ACTIVE_RESTRICTED"/
   );
-  assert.match(planPageContentSource, /isRestrictedMountainRequest/);
+  assert.match(planPageContentSource, /getPlanningBlockMessage/);
+  assert.match(planPageContentSource, /planningBlockMessage/);
   assert.match(
     planPageContentSource,
-    /if \(isRestrictedMountainRequest\) \{\s*error = restrictedVolcanoPlanningMessage;[\s\S]*\} else if \(shouldGeneratePlan && selectedMountain\)/
+    /if \(planningBlockMessage\) \{\s*error = planningBlockMessage;[\s\S]*\} else if \(shouldGeneratePlan && selectedMountain\)/
   );
   assert.match(planPageContentSource, /mountains=\{mountains\}/);
   assert.match(planPageContentSource, /getSelectedMountainSlug\(/);
   assert.match(
     planPageContentSource,
-    /mountain\.slug === slug && !isPlanningRestrictedMountain\(mountain\)/
+    /mountain\.slug === slug && !isPlanningBlockedMountain\(mountain\)/
   );
   assert.doesNotMatch(planPageContentSource, /plannableMountains/);
-  assert.match(tripPlanningFormSource, /disabled=\{isRestrictedMountain\}/);
-  assert.match(tripPlanningFormSource, /aria-disabled=\{isRestrictedMountain\}/);
+  assert.match(tripPlanningFormSource, /disabled=\{isBlockedMountain\}/);
+  assert.match(tripPlanningFormSource, /aria-disabled=\{isBlockedMountain\}/);
   assert.match(tripPlanningFormSource, /getMountainListCounts\(selectableMountains\)/);
   assert.match(tripPlanningFormSource, /getMountainAreaOptions\(selectableMountains\)/);
   assert.doesNotMatch(planPageContentSource, /sakurajima/);
+});
+
+test("trip planning blocks non-standard route mountains without shrinking list counts", () => {
+  assert.match(planPageContentSource, /nonStandardRoutePlanningMessage/);
+  assert.match(
+    planPageContentSource,
+    /この山は通常の装備計画を作成する前に、登山道状況・入山可否・山行形態を公式情報で確認してください。/
+  );
+  assert.match(
+    planPageContentSource,
+    /mountain\?\.planning_status === "NOT_STANDARD_ROUTE"/
+  );
+  assert.match(
+    planPageContentSource,
+    /planningBlockMessage \? undefined : hydratedMountainParam/
+  );
+  assert.match(
+    planPageContentSource,
+    /if \(planningBlockMessage\) \{\s*error = planningBlockMessage;[\s\S]*\} else if \(shouldGeneratePlan && selectedMountain\)/
+  );
+  assert.match(
+    tripPlanningFormSource,
+    /mountain\?\.planning_status === "NOT_STANDARD_ROUTE"/
+  );
+  assert.match(tripPlanningFormSource, /disabled=\{isBlockedMountain\}/);
+  assert.match(tripPlanningFormSource, /getMountainListCounts\(selectableMountains\)/);
+  assert.doesNotMatch(`${planPageContentSource}\n${tripPlanningFormSource}`, /oizuru-gatake/);
 });
 
 test("app navigation responds immediately during dynamic route loading", () => {

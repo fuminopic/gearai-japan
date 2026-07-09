@@ -91,6 +91,13 @@ const taishakuProfileCorrectionMigration = readFileSync(
   ),
   "utf8"
 );
+const mountainPlanningStatusMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/054_mountain_planning_status.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -738,4 +745,61 @@ test("mountain foundation Taishaku profile correction stays scoped and profile-o
   assert.doesNotMatch(taishakuProfileCorrectionMigration, /\buser_gear\b/i);
   assert.doesNotMatch(taishakuProfileCorrectionMigration, /\bpolicy\b/i);
   assert.doesNotMatch(taishakuProfileCorrectionMigration, /\brls\b/i);
+});
+
+test("mountain foundation planning status blocks only non-standard route profiles", () => {
+  assert.match(
+    mountainPlanningStatusMigration,
+    /alter table public\.mountain_foundation_profiles/i
+  );
+  assert.match(mountainPlanningStatusMigration, /add column if not exists planning_status text not null default 'PLANNABLE'/i);
+  assert.match(mountainPlanningStatusMigration, /set planning_status = 'NOT_STANDARD_ROUTE'/);
+  assert.match(mountainPlanningStatusMigration, /where slug = 'oizuru-gatake'/);
+
+  const singleQuotedSlugs = [...mountainPlanningStatusMigration.matchAll(/'([a-z0-9-]+)'/g)]
+    .map((match) => match[1])
+    .filter((value) => value.includes("-"));
+
+  assert.deepEqual(singleQuotedSlugs, ["oizuru-gatake"]);
+
+  for (const untouchedField of [
+    "mandatory_gear_note",
+    "supplementary_notes",
+    "restriction_status_note",
+    "supported_seasons",
+    "supported_styles",
+    "route_seriousness",
+    "hut_support",
+    "tent_site_availability",
+    "region",
+    "primary_region",
+    "updated_at"
+  ]) {
+    assert.doesNotMatch(
+      mountainPlanningStatusMigration,
+      new RegExp(`\\b${untouchedField}\\b`)
+    );
+  }
+
+  for (const forbiddenCopy of ["登山道なし", "残雪期限定", "禁止登山", "必携"]) {
+    assert.doesNotMatch(mountainPlanningStatusMigration, new RegExp(forbiddenCopy));
+  }
+
+  assert.doesNotMatch(mountainPlanningStatusMigration, /\binsert\b/i);
+  assert.doesNotMatch(mountainPlanningStatusMigration, /\bdelete\b/i);
+  assert.doesNotMatch(mountainPlanningStatusMigration, /\bdrop\b/i);
+  assert.doesNotMatch(mountainPlanningStatusMigration, /\bcreate\b/i);
+  assert.doesNotMatch(mountainPlanningStatusMigration, /\buser_gear\b/i);
+  assert.doesNotMatch(mountainPlanningStatusMigration, /\bpolicy\b/i);
+  assert.doesNotMatch(mountainPlanningStatusMigration, /\brls\b/i);
+});
+
+test("mountain foundation data layer reads planning status with a plannable fallback", () => {
+  assert.match(types, /export type MountainPlanningStatus = "PLANNABLE" \| "NOT_STANDARD_ROUTE"/);
+  assert.match(types, /planning_status: MountainPlanningStatus/);
+  assert.match(repository, /MOUNTAIN_FOUNDATION_PLANNING_STATUS_COLUMNS = \["planning_status"\]/);
+  assert.match(repository, /\.\.\.MOUNTAIN_FOUNDATION_PLANNING_STATUS_COLUMNS/);
+  assert.match(repository, /planning_status: "PLANNABLE"/);
+  assert.match(repository, /MOUNTAIN_FOUNDATION_WITHOUT_PLANNING_STATUS_SELECT/);
+  assert.match(repository, /isMissingMountainFoundationPlanningStatusColumnError/);
 });

@@ -31,6 +31,8 @@ export type PlanPageContentProps = {
 
 const restrictedVolcanoPlanningMessage =
   "この山は現在、火山活動または入山規制により通常の登山計画を作成できません。気象庁・自治体などの公式情報を確認してください。";
+const nonStandardRoutePlanningMessage =
+  "この山は通常の装備計画を作成する前に、登山道状況・入山可否・山行形態を公式情報で確認してください。";
 
 export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   const params = await searchParams;
@@ -63,9 +65,9 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   const hydratedSeasonParam = params.season ?? selectedSavedPlan?.season;
   const hydratedStyleParam = params.style ?? selectedSavedPlan?.style;
   const requestedMountain = getRequestedMountain(hydratedMountainParam, mountains);
-  const isRestrictedMountainRequest = isPlanningRestrictedMountain(requestedMountain);
+  const planningBlockMessage = getPlanningBlockMessage(requestedMountain);
   const selectedMountainSlug = getSelectedMountainSlug(
-    isRestrictedMountainRequest ? undefined : hydratedMountainParam,
+    planningBlockMessage ? undefined : hydratedMountainParam,
     mountains
   );
   const selectedMountain = getSelectedMountain(selectedMountainSlug, mountains);
@@ -81,8 +83,8 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   let compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>> = {};
   let ownedGear: UserGear[] = [];
 
-  if (isRestrictedMountainRequest) {
-    error = restrictedVolcanoPlanningMessage;
+  if (planningBlockMessage) {
+    error = planningBlockMessage;
   } else if (shouldGeneratePlan && selectedMountain) {
     try {
       const [generatedPlan, databaseGear, planningOwnedGear] = await Promise.all([
@@ -139,10 +141,24 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   );
 }
 
-function isPlanningRestrictedMountain(
+function getPlanningBlockMessage(
   mountain: MountainFoundationProfile | null | undefined
 ) {
-  return mountain?.volcanic_risk === "ACTIVE_RESTRICTED";
+  if (mountain?.volcanic_risk === "ACTIVE_RESTRICTED") {
+    return restrictedVolcanoPlanningMessage;
+  }
+
+  if (mountain?.planning_status === "NOT_STANDARD_ROUTE") {
+    return nonStandardRoutePlanningMessage;
+  }
+
+  return null;
+}
+
+function isPlanningBlockedMountain(
+  mountain: MountainFoundationProfile | null | undefined
+) {
+  return Boolean(getPlanningBlockMessage(mountain));
 }
 
 function getRequestedMountain(
@@ -163,7 +179,7 @@ function getSelectedMountainSlug(
   if (
     slug &&
     mountains.some(
-      (mountain) => mountain.slug === slug && !isPlanningRestrictedMountain(mountain)
+      (mountain) => mountain.slug === slug && !isPlanningBlockedMountain(mountain)
     )
   ) {
     return slug;
@@ -171,13 +187,13 @@ function getSelectedMountainSlug(
 
   if (
     mountains.some(
-      (mountain) => mountain.slug === "takao-san" && !isPlanningRestrictedMountain(mountain)
+      (mountain) => mountain.slug === "takao-san" && !isPlanningBlockedMountain(mountain)
     )
   ) {
     return "takao-san";
   }
 
-  return mountains.find((mountain) => !isPlanningRestrictedMountain(mountain))?.slug ?? "";
+  return mountains.find((mountain) => !isPlanningBlockedMountain(mountain))?.slug ?? "";
 }
 
 function getSelectedMountain(
@@ -186,9 +202,9 @@ function getSelectedMountain(
 ) {
   return (
     mountains.find(
-      (mountain) => mountain.slug === slug && !isPlanningRestrictedMountain(mountain)
+      (mountain) => mountain.slug === slug && !isPlanningBlockedMountain(mountain)
     ) ??
-    mountains.find((mountain) => !isPlanningRestrictedMountain(mountain)) ??
+    mountains.find((mountain) => !isPlanningBlockedMountain(mountain)) ??
     null
   );
 }

@@ -51,6 +51,7 @@ const MOUNTAIN_FOUNDATION_SUPPLEMENTARY_COLUMNS = [
   "mandatory_gear_note",
   "supplementary_notes"
 ] as const;
+const MOUNTAIN_FOUNDATION_PLANNING_STATUS_COLUMNS = ["planning_status"] as const;
 
 const MOUNTAIN_FOUNDATION_BASE_SELECT = MOUNTAIN_FOUNDATION_BASE_COLUMNS.join(",");
 const MOUNTAIN_FOUNDATION_LEGACY_BASE_SELECT = MOUNTAIN_FOUNDATION_BASE_COLUMNS
@@ -75,6 +76,13 @@ const MOUNTAIN_FOUNDATION_LEGACY_CORE_SELECT = [
   ...MOUNTAIN_FOUNDATION_V2_COLUMNS,
 ].join(",");
 const MOUNTAIN_FOUNDATION_SELECT = [
+  ...MOUNTAIN_FOUNDATION_BASE_COLUMNS,
+  ...MOUNTAIN_FOUNDATION_V21_COLUMNS,
+  ...MOUNTAIN_FOUNDATION_V2_COLUMNS,
+  ...MOUNTAIN_FOUNDATION_SUPPLEMENTARY_COLUMNS,
+  ...MOUNTAIN_FOUNDATION_PLANNING_STATUS_COLUMNS
+].join(",");
+const MOUNTAIN_FOUNDATION_WITHOUT_PLANNING_STATUS_SELECT = [
   ...MOUNTAIN_FOUNDATION_BASE_COLUMNS,
   ...MOUNTAIN_FOUNDATION_V21_COLUMNS,
   ...MOUNTAIN_FOUNDATION_V2_COLUMNS,
@@ -122,6 +130,12 @@ const MOUNTAIN_FOUNDATION_SUPPLEMENTARY_DEFAULTS = {
 } satisfies Pick<
   MountainFoundationProfile,
   (typeof MOUNTAIN_FOUNDATION_SUPPLEMENTARY_COLUMNS)[number]
+>;
+const MOUNTAIN_FOUNDATION_PLANNING_STATUS_DEFAULTS = {
+  planning_status: "PLANNABLE"
+} satisfies Pick<
+  MountainFoundationProfile,
+  (typeof MOUNTAIN_FOUNDATION_PLANNING_STATUS_COLUMNS)[number]
 >;
 
 const JAPAN_NIHYAKUMEIZAN_EXTRA_SLUGS = new Set([
@@ -304,6 +318,19 @@ export const getMountainFoundationProfiles = cache(
       return withMountainFoundationDefaultsForRows(fallbackData);
     }
 
+    if (error && isMissingMountainFoundationPlanningStatusColumnError(error)) {
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from("mountain_foundation_profiles")
+        .select(MOUNTAIN_FOUNDATION_WITHOUT_PLANNING_STATUS_SELECT)
+        .order("name_ja", { ascending: true });
+
+      if (fallbackError) {
+        throw new Error(fallbackError.message);
+      }
+
+      return withMountainFoundationDefaultsForRows(fallbackData);
+    }
+
     if (error && isMissingMountainFoundationV21ColumnError(error)) {
       const { data: fallbackData, error: fallbackError } = await supabase
         .from("mountain_foundation_profiles")
@@ -456,6 +483,20 @@ export const getMountainFoundationProfileBySlug = cache(
       return withMountainFoundationDefaultsForNullableRow(fallbackData);
     }
 
+    if (error && isMissingMountainFoundationPlanningStatusColumnError(error)) {
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from("mountain_foundation_profiles")
+        .select(MOUNTAIN_FOUNDATION_WITHOUT_PLANNING_STATUS_SELECT)
+        .eq("slug", slug)
+        .maybeSingle();
+
+      if (fallbackError) {
+        throw new Error(fallbackError.message);
+      }
+
+      return withMountainFoundationDefaultsForNullableRow(fallbackData);
+    }
+
     if (error && isMissingMountainFoundationV21ColumnError(error)) {
       const { data: fallbackData, error: fallbackError } = await supabase
         .from("mountain_foundation_profiles")
@@ -573,6 +614,7 @@ function withMountainFoundationDefaults(
     ...MOUNTAIN_FOUNDATION_V21_DEFAULTS,
     ...MOUNTAIN_FOUNDATION_V2_DEFAULTS,
     ...MOUNTAIN_FOUNDATION_SUPPLEMENTARY_DEFAULTS,
+    ...MOUNTAIN_FOUNDATION_PLANNING_STATUS_DEFAULTS,
     ...profile,
     meizan_list: meizanList
   } as MountainFoundationProfile;
@@ -647,4 +689,15 @@ function isMissingMountainFoundationSupplementaryColumnError(error: {
   return MOUNTAIN_FOUNDATION_SUPPLEMENTARY_COLUMNS.some((column) => {
     return error.message?.includes(column);
   });
+}
+
+function isMissingMountainFoundationPlanningStatusColumnError(error: {
+  code?: string;
+  message?: string;
+}) {
+  if (error.code === "42703") {
+    return error.message?.includes("planning_status") ?? false;
+  }
+
+  return error.message?.includes("planning_status") ?? false;
 }

@@ -1158,6 +1158,36 @@ function TripPlanningResult({
   const actionCategoryLabel = getChecklistScanFilterLabel(scanFilter);
   const displaySlots = dedupeDisplaySlots(plan.required_slots);
 
+  // 「要対応」ビューでは確認済み項目を消さず、各カテゴリー下部の「確認済み」グループに
+  // 残して出発前に見直せるようにする。表示のみの分割で、進捗率・保存・生成ロジックには
+  // 一切手を入れない（confirmedItems は item.checked のみを対象にする）。
+  const planCategoryCards: Array<{
+    category: ChecklistCategory;
+    confirmedItems: ChecklistItem[];
+  }> =
+    scanFilter === "ACTION"
+      ? checklist.categories
+          .map((fullCategory) => {
+            const visible = visibleCategories.find(
+              (candidate) => candidate.id === fullCategory.id
+            );
+            const confirmedItems = fullCategory.items.filter(
+              (item) => item.checked
+            );
+            const category: ChecklistCategory =
+              visible ?? { ...fullCategory, priorityGroups: [], items: [] };
+
+            return { category, confirmedItems };
+          })
+          .filter(
+            ({ category, confirmedItems }) =>
+              category.items.length > 0 || confirmedItems.length > 0
+          )
+      : visibleCategories.map((category) => ({
+          category,
+          confirmedItems: [] as ChecklistItem[]
+        }));
+
   useEffect(() => {
     const nextCheckedSlots = filterCheckedSlotsForPlan(initialCheckedSlots, plan);
 
@@ -1270,11 +1300,12 @@ function TripPlanningResult({
         />
 
         <div className="grid gap-4 xl:grid-cols-2">
-          {visibleCategories.length > 0 ? (
-            visibleCategories.map((category) => (
+          {planCategoryCards.length > 0 ? (
+            planCategoryCards.map(({ category, confirmedItems }) => (
             <ChecklistCategoryCard
               key={category.id}
               category={category}
+              confirmedItems={confirmedItems}
               compatibilityBySlot={compatibilityBySlot}
               onToggle={handleToggleChecklistItem}
             />
@@ -2209,10 +2240,12 @@ function ChecklistStat({
 
 function ChecklistCategoryCard({
   category,
+  confirmedItems = [],
   compatibilityBySlot,
   onToggle
 }: {
   category: ChecklistCategory;
+  confirmedItems?: ChecklistItem[];
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
   onToggle: (item: ChecklistItem) => void;
 }) {
@@ -2269,6 +2302,27 @@ function ChecklistCategoryCard({
             </div>
           </div>
         ))}
+
+        {confirmedItems.length > 0 ? (
+          <div>
+            <div className="mb-2 flex items-center gap-2">
+              <span className="h-px flex-1 bg-stone-100" />
+              <p className="text-xs font-semibold text-stone-400">
+                確認済み {confirmedItems.length.toLocaleString("ja-JP")}
+              </p>
+              <span className="h-px flex-1 bg-stone-100" />
+            </div>
+            <div className="space-y-2">
+              {confirmedItems.map((item) => (
+                <ConfirmedChecklistItemRow
+                  key={item.id}
+                  item={item}
+                  onToggle={onToggle}
+                />
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </article>
   );
@@ -2344,6 +2398,44 @@ function ChecklistItemRow({
         <span className="mt-1 block text-xs font-medium leading-5 text-stone-500">
           {item.reason}
         </span>
+      </span>
+    </label>
+  );
+}
+
+// 確認済み項目の弱めた表示。中身は同じ onToggle を使うので、タップで確認を取り消して
+// 未確認グループへ戻せる（表示のみ・状態管理は既存フローのまま）。
+function ConfirmedChecklistItemRow({
+  item,
+  onToggle
+}: {
+  item: ChecklistItem;
+  onToggle: (item: ChecklistItem) => void;
+}) {
+  const canToggle =
+    item.source === "CHECKLIST_ONLY" || item.toggleSlots.length > 0;
+
+  return (
+    <label
+      className={`flex items-center gap-2.5 rounded-lg border border-stone-100 bg-stone-50 px-3 py-2 transition ${
+        canToggle ? "cursor-pointer hover:border-stone-200" : ""
+      }`}
+    >
+      <input
+        type="checkbox"
+        className="sr-only"
+        checked={item.checked}
+        disabled={!canToggle}
+        onChange={() => onToggle(item)}
+      />
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-stone-300 bg-stone-200 text-stone-500">
+        <Check className="h-3.5 w-3.5" />
+      </span>
+      <span className="min-w-0 flex-1 truncate text-sm font-medium text-stone-400">
+        {item.label}
+      </span>
+      <span className="shrink-0 rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-semibold text-stone-400">
+        確認済み
       </span>
     </label>
   );

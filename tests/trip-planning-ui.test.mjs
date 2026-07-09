@@ -503,6 +503,53 @@ test("pack planning UI deduplicates merged slot labels and supports checklist pr
   assert.match(planChecklistSource, /CHECKLIST_ONLY/);
 });
 
+test("plan page keeps confirmed checklist items visible in a 確認済み group", () => {
+  // 1) 確認した項目は消えず、確認済みグループのローとして描画される
+  assert.match(tripPlanningUiSource, /function ConfirmedChecklistItemRow/);
+  assert.match(tripPlanningUiSource, /<ConfirmedChecklistItemRow/);
+
+  // 2) 各カテゴリーカードに確認済み項目を渡す prop があり、確認済み見出しが出る
+  assert.match(tripPlanningUiSource, /confirmedItems\?: ChecklistItem\[\]/);
+  assert.match(
+    tripPlanningUiSource,
+    /確認済み \{confirmedItems\.length\.toLocaleString\("ja-JP"\)\}/
+  );
+
+  // 3) 「要対応」ビューでのみ確認済みグループを作り、確認済みは item.checked から導く
+  assert.match(tripPlanningUiSource, /const planCategoryCards/);
+  assert.match(tripPlanningUiSource, /scanFilter === "ACTION"/);
+  assert.match(tripPlanningUiSource, /\.items\.filter\(\s*\n?\s*\(item\) => item\.checked/);
+  assert.match(
+    tripPlanningUiSource,
+    /planCategoryCards\.map\(\(\{ category, confirmedItems \}\)/
+  );
+
+  // 4) 確認済みローは同じ onToggle を使う＝再タップで確認を取り消して未確認へ戻せる
+  const confirmedRow = tripPlanningUiSource.slice(
+    tripPlanningUiSource.indexOf("function ConfirmedChecklistItemRow")
+  );
+  assert.match(confirmedRow, /checked=\{item\.checked\}/);
+  assert.match(confirmedRow, /onChange=\{\(\) => onToggle\(item\)\}/);
+  // 確認済みは弱めた（浅いグレー）表示
+  assert.match(confirmedRow, /bg-stone-50/);
+  assert.match(confirmedRow, /text-stone-400/);
+
+  // 5) 「今回不要なもの」は別セクションのまま（確認済みと混在しない）
+  assert.match(tripPlanningUiSource, /function NotNeededItemsSection/);
+  assert.match(tripPlanningUiSource, /今回不要なもの/);
+  assert.ok(
+    tripPlanningUiSource.indexOf("今回不要なもの") !==
+      tripPlanningUiSource.indexOf("確認済み")
+  );
+
+  // 6) 表示のみの変更：生成/マッチャ/保存の入口は従来どおり温存
+  assert.match(tripPlanningUiSource, /buildPlanChecklist/);
+  assert.match(tripPlanningUiSource, /filterChecklistCategoriesForScan/);
+  assert.match(tripPlanningUiSource, /handleToggleChecklistItem/);
+  // 進捗率ロジックは据え置き（summary.percent をそのまま利用）
+  assert.match(tripPlanningUiSource, /checklist\.summary\.percent/);
+});
+
 test("trip planning UI avoids recommendation and shopping language", () => {
   for (const source of [aiPageSource, tripPlanningUiSource, tripPlanningFormSource]) {
     assert.doesNotMatch(source, /推薦|購入|予算|価格|買う|wishlist/i);

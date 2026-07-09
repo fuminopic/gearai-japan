@@ -631,7 +631,6 @@ test("mountain foundation Tohoku region correction stays scoped to two profiles"
     tohokuRegionProfileCorrectionsMigration,
     /where slug in \('asahi-dake-tohoku', 'iide-san'\)/i
   );
-  assert.match(tohokuRegionProfileCorrectionsMigration, /updated_at = now\(\)/);
 
   for (const slug of ["asahi-dake-tohoku", "iide-san"]) {
     assert.match(tohokuRegionProfileCorrectionsMigration, new RegExp(`'${slug}'`));
@@ -656,7 +655,8 @@ test("mountain foundation Tohoku region correction stays scoped to two profiles"
     "restriction_status_note",
     "mountain_range",
     "prefectures",
-    "name_ja"
+    "name_ja",
+    "updated_at"
   ]) {
     assert.doesNotMatch(
       tohokuRegionProfileCorrectionsMigration,

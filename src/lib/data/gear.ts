@@ -92,16 +92,48 @@ type SupabaseUserGearPlanningRow = Pick<
 };
 type UserGearPlanningRow = UserGear;
 
+// Thrown when the session cannot be validated because of a *transient* failure
+// (network drop on WebView resume, token-refresh hiccup, Auth 5xx). Callers/pages
+// should let this surface (retry/report) — it must NOT be turned into a logout.
+export class AuthValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AuthValidationError";
+  }
+}
+
 export const requireUser = cache(async function requireUser() {
   const supabase = await createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+
+  // getUser() hits the network to validate the token. On iOS/WebView a transient
+  // failure returns { user: null, error }. Previously we treated that as "logged
+  // out" and redirected to /login — the false auto-logout. Instead: retry once,
+  // then only treat a *confirmed* result as final.
+  let result = await supabase.auth.getUser();
+
+  if (result.error) {
+    // Brief pause, then exactly one retry — no infinite loop.
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    result = await supabase.auth.getUser();
+  }
+
+  if (result.error) {
+    // Transient auth error after a retry: do NOT redirect to /login, do NOT
+    // signOut, do NOT clear the session (any of those reads as a false logout).
+    // Surface a controlled error so the page can retry/report while the user
+    // stays signed in.
+    throw new AuthValidationError(result.error.message);
+  }
+
+  const user = result.data.user;
 
   if (!user) {
+    // Confirmed unauthenticated: getUser() succeeded with no error and no user.
     redirect("/login");
   }
 
+  // Security note: `user` always comes from a successful getUser() (server-
+  // validated). We never fall back to getSession().user to admit a user.
   return { supabase, user };
 });
 

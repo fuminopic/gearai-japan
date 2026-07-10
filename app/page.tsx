@@ -10,9 +10,22 @@ import { createClient } from "@/lib/supabase/server";
 // real validation routes a stale session straight to /login.
 export default async function HomePage() {
   const supabase = await createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
 
-  redirect(user ? "/dashboard" : "/login");
+  // Same hardening as requireUser: a transient getUser() failure (network drop /
+  // token-refresh hiccup on WebView) must NOT bounce the user to /login. Retry
+  // once, and only route to /login on a *confirmed* unauthenticated result.
+  let result = await supabase.auth.getUser();
+  if (result.error) {
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    result = await supabase.auth.getUser();
+  }
+
+  if (result.error) {
+    // Still transient: defer to /dashboard, which is guarded by requireUser — it
+    // retries and only routes to /login on a confirmed unauthenticated result.
+    // (Never send a possibly-signed-in user to /login on a transient error.)
+    redirect("/dashboard");
+  }
+
+  redirect(result.data.user ? "/dashboard" : "/login");
 }

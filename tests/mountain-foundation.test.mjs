@@ -126,6 +126,13 @@ const thirdSummerPopularMountainNotesCleanupMigration = readFileSync(
   ),
   "utf8"
 );
+const fourthSummerPopularMountainNotesCleanupMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/061_popular_mountain_notes_cleanup.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -1207,4 +1214,106 @@ test("third summer popular mountain notes cleanup keeps volcano notes stable-onl
   assert.doesNotMatch(thirdSummerPopularMountainNotesCleanupMigration, /\bcreate\b/i);
   assert.doesNotMatch(thirdSummerPopularMountainNotesCleanupMigration, /\bpolicy\b/i);
   assert.doesNotMatch(thirdSummerPopularMountainNotesCleanupMigration, /\brls\b/i);
+});
+
+test("second-batch popular mountain notes cleanup stays scoped to stable notes", () => {
+  const targetSlugs = [
+    "tsurugi-dake",
+    "nikko-shirane-san",
+    "tateshina-yama",
+    "yotei-zan",
+    "miyanoura-dake"
+  ];
+
+  const updateTargetSlugs = [
+    ...fourthSummerPopularMountainNotesCleanupMigration.matchAll(
+      /where slug = '([a-z0-9-]+)'/g
+    )
+  ].map((match) => match[1]);
+
+  assert.deepEqual(updateTargetSlugs, targetSlugs);
+
+  const updatedFields = [
+    ...fourthSummerPopularMountainNotesCleanupMigration.matchAll(
+      /^\s*(?:set\s+)?(mandatory_gear_note|supplementary_notes|restriction_status_note)\s*=/gm
+    )
+  ].map((match) => match[1]);
+  assert.deepEqual(
+    [...new Set(updatedFields)].sort(),
+    ["mandatory_gear_note", "restriction_status_note", "supplementary_notes"]
+  );
+
+  assert.match(
+    fourthSummerPopularMountainNotesCleanupMigration,
+    /mandatory_gear_note = '鎖場・カニのタテバイ\/ヨコバイではヘルメットを着用。'/
+  );
+  assert.match(
+    fourthSummerPopularMountainNotesCleanupMigration,
+    /supplementary_notes = '北八ヶ岳北端。山頂部は岩場。'/
+  );
+  assert.match(
+    fourthSummerPopularMountainNotesCleanupMigration,
+    /supplementary_notes = '屋久島の多雨環境。雨具を携行し、長時間行動に備える。'/
+  );
+  assert.match(
+    fourthSummerPopularMountainNotesCleanupMigration,
+    /restriction_status_note = null/
+  );
+
+  for (const untouchedSlug of [
+    "tarumae-san",
+    "goryu-dake",
+    "shirouma-dake",
+    "daisen",
+    "poroshiri-dake"
+  ]) {
+    assert.doesNotMatch(
+      fourthSummerPopularMountainNotesCleanupMigration,
+      new RegExp("'" + untouchedSlug + "'")
+    );
+  }
+
+  for (const forbiddenField of [
+    "mountain_current_plan_status",
+    "helmet_guidance",
+    "planning_status",
+    "volcanic_risk",
+    "active_volcano_status",
+    "supported_seasons",
+    "supported_styles",
+    "route_seriousness",
+    "technical_terrain",
+    "hut_support",
+    "tent_site_availability",
+    "water_availability",
+    "updated_at"
+  ]) {
+    assert.doesNotMatch(
+      fourthSummerPopularMountainNotesCleanupMigration,
+      new RegExp("\\b" + forbiddenField + "\\b")
+    );
+  }
+
+  for (const forbiddenCopy of [
+    /警戒レベル/,
+    /レベル[0-9０-９]/,
+    /現在静穏/,
+    /残雪/,
+    /通行止め/,
+    /閉鎖/,
+    /立入禁止/,
+    /営業/,
+    /バス/,
+    /荒川登山口/,
+    /\d{4}[/-]\d{1,2}/,
+    /\d{1,2}[/-]\d{1,2}/
+  ]) {
+    assert.doesNotMatch(fourthSummerPopularMountainNotesCleanupMigration, forbiddenCopy);
+  }
+
+  assert.doesNotMatch(fourthSummerPopularMountainNotesCleanupMigration, /\binsert\b/i);
+  assert.doesNotMatch(fourthSummerPopularMountainNotesCleanupMigration, /\bdelete\b/i);
+  assert.doesNotMatch(fourthSummerPopularMountainNotesCleanupMigration, /\balter\b/i);
+  assert.doesNotMatch(fourthSummerPopularMountainNotesCleanupMigration, /\bdrop\b/i);
+  assert.doesNotMatch(fourthSummerPopularMountainNotesCleanupMigration, /\bcreate\b/i);
 });

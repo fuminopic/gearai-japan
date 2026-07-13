@@ -105,6 +105,7 @@ import type {
 
 type TripPlanningUIProps = {
   mountains: MountainFoundationProfile[];
+  blockedMountainSlugs?: string[];
   selectedMountainSlug: string;
   selectedSeason: MountainFoundationSeason;
   selectedStyle: MountainFoundationStyle;
@@ -134,6 +135,7 @@ type ChecklistScanFilter = "ACTION" | "MISSING" | "CONFIRM" | "IMPORTANT" | "ALL
 
 export function TripPlanningUI({
   mountains,
+  blockedMountainSlugs = [],
   selectedMountainSlug,
   selectedSeason,
   selectedStyle,
@@ -443,6 +445,7 @@ export function TripPlanningUI({
       {!plan && !isSavedPlanMode && !isFullChecklistView ? (
         <TripPlanningForm
           mountains={mountains}
+          blockedMountainSlugs={blockedMountainSlugs}
           selectedMountainSlug={effectiveMountainSlug}
           selectedSeason={effectiveSeason}
           selectedStyle={effectiveStyle}

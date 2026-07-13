@@ -324,6 +324,24 @@ test("pack requirement generator requires sleeping pads for huts without bedding
   );
 });
 
+test("Aso day-hike profile does not generate sleeping bag or pad slots", () => {
+  const slots = getRequirementSlotsForTrip(
+    ["WATER_SYSTEM", "RAIN_SYSTEM", "NAVIGATION_SYSTEM", "EMERGENCY_SYSTEM"],
+    "DAY_HIKE",
+    {
+      mountain: {
+        ...alpineV2Mountain,
+        supported_styles: ["DAY_HIKE"],
+        hut_support: "NONE"
+      },
+      season: "SUMMER"
+    }
+  );
+
+  assert.ok(!slots.includes("SLEEP_INSULATION"));
+  assert.ok(!slots.includes("SLEEP_PAD"));
+});
+
 test("pack requirement generator requires traction for winter low-snow trips", () => {
   assert.deepEqual(
     getRequirementSlotsForTrip(["TECHNICAL_SAFETY_SYSTEM"], "DAY_HIKE", {

@@ -88,6 +88,24 @@ export type MountainSeasonOpeningWindow =
   | "WINTER_EXPERT_ONLY";
 export type MountainActiveVolcanoStatus = "NONE" | "ACTIVE" | "ADJACENT";
 export type MountainPlanningStatus = "PLANNABLE" | "NOT_STANDARD_ROUTE";
+export type MountainCurrentPlanStatusCode = "REVIEW_REQUIRED" | "BLOCKED";
+export type MountainCurrentPlanStatusReasonCode =
+  | "VOLCANO_RESTRICTION"
+  | "TRAIL_CLOSURE"
+  | "SEASONAL_SNOW"
+  | "OTHER";
+export type MountainCurrentPlanStatus = {
+  status: MountainCurrentPlanStatusCode;
+  reasonCode: MountainCurrentPlanStatusReasonCode;
+  messageJa: string;
+  sourceUrl: string;
+  verifiedAt: string;
+  reviewAfter: string;
+  isStale: boolean;
+};
+export type MountainCurrentPlanStatusBySlug = Readonly<
+  Record<string, MountainCurrentPlanStatus>
+>;
 export type MountainMeizanList =
   | "JAPAN_HYAKUMEIZAN"
   | "JAPAN_NIHYAKUMEIZAN_EXTRA"

@@ -150,6 +150,10 @@ const mountainFoundationSource = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
 );
+const mountainCurrentPlanStatusSource = readFileSync(
+  new URL("../src/lib/mountain-current-plan-status.ts", import.meta.url),
+  "utf8"
+);
 
 test("trip planning page exposes the pack planning architecture", () => {
   assert.match(aiPageSource, /PlanPageContent/);
@@ -172,7 +176,10 @@ test("trip planning page always refreshes gear-derived pack coverage", () => {
   assert.match(planPageSource, /dynamic = "force-dynamic"/);
   assert.match(planPageSource, /revalidate = 0/);
   assert.match(gearActionsSource, /revalidatePath\("\/plan"\)/);
-  assert.match(planPageContentSource, /const \[mountainResult, planHistory, savedPlans\] = await Promise\.all/);
+  assert.match(
+    planPageContentSource,
+    /const \[mountainResult, currentPlanStatusResult, planHistory, savedPlans\] = await Promise\.all/
+  );
   assert.match(planPageContentSource, /getRecommendationHistory\(\)/);
   assert.match(planPageContentSource, /getTripPlans\(\)/);
   assert.match(planPageContentSource, /getPackRequirementPlan\(\{/);
@@ -181,26 +188,27 @@ test("trip planning page always refreshes gear-derived pack coverage", () => {
 });
 
 test("trip planning blocks active restricted volcanoes before generating a plan", () => {
-  assert.match(planPageContentSource, /restrictedVolcanoPlanningMessage/);
+  assert.match(planPageContentSource, /resolveMountainPlanAccess/);
+  assert.match(planPageContentSource, /getMountainPlanningBlockMessage/);
+  assert.match(mountainCurrentPlanStatusSource, /restrictedVolcanoPlanningMessage/);
   assert.match(
-    planPageContentSource,
+    mountainCurrentPlanStatusSource,
     /この山は現在、火山活動または入山規制により通常の登山計画を作成できません。気象庁・自治体などの公式情報を確認してください。/
   );
   assert.match(
-    planPageContentSource,
+    mountainCurrentPlanStatusSource,
     /mountain\?\.volcanic_risk === "ACTIVE_RESTRICTED"/
   );
-  assert.match(planPageContentSource, /getPlanningBlockMessage/);
   assert.match(planPageContentSource, /planningBlockMessage/);
   assert.match(
     planPageContentSource,
-    /if \(planningBlockMessage\) \{\s*error = planningBlockMessage;[\s\S]*\} else if \(shouldGeneratePlan && selectedMountain\)/
+    /if \(planningBlockMessage\) \{[\s\S]*error = planningBlockMessage;[\s\S]*\} else if \(!requestedPlanAccess\.isGenerationBlocked && shouldGeneratePlan && selectedMountain\)/
   );
   assert.match(planPageContentSource, /mountains=\{mountains\}/);
   assert.match(planPageContentSource, /getSelectedMountainSlug\(/);
   assert.match(
     planPageContentSource,
-    /mountain\.slug === slug && !isPlanningBlockedMountain\(mountain\)/
+    /mountain\.slug === slug && !isPlanningBlockedMountain\(mountain, currentPlanStatuses\)/
   );
   assert.doesNotMatch(planPageContentSource, /plannableMountains/);
   assert.match(tripPlanningFormSource, /disabled=\{isBlockedMountain\}/);
@@ -211,13 +219,13 @@ test("trip planning blocks active restricted volcanoes before generating a plan"
 });
 
 test("trip planning blocks non-standard route mountains without shrinking list counts", () => {
-  assert.match(planPageContentSource, /nonStandardRoutePlanningMessage/);
+  assert.match(mountainCurrentPlanStatusSource, /nonStandardRoutePlanningMessage/);
   assert.match(
-    planPageContentSource,
+    mountainCurrentPlanStatusSource,
     /この山は通常の装備計画を作成する前に、登山道状況・入山可否・山行形態を公式情報で確認してください。/
   );
   assert.match(
-    planPageContentSource,
+    mountainCurrentPlanStatusSource,
     /mountain\?\.planning_status === "NOT_STANDARD_ROUTE"/
   );
   assert.match(
@@ -226,7 +234,7 @@ test("trip planning blocks non-standard route mountains without shrinking list c
   );
   assert.match(
     planPageContentSource,
-    /if \(planningBlockMessage\) \{\s*error = planningBlockMessage;[\s\S]*\} else if \(shouldGeneratePlan && selectedMountain\)/
+    /if \(planningBlockMessage\) \{[\s\S]*error = planningBlockMessage;[\s\S]*\} else if \(!requestedPlanAccess\.isGenerationBlocked && shouldGeneratePlan && selectedMountain\)/
   );
   assert.match(
     tripPlanningFormSource,
@@ -604,7 +612,7 @@ test("trip planning form filters seasons and styles by selected mountain", () =>
 test("trip planning page normalizes direct URL parameters against the mountain", () => {
   assert.match(
     planPageContentSource,
-    /getSelectedMountain\(selectedMountainSlug, mountains\)/
+    /getSelectedMountain\(\s*selectedMountainSlug,\s*mountains,\s*currentPlanStatuses\s*\)/
   );
   assert.match(planPageContentSource, /getSelectedSeason\(hydratedSeasonParam, selectedMountain\)/);
   assert.match(planPageContentSource, /getSelectedStyle\(hydratedStyleParam, selectedMountain\)/);

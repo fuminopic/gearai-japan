@@ -18,6 +18,7 @@ import type {
 
 type TripPlanningFormProps = {
   mountains: MountainFoundationProfile[];
+  blockedMountainSlugs?: string[];
   selectedMountainSlug: string;
   selectedSeason: MountainFoundationSeason;
   selectedStyle: MountainFoundationStyle;
@@ -115,6 +116,7 @@ const mountainAreaLabels: Record<MountainFoundationPrimaryRegion, string> = {
 
 export function TripPlanningForm({
   mountains,
+  blockedMountainSlugs = [],
   selectedMountainSlug,
   selectedSeason,
   selectedStyle,
@@ -128,9 +130,14 @@ export function TripPlanningForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const selectableMountains = useMemo(() => getOfficialMeizanMountains(mountains), [mountains]);
+  const blockedMountainSlugSet = useMemo(
+    () => new Set(blockedMountainSlugs),
+    [blockedMountainSlugs]
+  );
   const initialMountainSlug = getAvailableMountainSlug(
     selectedMountainSlug,
-    selectableMountains
+    selectableMountains,
+    blockedMountainSlugSet
   );
   const [mountainSlug, setMountainSlug] = useState(initialMountainSlug);
   const [mountainQuery, setMountainQuery] = useState("");
@@ -141,9 +148,11 @@ export function TripPlanningForm({
   const selectedMountain = useMemo(() => {
     return (
       selectableMountains.find((mountain) => mountain.slug === mountainSlug) ??
-      selectableMountains.find((mountain) => !isPlanningBlockedMountain(mountain))
+      selectableMountains.find(
+        (mountain) => !isPlanningBlockedMountain(mountain, blockedMountainSlugSet)
+      )
     );
-  }, [mountainSlug, selectableMountains]);
+  }, [blockedMountainSlugSet, mountainSlug, selectableMountains]);
   const filteredMountains = useMemo(() => {
     return getFilteredMountains(
       selectableMountains,
@@ -202,10 +211,11 @@ export function TripPlanningForm({
   useEffect(() => {
     const nextMountainSlug = getAvailableMountainSlug(
       selectedMountainSlug,
-      selectableMountains
+      selectableMountains,
+      blockedMountainSlugSet
     );
     setMountainSlug(nextMountainSlug);
-  }, [selectedMountainSlug, selectableMountains]);
+  }, [blockedMountainSlugSet, selectedMountainSlug, selectableMountains]);
 
   useEffect(() => {
     setVisibleMountainCount(3);
@@ -347,7 +357,10 @@ export function TripPlanningForm({
           <div className="mt-2 space-y-2">
             {filteredMountains.length > 0 ? (
               visibleMountains.map((mountain) => {
-                const isBlockedMountain = isPlanningBlockedMountain(mountain);
+                const isBlockedMountain = isPlanningBlockedMountain(
+                  mountain,
+                  blockedMountainSlugSet
+                );
 
                 return (
                   <button
@@ -533,25 +546,32 @@ export function TripPlanningForm({
 
 function getAvailableMountainSlug(
   slug: string,
-  mountains: readonly MountainFoundationProfile[]
+  mountains: readonly MountainFoundationProfile[],
+  blockedMountainSlugs: ReadonlySet<string>
 ) {
   if (
     mountains.some(
-      (mountain) => mountain.slug === slug && !isPlanningBlockedMountain(mountain)
+      (mountain) =>
+        mountain.slug === slug && !isPlanningBlockedMountain(mountain, blockedMountainSlugs)
     )
   ) {
     return slug;
   }
 
-  return mountains.find((mountain) => !isPlanningBlockedMountain(mountain))?.slug ?? "";
+  return (
+    mountains.find((mountain) => !isPlanningBlockedMountain(mountain, blockedMountainSlugs))
+      ?.slug ?? ""
+  );
 }
 
 function isPlanningBlockedMountain(
-  mountain: MountainFoundationProfile | null | undefined
+  mountain: MountainFoundationProfile | null | undefined,
+  blockedMountainSlugs: ReadonlySet<string>
 ) {
   return (
     mountain?.volcanic_risk === "ACTIVE_RESTRICTED" ||
-    mountain?.planning_status === "NOT_STANDARD_ROUTE"
+    mountain?.planning_status === "NOT_STANDARD_ROUTE" ||
+    (mountain ? blockedMountainSlugs.has(mountain.slug) : false)
   );
 }
 

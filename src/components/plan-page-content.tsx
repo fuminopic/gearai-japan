@@ -1,12 +1,22 @@
 import { TripPlanningUI } from "@/components/trip-planning-ui";
+import { Notice } from "@/components/ui/notice";
 import { getGearProducts, getOwnedGearForPlanning, requireUser } from "@/lib/data/gear";
+import { getMountainCurrentPlanStatuses } from "@/lib/data/mountain-current-plan-status";
 import { getMountainFoundationProfiles } from "@/lib/data/mountain-foundation";
 import { getPackRequirementPlan } from "@/lib/data/pack-requirements";
 import { getRecommendationHistory } from "@/lib/data/recommendations";
 import { getTripPlans } from "@/lib/data/trip-plans";
 import { matchGearForRequirementSlot } from "@/lib/gear-matching/engine";
+import {
+  getMountainPlanningBlockMessage,
+  isMountainCurrentPlanStatusBlocked,
+  mountainCurrentPlanStatusStaleMessage,
+  resolveMountainPlanAccess
+} from "@/lib/mountain-current-plan-status";
 import type {
   GearMatchingResult,
+  MountainCurrentPlanStatus,
+  MountainCurrentPlanStatusBySlug,
   MountainFoundationProfile,
   MountainFoundationSeason,
   MountainFoundationStyle,
@@ -29,21 +39,21 @@ export type PlanPageContentProps = {
   }>;
 };
 
-const restrictedVolcanoPlanningMessage =
-  "この山は現在、火山活動または入山規制により通常の登山計画を作成できません。気象庁・自治体などの公式情報を確認してください。";
-const nonStandardRoutePlanningMessage =
-  "この山は通常の装備計画を作成する前に、登山道状況・入山可否・山行形態を公式情報で確認してください。";
-
 export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   const params = await searchParams;
   await requireUser();
 
   let error = params.error;
   let mountains: MountainFoundationProfile[] = [];
-  const [mountainResult, planHistory, savedPlans] = await Promise.all([
+  let currentPlanStatuses: MountainCurrentPlanStatusBySlug = {};
+  let currentPlanStatusReadFailed = false;
+  const [mountainResult, currentPlanStatusResult, planHistory, savedPlans] = await Promise.all([
     getMountainFoundationProfiles()
       .then((data) => ({ data, error: null }))
       .catch((caught: unknown) => ({ data: [], error: caught })),
+    getMountainCurrentPlanStatuses()
+      .then((data) => ({ data, error: null }))
+      .catch((caught: unknown) => ({ data: {}, error: caught })),
     getRecommendationHistory(),
     getTripPlans()
   ]);
@@ -57,6 +67,13 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
     mountains = mountainResult.data;
   }
 
+  if (currentPlanStatusResult.error) {
+    currentPlanStatusReadFailed = true;
+    error = "現在の山岳安全情報を確認できないため、計画を作成できませんでした。";
+  } else {
+    currentPlanStatuses = currentPlanStatusResult.data;
+  }
+
   const selectedSavedPlan =
     params.id && savedPlans.length > 0
       ? savedPlans.find((record) => record.id === params.id) ?? null
@@ -65,12 +82,25 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   const hydratedSeasonParam = params.season ?? selectedSavedPlan?.season;
   const hydratedStyleParam = params.style ?? selectedSavedPlan?.style;
   const requestedMountain = getRequestedMountain(hydratedMountainParam, mountains);
-  const planningBlockMessage = getPlanningBlockMessage(requestedMountain);
+  const requestedCurrentPlanStatus = requestedMountain
+    ? currentPlanStatuses[requestedMountain.slug]
+    : undefined;
+  const requestedPlanAccess = resolveMountainPlanAccess({
+    mountain: requestedMountain,
+    currentPlanStatus: requestedCurrentPlanStatus,
+    currentPlanStatusReadFailed
+  });
+  const planningBlockMessage = requestedPlanAccess.planningBlockMessage;
   const selectedMountainSlug = getSelectedMountainSlug(
     planningBlockMessage ? undefined : hydratedMountainParam,
-    mountains
+    mountains,
+    currentPlanStatuses
   );
-  const selectedMountain = getSelectedMountain(selectedMountainSlug, mountains);
+  const selectedMountain = getSelectedMountain(
+    selectedMountainSlug,
+    mountains,
+    currentPlanStatuses
+  );
   const selectedSeason = getSelectedSeason(hydratedSeasonParam, selectedMountain);
   const selectedStyle = getSelectedStyle(hydratedStyleParam, selectedMountain);
   const shouldGeneratePlan = Boolean(
@@ -84,8 +114,10 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   let ownedGear: UserGear[] = [];
 
   if (planningBlockMessage) {
-    error = planningBlockMessage;
-  } else if (shouldGeneratePlan && selectedMountain) {
+    if (!isMountainCurrentPlanStatusBlocked(requestedCurrentPlanStatus)) {
+      error = planningBlockMessage;
+    }
+  } else if (!requestedPlanAccess.isGenerationBlocked && shouldGeneratePlan && selectedMountain) {
     try {
       const [generatedPlan, databaseGear, planningOwnedGear] = await Promise.all([
         getPackRequirementPlan({
@@ -123,42 +155,43 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
     }
   }
 
+  const planStatusNotice = requestedCurrentPlanStatus ?? currentPlanStatuses[selectedMountainSlug];
+  const blockedMountainSlugs = Object.entries(currentPlanStatuses)
+    .filter(([, status]) => status.status === "BLOCKED")
+    .map(([slug]) => slug);
+
   return (
-    <TripPlanningUI
-      mountains={mountains}
-      selectedMountainSlug={selectedMountainSlug}
-      selectedSeason={selectedSeason}
-      selectedStyle={selectedStyle}
-      plan={plan}
-      ownedGear={ownedGear}
-      compatibilityBySlot={compatibilityBySlot}
-      planHistory={planHistory}
-      savedPlans={savedPlans}
-      selectedPlanId={params.id ?? null}
-      selectedSavedPlan={selectedSavedPlan}
-      error={error}
-    />
+    <>
+      {planStatusNotice ? <MountainCurrentPlanStatusNotice status={planStatusNotice} /> : null}
+      <TripPlanningUI
+        mountains={mountains}
+        blockedMountainSlugs={blockedMountainSlugs}
+        selectedMountainSlug={selectedMountainSlug}
+        selectedSeason={selectedSeason}
+        selectedStyle={selectedStyle}
+        plan={plan}
+        ownedGear={ownedGear}
+        compatibilityBySlot={compatibilityBySlot}
+        planHistory={planHistory}
+        savedPlans={savedPlans}
+        selectedPlanId={params.id ?? null}
+        selectedSavedPlan={selectedSavedPlan}
+        error={error}
+      />
+    </>
   );
 }
 
-function getPlanningBlockMessage(
-  mountain: MountainFoundationProfile | null | undefined
-) {
-  if (mountain?.volcanic_risk === "ACTIVE_RESTRICTED") {
-    return restrictedVolcanoPlanningMessage;
-  }
-
-  if (mountain?.planning_status === "NOT_STANDARD_ROUTE") {
-    return nonStandardRoutePlanningMessage;
-  }
-
-  return null;
-}
-
 function isPlanningBlockedMountain(
-  mountain: MountainFoundationProfile | null | undefined
+  mountain: MountainFoundationProfile | null | undefined,
+  currentPlanStatuses: MountainCurrentPlanStatusBySlug
 ) {
-  return Boolean(getPlanningBlockMessage(mountain));
+  return Boolean(
+    getMountainPlanningBlockMessage(
+      mountain,
+      mountain ? currentPlanStatuses[mountain.slug] : undefined
+    )
+  );
 }
 
 function getRequestedMountain(
@@ -174,12 +207,14 @@ function getRequestedMountain(
 
 function getSelectedMountainSlug(
   slug: string | undefined,
-  mountains: readonly MountainFoundationProfile[]
+  mountains: readonly MountainFoundationProfile[],
+  currentPlanStatuses: MountainCurrentPlanStatusBySlug
 ) {
   if (
     slug &&
     mountains.some(
-      (mountain) => mountain.slug === slug && !isPlanningBlockedMountain(mountain)
+      (mountain) =>
+        mountain.slug === slug && !isPlanningBlockedMountain(mountain, currentPlanStatuses)
     )
   ) {
     return slug;
@@ -187,25 +222,53 @@ function getSelectedMountainSlug(
 
   if (
     mountains.some(
-      (mountain) => mountain.slug === "takao-san" && !isPlanningBlockedMountain(mountain)
+      (mountain) =>
+        mountain.slug === "takao-san" && !isPlanningBlockedMountain(mountain, currentPlanStatuses)
     )
   ) {
     return "takao-san";
   }
 
-  return mountains.find((mountain) => !isPlanningBlockedMountain(mountain))?.slug ?? "";
+  return (
+    mountains.find((mountain) => !isPlanningBlockedMountain(mountain, currentPlanStatuses))?.slug ??
+    ""
+  );
 }
 
 function getSelectedMountain(
   slug: string,
-  mountains: readonly MountainFoundationProfile[]
+  mountains: readonly MountainFoundationProfile[],
+  currentPlanStatuses: MountainCurrentPlanStatusBySlug
 ) {
   return (
     mountains.find(
-      (mountain) => mountain.slug === slug && !isPlanningBlockedMountain(mountain)
+      (mountain) =>
+        mountain.slug === slug && !isPlanningBlockedMountain(mountain, currentPlanStatuses)
     ) ??
-    mountains.find((mountain) => !isPlanningBlockedMountain(mountain)) ??
+    mountains.find((mountain) => !isPlanningBlockedMountain(mountain, currentPlanStatuses)) ??
     null
+  );
+}
+
+function MountainCurrentPlanStatusNotice({ status }: { status: MountainCurrentPlanStatus }) {
+  return (
+    <Notice
+      tone={status.status === "BLOCKED" ? "error" : "warning"}
+      className={`mb-5 border ${status.status === "BLOCKED" ? "border-red-200" : "border-amber-200"}`}
+    >
+      <span className="block">{status.messageJa}</span>
+      {status.isStale ? (
+        <span className="mt-1 block">{mountainCurrentPlanStatusStaleMessage}</span>
+      ) : null}
+      <a
+        href={status.sourceUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-1 inline-block underline underline-offset-2"
+      >
+        公式情報を確認
+      </a>
+    </Notice>
   );
 }
 

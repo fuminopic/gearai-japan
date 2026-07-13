@@ -108,6 +108,13 @@ test("app middleware keeps navigation lightweight", () => {
   assert.match(supabaseMiddlewareSource, /auth\.getSession\(\)/);
   assert.doesNotMatch(supabaseMiddlewareSource, /auth\.getUser\(\)/);
   assert.match(supabaseMiddlewareSource, /data loaders still verify users/);
+  assert.match(supabaseMiddlewareSource, /classifyAuthUserError/);
+  assert.match(supabaseMiddlewareSource, /clearSupabaseAuthCookiesAndRedirectToLogin/);
+  assert.match(supabaseMiddlewareSource, /NextResponse\.redirect\(loginUrl\)/);
+  assert.match(supabaseMiddlewareSource, /request\.cookies\.delete\(cookie\.name\)/);
+  assert.match(supabaseMiddlewareSource, /response\.cookies\.set\(cookie\.name, "",/);
+  assert.match(supabaseMiddlewareSource, /name\.startsWith\("sb-"\)/);
+  assert.doesNotMatch(supabaseMiddlewareSource, /signOut/);
 });
 
 test("home redesign uses the requested YAMAJITAKU header and trip states", () => {

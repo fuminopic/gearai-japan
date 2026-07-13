@@ -2,6 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import type { SetAllCookies } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { classifyAuthUserError } from "@/lib/auth-validation";
+
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
     request
@@ -32,7 +34,39 @@ export async function updateSession(request: NextRequest) {
   });
 
   // Middleware only keeps auth cookies fresh; data loaders still verify users.
-  await supabase.auth.getSession();
+  try {
+    const { error } = await supabase.auth.getSession();
+    if (error && classifyAuthUserError(error) === "unauthenticated") {
+      return clearSupabaseAuthCookiesAndRedirectToLogin(request);
+    }
+  } catch (caught) {
+    if (classifyAuthUserError(caught) === "unauthenticated") {
+      return clearSupabaseAuthCookiesAndRedirectToLogin(request);
+    }
+  }
 
   return response;
+}
+
+function clearSupabaseAuthCookiesAndRedirectToLogin(request: NextRequest) {
+  const loginUrl = new URL("/login", request.url);
+  const response = NextResponse.redirect(loginUrl);
+
+  for (const cookie of request.cookies.getAll()) {
+    if (!isSupabaseAuthCookie(cookie.name)) {
+      continue;
+    }
+
+    request.cookies.delete(cookie.name);
+    response.cookies.set(cookie.name, "", {
+      maxAge: 0,
+      path: "/"
+    });
+  }
+
+  return response;
+}
+
+function isSupabaseAuthCookie(name: string) {
+  return name.startsWith("sb-");
 }

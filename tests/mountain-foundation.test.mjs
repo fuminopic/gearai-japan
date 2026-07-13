@@ -133,6 +133,13 @@ const fourthSummerPopularMountainNotesCleanupMigration = readFileSync(
   ),
   "utf8"
 );
+const tarumaeStandardRouteDurationMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/062_tarumae_standard_route_duration.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -1316,4 +1323,49 @@ test("second-batch popular mountain notes cleanup stays scoped to stable notes",
   assert.doesNotMatch(fourthSummerPopularMountainNotesCleanupMigration, /\balter\b/i);
   assert.doesNotMatch(fourthSummerPopularMountainNotesCleanupMigration, /\bdrop\b/i);
   assert.doesNotMatch(fourthSummerPopularMountainNotesCleanupMigration, /\bcreate\b/i);
+});
+
+test("tarumae standard route duration correction stays scoped to duration", () => {
+  const updateTargetSlugs = [
+    ...tarumaeStandardRouteDurationMigration.matchAll(
+      /where slug = '([a-z0-9-]+)'/g
+    )
+  ].map((match) => match[1]);
+
+  assert.deepEqual(updateTargetSlugs, ["tarumae-san"]);
+  assert.match(
+    tarumaeStandardRouteDurationMigration,
+    /set route_duration_band = 'HALF_DAY'/
+  );
+  assert.doesNotMatch(tarumaeStandardRouteDurationMigration, /'FULL_DAY'/);
+
+  for (const forbiddenField of [
+    "volcanic_risk",
+    "active_volcano_status",
+    "route_seriousness",
+    "technical_terrain",
+    "hut_support",
+    "tent_site_availability",
+    "mandatory_gear_note",
+    "supplementary_notes",
+    "restriction_status_note",
+    "mountain_current_plan_status"
+  ]) {
+    assert.doesNotMatch(
+      tarumaeStandardRouteDurationMigration,
+      new RegExp("\\b" + forbiddenField + "\\b")
+    );
+  }
+
+  for (const untouchedSlug of [
+    "goryu-dake",
+    "shirouma-dake",
+    "daisen",
+    "poroshiri-dake"
+  ]) {
+    assert.doesNotMatch(
+      tarumaeStandardRouteDurationMigration,
+      new RegExp("'" + untouchedSlug + "'")
+    );
+  }
 });

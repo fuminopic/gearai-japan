@@ -1228,6 +1228,101 @@ test("summer popular mountain note cleanup scenarios keep checklist signals stab
   assert.equal(itemByLabel(gassanChecklist, "熊対策装備")?.priority, "SUGGESTED");
 });
 
+test("second summer popular mountain note cleanup scenarios keep checklist signals stable", () => {
+  const yariChecklist = buildPlanChecklist({
+    plan: makePlan({
+      season: "SUMMER",
+      style: "OVERNIGHT_HUT",
+      mountain: {
+        slug: "yarigatake",
+        name_ja: "槍ヶ岳",
+        route_seriousness: "EXTREME",
+        technical_terrain: "EXPOSED_SCRAMBLE",
+        supplementary_notes: "標準は小屋泊・テント泊。穂先は岩場・落石に注意。"
+      }
+    })
+  });
+
+  assert.equal(itemByLabel(yariChecklist, "ヘルメット")?.priority, "SUGGESTED");
+  assert.match(itemByLabel(yariChecklist, "ヘルメット")?.reason ?? "", /岩稜|落石|ヘルメット/);
+
+  const okuhotakaChecklist = buildPlanChecklist({
+    plan: makePlan({
+      season: "SUMMER",
+      style: "OVERNIGHT_HUT",
+      mountain: {
+        slug: "okuhotakadake",
+        name_ja: "奥穂高岳",
+        route_seriousness: "EXTREME",
+        technical_terrain: "EXPOSED_SCRAMBLE",
+        supplementary_notes: "標準は小屋泊・テント泊。岩稜・落石に注意。"
+      }
+    })
+  });
+
+  assert.equal(itemByLabel(okuhotakaChecklist, "ヘルメット")?.priority, "SUGGESTED");
+  assert.match(
+    itemByLabel(okuhotakaChecklist, "ヘルメット")?.reason ?? "",
+    /岩稜|落石|ヘルメット/
+  );
+
+  const akadakeChecklist = buildPlanChecklist({
+    plan: makePlan({
+      season: "SUMMER",
+      style: "DAY_HIKE",
+      requiredSlots: ["DRINKING_WATER"],
+      mountain: {
+        slug: "aka-dake",
+        name_ja: "八ヶ岳（赤岳）",
+        route_seriousness: "HIGH",
+        technical_terrain: "STEEP_ROCKY",
+        hut_support: "FULL_SERVICE",
+        mandatory_gear_note: "岩場・鎖場あり。ヘルメット要否を確認。",
+        supplementary_notes: "八ヶ岳主峰。山小屋・指定テント場を利用した縦走可。"
+      }
+    })
+  });
+
+  assert.ok(checklistItems(akadakeChecklist).length > 0);
+  assert.ok(itemByLabel(akadakeChecklist, "飲み水"));
+  assert.equal(itemByLabel(akadakeChecklist, "シュラフ"), undefined);
+
+  const ishizuchiPlan = makePlan({
+    season: "SUMMER",
+    style: "DAY_HIKE",
+    mountain: {
+      slug: "ishizuchi-san",
+      name_ja: "石鎚山",
+      route_seriousness: "HIGH",
+      technical_terrain: "CHAIN_LADDER",
+      mandatory_gear_note: "鎖場（自信なければ迂回路）",
+      supplementary_notes: "西日本最高峰。鎖場は迂回路あり。"
+    }
+  });
+  const ishizuchiChecklist = buildPlanChecklist({ plan: ishizuchiPlan });
+
+  assert.ok(buildPlanDecisionChips(ishizuchiPlan).some((chip) => chip.label === "鎖場・岩稜"));
+  assert.equal(itemByLabel(ishizuchiChecklist, "ヘルメット")?.priority, "SUGGESTED");
+
+  const kujuChecklist = buildPlanChecklist({
+    plan: makePlan({
+      season: "SUMMER",
+      style: "DAY_HIKE",
+      mountain: {
+        slug: "kuju-san",
+        name_ja: "九重山",
+        volcanic_risk: "ACTIVE_MONITORED",
+        active_volcano_status: "ACTIVE",
+        supplementary_notes:
+          "坊ガツルでテント泊・くじゅう連山縦走可。硫黄山周辺は火山ガスに注意。",
+        restriction_status_note: null
+      }
+    })
+  });
+
+  assert.equal(itemByLabel(kujuChecklist, "火山情報の確認")?.priority, "ESSENTIAL");
+});
+
 test("long remote day hikes promote forced-bivouac emergency items", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan({

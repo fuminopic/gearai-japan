@@ -112,6 +112,13 @@ const summerPopularMountainNotesCleanupMigration = readFileSync(
   ),
   "utf8"
 );
+const secondSummerPopularMountainNotesCleanupMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/059_summer_popular_mountain_notes_cleanup.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -1007,4 +1014,108 @@ test("summer popular mountain notes cleanup stays scoped to stable notes", () =>
   assert.doesNotMatch(summerPopularMountainNotesCleanupMigration, /\bcreate\b/i);
   assert.doesNotMatch(summerPopularMountainNotesCleanupMigration, /\bpolicy\b/i);
   assert.doesNotMatch(summerPopularMountainNotesCleanupMigration, /\brls\b/i);
+});
+
+test("second summer popular mountain notes cleanup stays scoped to stable notes", () => {
+  const targetSlugs = [
+    "yarigatake",
+    "okuhotakadake",
+    "aka-dake",
+    "ishizuchi-san",
+    "kuju-san"
+  ];
+
+  for (const slug of targetSlugs) {
+    assert.match(
+      secondSummerPopularMountainNotesCleanupMigration,
+      new RegExp(`where slug = '${slug}'`)
+    );
+  }
+
+  const updateTargetSlugs = [
+    ...secondSummerPopularMountainNotesCleanupMigration.matchAll(/where slug = '([a-z0-9-]+)'/g)
+  ].map((match) => match[1]);
+
+  assert.deepEqual(updateTargetSlugs, targetSlugs);
+
+  assert.match(
+    secondSummerPopularMountainNotesCleanupMigration,
+    /supplementary_notes = '標準は小屋泊・テント泊。穂先は岩場・落石に注意。'/
+  );
+  assert.match(
+    secondSummerPopularMountainNotesCleanupMigration,
+    /supplementary_notes = '標準は小屋泊・テント泊。岩稜・落石に注意。'/
+  );
+  assert.match(
+    secondSummerPopularMountainNotesCleanupMigration,
+    /mandatory_gear_note = '岩場・鎖場あり。ヘルメット要否を確認。'/
+  );
+  assert.match(
+    secondSummerPopularMountainNotesCleanupMigration,
+    /supplementary_notes = '八ヶ岳主峰。山小屋・指定テント場を利用した縦走可。'/
+  );
+  assert.match(
+    secondSummerPopularMountainNotesCleanupMigration,
+    /supplementary_notes = '西日本最高峰。鎖場は迂回路あり。'/
+  );
+  assert.match(
+    secondSummerPopularMountainNotesCleanupMigration,
+    /supplementary_notes = '坊ガツルでテント泊・くじゅう連山縦走可。硫黄山周辺は火山ガスに注意。'/
+  );
+  assert.match(secondSummerPopularMountainNotesCleanupMigration, /restriction_status_note = null/);
+
+  for (const untouchedSlug of [
+    "okuhotaka-dake",
+    "akadake",
+    "kiso-komagatake",
+    "rausu-dake",
+    "daisetsuzan-asahi-dake",
+    "tanigawa-dake",
+    "gassan"
+  ]) {
+    assert.doesNotMatch(
+      secondSummerPopularMountainNotesCleanupMigration,
+      new RegExp(`'${untouchedSlug}'`)
+    );
+  }
+
+  for (const forbiddenField of [
+    "mountain_current_plan_status",
+    "planning_status",
+    "volcanic_risk",
+    "active_volcano_status",
+    "supported_seasons",
+    "supported_styles",
+    "route_seriousness",
+    "technical_terrain",
+    "hut_support",
+    "tent_site_availability",
+    "water_availability",
+    "bear_or_wildlife_risk",
+    "updated_at"
+  ]) {
+    assert.doesNotMatch(
+      secondSummerPopularMountainNotesCleanupMigration,
+      new RegExp(`\\b${forbiddenField}\\b`)
+    );
+  }
+
+  for (const forbiddenCopy of [
+    /2026/,
+    /警戒レベル/,
+    /レベル[0-9０-９]/,
+    /\d{4}[/-]\d{1,2}/,
+    /\d{1,2}[/-]\d{1,2}/,
+    /必須/
+  ]) {
+    assert.doesNotMatch(secondSummerPopularMountainNotesCleanupMigration, forbiddenCopy);
+  }
+
+  assert.doesNotMatch(secondSummerPopularMountainNotesCleanupMigration, /\binsert\b/i);
+  assert.doesNotMatch(secondSummerPopularMountainNotesCleanupMigration, /\bdelete\b/i);
+  assert.doesNotMatch(secondSummerPopularMountainNotesCleanupMigration, /\balter\b/i);
+  assert.doesNotMatch(secondSummerPopularMountainNotesCleanupMigration, /\bdrop\b/i);
+  assert.doesNotMatch(secondSummerPopularMountainNotesCleanupMigration, /\bcreate\b/i);
+  assert.doesNotMatch(secondSummerPopularMountainNotesCleanupMigration, /\bpolicy\b/i);
+  assert.doesNotMatch(secondSummerPopularMountainNotesCleanupMigration, /\brls\b/i);
 });

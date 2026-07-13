@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+import { getUserWithAuthRetry } from "@/lib/auth-validation";
 import {
   getRetailGearCategory,
   isRetailGearCategoryId
@@ -105,36 +106,24 @@ export class AuthValidationError extends Error {
 export const requireUser = cache(async function requireUser() {
   const supabase = await createClient();
 
-  // getUser() hits the network to validate the token. On iOS/WebView a transient
-  // failure returns { user: null, error }. Previously we treated that as "logged
-  // out" and redirected to /login — the false auto-logout. Instead: retry once,
-  // then only treat a *confirmed* result as final.
-  let result = await supabase.auth.getUser();
+  const authResult = await getUserWithAuthRetry(supabase);
 
-  if (result.error) {
-    // Brief pause, then exactly one retry — no infinite loop.
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    result = await supabase.auth.getUser();
-  }
-
-  if (result.error) {
+  if (authResult.kind === "transient_error") {
     // Transient auth error after a retry: do NOT redirect to /login, do NOT
     // signOut, do NOT clear the session (any of those reads as a false logout).
     // Surface a controlled error so the page can retry/report while the user
     // stays signed in.
-    throw new AuthValidationError(result.error.message);
+    throw new AuthValidationError(authResult.message);
   }
 
-  const user = result.data.user;
-
-  if (!user) {
+  if (authResult.kind === "unauthenticated") {
     // Confirmed unauthenticated: getUser() succeeded with no error and no user.
     redirect("/login");
   }
 
   // Security note: `user` always comes from a successful getUser() (server-
   // validated). We never fall back to getSession().user to admit a user.
-  return { supabase, user };
+  return { supabase, user: authResult.user };
 });
 
 export const getGearCategories = cache(async function getGearCategories() {

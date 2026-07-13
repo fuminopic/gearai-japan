@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { getUserWithAuthRetry } from "@/lib/auth-validation";
 import { createClient } from "@/lib/supabase/server";
 
 // Resolve the landing destination in a single hop. Previously this always
@@ -11,21 +12,15 @@ import { createClient } from "@/lib/supabase/server";
 export default async function HomePage() {
   const supabase = await createClient();
 
-  // Same hardening as requireUser: a transient getUser() failure (network drop /
-  // token-refresh hiccup on WebView) must NOT bounce the user to /login. Retry
-  // once, and only route to /login on a *confirmed* unauthenticated result.
-  let result = await supabase.auth.getUser();
-  if (result.error) {
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    result = await supabase.auth.getUser();
-  }
+  const result = await getUserWithAuthRetry(supabase);
 
-  if (result.error) {
+  if (result.kind === "transient_error") {
     // Still transient: defer to /dashboard, which is guarded by requireUser — it
-    // retries and only routes to /login on a confirmed unauthenticated result.
+    // retries and either renders a recoverable error or routes to /login on a
+    // confirmed unauthenticated result.
     // (Never send a possibly-signed-in user to /login on a transient error.)
     redirect("/dashboard");
   }
 
-  redirect(result.data.user ? "/dashboard" : "/login");
+  redirect(result.kind === "authenticated" ? "/dashboard" : "/login");
 }

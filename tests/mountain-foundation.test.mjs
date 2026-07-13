@@ -98,6 +98,13 @@ const mountainPlanningStatusMigration = readFileSync(
   ),
   "utf8"
 );
+const summerPopularMountainStableProfileCorrectionsMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/057_summer_popular_mountain_stable_profile_corrections.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const repository = readFileSync(
   new URL("../src/lib/data/mountain-foundation.ts", import.meta.url),
   "utf8"
@@ -802,4 +809,97 @@ test("mountain foundation data layer reads planning status with a plannable fall
   assert.match(repository, /planning_status: "PLANNABLE"/);
   assert.match(repository, /MOUNTAIN_FOUNDATION_WITHOUT_PLANNING_STATUS_SELECT/);
   assert.match(repository, /isMissingMountainFoundationPlanningStatusColumnError/);
+});
+
+test("summer popular mountain stable profile corrections stay scoped and static", () => {
+  assert.match(
+    summerPopularMountainStableProfileCorrectionsMigration,
+    /update public\.mountain_foundation_profiles/i
+  );
+
+  for (const slug of ["hakusan", "norikura-dake", "tokachi-dake"]) {
+    assert.match(
+      summerPopularMountainStableProfileCorrectionsMigration,
+      new RegExp(`where slug = '${slug}'`)
+    );
+  }
+
+  assert.match(summerPopularMountainStableProfileCorrectionsMigration, /region = 'HOKURIKU'/);
+  assert.match(
+    summerPopularMountainStableProfileCorrectionsMigration,
+    /primary_region = 'HOKURIKU'/
+  );
+  assert.match(
+    summerPopularMountainStableProfileCorrectionsMigration,
+    /route_seriousness = 'MODERATE'/
+  );
+  assert.match(
+    summerPopularMountainStableProfileCorrectionsMigration,
+    /technical_terrain = 'MAINTAINED_TRAIL'/
+  );
+  assert.match(
+    summerPopularMountainStableProfileCorrectionsMigration,
+    /route_duration_band = 'HALF_DAY'/
+  );
+  assert.match(summerPopularMountainStableProfileCorrectionsMigration, /escape_options = 'MODERATE'/);
+  assert.doesNotMatch(summerPopularMountainStableProfileCorrectionsMigration, /route_seriousness = 'HIGH'/);
+  assert.doesNotMatch(summerPopularMountainStableProfileCorrectionsMigration, /technical_terrain = 'STEEP_ROCKY'/);
+  assert.doesNotMatch(summerPopularMountainStableProfileCorrectionsMigration, /route_duration_band = 'LONG_DAY'/);
+
+  assert.match(
+    summerPopularMountainStableProfileCorrectionsMigration,
+    /supplementary_notes = '南竜ヶ馬場でテント泊可。別山方面へ縦走可。'/
+  );
+  assert.match(
+    summerPopularMountainStableProfileCorrectionsMigration,
+    /supplementary_notes = '畳平から剣ヶ峰方面へ登る夏山ルート。'/
+  );
+  assert.match(
+    summerPopularMountainStableProfileCorrectionsMigration,
+    /supplementary_notes = '活火山。火山活動や入山規制は公式情報で確認。'/
+  );
+  assert.match(summerPopularMountainStableProfileCorrectionsMigration, /restriction_status_note = null/);
+
+  for (const untouchedSlug of ["kiso-komagatake", "rausu-dake", "ontake-san", "aso-san"]) {
+    assert.doesNotMatch(
+      summerPopularMountainStableProfileCorrectionsMigration,
+      new RegExp(`'${untouchedSlug}'`)
+    );
+  }
+
+  for (const untouchedField of [
+    "mountain_current_plan_status",
+    "planning_status",
+    "volcanic_risk",
+    "active_volcano_status",
+    "supported_seasons",
+    "supported_styles",
+    "hut_support",
+    "tent_site_availability",
+    "mandatory_gear_note",
+    "updated_at"
+  ]) {
+    assert.doesNotMatch(
+      summerPopularMountainStableProfileCorrectionsMigration,
+      new RegExp(`\\b${untouchedField}\\b`)
+    );
+  }
+
+  for (const dynamicFact of [
+    /2026/,
+    /警戒レベル/,
+    /レベル[0-9０-９]/,
+    /\d{4}[/-]\d{1,2}/,
+    /\d{1,2}[/-]\d{1,2}/
+  ]) {
+    assert.doesNotMatch(summerPopularMountainStableProfileCorrectionsMigration, dynamicFact);
+  }
+
+  assert.doesNotMatch(summerPopularMountainStableProfileCorrectionsMigration, /\binsert\b/i);
+  assert.doesNotMatch(summerPopularMountainStableProfileCorrectionsMigration, /\bdelete\b/i);
+  assert.doesNotMatch(summerPopularMountainStableProfileCorrectionsMigration, /\balter\b/i);
+  assert.doesNotMatch(summerPopularMountainStableProfileCorrectionsMigration, /\bdrop\b/i);
+  assert.doesNotMatch(summerPopularMountainStableProfileCorrectionsMigration, /\bcreate\b/i);
+  assert.doesNotMatch(summerPopularMountainStableProfileCorrectionsMigration, /\bpolicy\b/i);
+  assert.doesNotMatch(summerPopularMountainStableProfileCorrectionsMigration, /\brls\b/i);
 });

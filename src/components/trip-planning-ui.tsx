@@ -59,6 +59,7 @@ import {
   mountainFoundationStyleLabels,
   requirementSlotLabels
 } from "@/lib/i18n/labels";
+import { mountainCurrentPlanStatusStaleMessage } from "@/lib/mountain-current-plan-status";
 import {
   buildPlanChecklist,
   buildPlanNotNeededItems,
@@ -93,6 +94,7 @@ import type {
   GearMatchingOwnedGearMatch,
   GearMatchingResult,
   AIRecommendationRecord,
+  MountainCurrentPlanStatus,
   MountainFoundationProfile,
   MountainFoundationSeason,
   MountainFoundationStyle,
@@ -109,6 +111,7 @@ type TripPlanningUIProps = {
   selectedMountainSlug: string;
   selectedSeason: MountainFoundationSeason;
   selectedStyle: MountainFoundationStyle;
+  planStatusNotice?: MountainCurrentPlanStatus;
   plan?: PackRequirementPlan;
   ownedGear?: UserGear[];
   compatibilityBySlot?: Partial<Record<RequirementSlot, GearMatchingResult>>;
@@ -139,6 +142,7 @@ export function TripPlanningUI({
   selectedMountainSlug,
   selectedSeason,
   selectedStyle,
+  planStatusNotice,
   plan,
   ownedGear = [],
   compatibilityBySlot = {},
@@ -481,6 +485,9 @@ export function TripPlanningUI({
             />
           ) : null}
           <div ref={resultSectionRef} className="scroll-mt-24">
+            {planStatusNotice ? (
+              <MountainCurrentPlanStatusNotice status={planStatusNotice} />
+            ) : null}
             <TripPlanningResult
               plan={plan}
               compatibilityBySlot={compatibilityBySlot}
@@ -522,6 +529,31 @@ export function TripPlanningUI({
       {!isFullChecklistView ? (
         <PlanHistorySection plans={savedPlans} legacyPlans={planHistory} />
       ) : null}
+    </div>
+  );
+}
+
+function MountainCurrentPlanStatusNotice({ status }: { status: MountainCurrentPlanStatus }) {
+  return (
+    <div
+      className={`mb-4 rounded-lg border px-4 py-3 text-sm font-medium ${
+        status.status === "BLOCKED"
+          ? "border-red-200 bg-red-50 text-red-700"
+          : "border-amber-200 bg-amber-50 text-amber-800"
+      }`}
+    >
+      <span className="block">{status.messageJa}</span>
+      {status.isStale ? (
+        <span className="mt-1 block">{mountainCurrentPlanStatusStaleMessage}</span>
+      ) : null}
+      <a
+        href={status.sourceUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-1 inline-block underline underline-offset-2"
+      >
+        公式情報を確認
+      </a>
     </div>
   );
 }

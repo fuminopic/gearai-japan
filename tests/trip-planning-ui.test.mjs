@@ -187,6 +187,20 @@ test("trip planning page always refreshes gear-derived pack coverage", () => {
   assert.match(planPageContentSource, /matchGearForRequirementSlot/);
 });
 
+test("mountain current status notice stays visible in generated plan results", () => {
+  assert.match(planPageContentSource, /planStatusNotice=\{planStatusNotice\}/);
+  assert.match(
+    planPageContentSource,
+    /!plan && planStatusNotice[\s\S]*<MountainCurrentPlanStatusNotice status=\{planStatusNotice\} \/>/
+  );
+  assert.match(tripPlanningUiSource, /planStatusNotice\?: MountainCurrentPlanStatus/);
+  assert.match(
+    tripPlanningUiSource,
+    /<div ref=\{resultSectionRef\}[\s\S]*<MountainCurrentPlanStatusNotice status=\{planStatusNotice\} \/>[\s\S]*<TripPlanningResult/
+  );
+  assert.match(tripPlanningUiSource, /status\.status === "BLOCKED"[\s\S]*border-red-200[\s\S]*border-amber-200/);
+});
+
 test("trip planning blocks active restricted volcanoes before generating a plan", () => {
   assert.match(planPageContentSource, /resolveMountainPlanAccess/);
   assert.match(planPageContentSource, /getMountainPlanningBlockMessage/);

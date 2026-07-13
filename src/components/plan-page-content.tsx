@@ -162,13 +162,16 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
 
   return (
     <>
-      {planStatusNotice ? <MountainCurrentPlanStatusNotice status={planStatusNotice} /> : null}
+      {!plan && planStatusNotice ? (
+        <MountainCurrentPlanStatusNotice status={planStatusNotice} />
+      ) : null}
       <TripPlanningUI
         mountains={mountains}
         blockedMountainSlugs={blockedMountainSlugs}
         selectedMountainSlug={selectedMountainSlug}
         selectedSeason={selectedSeason}
         selectedStyle={selectedStyle}
+        planStatusNotice={planStatusNotice}
         plan={plan}
         ownedGear={ownedGear}
         compatibilityBySlot={compatibilityBySlot}

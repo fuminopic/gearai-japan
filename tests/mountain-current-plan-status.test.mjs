@@ -20,6 +20,10 @@ const tripPlanningFormSource = readFileSync(
   new URL("../src/components/trip-planning-form.tsx", import.meta.url),
   "utf8"
 );
+const tripPlanningUiSource = readFileSync(
+  new URL("../src/components/trip-planning-ui.tsx", import.meta.url),
+  "utf8"
+);
 const migrationSource = readFileSync(
   new URL("../supabase/migrations/055_mountain_current_plan_status.sql", import.meta.url),
   "utf8"
@@ -157,7 +161,17 @@ test("current plan status data reads fail closed and plan page consumes the exec
     planPageContentSource,
     /if \(planningBlockMessage\) \{[\s\S]*\} else if \(!requestedPlanAccess\.isGenerationBlocked && shouldGeneratePlan && selectedMountain\) \{[\s\S]*getPackRequirementPlan/
   );
-  assert.match(planPageContentSource, /<MountainCurrentPlanStatusNotice status=\{planStatusNotice\} \/>/);
+  assert.match(
+    planPageContentSource,
+    /!plan && planStatusNotice[\s\S]*<MountainCurrentPlanStatusNotice status=\{planStatusNotice\} \/>/
+  );
+  assert.match(planPageContentSource, /planStatusNotice=\{planStatusNotice\}/);
+  assert.match(tripPlanningUiSource, /planStatusNotice\?: MountainCurrentPlanStatus/);
+  assert.match(
+    tripPlanningUiSource,
+    /<div ref=\{resultSectionRef\}[\s\S]*<MountainCurrentPlanStatusNotice status=\{planStatusNotice\} \/>[\s\S]*<TripPlanningResult/
+  );
+  assert.match(tripPlanningUiSource, /mountainCurrentPlanStatusStaleMessage/);
   assert.match(tripPlanningFormSource, /blockedMountainSlugs/);
   assert.match(tripPlanningFormSource, /blockedMountainSlugs\.has\(mountain\.slug\)/);
 });

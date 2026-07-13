@@ -1141,6 +1141,93 @@ test("ordinary non-volcanic mountains do not show volcano information guidance",
   assert.equal(itemByLabel(checklist, "火山情報の確認"), undefined);
 });
 
+test("summer popular mountain note cleanup scenarios keep checklist signals stable", () => {
+  const rausuChecklist = buildPlanChecklist({
+    plan: makePlan({
+      season: "SUMMER",
+      style: "DAY_HIKE",
+      mountain: {
+        slug: "rausu-dake",
+        name_ja: "羅臼岳",
+        primary_region: "HOKKAIDO",
+        region: "HOKKAIDO",
+        prefectures: ["北海道"],
+        bear_or_wildlife_risk: "HIGH",
+        mandatory_gear_note: "ヒグマ対策と食料管理を徹底。",
+        supplementary_notes: "知床国立公園。活火山。ヒグマ対策と公式情報を確認。",
+        restriction_status_note: null
+      }
+    })
+  });
+  const rausuBearProtection = itemByLabel(rausuChecklist, "熊対策装備");
+
+  assert.equal(rausuBearProtection?.priority, "ESSENTIAL");
+  assert.match(rausuBearProtection?.reason ?? "", /ヒグマ/);
+  assert.match(rausuBearProtection?.reason ?? "", /食料管理/);
+
+  const asahidakeChecklist = buildPlanChecklist({
+    plan: makePlan({
+      season: "SUMMER",
+      style: "DAY_HIKE",
+      mountain: {
+        slug: "daisetsuzan-asahi-dake",
+        name_ja: "大雪山（旭岳）",
+        primary_region: "HOKKAIDO",
+        region: "HOKKAIDO",
+        prefectures: ["北海道"],
+        volcanic_risk: "ACTIVE_MONITORED",
+        active_volcano_status: "ACTIVE",
+        supplementary_notes:
+          "旭岳ロープウェイ利用の夏山ルート。活火山・火山ガス・天候急変に注意。",
+        restriction_status_note: null
+      }
+    })
+  });
+
+  assert.equal(itemByLabel(asahidakeChecklist, "火山情報の確認")?.priority, "ESSENTIAL");
+
+  const tanigawaChecklist = buildPlanChecklist({
+    plan: makePlan({
+      season: "SUMMER",
+      style: "DAY_HIKE",
+      mountain: {
+        slug: "tanigawa-dake",
+        name_ja: "谷川岳",
+        route_seriousness: "HIGH",
+        technical_terrain: "STEEP_ROCKY",
+        water_availability: "LIMITED_OR_SEASONAL",
+        supplementary_notes: "ロープウェイ利用の天神尾根ルートあり。西黒尾根は岩場あり。",
+        mandatory_gear_note: "気象急変・撤退判断を確認。"
+      }
+    })
+  });
+
+  assert.ok(itemByLabel(tanigawaChecklist, "飲み水"));
+  assert.ok(itemByLabel(tanigawaChecklist, "レインウェア"));
+  assert.equal(itemByLabel(tanigawaChecklist, "火山情報の確認"), undefined);
+
+  const gassanChecklist = buildPlanChecklist({
+    plan: makePlan({
+      season: "SUMMER",
+      style: "DAY_HIKE",
+      mountain: {
+        slug: "gassan",
+        name_ja: "月山",
+        primary_region: "TOHOKU",
+        region: "TOHOKU",
+        prefectures: ["山形県"],
+        snow_or_ice_risk: "SEASONAL_PATCHES",
+        bear_or_wildlife_risk: "MODERATE",
+        supplementary_notes:
+          "豪雪地帯。春は残雪・山スキー利用が多く、夏も残雪状況と登山道情報を確認。"
+      }
+    })
+  });
+
+  assert.ok(itemByLabel(gassanChecklist, "飲み水"));
+  assert.equal(itemByLabel(gassanChecklist, "熊対策装備")?.priority, "SUGGESTED");
+});
+
 test("long remote day hikes promote forced-bivouac emergency items", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan({

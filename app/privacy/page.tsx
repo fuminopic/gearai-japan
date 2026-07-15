@@ -45,7 +45,7 @@ export default async function PrivacyPage({ searchParams }: PrivacyPageProps) {
             プライバシーポリシー
           </h1>
           <p className="mt-2 text-sm font-semibold text-stone-500">
-            最終更新日：2026年6月21日
+            最終更新日：2026年7月15日
           </p>
         </header>
 
@@ -118,6 +118,7 @@ export default async function PrivacyPage({ searchParams }: PrivacyPageProps) {
               <li>アカウントの作成・認証・ログイン状態の維持</li>
               <li>装備管理・山行計画機能の提供</li>
               <li>登録データの保存および端末間での同期</li>
+              <li>個人を特定しない利用状況の集計によるサービス改善</li>
               <li>お問い合わせへの対応</li>
             </ul>
           </PolicySection>
@@ -125,7 +126,7 @@ export default async function PrivacyPage({ searchParams }: PrivacyPageProps) {
           <PolicySection title="4. 利用している外部サービス">
             <p>
               本アプリは、自社でサーバーを構築する代わりに、以下の外部サービス（クラウドインフラ）を利用してアプリの機能を提供しています。
-              これらのサービスは、本アプリの利用者情報を保存・処理するために必要な範囲でのみ利用され、広告や分析目的での第三者提供は行っていません。
+              これらのサービスは、本アプリの機能提供、利用状況の集計および安全な運用に必要な範囲で利用します。広告配信を目的とする第三者提供は行っていません。
             </p>
             <div className="overflow-x-auto">
               <table className="mt-4 w-full border-collapse text-left text-[14.5px]">
@@ -152,18 +153,24 @@ export default async function PrivacyPage({ searchParams }: PrivacyPageProps) {
                       アプリのサーバー・ホスティング基盤
                     </td>
                   </tr>
+                  <tr>
+                    <td className="border border-stone-200 px-3 py-2">PostHog</td>
+                    <td className="border border-stone-200 px-3 py-2">
+                      利用状況の集計。広告配信、操作の自動収集、セッション録画およびヒートマップには利用しません。
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
             <p className="mt-4">
-              現時点では、広告配信SDK・アクセス解析ツール（アナリティクス）・決済サービスなど、その他の第三者サービスは利用していません。
+              PostHogには、Supabaseの利用者IDを仮名化された識別子として、計画・装備操作の種類、季節、山行スタイル、装備カテゴリー、粗粒度の件数および利用環境を送信します。メールアドレス、氏名、メモ、正確な計画日、山名・slug、装備名・ブランド・型番・ID、写真URLは送信しません。
             </p>
           </PolicySection>
 
           <PolicySection title="5. 第三者提供について">
             <p>
               本アプリは、利用者の個人情報を本人の同意なく第三者に提供することはありません。
-              ただし、法令に基づく場合や、上記「4. 利用している外部サービス」に記載のクラウドインフラ事業者にデータの保存・処理を委託する場合はこの限りではありません。
+              ただし、法令に基づく場合や、上記「4. 利用している外部サービス」に記載の事業者にデータの保存・処理または利用状況の集計を委託する場合はこの限りではありません。
             </p>
           </PolicySection>
 

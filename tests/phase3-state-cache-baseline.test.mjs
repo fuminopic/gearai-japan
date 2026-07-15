@@ -55,10 +55,12 @@ const dashboardChecklistSource = readSource(
 );
 const swRegisterSource = readSource("src/components/sw-register.tsx");
 const appMenuDrawerSource = readSource("src/components/app-menu-drawer.tsx");
+const analyticsSource = readSource("src/lib/analytics.ts");
 const appSource = readSourceTree("app");
 const srcSource = readSourceTree("src");
 const publicSource = readSourceTree("public");
 const runtimeSource = `${appSource}\n${srcSource}\n${publicSource}`;
+const stateRuntimeSource = runtimeSource.replace(analyticsSource, "");
 
 test("gear and trip mutations keep their current revalidation boundaries", () => {
   for (const path of ["/dashboard", "/gear", "/plan"]) {
@@ -137,5 +139,6 @@ test("state, refresh, and cache primitives are visible at their current boundari
 
   assert.match(swRegisterSource, /navigator\.serviceWorker\.register\("\/sw\.js"\)/);
   assert.match(appMenuDrawerSource, /navigator\.serviceWorker\?\.controller\?\.postMessage/);
-  assert.doesNotMatch(runtimeSource, /sessionStorage/);
+  assert.match(analyticsSource, /sessionStorage/);
+  assert.doesNotMatch(stateRuntimeSource, /sessionStorage/);
 });

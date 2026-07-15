@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import type { FormEvent, ReactNode } from "react";
 
 import { BrandLogo } from "@/components/brand-logo";
+import { captureAnalyticsEvent } from "@/lib/analytics";
 import {
   getProductDisplayTitle,
   getProductVolume,
@@ -394,6 +395,14 @@ export function GearForm({
       const result = await action(formData);
 
       if (result.ok) {
+        if (status === "owned") {
+          captureAnalyticsEvent("gear_mark_owned", {
+            source: "gear_form",
+            category: categoryId,
+            is_catalog_item: Boolean(productId)
+          });
+        }
+
         // 先立刻显示"保存しました",不等目标页整个渲染完再消失
         setSubmitStatus("success");
         router.push(result.redirectTo as Route);

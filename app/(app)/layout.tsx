@@ -2,6 +2,7 @@ import { Suspense } from "react";
 
 import Link from "next/link";
 
+import { AnalyticsIdentity } from "@/components/analytics-identity";
 import { AppNav } from "@/components/app-nav";
 import { AuthValidationError, requireUser } from "@/lib/data/gear";
 
@@ -18,8 +19,11 @@ export default function AppLayout({
 }
 
 async function AuthGate({ children }: { children: React.ReactNode }) {
+  let userId: string;
+
   try {
-    await requireUser();
+    const { user } = await requireUser();
+    userId = user.id;
   } catch (caught) {
     if (caught instanceof AuthValidationError) {
       return <RecoverableAuthError message={caught.message} />;
@@ -33,6 +37,7 @@ async function AuthGate({ children }: { children: React.ReactNode }) {
       {/* No remote splash here: the bundled local login page owns the single
           splash for the app. Rendering one here too produced the recurring
           "splash → blank → splash" double. Web simply loads straight in. */}
+      <AnalyticsIdentity userId={userId} />
       <AppNav />
       <main className="mx-auto max-w-5xl px-4 pb-32 pt-5 md:ml-24 md:px-6 md:pb-10 md:pt-8">
         {children}

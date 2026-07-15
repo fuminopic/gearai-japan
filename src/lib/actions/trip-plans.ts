@@ -70,13 +70,19 @@ export async function saveTripPlan(formData: FormData) {
     revalidatePath("/dashboard");
     revalidatePath("/plan");
 
-    return { id: fallbackData.id as string };
+    return {
+      id: fallbackData.id as string,
+      planCount: await getTripPlanCount(supabase, user.id)
+    };
   }
 
   revalidatePath("/dashboard");
   revalidatePath("/plan");
 
-  return { id: data.id as string };
+  return {
+    id: data.id as string,
+    planCount: await getTripPlanCount(supabase, user.id)
+  };
 }
 
 export async function updateTripPlan(formData: FormData) {
@@ -188,6 +194,18 @@ export async function clearTripPlans() {
 
   revalidatePath("/plan");
   revalidatePath("/dashboard");
+}
+
+async function getTripPlanCount(
+  supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
+  userId: string
+) {
+  const { count, error } = await supabase
+    .from("trip_plans")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  return error ? null : count;
 }
 
 function parseSeason(value: FormDataEntryValue | null): MountainFoundationSeason | null {

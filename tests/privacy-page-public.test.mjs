@@ -41,7 +41,7 @@ test("terms are served from the public /terms route", () => {
 
 test("privacy policy keeps the supplied legal content and contact details", () => {
   for (const copy of [
-    "最終更新日：2026年6月21日",
+    "最終更新日：2026年7月15日",
     "山支度（YAMAJITAKU、以下「本アプリ」といいます）",
     "yamajitaku.app@gmail.com",
     "アカウント情報",
@@ -50,6 +50,7 @@ test("privacy policy keeps the supplied legal content and contact details", () =
     "装備写真",
     "Supabase（東京リージョン）",
     "Vercel",
+    "PostHog",
     "写真ライブラリへのアクセス",
     "カメラへのアクセス",
     "アカウントを削除",

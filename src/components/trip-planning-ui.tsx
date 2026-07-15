@@ -49,6 +49,11 @@ import { useEffect, useRef, useState, useTransition } from "react";
 
 import { TripPlanningForm } from "@/components/trip-planning-form";
 import {
+  captureAnalyticsEvent,
+  captureAnalyticsEventOnce,
+  getAnalyticsPlatform
+} from "@/lib/analytics";
+import {
   clearTripPlans,
   deleteTripPlan,
   saveTripPlan,
@@ -160,6 +165,7 @@ export function TripPlanningUI({
   const shouldFocusChecklist = searchParams.get("focus") === "checklist";
   const shouldFocusPreDeparture = searchParams.get("focus") === "predeparture";
   const resultSectionRef = useRef<HTMLDivElement>(null);
+  const generatedPlanKeyRef = useRef<string | null>(null);
   const initialSavedPlan =
     selectedSavedPlan ?? savedPlans.find((record) => record.id === planId) ?? null;
   const [hydratedPlan, setHydratedPlan] = useState<SavedTripPlan | null>(
@@ -178,6 +184,7 @@ export function TripPlanningUI({
   const [dateSaveState, setDateSaveState] = useState<
     "idle" | "saving" | "success" | "error"
   >("idle");
+  const [isPreparationComplete, setIsPreparationComplete] = useState(false);
   const currentPlanUserId = hydratedPlan?.user_id ?? initialSavedPlan?.user_id ?? null;
   const effectiveMountainSlug = hydratedPlan?.mountain_slug ?? selectedMountainSlug;
   const effectiveSeason = hydratedPlan?.season ?? selectedSeason;
@@ -242,9 +249,30 @@ export function TripPlanningUI({
   const isFullChecklistView = isSavedPlanMode && planView === "checklist";
 
   useEffect(() => {
+    if (!plan || planId) {
+      generatedPlanKeyRef.current = null;
+      return;
+    }
+
+    const generatedPlanKey = `${plan.mountain.slug}:${plan.season}:${plan.style}`;
+
+    if (generatedPlanKeyRef.current === generatedPlanKey) {
+      return;
+    }
+
+    generatedPlanKeyRef.current = generatedPlanKey;
+    captureAnalyticsEvent("plan_generate", {
+      season: plan.season,
+      style: plan.style,
+      platform: getAnalyticsPlatform()
+    });
+  }, [plan, planId, planStateKey]);
+
+  useEffect(() => {
     setInteractiveProgress(null);
     setInteractiveCheckedSlots(null);
     setInteractiveChecklistOnlyIds(null);
+    setIsPreparationComplete(false);
     setStoredCheckedSlots(
       planId ? readStoredCheckedSlots(planId, currentPlanUserId) : []
     );
@@ -498,6 +526,7 @@ export function TripPlanningUI({
               initialCheckedSlots={currentCheckedSlots}
               initialChecklistOnlyIds={currentChecklistOnlyIds}
               onProgressChange={setInteractiveProgress}
+              onPreparationCompletionChange={setIsPreparationComplete}
               onCheckedSlotsChange={setInteractiveCheckedSlots}
               onChecklistOnlyIdsChange={setInteractiveChecklistOnlyIds}
               planId={planId}
@@ -518,6 +547,7 @@ export function TripPlanningUI({
               progress={currentProgressValue}
               checkedSlots={currentCheckedSlots}
               checklistOnlyIds={currentChecklistOnlyIds}
+              isPreparationComplete={isPreparationComplete}
               planId={planId}
               userId={currentPlanUserId}
             />
@@ -805,6 +835,7 @@ function SavePlanButton({
   progress,
   checkedSlots,
   checklistOnlyIds,
+  isPreparationComplete,
   userId
 }: {
   planId: string | null;
@@ -821,6 +852,7 @@ function SavePlanButton({
   progress: number;
   checkedSlots: RequirementSlot[];
   checklistOnlyIds: string[];
+  isPreparationComplete: boolean;
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -835,7 +867,7 @@ function SavePlanButton({
 
     const formData = new FormData(form);
     startTransition(async () => {
-      let result: { id?: string } | undefined;
+      let result: { id?: string; planCount?: number | null } | undefined;
 
       if (planId) {
         result = await updateTripPlan(formData);
@@ -844,6 +876,39 @@ function SavePlanButton({
       }
 
       const savedPlanId = result?.id ?? planId;
+
+      if (!planId && result?.id) {
+        const analyticsProperties = {
+          season,
+          style,
+          platform: getAnalyticsPlatform()
+        };
+
+        captureAnalyticsEventOnce({
+          event: "plan_save",
+          key: result.id,
+          properties: analyticsProperties,
+          scope: "persistent"
+        });
+
+        if (result.planCount === 2) {
+          captureAnalyticsEventOnce({
+            event: "second_plan_create",
+            key: result.id,
+            properties: analyticsProperties,
+            scope: "persistent"
+          });
+        }
+
+        if (isPreparationComplete) {
+          captureAnalyticsEventOnce({
+            event: "preparation_complete",
+            key: result.id,
+            properties: analyticsProperties,
+            scope: "persistent"
+          });
+        }
+      }
 
       if (savedPlanId) {
         writeStoredCheckedSlots(savedPlanId, checkedSlots, userId);
@@ -1152,6 +1217,7 @@ function TripPlanningResult({
   initialCheckedSlots = emptyCheckedSlots,
   initialChecklistOnlyIds = emptyChecklistOnlyIds,
   onProgressChange,
+  onPreparationCompletionChange,
   onCheckedSlotsChange,
   onChecklistOnlyIdsChange
 }: {
@@ -1166,6 +1232,7 @@ function TripPlanningResult({
   initialCheckedSlots?: RequirementSlot[];
   initialChecklistOnlyIds?: string[];
   onProgressChange?: (progress: number) => void;
+  onPreparationCompletionChange?: (isComplete: boolean) => void;
   onCheckedSlotsChange?: (checkedSlots: RequirementSlot[]) => void;
   onChecklistOnlyIdsChange?: (checklistOnlyIds: string[]) => void;
 }) {
@@ -1186,6 +1253,11 @@ function TripPlanningResult({
   const preDepartureSummary = buildPreDepartureSummary(checklist);
   const notNeededItems = buildPlanNotNeededItems(plan);
   const [scanFilter, setScanFilter] = useState<ChecklistScanFilter>("ACTION");
+  const hasViewedGapRef = useRef(false);
+  const previousPreparationStateRef = useRef({
+    planId,
+    isComplete: preDepartureSummary.canComplete
+  });
   const visibleCategories = filterChecklistCategoriesForScan(
     checklist.categories,
     scanFilter
@@ -1239,6 +1311,34 @@ function TripPlanningResult({
     onProgressChange?.(checklist.summary.percent);
   }, [checklist.summary.percent, onProgressChange]);
 
+  useEffect(() => {
+    onPreparationCompletionChange?.(preDepartureSummary.canComplete);
+  }, [onPreparationCompletionChange, preDepartureSummary.canComplete]);
+
+  useEffect(() => {
+    const previous = previousPreparationStateRef.current;
+
+    if (previous.planId === planId) {
+      if (planId && preDepartureSummary.canComplete && !previous.isComplete) {
+        captureAnalyticsEventOnce({
+          event: "preparation_complete",
+          key: planId,
+          properties: {
+            season: plan.season,
+            style: plan.style,
+            platform: getAnalyticsPlatform()
+          },
+          scope: "persistent"
+        });
+      }
+    }
+
+    previousPreparationStateRef.current = {
+      planId,
+      isComplete: preDepartureSummary.canComplete
+    };
+  }, [plan, planId, preDepartureSummary.canComplete]);
+
   function handleToggleChecklistItem(item: ChecklistItem) {
     if (item.source === "GEAR_BACKED") {
       handleToggleGearBackedItem(item.toggleSlots);
@@ -1246,6 +1346,30 @@ function TripPlanningResult({
     }
 
     handleToggleChecklistOnlyItem(item.id);
+  }
+
+  function handleScanFilterChange(filter: ChecklistScanFilter) {
+    setScanFilter(filter);
+
+    if (
+      filter !== "MISSING" ||
+      hasViewedGapRef.current ||
+      preDepartureSummary.missingCount === 0
+    ) {
+      return;
+    }
+
+    hasViewedGapRef.current = true;
+    captureAnalyticsEventOnce({
+      event: "gap_view",
+      key: planId ?? `${plan.season}:${plan.style}`,
+      properties: {
+        missing_count: preDepartureSummary.missingCount,
+        season: plan.season,
+        style: plan.style,
+        platform: getAnalyticsPlatform()
+      }
+    });
   }
 
   function handleToggleGearBackedItem(slots: RequirementSlot[]) {
@@ -1331,7 +1455,7 @@ function TripPlanningResult({
           activeFilter={scanFilter}
           summary={preDepartureSummary}
           includeAllFilter={!isSavedPlanDetail}
-          onFilterChange={setScanFilter}
+          onFilterChange={handleScanFilterChange}
         />
 
         <div className="grid gap-4 xl:grid-cols-2">

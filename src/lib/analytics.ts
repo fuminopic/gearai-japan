@@ -16,7 +16,7 @@ type AnalyticsEventProperties = {
     platform: AnalyticsPlatform;
   };
   gear_mark_owned: {
-    source: "gear_form";
+    source: "gear_form" | "checklist";
     category: string;
     is_catalog_item: boolean;
   };

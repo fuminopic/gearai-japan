@@ -48,6 +48,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { TripPlanningForm } from "@/components/trip-planning-form";
+import { ChecklistQuickAddOwnedGear } from "@/components/checklist-quick-add-owned-gear";
 import {
   captureAnalyticsEvent,
   captureAnalyticsEventOnce,
@@ -230,7 +231,7 @@ export function TripPlanningUI({
     storedCheckedSlots.length > 0 ? storedCheckedSlots : savedCheckedSlots ?? [];
   const rawCurrentCheckedSlots = interactiveCheckedSlots ?? restoredCheckedSlots;
   const currentCheckedSlots = plan
-    ? filterCheckedSlotsForPlan(rawCurrentCheckedSlots, plan)
+    ? filterCheckedSlotsForPlan(rawCurrentCheckedSlots)
     : rawCurrentCheckedSlots;
   const currentChecklistOnlyIds =
     interactiveChecklistOnlyIds ?? storedChecklistOnlyIds;
@@ -1237,7 +1238,7 @@ function TripPlanningResult({
   onChecklistOnlyIdsChange?: (checklistOnlyIds: string[]) => void;
 }) {
   const [checkedSlots, setCheckedSlots] = useState<RequirementSlot[]>(() => {
-    return filterCheckedSlotsForPlan(initialCheckedSlots, plan);
+    return filterCheckedSlotsForPlan(initialCheckedSlots);
   });
   const [checklistOnlyIds, setChecklistOnlyIds] = useState<string[]>(() => {
     return uniqueChecklistOnlyIds(initialChecklistOnlyIds);
@@ -1296,7 +1297,7 @@ function TripPlanningResult({
         }));
 
   useEffect(() => {
-    const nextCheckedSlots = filterCheckedSlotsForPlan(initialCheckedSlots, plan);
+    const nextCheckedSlots = filterCheckedSlotsForPlan(initialCheckedSlots);
 
     setCheckedSlots(nextCheckedSlots);
   }, [initialCheckedSlotsKey, plan]);
@@ -1389,7 +1390,7 @@ function TripPlanningResult({
         }
       }
 
-      const nextCheckedSlots = filterCheckedSlotsForPlan(Array.from(nextSlots), plan);
+      const nextCheckedSlots = filterCheckedSlotsForPlan(Array.from(nextSlots));
 
       if (planId) {
         writeStoredCheckedSlots(planId, nextCheckedSlots, userId);
@@ -2051,17 +2052,8 @@ function getChecklistStatusCanvasColor(
   return "#1D4ED8";
 }
 
-function filterCheckedSlotsForPlan(
-  checkedSlots: readonly RequirementSlot[],
-  plan: PackRequirementPlan
-) {
-  const missingSlots = new Set(
-    plan.required_slots
-      .filter((slotPlan) => slotPlan.coverage_status === "MISSING")
-      .map((slotPlan) => slotPlan.slot)
-  );
-
-  return uniqueRequirementSlots(checkedSlots).filter((slot) => missingSlots.has(slot));
+function filterCheckedSlotsForPlan(checkedSlots: readonly RequirementSlot[]) {
+  return uniqueRequirementSlots(checkedSlots);
 }
 
 function uniqueRequirementSlots(values: readonly unknown[]) {
@@ -2497,68 +2489,79 @@ function ChecklistItemRow({
   onToggle: (item: ChecklistItem) => void;
 }) {
   const canToggle = item.source === "CHECKLIST_ONLY" || item.toggleSlots.length > 0;
+  const canQuickAdd =
+    item.source === "GEAR_BACKED" && item.toggleSlots.length > 0 && !item.checked;
   const ItemIcon = checklistItemIcons[item.icon];
   const status = getChecklistItemStatus(item);
   const matchingInsight = getChecklistItemMatchingInsight(item, compatibilityBySlot);
 
   return (
-    <label
-      className={`flex min-h-14 gap-3 rounded-lg border px-3 py-2.5 transition ${
-        item.checked
-          ? "border-forest-100 bg-forest-50/70"
-          : "border-stone-100 bg-white hover:border-stone-200"
-      } ${canToggle ? "cursor-pointer" : ""}`}
-    >
-      <input
-        type="checkbox"
-        className="sr-only"
-        checked={item.checked}
-        disabled={!canToggle}
-        onChange={() => onToggle(item)}
-      />
-      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-stone-700">
-        <ItemIcon className="h-4 w-4" aria-hidden="true" />
-      </span>
-      <span
-        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
+    <div>
+      <label
+        className={`flex min-h-14 gap-3 rounded-lg border px-3 py-2.5 transition ${
           item.checked
-            ? "border-forest-700 bg-forest-700 text-white"
-            : "border-stone-300 bg-white text-stone-400"
-        }`}
+            ? "border-forest-100 bg-forest-50/70"
+            : "border-stone-100 bg-white hover:border-stone-200"
+        } ${canToggle ? "cursor-pointer" : ""}`}
       >
-        {item.checked ? (
-          <Check className="h-3.5 w-3.5" />
-        ) : (
-          <CircleDashed className="h-3.5 w-3.5" />
-        )}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-semibold text-ink">{item.label}</span>
-          <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${status.className}`}>
-            {status.label}
+        <input
+          type="checkbox"
+          className="sr-only"
+          checked={item.checked}
+          disabled={!canToggle}
+          onChange={() => onToggle(item)}
+        />
+        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-stone-700">
+          <ItemIcon className="h-4 w-4" aria-hidden="true" />
+        </span>
+        <span
+          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
+            item.checked
+              ? "border-forest-700 bg-forest-700 text-white"
+              : "border-stone-300 bg-white text-stone-400"
+          }`}
+        >
+          {item.checked ? (
+            <Check className="h-3.5 w-3.5" />
+          ) : (
+            <CircleDashed className="h-3.5 w-3.5" />
+          )}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold text-ink">{item.label}</span>
+            <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${status.className}`}>
+              {status.label}
+            </span>
+          </span>
+          {item.matchingOwnedGear.length > 0 ? (
+            <span className="mt-1 block truncate text-xs font-medium text-stone-500">
+              {item.matchingOwnedGear.map(formatOwnedGearName).join(" / ")}
+            </span>
+          ) : null}
+          {matchingInsight ? (
+            <span className="mt-1 block text-xs font-medium leading-5 text-forest-800">
+              {matchingInsight.coverage}
+            </span>
+          ) : null}
+          {matchingInsight?.caution ? (
+            <span className="mt-1 block rounded-lg bg-amber-50 px-2 py-1.5 text-xs font-medium leading-5 text-amber-800">
+              {matchingInsight.caution}
+            </span>
+          ) : null}
+          <span className="mt-1 block text-xs font-medium leading-5 text-stone-500">
+            {item.reason}
           </span>
         </span>
-        {item.matchingOwnedGear.length > 0 ? (
-          <span className="mt-1 block truncate text-xs font-medium text-stone-500">
-            {item.matchingOwnedGear.map(formatOwnedGearName).join(" / ")}
-          </span>
-        ) : null}
-        {matchingInsight ? (
-          <span className="mt-1 block text-xs font-medium leading-5 text-forest-800">
-            {matchingInsight.coverage}
-          </span>
-        ) : null}
-        {matchingInsight?.caution ? (
-          <span className="mt-1 block rounded-lg bg-amber-50 px-2 py-1.5 text-xs font-medium leading-5 text-amber-800">
-            {matchingInsight.caution}
-          </span>
-        ) : null}
-        <span className="mt-1 block text-xs font-medium leading-5 text-stone-500">
-          {item.reason}
-        </span>
-      </span>
-    </label>
+      </label>
+      {canQuickAdd ? (
+        <ChecklistQuickAddOwnedGear
+          itemLabel={item.label}
+          requirementSlots={item.toggleSlots}
+          compatibilityBySlot={compatibilityBySlot}
+        />
+      ) : null}
+    </div>
   );
 }
 

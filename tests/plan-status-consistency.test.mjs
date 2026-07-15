@@ -16,6 +16,14 @@ const tripPlanningUiSource = readFileSync(
   new URL("../src/components/trip-planning-ui.tsx", import.meta.url),
   "utf8"
 );
+const planPageContentSource = readFileSync(
+  new URL("../src/components/plan-page-content.tsx", import.meta.url),
+  "utf8"
+);
+const packActionsSource = readFileSync(
+  new URL("../src/lib/actions/pack.ts", import.meta.url),
+  "utf8"
+);
 const heroGaugeSource = readFileSync(
   new URL("../src/components/hero-gauge.tsx", import.meta.url),
   "utf8"
@@ -63,7 +71,7 @@ test("manual checked slots survive coverage changes but stale plan slots are rem
   );
 });
 
-test("owned requirement slots remain unconfirmed until manually checked", () => {
+test("pack, owned, and missing status use actual matching gear IDs without changing confirmation progress", () => {
   const ownedGear = {
     id: "owned-rain-jacket",
     name: "Rain Jacket",
@@ -78,6 +86,11 @@ test("owned requirement slots remain unconfirmed until manually checked", () => 
       name_ja: "レインジャケット"
     },
     gear_products: null
+  };
+  const secondOwnedGear = {
+    ...ownedGear,
+    id: "owned-rain-jacket-second",
+    name: "Second Rain Jacket"
   };
   const plan = {
     mountain: {
@@ -96,12 +109,27 @@ test("owned requirement slots remain unconfirmed until manually checked", () => 
       {
         slot: "RAIN_JACKET",
         coverage_status: "COVERED",
-        matching_owned_gear: [ownedGear]
+        matching_owned_gear: [ownedGear, secondOwnedGear]
       }
     ]
   };
   const unconfirmedChecklist = buildPlanChecklist({ plan, ownedGear: [ownedGear] });
   const unconfirmedItem = unconfirmedChecklist.categories
+    .flatMap((category) => category.items)
+    .find((item) => item.id === "clothing-rainwear");
+  const packedChecklist = buildPlanChecklist({
+    plan,
+    ownedGear: [ownedGear, secondOwnedGear],
+    packedGearIds: [secondOwnedGear.id]
+  });
+  const packedItem = packedChecklist.categories
+    .flatMap((category) => category.items)
+    .find((item) => item.id === "clothing-rainwear");
+  const unpackedChecklist = buildPlanChecklist({
+    plan,
+    ownedGear: [ownedGear, secondOwnedGear]
+  });
+  const unpackedItem = unpackedChecklist.categories
     .flatMap((category) => category.items)
     .find((item) => item.id === "clothing-rainwear");
   const confirmedChecklist = buildPlanChecklist({
@@ -114,6 +142,11 @@ test("owned requirement slots remain unconfirmed until manually checked", () => 
     .find((item) => item.id === "clothing-rainwear");
 
   assert.equal(unconfirmedItem?.checked, false);
+  assert.equal(unconfirmedItem?.gearStatus, "OWNED");
+  assert.equal(packedItem?.gearStatus, "PACKED");
+  assert.equal(packedItem?.checked, false);
+  assert.equal(unpackedItem?.gearStatus, "OWNED");
+  assert.equal(packedChecklist.summary.percent, unconfirmedChecklist.summary.percent);
   assert.deepEqual(unconfirmedItem?.toggleSlots, ["RAIN_JACKET"]);
   assert.equal(buildPreDepartureSummary(unconfirmedChecklist).confirmationCount > 0, true);
   assert.equal(confirmedItem?.checked, true);
@@ -143,6 +176,7 @@ test("owned requirement slots remain unconfirmed until manually checked", () => 
     .flatMap((category) => category.items)
     .find((item) => item.id === "clothing-rainwear");
   assert.equal(gearRemovedItem?.matchingOwnedGear.length, 0);
+  assert.equal(gearRemovedItem?.gearStatus, "MISSING");
   assert.equal(gearRemovedItem?.checked, true);
   assert.equal(buildPreDepartureSummary(gearRemovedChecklist).missingCount, 0);
   assert.equal(
@@ -151,19 +185,36 @@ test("owned requirement slots remain unconfirmed until manually checked", () => 
   );
 });
 
-test("plan rows display ownership and manual confirmation independently", () => {
+test("plan rows consistently display pack, owned, missing, and manual confirmation states", () => {
   assert.match(tripPlanningUiSource, /const confirmedItems = fullCategory\.items\.filter/);
   assert.match(tripPlanningUiSource, /const status = getChecklistItemStatus\(item\)/);
   assert.match(tripPlanningUiSource, /\{status\.label\}/);
-  assert.match(tripPlanningUiSource, /matchingOwnedGear\.length > 0/);
+  assert.match(tripPlanningUiSource, /item\.gearStatus === "PACKED"/);
+  assert.match(tripPlanningUiSource, /item\.gearStatus === "OWNED"/);
+  assert.match(tripPlanningUiSource, /item\.gearStatus === "MISSING" && !item\.checked/);
+  assert.match(tripPlanningUiSource, /label: "パック済み"/);
   assert.match(tripPlanningUiSource, /label: "所持済み"/);
   assert.match(tripPlanningUiSource, /confirmationLabel: item\.checked \? "確認済み" : "未確認"/);
   assert.match(tripPlanningUiSource, /label: "確認済み"/);
   assert.match(tripPlanningUiSource, /label: "対応済み"/);
+  assert.match(tripPlanningUiSource, /packedGearIds: packGearIds/);
+  assert.equal(
+    tripPlanningUiSource.match(/packedGearIds: packGearIds/g)?.length,
+    2
+  );
+  assert.match(tripPlanningUiSource, /\["所持・パック", counts\.covered/);
   assert.match(
     tripPlanningUiSource,
-    /item\.source === "GEAR_BACKED" && !item\.checked/
+    /getPreDepartureItemActionStatus\(item\) === "MISSING"/
   );
+});
+
+test("plan data loads pack IDs once and pack actions revalidate plan state", () => {
+  assert.match(planPageContentSource, /import \{ getPackGearIds \} from "@\/lib\/data\/pack"/);
+  assert.match(planPageContentSource, /getOwnedGearForPlanning\(\),\s*getPackGearIds\(\)/);
+  assert.match(planPageContentSource, /packGearIds=\{packGearIds\}/);
+  assert.doesNotMatch(planPageContentSource, /required_slots\.map[\s\S]{0,800}getPackGearIds/);
+  assert.match(packActionsSource, /revalidatePath\("\/plan"\)/);
 });
 
 test("dashboard uses fresh checklist progress whenever it is available", () => {

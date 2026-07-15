@@ -1,6 +1,7 @@
 import { TripPlanningUI } from "@/components/trip-planning-ui";
 import { Notice } from "@/components/ui/notice";
 import { getGearProducts, getOwnedGearForPlanning, requireUser } from "@/lib/data/gear";
+import { getPackGearIds } from "@/lib/data/pack";
 import { getMountainCurrentPlanStatuses } from "@/lib/data/mountain-current-plan-status";
 import { getMountainFoundationProfiles } from "@/lib/data/mountain-foundation";
 import { getPackRequirementPlan } from "@/lib/data/pack-requirements";
@@ -112,6 +113,7 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   let plan;
   let compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>> = {};
   let ownedGear: UserGear[] = [];
+  let packGearIds: string[] = [];
 
   if (planningBlockMessage) {
     if (!isMountainCurrentPlanStatusBlocked(requestedCurrentPlanStatus)) {
@@ -119,18 +121,20 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
     }
   } else if (!requestedPlanAccess.isGenerationBlocked && shouldGeneratePlan && selectedMountain) {
     try {
-      const [generatedPlan, databaseGear, planningOwnedGear] = await Promise.all([
+      const [generatedPlan, databaseGear, planningOwnedGear, currentPackGearIds] = await Promise.all([
         getPackRequirementPlan({
           mountainSlug: selectedMountainSlug,
           season: selectedSeason,
           style: selectedStyle
         }),
         getGearProducts(),
-        getOwnedGearForPlanning()
+        getOwnedGearForPlanning(),
+        getPackGearIds()
       ]);
 
       plan = generatedPlan;
       ownedGear = planningOwnedGear;
+      packGearIds = currentPackGearIds;
       compatibilityBySlot = Object.fromEntries(
         plan.required_slots.map((slotPlan) => {
           const match = matchGearForRequirementSlot({
@@ -174,6 +178,7 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
         planStatusNotice={planStatusNotice}
         plan={plan}
         ownedGear={ownedGear}
+        packGearIds={packGearIds}
         compatibilityBySlot={compatibilityBySlot}
         planHistory={planHistory}
         savedPlans={savedPlans}

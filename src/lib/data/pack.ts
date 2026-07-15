@@ -35,7 +35,7 @@ export async function getPackSelectionData() {
   return { ownedGear, packGearIds };
 }
 
-async function getPackGearIds() {
+export async function getPackGearIds() {
   const { supabase, user } = await requireUser();
   const { data, error } = await supabase
     .from("user_pack_items")

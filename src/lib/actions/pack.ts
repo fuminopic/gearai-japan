@@ -69,6 +69,7 @@ export async function removePackItem(gearId: string): Promise<PackActionResult> 
 function revalidatePackViews() {
   revalidatePath("/pack");
   revalidatePath("/pack/select");
+  revalidatePath("/plan");
   revalidatePath("/dashboard");
 }
 

@@ -122,6 +122,7 @@ test("pack actions recheck owned ownership, deduplicate, and only remove the rel
     packActionsSource.indexOf("export async function removePackItem")
   );
   assert.doesNotMatch(removeActionSource, /\.from\("user_gear"\)/);
+  assert.match(packActionsSource, /revalidatePath\("\/plan"\)/);
   assert.match(packActionsSource, /revalidatePath\("\/dashboard"\)/);
 });
 

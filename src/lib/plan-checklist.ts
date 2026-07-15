@@ -12,6 +12,7 @@ import {
 
 export type ChecklistPriority = "ESSENTIAL" | "SUGGESTED" | "OPTIONAL";
 export type ChecklistItemSource = "GEAR_BACKED" | "CHECKLIST_ONLY";
+export type ChecklistGearStatus = "PACKED" | "OWNED" | "MISSING";
 export type ChecklistItemIcon =
   | "baseLayer"
   | "midLayer"
@@ -77,6 +78,7 @@ export type ChecklistItem = ChecklistItemDefinition & {
   slots: RequirementSlot[];
   toggleSlots: RequirementSlot[];
   matchingOwnedGear: GearMatchingOwnedGearMatch[];
+  gearStatus: ChecklistGearStatus | null;
 };
 
 export type ChecklistCategory = {
@@ -431,18 +433,21 @@ export function buildPlanChecklist({
   plan,
   checkedSlots = [],
   checkedChecklistOnlyIds = [],
-  ownedGear = []
+  ownedGear = [],
+  packedGearIds = []
 }: {
   plan: PackRequirementPlan;
   checkedSlots?: readonly RequirementSlot[];
   checkedChecklistOnlyIds?: readonly string[];
   ownedGear?: readonly GearMatchingOwnedGearMatch[];
+  packedGearIds?: readonly string[];
 }): ChecklistView {
   const slotPlansBySlot = new Map(
     plan.required_slots.map((slotPlan) => [slotPlan.slot, slotPlan])
   );
   const checkedSlotSet = new Set(checkedSlots);
   const checkedChecklistOnlySet = new Set(checkedChecklistOnlyIds);
+  const packedGearIdSet = new Set(packedGearIds);
   const categories = [
     ...getBaseCategories(plan),
     {
@@ -462,7 +467,8 @@ export function buildPlanChecklist({
           slotPlansBySlot,
           checkedSlotSet,
           checkedChecklistOnlySet,
-          ownedGear
+          ownedGear,
+          packedGearIdSet
         });
       });
 
@@ -613,7 +619,8 @@ function buildChecklistItem({
   slotPlansBySlot,
   checkedSlotSet,
   checkedChecklistOnlySet,
-  ownedGear
+  ownedGear,
+  packedGearIdSet
 }: {
   definition: ChecklistItemDefinition;
   plan: PackRequirementPlan;
@@ -621,6 +628,7 @@ function buildChecklistItem({
   checkedSlotSet: Set<RequirementSlot>;
   checkedChecklistOnlySet: Set<string>;
   ownedGear: readonly GearMatchingOwnedGearMatch[];
+  packedGearIdSet: ReadonlySet<string>;
 }): ChecklistItem {
   const slots = (definition.slots ?? []).filter((slot) => slotPlansBySlot.has(slot));
   const auxiliaryOwnedGear = matchChecklistOwnedGear(definition, ownedGear);
@@ -642,6 +650,14 @@ function buildChecklistItem({
         ? slots.every((slot) => checkedSlotSet.has(slot))
         : checkedChecklistOnlySet.has(definition.id)
       : checkedChecklistOnlySet.has(definition.id);
+  const gearStatus =
+    source === "GEAR_BACKED"
+      ? matchingOwnedGear.some((gear) => packedGearIdSet.has(gear.id))
+        ? "PACKED"
+        : matchingOwnedGear.length > 0
+          ? "OWNED"
+          : "MISSING"
+      : null;
 
   return {
     ...definition,
@@ -650,7 +666,8 @@ function buildChecklistItem({
     reason: getChecklistItemReason(definition, plan),
     slots,
     toggleSlots,
-    matchingOwnedGear
+    matchingOwnedGear,
+    gearStatus
   };
 }
 

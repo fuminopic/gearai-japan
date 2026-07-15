@@ -120,6 +120,7 @@ type TripPlanningUIProps = {
   planStatusNotice?: MountainCurrentPlanStatus;
   plan?: PackRequirementPlan;
   ownedGear?: UserGear[];
+  packGearIds?: string[];
   compatibilityBySlot?: Partial<Record<RequirementSlot, GearMatchingResult>>;
   planHistory?: AIRecommendationRecord[];
   savedPlans?: SavedTripPlan[];
@@ -151,6 +152,7 @@ export function TripPlanningUI({
   planStatusNotice,
   plan,
   ownedGear = [],
+  packGearIds = [],
   compatibilityBySlot = {},
   planHistory = [],
   savedPlans = [],
@@ -502,6 +504,7 @@ export function TripPlanningUI({
             checkedSlots={currentCheckedSlots}
             checklistOnlyIds={currentChecklistOnlyIds}
             ownedGear={ownedGear}
+            packGearIds={packGearIds}
             planId={planId}
           />
         ) : (
@@ -521,6 +524,7 @@ export function TripPlanningUI({
               plan={plan}
               compatibilityBySlot={compatibilityBySlot}
               ownedGear={ownedGear}
+              packGearIds={packGearIds}
               plannedDate={planDetailsDraft.plannedDate}
               plannedEndDate={planDetailsDraft.plannedEndDate}
               isSavedPlanDetail={isSavedPlanMode}
@@ -1210,6 +1214,7 @@ function TripPlanningResult({
   plan,
   compatibilityBySlot,
   ownedGear,
+  packGearIds,
   plannedDate,
   plannedEndDate,
   isSavedPlanDetail,
@@ -1225,6 +1230,7 @@ function TripPlanningResult({
   plan: PackRequirementPlan;
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
   ownedGear: UserGear[];
+  packGearIds: string[];
   plannedDate: string;
   plannedEndDate: string;
   isSavedPlanDetail: boolean;
@@ -1249,7 +1255,8 @@ function TripPlanningResult({
     plan,
     checkedSlots,
     checkedChecklistOnlyIds: checklistOnlyIds,
-    ownedGear
+    ownedGear,
+    packedGearIds: packGearIds
   });
   const preDepartureSummary = buildPreDepartureSummary(checklist);
   const notNeededItems = buildPlanNotNeededItems(plan);
@@ -1510,7 +1517,9 @@ function TripPlanningResult({
           <ChevronDown className="h-5 w-5 shrink-0 text-stone-500 transition group-open:rotate-180" />
         </summary>
         <PlanningNotes
-          missingCount={checklist.summary.missingCount}
+          missingCount={
+            preDepartureSummary.missingCount + preDepartureSummary.confirmationCount
+          }
           displaySlots={displaySlots}
           compatibilityBySlot={compatibilityBySlot}
         />
@@ -1526,6 +1535,7 @@ function SavedPlanFullChecklistView({
   checkedSlots,
   checklistOnlyIds,
   ownedGear,
+  packGearIds,
   planId
 }: {
   plan: PackRequirementPlan;
@@ -1534,13 +1544,15 @@ function SavedPlanFullChecklistView({
   checkedSlots: RequirementSlot[];
   checklistOnlyIds: string[];
   ownedGear: UserGear[];
+  packGearIds: string[];
   planId: string;
 }) {
   const checklist = buildPlanChecklist({
     plan,
     checkedSlots,
     checkedChecklistOnlyIds: checklistOnlyIds,
-    ownedGear
+    ownedGear,
+    packedGearIds: packGearIds
   });
   const summary = buildPreDepartureSummary(checklist);
   const counts = getFullChecklistCounts(checklist);
@@ -1579,7 +1591,7 @@ function SavedPlanFullChecklistView({
         <div className="mt-4 grid grid-cols-4 gap-2 text-center">
           <FullChecklistMetric label="不足" value={counts.missing} tone="missing" />
           <FullChecklistMetric label="確認する" value={counts.confirm} tone="confirm" />
-          <FullChecklistMetric label="所持済み" value={counts.owned} tone="owned" />
+          <FullChecklistMetric label="所持・パック" value={counts.covered} tone="covered" />
           <FullChecklistMetric label="確認済み" value={counts.checked} tone="checked" />
         </div>
       </div>
@@ -1611,14 +1623,14 @@ function FullChecklistMetric({
 }: {
   label: string;
   value: number;
-  tone: "missing" | "confirm" | "owned" | "checked";
+  tone: "missing" | "confirm" | "covered" | "checked";
 }) {
   const toneClass =
     tone === "missing"
       ? "bg-red-50 text-red-700"
       : tone === "confirm"
         ? "bg-amber-50 text-amber-800"
-        : tone === "owned"
+        : tone === "covered"
           ? "bg-forest-50 text-forest-800"
           : "bg-blue-50 text-blue-700";
 
@@ -1761,15 +1773,15 @@ function getFullChecklistCounts(checklist: ReturnType<typeof buildPlanChecklist>
   const counts = {
     missing: 0,
     confirm: 0,
-    owned: 0,
+    covered: 0,
     checked: 0
   };
 
   for (const category of checklist.categories) {
     for (const item of category.items) {
-      if (item.matchingOwnedGear.length > 0) {
-        counts.owned += 1;
-      } else if (item.source === "GEAR_BACKED" && !item.checked) {
+      if (item.gearStatus === "PACKED" || item.gearStatus === "OWNED") {
+        counts.covered += 1;
+      } else if (item.gearStatus === "MISSING" && !item.checked) {
         counts.missing += 1;
       }
 
@@ -1787,14 +1799,25 @@ function getFullChecklistCounts(checklist: ReturnType<typeof buildPlanChecklist>
 function getFullChecklistItemStatus(item: ChecklistItem) {
   const status = getChecklistItemStatus(item);
 
-  if (item.matchingOwnedGear.length > 0) {
+  if (item.gearStatus === "PACKED") {
+    return {
+      kind: "PACKED" as const,
+      label: status.confirmationLabel
+        ? `${status.label}・${status.confirmationLabel}`
+        : status.label,
+      checked: item.checked,
+      className: status.className
+    };
+  }
+
+  if (item.gearStatus === "OWNED") {
     return {
       kind: "OWNED" as const,
       label: status.confirmationLabel
         ? `${status.label}・${status.confirmationLabel}`
         : status.label,
       checked: item.checked,
-      className: "bg-forest-50 text-forest-800"
+      className: status.className
     };
   }
 
@@ -1892,7 +1915,7 @@ async function createChecklistImageBlob({
   const metrics = [
     ["不足", counts.missing, "#B91C1C"],
     ["確認する", counts.confirm, "#92400E"],
-    ["所持済み", counts.owned, "#14724e"],
+    ["所持・パック", counts.covered, "#14724e"],
     ["確認済み", counts.checked, "#1D4ED8"]
   ] as const;
   const metricWidth = (width - 144 - 36) / 4;
@@ -2052,6 +2075,10 @@ function getChecklistStatusCanvasColor(
   }
 
   if (kind === "OWNED") {
+    return "#14724e";
+  }
+
+  if (kind === "PACKED") {
     return "#14724e";
   }
 
@@ -2402,6 +2429,10 @@ function ChecklistCategoryCard({
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
   onToggle: (item: ChecklistItem) => void;
 }) {
+  const missingCount = category.items.filter(
+    (item) => getPreDepartureItemActionStatus(item) === "MISSING"
+  ).length;
+
   return (
     <article className="rounded-lg bg-white p-5 shadow-soft">
       <div className="flex items-start justify-between gap-4">
@@ -2409,9 +2440,9 @@ function ChecklistCategoryCard({
           <h3 className="text-lg font-semibold text-ink">{category.label}</h3>
           <p className="mt-1 text-xs font-semibold text-stone-500">
             {category.progress.checkedCount.toLocaleString("ja-JP")} 完了
-            {category.progress.missingCount > 0 ? (
+            {missingCount > 0 ? (
               <span className="ml-2 rounded-full bg-red-50 px-2 py-0.5 text-red-700">
-                不足 {category.progress.missingCount.toLocaleString("ja-JP")}
+                不足 {missingCount.toLocaleString("ja-JP")}
               </span>
             ) : (
               <span className="ml-2 rounded-full bg-forest-50 px-2 py-0.5 text-forest-800">
@@ -2653,7 +2684,18 @@ const checklistItemIcons: Record<ChecklistItemIcon, LucideIcon> = {
 };
 
 function getChecklistItemStatus(item: ChecklistItem) {
-  if (item.matchingOwnedGear.length > 0) {
+  if (item.gearStatus === "PACKED") {
+    return {
+      label: "パック済み",
+      className: "bg-forest-100 text-forest-800",
+      confirmationLabel: item.checked ? "確認済み" : "未確認",
+      confirmationClassName: item.checked
+        ? "bg-blue-50 text-blue-700"
+        : "bg-stone-100 text-stone-600"
+    };
+  }
+
+  if (item.gearStatus === "OWNED") {
     return {
       label: "所持済み",
       className: "bg-forest-50 text-forest-800",

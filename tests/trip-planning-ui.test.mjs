@@ -525,19 +525,19 @@ test("pack planning UI deduplicates merged slot labels and supports checklist pr
   assert.match(planChecklistSource, /CHECKLIST_ONLY/);
 });
 
-test("plan page keeps confirmed checklist items visible in a 確認済み group", () => {
-  // 1) 確認した項目は消えず、確認済みグループのローとして描画される
+test("plan page keeps completed checklist items visible with distinct owned and confirmed labels", () => {
+  // 1) 完了した項目は消えず、完了済みグループのローとして描画される
   assert.match(tripPlanningUiSource, /function ConfirmedChecklistItemRow/);
   assert.match(tripPlanningUiSource, /<ConfirmedChecklistItemRow/);
 
-  // 2) 各カテゴリーカードに確認済み項目を渡す prop があり、確認済み見出しが出る
+  // 2) 各カテゴリーカードに完了項目を渡す prop があり、完了済み見出しが出る
   assert.match(tripPlanningUiSource, /confirmedItems\?: ChecklistItem\[\]/);
   assert.match(
     tripPlanningUiSource,
-    /確認済み \{confirmedItems\.length\.toLocaleString\("ja-JP"\)\}/
+    /完了済み \{confirmedItems\.length\.toLocaleString\("ja-JP"\)\}/
   );
 
-  // 3) 「要対応」ビューでのみ確認済みグループを作り、確認済みは item.checked から導く
+  // 3) 「要対応」ビューでのみ完了済みグループを作り、完了項目は item.checked から導く
   assert.match(tripPlanningUiSource, /const planCategoryCards/);
   assert.match(tripPlanningUiSource, /scanFilter === "ACTION"/);
   assert.match(tripPlanningUiSource, /\.items\.filter\(\s*\n?\s*\(item\) => item\.checked/);
@@ -546,13 +546,15 @@ test("plan page keeps confirmed checklist items visible in a 確認済み group"
     /planCategoryCards\.map\(\(\{ category, confirmedItems \}\)/
   );
 
-  // 4) 確認済みローは同じ onToggle を使う＝再タップで確認を取り消して未確認へ戻せる
+  // 4) 行は状態ラベルを再利用し、所持済みを確認済みと誤表示しない
   const confirmedRow = tripPlanningUiSource.slice(
     tripPlanningUiSource.indexOf("function ConfirmedChecklistItemRow")
   );
   assert.match(confirmedRow, /checked=\{item\.checked\}/);
   assert.match(confirmedRow, /onChange=\{\(\) => onToggle\(item\)\}/);
-  // 確認済みは弱めた（浅いグレー）表示
+  assert.match(confirmedRow, /const status = getChecklistItemStatus\(item\)/);
+  assert.match(confirmedRow, /\{status\.label\}/);
+  // 完了済みローは弱めた（浅いグレー）表示
   assert.match(confirmedRow, /bg-stone-50/);
   assert.match(confirmedRow, /text-stone-400/);
 

@@ -69,9 +69,8 @@ export function HeroGauge({
     );
   }, [checklist, planId, userId]);
 
-  // 完成度以持久化的 trip.progress(fallbackPercent)为底线,避免 localStorage / DB checked_slots
-  // 丢失时回退;重算值更高时(如后来新增装备)仍取更高。
-  const percent = Math.max(fallbackPercent, hydrated?.summary.percent ?? 0);
+  // 清单可用时始终以当前装备与确认状态重算的进度为准；仅在清单不可用时回退保存值。
+  const percent = hydrated?.summary.percent ?? fallbackPercent;
   const targetPercent = Math.min(100, Math.max(0, percent));
   const byId = new Map((hydrated?.categories ?? []).map((category) => [category.id, category]));
 

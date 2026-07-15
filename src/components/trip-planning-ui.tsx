@@ -71,6 +71,7 @@ import {
   buildPreDepartureSummary,
   calculateChecklistProgress,
   checklistPriorityLabels,
+  filterCheckedSlotsForPlan,
   getPreDepartureItemActionStatus,
   isImportantPreDepartureItem,
   isSupportedChecklistOnlyId,
@@ -2051,19 +2052,6 @@ function getChecklistStatusCanvasColor(
   return "#1D4ED8";
 }
 
-function filterCheckedSlotsForPlan(
-  checkedSlots: readonly RequirementSlot[],
-  plan: PackRequirementPlan
-) {
-  const missingSlots = new Set(
-    plan.required_slots
-      .filter((slotPlan) => slotPlan.coverage_status === "MISSING")
-      .map((slotPlan) => slotPlan.slot)
-  );
-
-  return uniqueRequirementSlots(checkedSlots).filter((slot) => missingSlots.has(slot));
-}
-
 function uniqueRequirementSlots(values: readonly unknown[]) {
   const slots: RequirementSlot[] = [];
 
@@ -2467,7 +2455,7 @@ function ChecklistCategoryCard({
             <div className="mb-2 flex items-center gap-2">
               <span className="h-px flex-1 bg-stone-100" />
               <p className="text-xs font-semibold text-stone-400">
-                確認済み {confirmedItems.length.toLocaleString("ja-JP")}
+                完了済み {confirmedItems.length.toLocaleString("ja-JP")}
               </p>
               <span className="h-px flex-1 bg-stone-100" />
             </div>
@@ -2562,8 +2550,8 @@ function ChecklistItemRow({
   );
 }
 
-// 確認済み項目の弱めた表示。中身は同じ onToggle を使うので、タップで確認を取り消して
-// 未確認グループへ戻せる（表示のみ・状態管理は既存フローのまま）。
+// 完了済み項目の弱めた表示。所持済みと手動確認済みは表示上区別し、
+// 中身は同じ onToggle を使うので、手動確認はタップで取り消せる。
 function ConfirmedChecklistItemRow({
   item,
   onToggle
@@ -2573,6 +2561,7 @@ function ConfirmedChecklistItemRow({
 }) {
   const canToggle =
     item.source === "CHECKLIST_ONLY" || item.toggleSlots.length > 0;
+  const status = getChecklistItemStatus(item);
 
   return (
     <label
@@ -2593,8 +2582,8 @@ function ConfirmedChecklistItemRow({
       <span className="min-w-0 flex-1 truncate text-sm font-medium text-stone-400">
         {item.label}
       </span>
-      <span className="shrink-0 rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-semibold text-stone-400">
-        確認済み
+      <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${status.className}`}>
+        {status.label}
       </span>
     </label>
   );

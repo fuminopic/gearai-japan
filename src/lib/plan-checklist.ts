@@ -1445,6 +1445,22 @@ export function calculateChecklistProgress(
   }).summary.percent;
 }
 
+export function filterCheckedSlotsForPlan(
+  checkedSlots: readonly RequirementSlot[],
+  plan: Pick<PackRequirementPlan, "required_slots">
+) {
+  const currentPlanSlots = new Set(plan.required_slots.map((slotPlan) => slotPlan.slot));
+  const uniqueSlots: RequirementSlot[] = [];
+
+  for (const slot of checkedSlots) {
+    if (isSupportedRequirementSlot(slot) && !uniqueSlots.includes(slot)) {
+      uniqueSlots.push(slot);
+    }
+  }
+
+  return uniqueSlots.filter((slot) => currentPlanSlots.has(slot));
+}
+
 export function applyChecklistOnlyIdsToChecklist(
   checklist: ChecklistView,
   checkedChecklistOnlyIds: readonly string[]

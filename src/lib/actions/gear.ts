@@ -33,6 +33,8 @@ export async function createGear(
   revalidatePath("/dashboard");
   revalidatePath("/gear");
   revalidatePath("/plan");
+  revalidatePath("/pack");
+  revalidatePath("/pack/select");
 
   return { ok: true, redirectTo: returnTo ?? "/gear?saved=created" };
 }
@@ -66,6 +68,8 @@ export async function updateGear(
   revalidatePath("/dashboard");
   revalidatePath("/gear");
   revalidatePath("/plan");
+  revalidatePath("/pack");
+  revalidatePath("/pack/select");
   revalidatePath(`/gear/${id}/edit`);
 
   return { ok: true, redirectTo: returnTo ?? "/gear?saved=updated" };
@@ -88,6 +92,8 @@ export async function deleteGear(id: string, formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath("/gear");
   revalidatePath("/plan");
+  revalidatePath("/pack");
+  revalidatePath("/pack/select");
   redirect(returnTo ?? "/gear?saved=deleted");
 }
 

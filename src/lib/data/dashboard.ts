@@ -1,12 +1,9 @@
 import { requireUser } from "@/lib/data/gear";
-import {
-  getMajorGearCategoryCoverage,
-  getRetailGearCategory
-} from "@/lib/gear-major-categories";
+import { buildPackSummary } from "@/lib/pack-summary";
 import type { DashboardRecentGear, DashboardSummary, UserGear } from "@/lib/types";
 
 const DASHBOARD_GEAR_SELECT =
-  "id,name,brand,model,image_url,image_storage_path,status,category_id,subcategory_id,weight_grams,weight_type,created_at,gear_categories:category_id(id,name_ja,name_en),gear_subcategories:subcategory_id(id,name_ja,name_en)";
+  "id,name,brand,model,image_url,image_storage_path,status,category_id,subcategory_id,weight_grams,official_weight_grams,weight_type,created_at,gear_categories:category_id(id,name_ja,name_en),gear_subcategories:subcategory_id(id,name_ja,name_en)";
 
 type DashboardGearRelationRow = {
   id: string;
@@ -14,7 +11,16 @@ type DashboardGearRelationRow = {
   name_en: string;
 };
 type DashboardGearRow = DashboardRecentGear &
-  Pick<UserGear, "brand" | "model" | "status" | "weight_type" | "category_id" | "subcategory_id"> & {
+  Pick<
+    UserGear,
+    | "brand"
+    | "model"
+    | "status"
+    | "weight_type"
+    | "category_id"
+    | "subcategory_id"
+    | "official_weight_grams"
+  > & {
     gear_categories?: UserGear["gear_categories"];
     gear_subcategories?: UserGear["gear_subcategories"];
   };
@@ -27,83 +33,47 @@ type SupabaseDashboardGearRow = Omit<
 };
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
-  const gear = await getDashboardGear();
-  const ownedGear = gear.filter((item) => item.status === "owned");
+  const { supabase, user } = await requireUser();
+  const [gearResult, packItemsResult] = await Promise.all([
+    supabase
+      .from("user_gear")
+      .select(DASHBOARD_GEAR_SELECT)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("user_pack_items")
+      .select("gear_id")
+      .eq("user_id", user.id)
+  ]);
 
-  const categoryWeights = new Map<
-    string,
-    {
-      categoryId: string;
-      nameJa: string;
-      weightG: number;
-      count: number;
-      sortOrder: number;
-    }
-  >();
-
-  for (const item of ownedGear) {
-    const architecture = getRetailGearCategory(item);
-    const categoryId = architecture?.id ?? "other";
-    const current = categoryWeights.get(categoryId) ?? {
-      categoryId,
-      nameJa: architecture?.label ?? "その他",
-      weightG: 0,
-      count: 0,
-      sortOrder: architecture ? getCategorySortOrder(architecture.id) : Number.MAX_SAFE_INTEGER
-    };
-
-    current.weightG += Number(item.weight_grams ?? 0);
-    current.count += 1;
-    categoryWeights.set(categoryId, current);
+  if (gearResult.error) {
+    throw new Error(gearResult.error.message);
   }
 
-  const totalWeightG = sumWeight(ownedGear);
-  const majorCategoryCoverage = getMajorGearCategoryCoverage(ownedGear);
-  const baseWeightG = sumWeight(ownedGear.filter((item) => item.weight_type === "base"));
-  const consumableWeightG = sumWeight(
-    ownedGear.filter((item) => item.weight_type === "consumable")
+  if (packItemsResult.error) {
+    throw new Error(packItemsResult.error.message);
+  }
+
+  const rows = gearResult.data as SupabaseDashboardGearRow[] as DashboardGearRow[];
+  const gear = await signDashboardGearImageUrls(supabase, rows);
+  const ownedGear = gear.filter((item) => item.status === "owned");
+  const packGearIds = new Set(
+    (packItemsResult.data as Array<{ gear_id: string }>).map((item) => item.gear_id)
   );
-  const wornWeightG = sumWeight(ownedGear.filter((item) => item.weight_type === "worn"));
+  const packSummary = buildPackSummary(ownedGear.filter((item) => packGearIds.has(item.id)));
 
   return {
     totalCount: gear.length,
     ownedCount: ownedGear.length,
     wishlistCount: gear.filter((item) => item.status === "wishlist").length,
-    totalWeightG,
-    majorCategoryCoverageCount: majorCategoryCoverage.coveredCount,
-    majorCategoryTotalCount: majorCategoryCoverage.totalCount,
-    majorCategoryMissingLabels: majorCategoryCoverage.missingLabels,
-    baseWeightG,
-    consumableWeightG,
-    wornWeightG,
-    totalPackWeightG: baseWeightG + consumableWeightG,
-    categoryWeights: Array.from(categoryWeights.values())
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map(({ categoryId, nameJa, weightG, count }) => ({
-        categoryId,
-        nameJa,
-        weightG,
-        count
-      })),
+    packItemCount: packSummary.itemCount,
+    packKnownWeightG: packSummary.knownWeightG,
+    packWeightMissingCount: packSummary.missingWeightCount,
+    packMajorCategoryCoverageCount: packSummary.majorCategoryCoverageCount,
+    packMajorCategoryTotalCount: packSummary.majorCategoryTotalCount,
+    packCategoryWeights: packSummary.categoryWeights,
     recentGear: gear.slice(0, 8).map(toDashboardRecentGear)
   };
-}
-
-async function getDashboardGear() {
-  const { supabase, user } = await requireUser();
-  const { data, error } = await supabase
-    .from("user_gear")
-    .select(DASHBOARD_GEAR_SELECT)
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  const rows = data as SupabaseDashboardGearRow[] as DashboardGearRow[];
-
-  return signDashboardGearImageUrls(supabase, rows);
 }
 
 function toDashboardRecentGear(item: DashboardGearRow): DashboardRecentGear {
@@ -136,15 +106,4 @@ async function signDashboardGearImageUrls(
       };
     })
   );
-}
-
-function sumWeight(items: DashboardGearRow[]) {
-  return items.reduce((total, item) => total + Number(item.weight_grams ?? 0), 0);
-}
-
-function getCategorySortOrder(id: string) {
-  const order = ["clothing", "backpack", "shoes", "tentSleep", "cooking", "safetyNav"];
-  const index = order.indexOf(id);
-
-  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }

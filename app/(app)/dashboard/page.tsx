@@ -20,6 +20,8 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const planRoute = "/plan" as Route;
+const packRoute = "/pack" as Route;
+const packSelectRoute = "/pack/select" as Route;
 // 首页装備構成配色:规范 v1「米色系」6 色,按 id 覆盖 MAJOR_GEAR_CATEGORIES 旧色(仅首页用)
 const categoryColorById = new Map<string, string>([
   ["clothing", "#C05A86"],
@@ -319,20 +321,21 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
       <div className="flex flex-row items-center justify-between">
         <SummaryMetric
           iconSrc="/metric-count.png"
-          value={`${summary.ownedCount.toLocaleString("ja-JP")} 件`}
-          label="所有装備数"
+          value={`${summary.ownedCount.toLocaleString("ja-JP")}点`}
+          label="登録装備"
           divided
         />
         <SummaryMetric
           iconSrc="/metric-weight.png"
-          value={formatKg(summary.totalWeightG)}
-          label="総重量"
+          value={`${summary.packItemCount.toLocaleString("ja-JP")}点・${formatKg(summary.packKnownWeightG)}`}
+          label="マイパック"
+          href={packRoute}
           divided
         />
         <SummaryMetric
           iconSrc="/metric-category.png"
-          value={`${summary.majorCategoryCoverageCount} / ${summary.majorCategoryTotalCount}`}
-          label="主要カテゴリー"
+          value={`${summary.packMajorCategoryCoverageCount} / ${summary.packMajorCategoryTotalCount}`}
+          label="パック内カテゴリー"
         />
       </div>
       <GearComposition summary={summary} />
@@ -392,6 +395,23 @@ function RecentGearSection({
 }
 
 function GearComposition({ summary }: { summary: DashboardSummary }) {
+  if (summary.packItemCount === 0) {
+    return (
+      <div className="border-t border-stone-100 pt-4">
+        <p className="text-sm font-bold text-ink">マイパックはまだ空です</p>
+        <p className="mt-2 text-xs leading-5 text-stone-500">
+          装備庫からよく持っていく装備を追加すると、パック重量を確認できます。
+        </p>
+        <Link
+          href={packSelectRoute}
+          className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-forest-700 px-4 text-xs font-bold text-white transition active:scale-95"
+        >
+          マイパックを作る &gt;
+        </Link>
+      </div>
+    );
+  }
+
   const distribution = buildGearComposition(summary);
   const activeDistribution = distribution.filter((item) => item.value > 0);
   const byId = new Map<string, (typeof distribution)[number]>(
@@ -404,11 +424,14 @@ function GearComposition({ summary }: { summary: DashboardSummary }) {
   return (
     <div className="border-t border-stone-100 pt-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-bold text-stone-500">装備構成</p>
-        <Link href="/gear" className="text-xs font-bold text-[#14724e]">
-          すべて見る &gt;
+        <p className="text-xs font-bold text-stone-500">パック重量構成</p>
+        <Link href={packRoute} className="text-xs font-bold text-[#14724e]">
+          編集する &gt;
         </Link>
       </div>
+      <p className="mt-1 text-xs font-medium text-stone-500">
+        重量未入力 {summary.packWeightMissingCount.toLocaleString("ja-JP")}点
+      </p>
       <div className="mt-3 flex h-3 overflow-hidden rounded-full bg-stone-100">
         {activeDistribution.length > 0 ? (
           distribution
@@ -451,23 +474,36 @@ function SummaryMetric({
   iconSrc,
   value,
   label,
+  href,
   divided = false
 }: {
   iconSrc: string;
   value: string;
   label: string;
+  href?: Route;
   divided?: boolean;
 }) {
-  return (
-    <div
-      className={`flex flex-1 flex-col items-center gap-1.5 px-1 text-center ${
-        divided ? "border-r border-gray-100" : ""
-      }`}
-    >
+  const className = `flex flex-1 flex-col items-center gap-1.5 px-1 text-center ${
+    divided ? "border-r border-gray-100" : ""
+  }`;
+  const content = (
+    <>
       <img src={iconSrc} alt="" className="h-4 w-auto object-contain" />
       <p className="font-din text-[22px] font-bold leading-none text-black">{value}</p>
       <p className="text-[10px] font-medium text-gray-400">{label}</p>
-    </div>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={`${className} transition active:scale-95`}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={className}>{content}</div>
   );
 }
 
@@ -502,18 +538,14 @@ function GearImage({ item }: { item: DashboardRecentGear }) {
 }
 
 function buildGearComposition(summary: DashboardSummary) {
-  const useWeight = summary.totalWeightG > 0;
-  const total = summary.categoryWeights.reduce(
-    (sum, item) => sum + (useWeight ? item.weightG : item.count),
-    0
-  );
+  const total = summary.packKnownWeightG;
   const weightsByCategory = new Map(
-    summary.categoryWeights.map((item) => [item.categoryId, item])
+    summary.packCategoryWeights.map((item) => [item.categoryId, item])
   );
 
   return MAJOR_GEAR_CATEGORIES.map((category) => {
     const item = weightsByCategory.get(category.id);
-    const value = item ? (useWeight ? item.weightG : item.count) : 0;
+    const value = item?.weightG ?? 0;
     return {
       id: category.id,
       label: category.label,
@@ -553,5 +585,16 @@ function styleLabel(style: string) {
 }
 
 function formatKg(weightG: number) {
-  return `${(weightG / 1000).toFixed(2)} kg`;
+  if (weightG <= 0) {
+    return "-";
+  }
+
+  if (weightG < 1000) {
+    return `${Math.round(weightG)}g`;
+  }
+
+  return `${(weightG / 1000).toLocaleString("ja-JP", {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 0
+  })}kg`;
 }

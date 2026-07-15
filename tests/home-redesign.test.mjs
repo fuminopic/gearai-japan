@@ -190,11 +190,11 @@ test("home rebuild follows the requested recent gear image layout", () => {
   assert.doesNotMatch(dashboardSource, /gearFallbackGradient/);
 });
 
-test("home gear summary uses the retail category composition bar", () => {
+test("home gear summary uses the pack-only weight composition bar", () => {
   assert.match(dashboardSource, /GearComposition/);
   assert.match(dashboardSource, /buildGearComposition/);
   assert.match(dashboardSource, /MAJOR_GEAR_CATEGORIES/);
-  assert.match(dashboardSource, /装備構成/);
+  assert.match(dashboardSource, /パック重量構成/);
   assert.match(dashboardSource, /flex h-3 overflow-hidden rounded-full bg-stone-100/);
   assert.match(dashboardSource, /grid grid-cols-3 gap-x-4 gap-y-3/);
   assert.match(dashboardSource, /MAJOR_GEAR_CATEGORIES\.map/);
@@ -206,13 +206,14 @@ test("home gear summary uses the retail category composition bar", () => {
   assert.doesNotMatch(dashboardSource, /highway/i);
 });
 
-test("home redesign exposes only allowed gear summary metrics", () => {
-  for (const copy of ["マイ装備", "所有装備数", "総重量", "主要カテゴリー"]) {
+test("home redesign exposes pack-focused gear summary metrics", () => {
+  for (const copy of ["マイ装備", "登録装備", "マイパック", "パック内カテゴリー"]) {
     assert.match(dashboardSource, new RegExp(copy));
   }
-  assert.match(dashboardDataSource, /getMajorGearCategoryCoverage/);
-  assert.match(dashboardDataSource, /majorCategoryMissingLabels/);
-  assert.doesNotMatch(dashboardSource, /majorCategoryMissingLabels/);
+  assert.match(dashboardDataSource, /user_pack_items/);
+  assert.match(dashboardDataSource, /buildPackSummary/);
+  assert.match(dashboardSource, /packKnownWeightG/);
+  assert.doesNotMatch(dashboardSource, /totalWeightG/);
 
   for (const forbidden of [
     "私の装備",
@@ -239,6 +240,8 @@ test("home redesign includes gear empty and category empty states", () => {
   assert.doesNotMatch(dashboardSource, /主要カテゴリーは登録済みです/);
   assert.doesNotMatch(dashboardSource, /バランスの良い構成です！/);
   assert.doesNotMatch(dashboardSource, /装備を追加すると、分布とバランスを確認できます/);
+  assert.match(dashboardSource, /マイパックはまだ空です/);
+  assert.match(dashboardSource, /マイパックを作る/);
 });
 
 test("home redesign syncs latest saved trip plan from Supabase", () => {

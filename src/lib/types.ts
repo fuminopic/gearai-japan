@@ -200,15 +200,12 @@ export type DashboardSummary = {
   totalCount: number;
   ownedCount: number;
   wishlistCount: number;
-  totalWeightG: number;
-  majorCategoryCoverageCount: number;
-  majorCategoryTotalCount: number;
-  majorCategoryMissingLabels: string[];
-  baseWeightG: number;
-  consumableWeightG: number;
-  wornWeightG: number;
-  totalPackWeightG: number;
-  categoryWeights: Array<{
+  packItemCount: number;
+  packKnownWeightG: number;
+  packWeightMissingCount: number;
+  packMajorCategoryCoverageCount: number;
+  packMajorCategoryTotalCount: number;
+  packCategoryWeights: Array<{
     categoryId: string;
     nameJa: string;
     weightG: number;

@@ -64,8 +64,9 @@ test("dashboard component baseline keeps the current hero, checklist, and gear s
     "まだ計画はありません",
     "装備チェックを始めましょう",
     "マイ装備",
-    "所有装備数",
-    "装備構成",
+    "登録装備",
+    "マイパック",
+    "パック重量構成",
     "まだ装備がありません",
     "装備を追加する"
   ]) {

@@ -7,10 +7,6 @@ const analyticsSource = readFileSync("src/lib/analytics.ts", "utf8");
 const appLayoutSource = readFileSync("app/(app)/layout.tsx", "utf8");
 const tripPlanningSource = readFileSync("src/components/trip-planning-ui.tsx", "utf8");
 const gearFormSource = readFileSync("src/components/gear-form.tsx", "utf8");
-const quickAddOwnedGearSource = readFileSync(
-  "src/components/checklist-quick-add-owned-gear.tsx",
-  "utf8"
-);
 const tripPlanActionsSource = readFileSync("src/lib/actions/trip-plans.ts", "utf8");
 const privacySource = readFileSync("app/privacy/page.tsx", "utf8");
 const envExampleSource = readFileSync(".env.example", "utf8");
@@ -61,10 +57,6 @@ test("analytics identity and event triggers avoid personal plan and gear details
   assert.match(gearFormSource, /captureAnalyticsEvent\("gear_mark_owned"/);
   assert.match(gearFormSource, /source: "gear_form"/);
   assert.match(gearFormSource, /is_catalog_item: Boolean\(productId\)/);
-  assert.match(quickAddOwnedGearSource, /captureAnalyticsEvent\("gear_mark_owned"/);
-  assert.match(quickAddOwnedGearSource, /source: "checklist"/);
-  assert.match(quickAddOwnedGearSource, /category,/);
-  assert.match(quickAddOwnedGearSource, /is_catalog_item: isCatalogItem/);
   assert.match(tripPlanActionsSource, /planCount: await getTripPlanCount\(supabase, user\.id\)/);
   assert.match(tripPlanActionsSource, /count: "exact"/);
 

@@ -572,35 +572,6 @@ test("plan page keeps confirmed checklist items visible in a 確認済み group"
   assert.match(tripPlanningUiSource, /checklist\.summary\.percent/);
 });
 
-test("missing gear-backed checklist items support quick owned-gear entry without clearing confirmations", () => {
-  const quickAddOwnedGearSource = readFileSync(
-    "src/components/checklist-quick-add-owned-gear.tsx",
-    "utf8"
-  );
-
-  assert.match(tripPlanningUiSource, /ChecklistQuickAddOwnedGear/);
-  assert.match(
-    tripPlanningUiSource,
-    /item\.source === "GEAR_BACKED" && item\.toggleSlots\.length > 0 && !item\.checked/
-  );
-  assert.match(quickAddOwnedGearSource, /matching_database_gear/);
-  assert.match(quickAddOwnedGearSource, /getGearCompatibilityRule\(requirementSlots\[0\]\)/);
-  assert.match(quickAddOwnedGearSource, /formData\.set\("status", "owned"\)/);
-  assert.match(quickAddOwnedGearSource, /await createGear\(formData\)/);
-  assert.match(quickAddOwnedGearSource, /router\.refresh\(\)/);
-  assert.match(quickAddOwnedGearSource, /submissionInFlightRef/);
-  assert.match(quickAddOwnedGearSource, /if \(!result\.ok\)/);
-  assert.match(quickAddOwnedGearSource, /if \(!didSave\)/);
-  assert.match(quickAddOwnedGearSource, /setIsOpen\(false\);\s*router\.refresh\(\)/);
-
-  const checkedSlotFilter = tripPlanningUiSource.slice(
-    tripPlanningUiSource.indexOf("function filterCheckedSlotsForPlan"),
-    tripPlanningUiSource.indexOf("function uniqueRequirementSlots")
-  );
-  assert.match(checkedSlotFilter, /return uniqueRequirementSlots\(checkedSlots\);/);
-  assert.doesNotMatch(checkedSlotFilter, /coverage_status/);
-});
-
 test("trip planning UI avoids recommendation and shopping language", () => {
   for (const source of [aiPageSource, tripPlanningUiSource, tripPlanningFormSource]) {
     assert.doesNotMatch(source, /推薦|購入|予算|価格|買う|wishlist/i);

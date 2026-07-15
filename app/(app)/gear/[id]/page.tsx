@@ -7,6 +7,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { deleteGear } from "@/lib/actions/gear";
 import { getUserGearById } from "@/lib/data/gear";
 import { getGearDisplayWeightLabel } from "@/lib/gear-display";
+import { buildGearHref, getPlanReturnTo } from "@/lib/plan-return-to";
 import {
   statusLabels,
   verificationStatusLabels,
@@ -18,10 +19,17 @@ type GearDetailPageProps = {
   params: Promise<{
     id: string;
   }>;
+  searchParams: Promise<{
+    returnTo?: string;
+  }>;
 };
 
-export default async function GearDetailPage({ params }: GearDetailPageProps) {
-  const { id } = await params;
+export default async function GearDetailPage({
+  params,
+  searchParams
+}: GearDetailPageProps) {
+  const [{ id }, query] = await Promise.all([params, searchParams]);
+  const returnTo = getPlanReturnTo(query.returnTo);
   const gear = await getUserGearById(id);
   const verificationStatus =
     gear.gear_products?.verification_status ?? "unverified";
@@ -47,7 +55,7 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
     <div className="space-y-5">
       <section className="flex items-center justify-between gap-3">
         <Link
-          href="/gear"
+          href={buildGearHref("/gear", returnTo)}
           className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-stone-600 shadow-sm"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -55,7 +63,7 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
         </Link>
         {!isCatalog ? (
           <Link
-            href={`/gear/${gear.id}/edit`}
+            href={buildGearHref(`/gear/${gear.id}/edit`, returnTo)}
             className="rounded-lg bg-forest-700 px-5 py-3 text-sm font-semibold text-white shadow-soft"
           >
             編集
@@ -83,7 +91,7 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
                 <p className="text-sm font-semibold">写真未登録</p>
                 {!isCatalog ? (
                   <Link
-                    href={`/gear/${gear.id}/edit`}
+                    href={buildGearHref(`/gear/${gear.id}/edit`, returnTo)}
                     className="text-xs font-semibold text-forest-700"
                   >
                     写真を追加
@@ -194,6 +202,7 @@ export default async function GearDetailPage({ params }: GearDetailPageProps) {
           この装備を一覧から削除します。削除後は元に戻せません。
         </p>
         <form action={deleteGear.bind(null, gear.id)} className="mt-4">
+          <input type="hidden" name="returnTo" value={returnTo ?? ""} />
           <SubmitButton
             pendingLabel="削除中..."
             className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 disabled:opacity-60 sm:w-auto"

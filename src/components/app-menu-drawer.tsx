@@ -14,12 +14,13 @@ import {
 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { AppLogo } from "@/components/app-logo";
 import { signOut } from "@/lib/actions/auth";
+import { buildGearHref, getCurrentPlanReturnTo } from "@/lib/plan-return-to";
 
 const primaryItems = [
   { href: "/dashboard", label: "ホーム", icon: Home },
@@ -49,6 +50,8 @@ type AppMenuDrawerProps = {
 
 export function AppMenuDrawer({ userEmail, buttonClassName }: AppMenuDrawerProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const returnTo = getCurrentPlanReturnTo(pathname, searchParams.toString());
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [shouldRenderDrawer, setShouldRenderDrawer] = useState(false);
@@ -135,13 +138,18 @@ export function AppMenuDrawer({ userEmail, buttonClassName }: AppMenuDrawerProps
 
         <nav className="mt-5 flex-1 space-y-6 overflow-y-auto">
           <MenuSection title="メイン">
-            {primaryItems.map((item) => (
-              <MenuLink
-                key={item.href}
-                item={item}
-                active={isActivePath(pathname, item.href)}
-              />
-            ))}
+            {primaryItems.map((item) => {
+              const itemHref =
+                item.href === "/gear" ? buildGearHref("/gear", returnTo) : item.href;
+
+              return (
+                <MenuLink
+                  key={item.href}
+                  item={{ ...item, href: itemHref }}
+                  active={isActivePath(pathname, item.href)}
+                />
+              );
+            })}
           </MenuSection>
 
           <MenuSection title="サポート">

@@ -7,6 +7,7 @@ import { AppLogo } from "@/components/app-logo";
 import { AppMenuDrawer } from "@/components/app-menu-drawer";
 import { AppRoutePrefetcher } from "@/components/app-route-prefetcher";
 import { NavigationFeedback } from "@/components/navigation-feedback";
+import { PlanAwareGearLink } from "@/components/plan-aware-gear-link";
 
 const navItems = [
   { href: "/dashboard", label: "ホーム", icon: Home },
@@ -43,6 +44,24 @@ export function AppNav() {
         <div className="space-y-3">
           {navItems.map((item) => {
             const Icon = item.icon;
+            const content = (
+              <>
+                <Icon aria-hidden className="h-5 w-5" />
+                {item.label}
+              </>
+            );
+
+            if (item.href === "/gear") {
+              return (
+                <PlanAwareGearLink
+                  key={item.href}
+                  className="flex flex-col items-center gap-2 rounded-lg px-2 py-3 text-xs font-medium text-stone-600 transition hover:bg-forest-50 hover:text-forest-700"
+                >
+                  {content}
+                </PlanAwareGearLink>
+              );
+            }
+
             return (
               <Link
                 key={item.href}
@@ -50,8 +69,7 @@ export function AppNav() {
                 prefetch
                 className="flex flex-col items-center gap-2 rounded-lg px-2 py-3 text-xs font-medium text-stone-600 transition hover:bg-forest-50 hover:text-forest-700"
               >
-                <Icon aria-hidden className="h-5 w-5" />
-                {item.label}
+                {content}
               </Link>
             );
           })}

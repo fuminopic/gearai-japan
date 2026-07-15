@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { canonicalizeBrandName } from "@/lib/brand-normalization";
 import { requireUser } from "@/lib/data/gear";
+import { getPlanReturnTo } from "@/lib/plan-return-to";
 import type { GearActionResult, GearStatus, WeightType } from "@/lib/types";
 import { toNumber } from "@/lib/utils/format";
 
@@ -18,6 +19,7 @@ export async function createGear(
 ): Promise<GearActionResult> {
   const { supabase, user } = await requireUser();
   const payload = getGearPayload(formData);
+  const returnTo = getReturnTo(formData);
 
   const { error } = await supabase.from("user_gear").insert({
     ...payload,
@@ -32,7 +34,7 @@ export async function createGear(
   revalidatePath("/gear");
   revalidatePath("/plan");
 
-  return { ok: true, redirectTo: "/gear?saved=created" };
+  return { ok: true, redirectTo: returnTo ?? "/gear?saved=created" };
 }
 
 export async function updateGear(
@@ -41,6 +43,7 @@ export async function updateGear(
 ): Promise<GearActionResult> {
   const { supabase, user } = await requireUser();
   const payload = getGearPayload(formData);
+  const returnTo = getReturnTo(formData);
 
   const { data, error } = await supabase
     .from("user_gear")
@@ -65,11 +68,12 @@ export async function updateGear(
   revalidatePath("/plan");
   revalidatePath(`/gear/${id}/edit`);
 
-  return { ok: true, redirectTo: "/gear?saved=updated" };
+  return { ok: true, redirectTo: returnTo ?? "/gear?saved=updated" };
 }
 
-export async function deleteGear(id: string) {
+export async function deleteGear(id: string, formData: FormData) {
   const { supabase, user } = await requireUser();
+  const returnTo = getReturnTo(formData);
 
   const { error } = await supabase
     .from("user_gear")
@@ -84,7 +88,7 @@ export async function deleteGear(id: string) {
   revalidatePath("/dashboard");
   revalidatePath("/gear");
   revalidatePath("/plan");
-  redirect("/gear?saved=deleted");
+  redirect(returnTo ?? "/gear?saved=deleted");
 }
 
 function getGearPayload(formData: FormData) {
@@ -128,4 +132,10 @@ function optionalString(value: FormDataEntryValue | null) {
 
   const trimmed = value.trim();
   return trimmed ? trimmed : null;
+}
+
+function getReturnTo(formData: FormData) {
+  const value = formData.get("returnTo");
+
+  return getPlanReturnTo(typeof value === "string" ? value : null);
 }

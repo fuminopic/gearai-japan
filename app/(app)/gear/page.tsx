@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { GearList } from "@/components/gear-list";
 import { Notice } from "@/components/ui/notice";
 import { getUserGear, getUserGearBrands } from "@/lib/data/gear";
+import { buildGearHref, getPlanReturnTo } from "@/lib/plan-return-to";
 import type { GearFilters, GearStatus } from "@/lib/types";
 
 type GearPageProps = {
@@ -13,6 +14,7 @@ type GearPageProps = {
     category?: string;
     brand?: string;
     sort?: string;
+    returnTo?: string;
     error?: string;
     saved?: string;
   }>;
@@ -34,6 +36,7 @@ export default async function GearPage({ searchParams }: GearPageProps) {
     getUserGear({ status: "owned" })
   ]);
   const savedMessage = getSavedMessage(params.saved);
+  const returnTo = getPlanReturnTo(params.returnTo);
 
   return (
     <div className="space-y-5">
@@ -45,7 +48,7 @@ export default async function GearPage({ searchParams }: GearPageProps) {
           </h1>
         </div>
         <Link
-          href="/gear/new"
+          href={buildGearHref("/gear/new", returnTo)}
           className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-forest-700 px-4 text-sm font-bold text-white shadow-sm transition active:scale-95"
           aria-label="装備を追加"
         >
@@ -69,6 +72,7 @@ export default async function GearPage({ searchParams }: GearPageProps) {
         summaryGear={summaryGear}
         brands={brands}
         filters={filters}
+        returnTo={returnTo}
       />
     </div>
   );

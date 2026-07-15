@@ -23,6 +23,7 @@ import {
   MAJOR_GEAR_CATEGORIES
 } from "@/lib/gear-major-categories";
 import { statusLabels, weightTypeLabels } from "@/lib/i18n/labels";
+import { buildGearHref } from "@/lib/plan-return-to";
 import type { GearFilters, UserGear } from "@/lib/types";
 import { formatWeight } from "@/lib/utils/format";
 
@@ -31,13 +32,15 @@ type GearListProps = {
   summaryGear: UserGear[];
   brands: string[];
   filters: GearFilters;
+  returnTo?: string | null;
 };
 
 export function GearList({
   gear,
   summaryGear,
   brands,
-  filters
+  filters,
+  returnTo
 }: GearListProps) {
   const gearGroups = groupGearByCategory(gear);
   const totalWeightGrams = summaryGear.reduce(
@@ -93,7 +96,7 @@ export function GearList({
           </div>
           {(filters.q || filters.brand || filters.category || (filters.status && filters.status !== "all")) ? (
             <Link
-              href="/gear"
+              href={buildFilteredGearHref(filters, {}, returnTo)}
               className="inline-flex h-8 items-center justify-center rounded-lg bg-stone-100 px-3 text-xs font-semibold leading-none text-stone-600"
             >
               解除
@@ -113,6 +116,7 @@ export function GearList({
           <input type="hidden" name="brand" value={filters.brand ?? ""} />
           <input type="hidden" name="category" value={filters.category ?? ""} />
           <input type="hidden" name="sort" value={filters.sort ?? "newest"} />
+          <input type="hidden" name="returnTo" value={returnTo ?? ""} />
           <button className="inline-flex h-9 items-center justify-center rounded-lg bg-ink px-3 text-xs font-semibold leading-none text-white transition active:scale-95">
             検索
           </button>
@@ -122,7 +126,7 @@ export function GearList({
           <FilterLabel icon={<PackagePlus className="h-4 w-4" />} label="ブランド" />
           <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto px-1 pb-1">
             <FilterChip
-              href={buildGearHref(filters, { brand: undefined, category: undefined })}
+              href={buildFilteredGearHref(filters, { brand: undefined, category: undefined }, returnTo)}
               active={!selectedBrand}
               fixedWidth
             >
@@ -131,7 +135,7 @@ export function GearList({
             {visibleBrands.map((brand) => (
               <FilterChip
                 key={brand}
-                href={buildGearHref(filters, { brand, category: undefined })}
+                href={buildFilteredGearHref(filters, { brand, category: undefined }, returnTo)}
                 active={selectedBrand === brand}
                 fixedWidth
                 logoSurface
@@ -149,7 +153,7 @@ export function GearList({
           />
           <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto px-1 pb-1">
             <FilterChip
-              href={buildGearHref(filters, { category: undefined })}
+              href={buildFilteredGearHref(filters, { category: undefined }, returnTo)}
               active={!filters.category}
             >
               すべて
@@ -157,7 +161,7 @@ export function GearList({
             {MAJOR_GEAR_CATEGORIES.map((category) => (
               <FilterChip
                 key={category.id}
-                href={buildGearHref(filters, { category: category.id })}
+                href={buildFilteredGearHref(filters, { category: category.id }, returnTo)}
                 active={filters.category === category.id}
               >
                 {category.label}
@@ -168,13 +172,13 @@ export function GearList({
 
         <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
           <div className="grid grid-cols-3 rounded-xl bg-stone-100 p-1 text-sm font-semibold">
-            <StatusChip href={buildGearHref(filters, { status: "all" })} active={(filters.status ?? "all") === "all"}>
+            <StatusChip href={buildFilteredGearHref(filters, { status: "all" }, returnTo)} active={(filters.status ?? "all") === "all"}>
               すべて
             </StatusChip>
-            <StatusChip href={buildGearHref(filters, { status: "owned" })} active={filters.status === "owned"}>
+            <StatusChip href={buildFilteredGearHref(filters, { status: "owned" }, returnTo)} active={filters.status === "owned"}>
               所有
             </StatusChip>
-            <StatusChip href={buildGearHref(filters, { status: "wishlist" })} active={filters.status === "wishlist"}>
+            <StatusChip href={buildFilteredGearHref(filters, { status: "wishlist" }, returnTo)} active={filters.status === "wishlist"}>
               欲しい
             </StatusChip>
           </div>
@@ -184,6 +188,7 @@ export function GearList({
             <input type="hidden" name="status" value={filters.status ?? "all"} />
             <input type="hidden" name="brand" value={filters.brand ?? ""} />
             <input type="hidden" name="category" value={filters.category ?? ""} />
+            <input type="hidden" name="returnTo" value={returnTo ?? ""} />
             <label className="text-xs font-semibold text-stone-500" htmlFor="gear-sort">
               並び順
             </label>
@@ -210,7 +215,7 @@ export function GearList({
           description="まずはバックパック、レインウェア、ヘッドライトなどから登録してみましょう。"
           action={
             <Link
-              href="/gear/new"
+              href={buildGearHref("/gear/new", returnTo)}
               className="inline-flex rounded-xl bg-forest-700 px-5 py-3 text-sm font-semibold text-white"
             >
               装備を追加
@@ -245,7 +250,7 @@ export function GearList({
 
               <div className="grid gap-2">
                 {group.items.map((item) => (
-                  <GearCard key={item.id} item={item} />
+                  <GearCard key={item.id} item={item} returnTo={returnTo} />
                 ))}
               </div>
             </section>
@@ -256,7 +261,13 @@ export function GearList({
   );
 }
 
-function GearCard({ item }: { item: UserGear }) {
+function GearCard({
+  item,
+  returnTo
+}: {
+  item: UserGear;
+  returnTo?: string | null;
+}) {
   const retailCategory = getRetailGearCategory(item);
   const categoryLabel =
     retailCategory?.label ?? item.gear_subcategories?.name_ja ?? item.gear_categories?.name_ja;
@@ -265,7 +276,7 @@ function GearCard({ item }: { item: UserGear }) {
   return (
     <article className="overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm transition hover:border-forest-100 hover:bg-forest-50/30">
       <Link
-        href={`/gear/${item.id}`}
+        href={buildGearHref(`/gear/${item.id}`, returnTo)}
         className="grid grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-3 px-3 py-3 sm:px-4"
       >
         {item.image_url ? (
@@ -402,9 +413,10 @@ function StatusChip({
   );
 }
 
-function buildGearHref(
+function buildFilteredGearHref(
   filters: GearFilters,
-  patch: Partial<GearFilters & { brand?: string; category?: string }>
+  patch: Partial<GearFilters & { brand?: string; category?: string }>,
+  returnTo?: string | null
 ) {
   const next = { ...filters, ...patch };
   const params = new URLSearchParams();
@@ -430,7 +442,7 @@ function buildGearHref(
   }
 
   const query = params.toString();
-  return (query ? `/gear?${query}` : "/gear") as Route;
+  return buildGearHref(query ? `/gear?${query}` : "/gear", returnTo);
 }
 
 function groupGearByCategory(gear: UserGear[]) {

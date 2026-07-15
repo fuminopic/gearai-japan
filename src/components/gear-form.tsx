@@ -29,6 +29,7 @@ import {
   statusLabels,
   weightTypeLabels
 } from "@/lib/i18n/labels";
+import { buildGearHref } from "@/lib/plan-return-to";
 import { createClient } from "@/lib/supabase/client";
 import type {
   GearActionResult,
@@ -46,6 +47,7 @@ type GearFormProps = {
   action: (formData: FormData) => Promise<GearActionResult>;
   gear?: UserGear;
   error?: string;
+  returnTo?: string | null;
 };
 
 export function GearForm({
@@ -54,7 +56,8 @@ export function GearForm({
   products,
   action,
   gear,
-  error
+  error,
+  returnTo
 }: GearFormProps) {
   const initialCategoryId = gear?.category_id ?? "";
   const initialSubcategoryId = gear?.subcategory_id ?? "";
@@ -405,6 +408,12 @@ export function GearForm({
 
         // 先立刻显示"保存しました",不等目标页整个渲染完再消失
         setSubmitStatus("success");
+
+        if (returnTo && result.redirectTo === returnTo) {
+          window.location.assign(returnTo);
+          return;
+        }
+
         router.push(result.redirectTo as Route);
       } else {
         setSubmitStatus("idle");
@@ -437,6 +446,7 @@ export function GearForm({
       <input type="hidden" name="category_id" value={categoryId} />
       <input type="hidden" name="subcategory_id" value={subcategoryId} />
       <input type="hidden" name="official_weight_grams" value={officialWeightGrams} />
+      <input type="hidden" name="returnTo" value={returnTo ?? ""} />
 
       <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
         <div className="border-b border-stone-100 px-4 py-4 sm:px-5">
@@ -928,7 +938,7 @@ export function GearForm({
       {shouldShowBottomActions ? (
         <div className="flex flex-col gap-3 pb-4 sm:flex-row">
           <Link
-            href="/gear"
+            href={buildGearHref("/gear", returnTo)}
             className="flex-1 rounded-xl border border-stone-200 bg-white px-5 py-3 text-center text-base font-semibold text-stone-700"
           >
             キャンセル

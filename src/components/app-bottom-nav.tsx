@@ -3,8 +3,10 @@
 import { Backpack, ClipboardCheck, Home, UserRound } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+
+import { buildGearHref, getCurrentPlanReturnTo } from "@/lib/plan-return-to";
 
 const bottomNavItems = [
   { href: "/dashboard", label: "ホーム", icon: Home },
@@ -19,6 +21,8 @@ const bottomNavItems = [
 
 export function AppBottomNav() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const returnTo = getCurrentPlanReturnTo(pathname, searchParams.toString());
   const activeIndex = bottomNavItems.findIndex((item) =>
     isActivePath(pathname, item.href)
   );
@@ -66,11 +70,12 @@ export function AppBottomNav() {
         {bottomNavItems.map((item) => {
           const Icon = item.icon;
           const active = isActivePath(pathname, item.href);
+          const href = item.href === "/gear" ? buildGearHref("/gear", returnTo) : item.href;
 
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={href}
               prefetch
               className={`relative z-10 flex flex-1 touch-manipulation flex-col items-center py-1.5 transition-colors duration-200 active:scale-95 ${
                 active ? "text-[#14724e]" : "text-gray-400"

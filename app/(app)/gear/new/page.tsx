@@ -8,10 +8,12 @@ import {
   getGearProducts,
   getGearSubcategories
 } from "@/lib/data/gear";
+import { buildGearHref, getPlanReturnTo } from "@/lib/plan-return-to";
 
 type NewGearPageProps = {
   searchParams: Promise<{
     error?: string;
+    returnTo?: string;
   }>;
 };
 
@@ -22,6 +24,7 @@ export default async function NewGearPage({ searchParams }: NewGearPageProps) {
     getGearSubcategories(),
     getGearProducts()
   ]);
+  const returnTo = getPlanReturnTo(params.returnTo);
 
   return (
     <div className="space-y-5">
@@ -33,7 +36,7 @@ export default async function NewGearPage({ searchParams }: NewGearPageProps) {
           </h1>
         </div>
         <Link
-          href="/gear"
+          href={buildGearHref("/gear", returnTo)}
           className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white text-stone-700 shadow-sm transition active:scale-95"
           aria-label="装備一覧へ戻る"
         >
@@ -46,6 +49,7 @@ export default async function NewGearPage({ searchParams }: NewGearPageProps) {
         products={products}
         action={createGear}
         error={params.error}
+        returnTo={returnTo}
       />
     </div>
   );

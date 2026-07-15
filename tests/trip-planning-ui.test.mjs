@@ -298,7 +298,7 @@ test("app navigation responds immediately during dynamic route loading", () => {
 test("trip planning UI presents a professional gear checklist", () => {
   for (const copy of [
     "装備チェックリスト",
-    "準備の診断",
+    "未完了",
     "パック計画を作成",
     "計画履歴"
   ]) {
@@ -355,7 +355,7 @@ test("trip planning UI presents a professional gear checklist", () => {
   assert.match(tripPlanningUiSource, /分類が近いため候補にしています。出発前に用途を確認してください。/);
   assert.match(tripPlanningUiSource, /<details/);
   assert.match(tripPlanningUiSource, /<summary/);
-  assert.match(tripPlanningUiSource, /PlanDiagnosisSummary/);
+  assert.doesNotMatch(`${tripPlanningUiSource}\n${planChecklistSource}`, /(^|[^重])要確認/);
   assert.doesNotMatch(tripPlanningUiSource, /装備庫との照合詳細/);
   assert.doesNotMatch(tripPlanningUiSource, /照合精度/);
   assert.doesNotMatch(tripPlanningUiSource, /判定の確かさ/);
@@ -367,25 +367,23 @@ test("trip planning UI presents a professional gear checklist", () => {
 });
 
 test("pack planning checklist prioritizes readiness before gear-backed details", () => {
-  const resultMarkup = tripPlanningUiSource.slice(
-    tripPlanningUiSource.indexOf('return (\n    <div className="space-y-5">'),
-    tripPlanningUiSource.indexOf("function SavedPlanFullChecklistView")
-  );
-  const diagnosisIndex = resultMarkup.indexOf("<PlanDiagnosisSummary");
-  const checklistIndex = resultMarkup.indexOf("装備チェックリスト");
-  const scanIndex = resultMarkup.indexOf("<ChecklistScanControls");
-  const notNeededIndex = resultMarkup.indexOf("<NotNeededItemsSection");
+  const checklistIndex = tripPlanningUiSource.indexOf("装備チェックリスト");
+  const scanIndex = tripPlanningUiSource.indexOf("臨行前スキャン");
+  const notNeededIndex = tripPlanningUiSource.indexOf("今回不要なもの");
 
-  assert.ok(diagnosisIndex > -1);
   assert.ok(checklistIndex > -1);
-  assert.ok(diagnosisIndex < checklistIndex);
   assert.ok(scanIndex > checklistIndex);
   assert.ok(notNeededIndex > checklistIndex);
   assert.doesNotMatch(tripPlanningUiSource, /<HeroReadinessCard/);
   assert.doesNotMatch(tripPlanningUiSource, /<PreDepartureConfirmationPanel/);
   assert.doesNotMatch(tripPlanningUiSource, /登録装備との対応/);
 
-  for (const copy of ["準備確認", "不足", "要確認", "所持済み"]) {
+  for (const copy of [
+    "準備確認",
+    "完成",
+    "完了",
+    "未完了"
+  ]) {
     assert.match(tripPlanningUiSource, new RegExp(copy));
   }
 
@@ -601,29 +599,6 @@ test("missing gear-backed checklist items support quick owned-gear entry without
   );
   assert.match(checkedSlotFilter, /return uniqueRequirementSlots\(checkedSlots\);/);
   assert.doesNotMatch(checkedSlotFilter, /coverage_status/);
-});
-
-test("plan results put missing diagnostics first and preserve one-time gap analytics", () => {
-  assert.match(
-    tripPlanningUiSource,
-    /useState<ChecklistScanFilter>\("MISSING"\)/
-  );
-  assert.match(tripPlanningUiSource, /<PlanDiagnosisSummary/);
-  assert.match(tripPlanningUiSource, /<OwnedChecklistSection/);
-  assert.match(tripPlanningUiSource, /grid grid-cols-3 divide-x divide-stone-200 text-center/);
-  assert.match(tripPlanningUiSource, /<details className="group rounded-lg border border-stone-100 bg-white/);
-  assert.match(tripPlanningUiSource, /まずは、持っている装備を登録してみましょう。/);
-  assert.match(tripPlanningUiSource, /「持ってる」を選ぶだけで装備リストに追加できます。/);
-  assert.match(tripPlanningUiSource, /装備の不足はありません。/);
-  assert.match(tripPlanningUiSource, /不足項目はありません。/);
-  assert.match(tripPlanningUiSource, /missingCount=\{preDepartureSummary\.missingCount\}/);
-  assert.match(tripPlanningUiSource, /confirmationCount=\{preDepartureSummary\.confirmationCount\}/);
-  assert.match(tripPlanningUiSource, /ownedCount=\{checklistCounts\.owned\}/);
-  assert.match(tripPlanningUiSource, /viewedGapPlanKeyRef/);
-  assert.match(tripPlanningUiSource, /captureAnalyticsEventOnce\(\{/);
-  assert.match(tripPlanningUiSource, /event: "gap_view"/);
-  assert.match(tripPlanningUiSource, /viewedGapPlanKeyRef\.current === gapViewKey/);
-  assert.doesNotMatch(tripPlanningUiSource, /event: "diagnosis_view"/);
 });
 
 test("trip planning UI avoids recommendation and shopping language", () => {

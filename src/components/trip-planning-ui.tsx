@@ -1252,10 +1252,9 @@ function TripPlanningResult({
     ownedGear
   });
   const preDepartureSummary = buildPreDepartureSummary(checklist);
-  const checklistCounts = getFullChecklistCounts(checklist);
   const notNeededItems = buildPlanNotNeededItems(plan);
-  const [scanFilter, setScanFilter] = useState<ChecklistScanFilter>("MISSING");
-  const viewedGapPlanKeyRef = useRef<string | null>(null);
+  const [scanFilter, setScanFilter] = useState<ChecklistScanFilter>("ACTION");
+  const hasViewedGapRef = useRef(false);
   const previousPreparationStateRef = useRef({
     planId,
     isComplete: preDepartureSummary.canComplete
@@ -1264,14 +1263,8 @@ function TripPlanningResult({
     checklist.categories,
     scanFilter
   );
+  const actionCategoryLabel = getChecklistScanFilterLabel(scanFilter);
   const displaySlots = dedupeDisplaySlots(plan.required_slots);
-  const gapViewKey = planId ?? `${plan.season}:${plan.style}`;
-  const ownedCategories = checklist.categories
-    .map((category) => ({
-      ...category,
-      items: category.items.filter((item) => item.matchingOwnedGear.length > 0)
-    }))
-    .filter((category) => category.items.length > 0);
 
   // 「要対応」ビューでは確認済み項目を消さず、各カテゴリー下部の「確認済み」グループに
   // 残して出発前に見直せるようにする。表示のみの分割で、進捗率・保存・生成ロジックには
@@ -1324,28 +1317,6 @@ function TripPlanningResult({
   }, [onPreparationCompletionChange, preDepartureSummary.canComplete]);
 
   useEffect(() => {
-    if (
-      scanFilter !== "MISSING" ||
-      preDepartureSummary.missingCount === 0 ||
-      viewedGapPlanKeyRef.current === gapViewKey
-    ) {
-      return;
-    }
-
-    viewedGapPlanKeyRef.current = gapViewKey;
-    captureAnalyticsEventOnce({
-      event: "gap_view",
-      key: gapViewKey,
-      properties: {
-        missing_count: preDepartureSummary.missingCount,
-        season: plan.season,
-        style: plan.style,
-        platform: getAnalyticsPlatform()
-      }
-    });
-  }, [gapViewKey, plan.season, plan.style, preDepartureSummary.missingCount, scanFilter]);
-
-  useEffect(() => {
     const previous = previousPreparationStateRef.current;
 
     if (previous.planId === planId) {
@@ -1380,6 +1351,26 @@ function TripPlanningResult({
 
   function handleScanFilterChange(filter: ChecklistScanFilter) {
     setScanFilter(filter);
+
+    if (
+      filter !== "MISSING" ||
+      hasViewedGapRef.current ||
+      preDepartureSummary.missingCount === 0
+    ) {
+      return;
+    }
+
+    hasViewedGapRef.current = true;
+    captureAnalyticsEventOnce({
+      event: "gap_view",
+      key: planId ?? `${plan.season}:${plan.style}`,
+      properties: {
+        missing_count: preDepartureSummary.missingCount,
+        season: plan.season,
+        style: plan.style,
+        platform: getAnalyticsPlatform()
+      }
+    });
   }
 
   function handleToggleGearBackedItem(slots: RequirementSlot[]) {
@@ -1435,13 +1426,6 @@ function TripPlanningResult({
 
   return (
     <div className="space-y-5">
-      <PlanDiagnosisSummary
-        missingCount={preDepartureSummary.missingCount}
-        confirmationCount={preDepartureSummary.confirmationCount}
-        ownedCount={checklistCounts.owned}
-        isEmptyGearLibrary={ownedGear.length === 0}
-      />
-
       <section className="space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -1449,6 +1433,18 @@ function TripPlanningResult({
             <h2 className="mt-1 text-2xl font-semibold tracking-normal text-ink">
               装備チェックリスト
             </h2>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center sm:w-auto">
+            <ChecklistStat label="完成" value={`${checklist.summary.percent}%`} />
+            <ChecklistStat
+              label="完了"
+              value={checklist.summary.checkedCount.toLocaleString("ja-JP")}
+            />
+            <ChecklistStat
+              label="未完了"
+              value={checklist.summary.missingCount.toLocaleString("ja-JP")}
+              tone="missing"
+            />
           </div>
         </div>
 
@@ -1475,15 +1471,12 @@ function TripPlanningResult({
             />
             ))
           ) : (
-            <ChecklistEmptyState
-              filter={scanFilter}
-              confirmationCount={preDepartureSummary.confirmationCount}
-            />
+            <div className="rounded-lg bg-white p-5 text-sm font-semibold text-stone-500 shadow-soft xl:col-span-2">
+              {actionCategoryLabel}の項目はありません。
+            </div>
           )}
         </div>
       </section>
-
-      <OwnedChecklistSection categories={ownedCategories} count={checklistCounts.owned} />
 
       {notNeededItems.length > 0 ? (
         <NotNeededItemsSection items={notNeededItems} />
@@ -2286,6 +2279,18 @@ function filterChecklistCategoriesForScan(
     .filter((category) => category.items.length > 0);
 }
 
+function getChecklistScanFilterLabel(filter: ChecklistScanFilter) {
+  const labels: Record<ChecklistScanFilter, string> = {
+    ACTION: "要対応",
+    MISSING: "不足",
+    CONFIRM: "未確認",
+    IMPORTANT: "重要",
+    ALL: "すべての持ち物"
+  };
+
+  return labels[filter];
+}
+
 function NotNeededItemsSection({ items }: { items: PlanNotNeededItem[] }) {
   return (
     <section className="rounded-lg bg-white p-4 shadow-soft sm:p-5">
@@ -2361,162 +2366,26 @@ function getMountainConditionLine(plan: PackRequirementPlan) {
   return "天候変化と行動時間を確認し、基本装備を一つずつ準備してください。";
 }
 
-function PlanDiagnosisSummary({
-  missingCount,
-  confirmationCount,
-  ownedCount,
-  isEmptyGearLibrary
-}: {
-  missingCount: number;
-  confirmationCount: number;
-  ownedCount: number;
-  isEmptyGearLibrary: boolean;
-}) {
-  const hasNoGaps = missingCount === 0;
-
-  return (
-    <section
-      className={`rounded-lg border p-4 shadow-soft sm:p-5 ${
-        hasNoGaps ? "border-forest-100 bg-forest-50/60" : "border-stone-100 bg-white"
-      }`}
-      aria-live="polite"
-    >
-      <div className="flex items-start gap-3">
-        <span
-          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-            hasNoGaps ? "bg-forest-700 text-white" : "bg-red-50 text-red-700"
-          }`}
-        >
-          {hasNoGaps ? (
-            <Check className="h-4 w-4" aria-hidden="true" />
-          ) : (
-            <CircleAlert className="h-4 w-4" aria-hidden="true" />
-          )}
-        </span>
-        <div>
-          <p className="text-sm font-bold text-ink">準備の診断</p>
-          <p className="mt-1 text-sm font-semibold leading-5 text-stone-600">
-            {hasNoGaps
-              ? confirmationCount > 0
-                ? "装備の不足はありません。要確認の項目を確認してください。"
-                : "装備の不足はありません。必要な装備はそろっています。"
-              : "不足項目から確認しましょう。"}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-3 divide-x divide-stone-200 text-center">
-        <DiagnosisMetric label="不足" value={missingCount} tone="missing" />
-        <DiagnosisMetric label="要確認" value={confirmationCount} tone="confirm" />
-        <DiagnosisMetric label="所持済み" value={ownedCount} tone="owned" />
-      </div>
-
-      {isEmptyGearLibrary && !hasNoGaps ? (
-        <p className="mt-4 rounded-lg bg-forest-50 px-3 py-2 text-sm font-semibold leading-5 text-forest-900">
-          まずは、持っている装備を登録してみましょう。<br />
-          「持ってる」を選ぶだけで装備リストに追加できます。
-        </p>
-      ) : null}
-    </section>
-  );
-}
-
-function DiagnosisMetric({
+function ChecklistStat({
   label,
   value,
-  tone
+  tone = "neutral"
 }: {
   label: string;
-  value: number;
-  tone: "missing" | "confirm" | "owned";
+  value: string;
+  tone?: "neutral" | "missing";
 }) {
-  const toneClass =
-    tone === "missing"
-      ? "text-red-700"
-      : tone === "confirm"
-        ? "text-amber-800"
-        : "text-forest-800";
-
   return (
-    <div className="px-2">
+    <div className="rounded-lg border border-stone-100 bg-white px-3 py-2 shadow-soft sm:min-w-24">
       <p className="text-[11px] font-semibold text-stone-500">{label}</p>
-      <p className={`mt-1 text-xl font-semibold ${toneClass}`}>
-        {value.toLocaleString("ja-JP")}
-        <span className="ml-0.5 text-xs font-semibold">点</span>
+      <p
+        className={`mt-1 text-lg font-semibold ${
+          tone === "missing" ? "text-red-700" : "text-ink"
+        }`}
+      >
+        {value}
       </p>
     </div>
-  );
-}
-
-function ChecklistEmptyState({
-  filter,
-  confirmationCount
-}: {
-  filter: ChecklistScanFilter;
-  confirmationCount: number;
-}) {
-  if (filter === "MISSING") {
-    return (
-      <div className="rounded-lg border border-forest-100 bg-forest-50 px-5 py-4 text-sm font-semibold text-forest-900 xl:col-span-2">
-        <p>不足項目はありません。</p>
-        {confirmationCount > 0 ? (
-          <p className="mt-1 text-xs leading-5 text-forest-800">
-            要確認 {confirmationCount.toLocaleString("ja-JP")} 点は、出発前に確認してください。
-          </p>
-        ) : null}
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-lg bg-white p-5 text-sm font-semibold text-stone-500 shadow-soft xl:col-span-2">
-      この表示に該当する項目はありません。
-    </div>
-  );
-}
-
-function OwnedChecklistSection({
-  categories,
-  count
-}: {
-  categories: ChecklistCategory[];
-  count: number;
-}) {
-  if (count === 0) {
-    return null;
-  }
-
-  return (
-    <details className="group rounded-lg border border-stone-100 bg-white px-4 py-3 shadow-soft sm:px-5">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-        <span>
-          <span className="block text-sm font-bold text-forest-800">
-            所持済み {count.toLocaleString("ja-JP")} 点
-          </span>
-          <span className="mt-1 block text-xs font-semibold text-stone-500">
-            登録済みの装備を見る
-          </span>
-        </span>
-        <ChevronDown className="h-5 w-5 shrink-0 text-stone-500 transition group-open:rotate-180" />
-      </summary>
-      <div className="mt-4 divide-y divide-stone-100 border-t border-stone-100">
-        {categories.map((category) => (
-          <section key={category.id} className="py-3 first:pt-3 last:pb-0">
-            <p className="text-xs font-bold text-stone-500">{category.label}</p>
-            <div className="mt-2 space-y-2">
-              {category.items.map((item) => (
-                <div key={item.id} className="flex items-start justify-between gap-3 text-sm">
-                  <span className="min-w-0 font-semibold text-ink">{item.label}</span>
-                  <span className="max-w-[58%] truncate text-right text-xs font-semibold text-forest-800">
-                    {item.matchingOwnedGear.map(formatOwnedGearName).join(" / ")}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
-    </details>
   );
 }
 

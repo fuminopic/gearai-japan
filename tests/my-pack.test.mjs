@@ -40,6 +40,10 @@ const removeButtonSource = readFileSync(
   new URL("../src/components/pack-remove-button.tsx", import.meta.url),
   "utf8"
 );
+const packContentsSource = readFileSync(
+  new URL("../src/components/pack-contents.tsx", import.meta.url),
+  "utf8"
+);
 const dashboardDataSource = readFileSync(
   new URL("../src/lib/data/dashboard.ts", import.meta.url),
   "utf8"
@@ -130,8 +134,15 @@ test("pack data filters pack membership through currently owned gear", () => {
 test("pack pages provide grouped contents, accessible direct removal, and a multi-select add flow", () => {
   assert.match(packPageSource, /マイパック/);
   assert.match(packPageSource, /装備庫から追加/);
-  assert.match(packPageSource, /重量未入力/);
-  assert.match(packPageSource, /groupPackGearByCategory/);
+  assert.match(packPageSource, /PackContents/);
+  assert.doesNotMatch(packPageSource, /重量未入力/);
+  assert.match(packContentsSource, /grid-cols-2/);
+  assert.doesNotMatch(packContentsSource, /重量未入力/);
+  assert.match(packContentsSource, /weightG === null \? null/);
+  assert.match(packContentsSource, /setItems\(\(current\) => current\.filter/);
+  assert.match(packContentsSource, /removePackItem\(item\.id\)/);
+  assert.match(packContentsSource, /restorePackItem/);
+  assert.match(packContentsSource, /router\.refresh\(\)/);
   assert.match(packSelectPageSource, /PackGearSelector/);
   assert.match(selectorSource, /装備名・ブランドで検索/);
   assert.match(selectorSource, /getCategories/);
@@ -140,7 +151,8 @@ test("pack pages provide grouped contents, accessible direct removal, and a mult
   assert.match(selectorSource, /h-12 w-full/);
   assert.match(removeButtonSource, /aria-label="パックから外す"/);
   assert.match(removeButtonSource, /h-11 w-11/);
-  assert.match(removeButtonSource, /router\.refresh\(\)/);
+  assert.match(removeButtonSource, /h-7 w-7/);
+  assert.match(removeButtonSource, /bg-red-800/);
 });
 
 test("dashboard derives pack metrics and composition only from current owned pack gear", () => {
@@ -149,8 +161,9 @@ test("dashboard derives pack metrics and composition only from current owned pac
   assert.match(dashboardDataSource, /buildPackSummary\(ownedGear\.filter/);
   assert.match(dashboardPageSource, /packItemCount/);
   assert.match(dashboardPageSource, /packKnownWeightG/);
-  assert.match(dashboardPageSource, /packWeightMissingCount/);
   assert.match(dashboardPageSource, /パック重量構成/);
+  assert.match(dashboardPageSource, /マイパック &gt;/);
+  assert.doesNotMatch(dashboardPageSource, /重量未入力/);
   assert.match(dashboardPageSource, /マイパックはまだ空です/);
   assert.doesNotMatch(dashboardPageSource, /summary\.totalWeightG/);
 });

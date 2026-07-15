@@ -426,12 +426,9 @@ function GearComposition({ summary }: { summary: DashboardSummary }) {
       <div className="flex items-center justify-between">
         <p className="text-xs font-bold text-stone-500">パック重量構成</p>
         <Link href={packRoute} className="text-xs font-bold text-[#14724e]">
-          編集する &gt;
+          マイパック &gt;
         </Link>
       </div>
-      <p className="mt-1 text-xs font-medium text-stone-500">
-        重量未入力 {summary.packWeightMissingCount.toLocaleString("ja-JP")}点
-      </p>
       <div className="mt-3 flex h-3 overflow-hidden rounded-full bg-stone-100">
         {activeDistribution.length > 0 ? (
           distribution

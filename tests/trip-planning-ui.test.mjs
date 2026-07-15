@@ -318,6 +318,7 @@ test("trip planning UI presents a professional gear checklist", () => {
     "あると便利",
     "所持済み",
     "確認済み",
+    "対応済み",
     "確認する",
     "不足",
     "臨行前スキャン",

@@ -144,6 +144,11 @@ test("owned requirement slots remain unconfirmed until manually checked", () => 
     .find((item) => item.id === "clothing-rainwear");
   assert.equal(gearRemovedItem?.matchingOwnedGear.length, 0);
   assert.equal(gearRemovedItem?.checked, true);
+  assert.equal(buildPreDepartureSummary(gearRemovedChecklist).missingCount, 0);
+  assert.equal(
+    gearRemovedChecklist.summary.missingCount,
+    unconfirmedChecklist.summary.missingCount - 1
+  );
 });
 
 test("plan rows display ownership and manual confirmation independently", () => {
@@ -154,6 +159,11 @@ test("plan rows display ownership and manual confirmation independently", () => 
   assert.match(tripPlanningUiSource, /label: "所持済み"/);
   assert.match(tripPlanningUiSource, /confirmationLabel: item\.checked \? "確認済み" : "未確認"/);
   assert.match(tripPlanningUiSource, /label: "確認済み"/);
+  assert.match(tripPlanningUiSource, /label: "対応済み"/);
+  assert.match(
+    tripPlanningUiSource,
+    /item\.source === "GEAR_BACKED" && !item\.checked/
+  );
 });
 
 test("dashboard uses fresh checklist progress whenever it is available", () => {

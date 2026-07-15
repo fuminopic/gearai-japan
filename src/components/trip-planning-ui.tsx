@@ -1769,7 +1769,7 @@ function getFullChecklistCounts(checklist: ReturnType<typeof buildPlanChecklist>
     for (const item of category.items) {
       if (item.matchingOwnedGear.length > 0) {
         counts.owned += 1;
-      } else if (item.source === "GEAR_BACKED") {
+      } else if (item.source === "GEAR_BACKED" && !item.checked) {
         counts.missing += 1;
       }
 
@@ -2666,10 +2666,8 @@ function getChecklistItemStatus(item: ChecklistItem) {
 
   if (item.source === "GEAR_BACKED" && item.checked) {
     return {
-      label: "不足",
-      className: "bg-red-50 text-red-700",
-      confirmationLabel: "確認済み",
-      confirmationClassName: "bg-blue-50 text-blue-700"
+      label: "対応済み",
+      className: "bg-blue-50 text-blue-700"
     };
   }
 

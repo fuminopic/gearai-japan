@@ -156,7 +156,7 @@ function makeOwnedGear({
   };
 }
 
-test("owned backpack category marks the action backpack checklist item as ready", () => {
+test("owned backpack category matches the action backpack without confirming it", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan(),
     ownedGear: [
@@ -175,14 +175,14 @@ test("owned backpack category marks the action backpack checklist item as ready"
   const backpack = itemByLabel(checklist, "ザック");
 
   assert.equal(backpack?.source, "GEAR_BACKED");
-  assert.equal(backpack?.checked, true);
+  assert.equal(backpack?.checked, false);
   assert.deepEqual(
     backpack?.matchingOwnedGear.map((item) => item.id),
     ["owned-backpack"]
   );
 });
 
-test("legacy carry backpack category also marks the action backpack checklist item as ready", () => {
+test("legacy carry backpack category matches the action backpack without confirming it", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan(),
     ownedGear: [
@@ -199,14 +199,14 @@ test("legacy carry backpack category also marks the action backpack checklist it
   const backpack = itemByLabel(checklist, "ザック");
 
   assert.equal(backpack?.source, "GEAR_BACKED");
-  assert.equal(backpack?.checked, true);
+  assert.equal(backpack?.checked, false);
   assert.deepEqual(
     backpack?.matchingOwnedGear.map((item) => item.id),
     ["legacy-carry-backpack"]
   );
 });
 
-test("owned trekking pole category marks the trekking poles checklist item as ready", () => {
+test("owned trekking pole category matches the trekking poles item without confirming it", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan(),
     ownedGear: [
@@ -225,7 +225,7 @@ test("owned trekking pole category marks the trekking poles checklist item as re
   const trekkingPoles = itemByLabel(checklist, "トレッキングポール");
 
   assert.equal(trekkingPoles?.source, "GEAR_BACKED");
-  assert.equal(trekkingPoles?.checked, true);
+  assert.equal(trekkingPoles?.checked, false);
   assert.deepEqual(
     trekkingPoles?.matchingOwnedGear.map((item) => item.id),
     ["owned-trekking-poles"]
@@ -261,7 +261,7 @@ test("unrelated pack and pole text does not mark backpack or trekking poles as o
   assert.equal(itemByLabel(checklist, "トレッキングポール")?.checked, false);
 });
 
-test("groundsheet checklist matcher still marks owned groundsheets as ready", () => {
+test("groundsheet checklist matcher finds owned groundsheets without confirming them", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan({
       style: "OVERNIGHT_TENT",
@@ -281,14 +281,14 @@ test("groundsheet checklist matcher still marks owned groundsheets as ready", ()
   const groundsheet = itemByLabel(checklist, "グランドシート");
 
   assert.equal(groundsheet?.source, "GEAR_BACKED");
-  assert.equal(groundsheet?.checked, true);
+  assert.equal(groundsheet?.checked, false);
   assert.deepEqual(
     groundsheet?.matchingOwnedGear.map((item) => item.id),
     ["owned-groundsheet"]
   );
 });
 
-test("owned whistle category and names mark the whistle checklist item as ready", () => {
+test("owned whistle category and names match the whistle without confirming it", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan(),
     ownedGear: [
@@ -313,14 +313,14 @@ test("owned whistle category and names mark the whistle checklist item as ready"
   const whistle = itemByLabel(checklist, "ホイッスル");
 
   assert.equal(whistle?.source, "GEAR_BACKED");
-  assert.equal(whistle?.checked, true);
+  assert.equal(whistle?.checked, false);
   assert.deepEqual(
     whistle?.matchingOwnedGear.map((item) => item.id),
     ["owned-whistle-category", "owned-whistle-name"]
   );
 });
 
-test("owned emergency sheet category marks the emergency sheet checklist item as ready", () => {
+test("owned emergency sheet category matches the item without confirming it", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan(),
     ownedGear: [
@@ -337,14 +337,14 @@ test("owned emergency sheet category marks the emergency sheet checklist item as
   const emergencySheet = itemByLabel(checklist, "エマージェンシーシート");
 
   assert.equal(emergencySheet?.source, "GEAR_BACKED");
-  assert.equal(emergencySheet?.checked, true);
+  assert.equal(emergencySheet?.checked, false);
   assert.deepEqual(
     emergencySheet?.matchingOwnedGear.map((item) => item.id),
     ["owned-emergency-sheet"]
   );
 });
 
-test("owned bear bell and bear spray mark the bear protection checklist item as ready", () => {
+test("owned bear bell and bear spray match bear protection without confirming it", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan({
       mountain: {
@@ -373,7 +373,7 @@ test("owned bear bell and bear spray mark the bear protection checklist item as 
   const bearProtection = itemByLabel(checklist, "熊対策装備");
 
   assert.equal(bearProtection?.source, "GEAR_BACKED");
-  assert.equal(bearProtection?.checked, true);
+  assert.equal(bearProtection?.checked, false);
   assert.deepEqual(
     bearProtection?.matchingOwnedGear.map((item) => item.id),
     ["owned-bear-bell", "owned-bear-spray"]
@@ -455,7 +455,7 @@ test("low bear risk does not add bear protection guidance", () => {
   assert.equal(itemByLabel(checklist, "熊対策装備"), undefined);
 });
 
-test("owned portable toilet category marks the portable toilet checklist item as ready", () => {
+test("owned portable toilet category matches the item without confirming it", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan({
       mountain: {
@@ -476,7 +476,7 @@ test("owned portable toilet category marks the portable toilet checklist item as
   const portableToilet = itemByLabel(checklist, "携帯トイレ");
 
   assert.equal(portableToilet?.source, "GEAR_BACKED");
-  assert.equal(portableToilet?.checked, true);
+  assert.equal(portableToilet?.checked, false);
   assert.deepEqual(
     portableToilet?.matchingOwnedGear.map((item) => item.id),
     ["owned-portable-toilet"]
@@ -527,7 +527,7 @@ test("generic sheet, bell, spray, and toilet text does not match safety essentia
   assert.equal(itemByLabel(checklist, "携帯トイレ")?.checked, false);
 });
 
-test("owned hat category and names mark the hat checklist item as ready", () => {
+test("owned hat category and names match the hat without confirming it", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan(),
     ownedGear: [
@@ -550,14 +550,14 @@ test("owned hat category and names mark the hat checklist item as ready", () => 
   const hat = itemByLabel(checklist, "帽子");
 
   assert.equal(hat?.source, "GEAR_BACKED");
-  assert.equal(hat?.checked, true);
+  assert.equal(hat?.checked, false);
   assert.deepEqual(
     hat?.matchingOwnedGear.map((item) => item.id),
     ["owned-hat-category", "owned-hat-name"]
   );
 });
 
-test("owned gloves category and names mark the gloves checklist item as ready", () => {
+test("owned gloves category and names match the gloves without confirming them", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan(),
     ownedGear: [
@@ -580,14 +580,14 @@ test("owned gloves category and names mark the gloves checklist item as ready", 
   const gloves = itemByLabel(checklist, "手袋");
 
   assert.equal(gloves?.source, "GEAR_BACKED");
-  assert.equal(gloves?.checked, true);
+  assert.equal(gloves?.checked, false);
   assert.deepEqual(
     gloves?.matchingOwnedGear.map((item) => item.id),
     ["owned-gloves-category", "owned-gloves-name"]
   );
 });
 
-test("owned gaiters category and names mark the gaiters checklist item as ready", () => {
+test("owned gaiters category and names match the gaiters without confirming them", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan(),
     ownedGear: [
@@ -610,14 +610,14 @@ test("owned gaiters category and names mark the gaiters checklist item as ready"
   const gaiters = itemByLabel(checklist, "ゲイター");
 
   assert.equal(gaiters?.source, "GEAR_BACKED");
-  assert.equal(gaiters?.checked, true);
+  assert.equal(gaiters?.checked, false);
   assert.deepEqual(
     gaiters?.matchingOwnedGear.map((item) => item.id),
     ["owned-gaiters-category", "owned-gaiters-name"]
   );
 });
 
-test("owned sunglasses category and names mark the sunglasses checklist item as ready", () => {
+test("owned sunglasses category and names match sunglasses without confirming them", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan(),
     ownedGear: [
@@ -640,14 +640,14 @@ test("owned sunglasses category and names mark the sunglasses checklist item as 
   const sunglasses = itemByLabel(checklist, "サングラス");
 
   assert.equal(sunglasses?.source, "GEAR_BACKED");
-  assert.equal(sunglasses?.checked, true);
+  assert.equal(sunglasses?.checked, false);
   assert.deepEqual(
     sunglasses?.matchingOwnedGear.map((item) => item.id),
     ["owned-sunglasses-category", "owned-sunglasses-name"]
   );
 });
 
-test("owned map or compass category and names mark backup navigation as ready", () => {
+test("owned map or compass category and names match backup navigation without confirming it", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan(),
     ownedGear: [
@@ -670,14 +670,14 @@ test("owned map or compass category and names mark backup navigation as ready", 
   const mapCompass = itemByLabel(checklist, "紙地図・コンパス");
 
   assert.equal(mapCompass?.source, "GEAR_BACKED");
-  assert.equal(mapCompass?.checked, true);
+  assert.equal(mapCompass?.checked, false);
   assert.deepEqual(
     mapCompass?.matchingOwnedGear.map((item) => item.id),
     ["owned-map-category", "owned-compass-name"]
   );
 });
 
-test("owned crampons and ice axe categories mark alpine winter checklist items as ready", () => {
+test("owned crampons and ice axe categories match winter items without confirming them", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan({
       season: "WINTER",
@@ -725,20 +725,20 @@ test("owned crampons and ice axe categories mark alpine winter checklist items a
   const iceAxe = itemByLabel(checklist, "ピッケル");
 
   assert.equal(crampons?.source, "GEAR_BACKED");
-  assert.equal(crampons?.checked, true);
+  assert.equal(crampons?.checked, false);
   assert.deepEqual(
     crampons?.matchingOwnedGear.map((item) => item.id),
     ["owned-crampons-category", "owned-crampons-name"]
   );
   assert.equal(iceAxe?.source, "GEAR_BACKED");
-  assert.equal(iceAxe?.checked, true);
+  assert.equal(iceAxe?.checked, false);
   assert.deepEqual(
     iceAxe?.matchingOwnedGear.map((item) => item.id),
     ["owned-ice-axe-category", "owned-ice-axe-name"]
   );
 });
 
-test("owned river shoes category marks the river crossing checklist item as ready", () => {
+test("owned river shoes category matches the river crossing item without confirming it", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan({
       mountain: {
@@ -765,14 +765,14 @@ test("owned river shoes category marks the river crossing checklist item as read
   const riverShoes = itemByLabel(checklist, "渡渉用シューズ（沢靴・替え靴）");
 
   assert.equal(riverShoes?.source, "GEAR_BACKED");
-  assert.equal(riverShoes?.checked, true);
+  assert.equal(riverShoes?.checked, false);
   assert.deepEqual(
     riverShoes?.matchingOwnedGear.map((item) => item.id),
     ["owned-water-shoes-category", "owned-water-shoes-name"]
   );
 });
 
-test("owned pegs category and names mark the pegs checklist item as ready", () => {
+test("owned pegs category and names match the pegs without confirming them", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan({
       style: "OVERNIGHT_TENT",
@@ -798,14 +798,14 @@ test("owned pegs category and names mark the pegs checklist item as ready", () =
   const pegs = itemByLabel(checklist, "ペグ");
 
   assert.equal(pegs?.source, "GEAR_BACKED");
-  assert.equal(pegs?.checked, true);
+  assert.equal(pegs?.checked, false);
   assert.deepEqual(
     pegs?.matchingOwnedGear.map((item) => item.id),
     ["owned-pegs-category", "owned-pegs-name"]
   );
 });
 
-test("owned inner sheet category and explicit liner names mark the inner sheet item as ready", () => {
+test("owned inner sheet category and explicit liner names match the item without confirming it", () => {
   const checklist = buildPlanChecklist({
     plan: makePlan({
       style: "OVERNIGHT_HUT",
@@ -833,7 +833,7 @@ test("owned inner sheet category and explicit liner names mark the inner sheet i
   const innerSheet = itemByLabel(checklist, "インナーシーツ");
 
   assert.equal(innerSheet?.source, "GEAR_BACKED");
-  assert.equal(innerSheet?.checked, true);
+  assert.equal(innerSheet?.checked, false);
   assert.deepEqual(
     innerSheet?.matchingOwnedGear.map((item) => item.id),
     ["owned-inner-sheet-category", "owned-inner-sheet-name"]

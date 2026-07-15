@@ -548,11 +548,15 @@ export function buildPreDepartureSummary(
 export function getPreDepartureItemActionStatus(
   item: ChecklistItem
 ): PreDepartureActionStatus {
-  if (item.matchingOwnedGear.length > 0 || item.checked) {
+  if (item.checked) {
     return "DONE";
   }
 
-  return item.source === "GEAR_BACKED" ? "MISSING" : "CONFIRM";
+  if (item.source !== "GEAR_BACKED") {
+    return "CONFIRM";
+  }
+
+  return item.matchingOwnedGear.length > 0 ? "CONFIRM" : "MISSING";
 }
 
 export function isImportantPreDepartureItem(
@@ -624,11 +628,8 @@ function buildChecklistItem({
     slots.length > 0 || auxiliaryOwnedGear.length > 0
       ? "GEAR_BACKED"
       : "CHECKLIST_ONLY";
-  const toggleSlots = slots.filter((slot) => {
-    const slotPlan = slotPlansBySlot.get(slot);
-
-    return slotPlan?.coverage_status === "MISSING";
-  });
+  // 所持済みかどうかに関係なく、今回の山行で確認する requirement slot は切り替え可能。
+  const toggleSlots = slots;
   const matchingOwnedGear = uniqueOwnedGear(
     [
       ...slots.flatMap((slot) => slotPlansBySlot.get(slot)?.matching_owned_gear ?? []),
@@ -638,15 +639,8 @@ function buildChecklistItem({
   const checked =
     source === "GEAR_BACKED"
       ? slots.length > 0
-        ? slots.every((slot) => {
-            const slotPlan = slotPlansBySlot.get(slot);
-
-            return (
-              slotPlan?.coverage_status === "COVERED" ||
-              (slotPlan?.coverage_status === "MISSING" && checkedSlotSet.has(slot))
-            );
-          })
-        : auxiliaryOwnedGear.length > 0
+        ? slots.every((slot) => checkedSlotSet.has(slot))
+        : checkedChecklistOnlySet.has(definition.id)
       : checkedChecklistOnlySet.has(definition.id);
 
   return {
@@ -1491,14 +1485,23 @@ export function applyChecklistStateToChecklist({
   const categories = checklist.categories.map((category) => {
     const items = category.items.map((item) => {
       if (item.source === "GEAR_BACKED") {
-        if (!shouldApplyCheckedSlots || item.toggleSlots.length === 0) {
-          return item;
+        if (item.toggleSlots.length > 0 && shouldApplyCheckedSlots) {
+          return {
+            ...item,
+            checked: item.toggleSlots.every((slot) => checkedSlotSet.has(slot))
+          };
         }
 
-        return {
-          ...item,
-          checked: item.toggleSlots.every((slot) => checkedSlotSet.has(slot))
-        };
+        if (item.toggleSlots.length === 0 && shouldApplyChecklistOnlyIds) {
+          return {
+            ...item,
+            checked: checkedChecklistOnlySet.has(item.id)
+          };
+        }
+
+        if (item.toggleSlots.length === 0 || !shouldApplyCheckedSlots) {
+          return item;
+        }
       }
 
       if (item.source !== "CHECKLIST_ONLY" || !shouldApplyChecklistOnlyIds) {

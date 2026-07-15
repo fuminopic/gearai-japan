@@ -24,7 +24,12 @@ const heroGaugeSource = readFileSync(
 const checklistOwnedGearMatchersDataUrl = await toTranspiledDataUrl(
   checklistOwnedGearMatchersSource
 );
-const { filterCheckedSlotsForPlan } = await importTranspiled(
+const {
+  applyChecklistStateToChecklist,
+  buildPlanChecklist,
+  buildPreDepartureSummary,
+  filterCheckedSlotsForPlan
+} = await importTranspiled(
   planChecklistSource.replace(
     'from "@/lib/checklist-owned-gear-matchers"',
     `from "${checklistOwnedGearMatchersDataUrl}"`
@@ -58,12 +63,96 @@ test("manual checked slots survive coverage changes but stale plan slots are rem
   );
 });
 
-test("completed rows prefer owned labels while retaining manual confirmation state", () => {
+test("owned requirement slots remain unconfirmed until manually checked", () => {
+  const ownedGear = {
+    id: "owned-rain-jacket",
+    name: "Rain Jacket",
+    brand: null,
+    model: null,
+    category_id: "clothing-category",
+    subcategory_id: "rain-jacket-subcategory",
+    gear_categories: { id: "clothing-category", name_en: "clothing", name_ja: "衣類" },
+    gear_subcategories: {
+      id: "rain-jacket-subcategory",
+      name_en: "rain_jacket",
+      name_ja: "レインジャケット"
+    },
+    gear_products: null
+  };
+  const plan = {
+    mountain: {
+      helmet_guidance: "NOT_NEEDED",
+      technical_terrain: "MAINTAINED_TRAIL",
+      route_seriousness: "LOW",
+      snow_or_ice_risk: "NONE",
+      volcanic_risk: "NONE",
+      bear_or_wildlife_risk: "LOW",
+      tent_site_availability: "NONE",
+      hut_support: "NONE"
+    },
+    season: "SUMMER",
+    style: "DAY_HIKE",
+    required_slots: [
+      {
+        slot: "RAIN_JACKET",
+        coverage_status: "COVERED",
+        matching_owned_gear: [ownedGear]
+      }
+    ]
+  };
+  const unconfirmedChecklist = buildPlanChecklist({ plan, ownedGear: [ownedGear] });
+  const unconfirmedItem = unconfirmedChecklist.categories
+    .flatMap((category) => category.items)
+    .find((item) => item.id === "clothing-rainwear");
+  const confirmedChecklist = buildPlanChecklist({
+    plan,
+    checkedSlots: ["RAIN_JACKET"],
+    ownedGear: [ownedGear]
+  });
+  const confirmedItem = confirmedChecklist.categories
+    .flatMap((category) => category.items)
+    .find((item) => item.id === "clothing-rainwear");
+
+  assert.equal(unconfirmedItem?.checked, false);
+  assert.deepEqual(unconfirmedItem?.toggleSlots, ["RAIN_JACKET"]);
+  assert.equal(buildPreDepartureSummary(unconfirmedChecklist).confirmationCount > 0, true);
+  assert.equal(confirmedItem?.checked, true);
+  assert.ok(confirmedChecklist.summary.percent > unconfirmedChecklist.summary.percent);
+
+  const dashboardChecklist = applyChecklistStateToChecklist({
+    checklist: unconfirmedChecklist,
+    checkedSlots: ["RAIN_JACKET"]
+  });
+  assert.equal(dashboardChecklist.summary.percent, confirmedChecklist.summary.percent);
+
+  const gearRemovedPlan = {
+    ...plan,
+    required_slots: [
+      {
+        slot: "RAIN_JACKET",
+        coverage_status: "MISSING",
+        matching_owned_gear: []
+      }
+    ]
+  };
+  const gearRemovedChecklist = buildPlanChecklist({
+    plan: gearRemovedPlan,
+    checkedSlots: ["RAIN_JACKET"]
+  });
+  const gearRemovedItem = gearRemovedChecklist.categories
+    .flatMap((category) => category.items)
+    .find((item) => item.id === "clothing-rainwear");
+  assert.equal(gearRemovedItem?.matchingOwnedGear.length, 0);
+  assert.equal(gearRemovedItem?.checked, true);
+});
+
+test("plan rows display ownership and manual confirmation independently", () => {
   assert.match(tripPlanningUiSource, /const confirmedItems = fullCategory\.items\.filter/);
   assert.match(tripPlanningUiSource, /const status = getChecklistItemStatus\(item\)/);
   assert.match(tripPlanningUiSource, /\{status\.label\}/);
   assert.match(tripPlanningUiSource, /matchingOwnedGear\.length > 0/);
   assert.match(tripPlanningUiSource, /label: "所持済み"/);
+  assert.match(tripPlanningUiSource, /confirmationLabel: item\.checked \? "確認済み" : "未確認"/);
   assert.match(tripPlanningUiSource, /label: "確認済み"/);
 });
 

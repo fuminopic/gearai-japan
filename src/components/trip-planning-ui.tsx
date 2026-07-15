@@ -1341,7 +1341,7 @@ function TripPlanningResult({
   }, [plan, planId, preDepartureSummary.canComplete]);
 
   function handleToggleChecklistItem(item: ChecklistItem) {
-    if (item.source === "GEAR_BACKED") {
+    if (item.source === "GEAR_BACKED" && item.toggleSlots.length > 0) {
       handleToggleGearBackedItem(item.toggleSlots);
       return;
     }
@@ -1767,16 +1767,16 @@ function getFullChecklistCounts(checklist: ReturnType<typeof buildPlanChecklist>
 
   for (const category of checklist.categories) {
     for (const item of category.items) {
-      const status = getFullChecklistItemStatus(item);
-
-      if (status.kind === "MISSING") {
-        counts.missing += 1;
-      } else if (status.kind === "CONFIRM") {
-        counts.confirm += 1;
-      } else if (status.kind === "OWNED") {
+      if (item.matchingOwnedGear.length > 0) {
         counts.owned += 1;
-      } else {
+      } else if (item.source === "GEAR_BACKED") {
+        counts.missing += 1;
+      }
+
+      if (item.checked) {
         counts.checked += 1;
+      } else {
+        counts.confirm += 1;
       }
     }
   }
@@ -1785,11 +1785,15 @@ function getFullChecklistCounts(checklist: ReturnType<typeof buildPlanChecklist>
 }
 
 function getFullChecklistItemStatus(item: ChecklistItem) {
+  const status = getChecklistItemStatus(item);
+
   if (item.matchingOwnedGear.length > 0) {
     return {
       kind: "OWNED" as const,
-      label: "所持済み",
-      checked: true,
+      label: status.confirmationLabel
+        ? `${status.label}・${status.confirmationLabel}`
+        : status.label,
+      checked: item.checked,
       className: "bg-forest-50 text-forest-800"
     };
   }
@@ -1797,7 +1801,9 @@ function getFullChecklistItemStatus(item: ChecklistItem) {
   if (item.checked) {
     return {
       kind: "CHECKED" as const,
-      label: "確認済み",
+      label: status.confirmationLabel
+        ? `${status.label}・${status.confirmationLabel}`
+        : status.label,
       checked: true,
       className: "bg-blue-50 text-blue-700"
     };
@@ -1808,7 +1814,7 @@ function getFullChecklistItemStatus(item: ChecklistItem) {
   if (actionStatus === "MISSING") {
     return {
       kind: "MISSING" as const,
-      label: "不足",
+      label: status.label,
       checked: false,
       className: "bg-red-50 text-red-700"
     };
@@ -1816,7 +1822,7 @@ function getFullChecklistItemStatus(item: ChecklistItem) {
 
   return {
     kind: "CONFIRM" as const,
-    label: "確認する",
+    label: status.confirmationLabel ?? status.label,
     checked: false,
     className: "bg-stone-100 text-stone-600"
   };
@@ -2484,7 +2490,7 @@ function ChecklistItemRow({
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
   onToggle: (item: ChecklistItem) => void;
 }) {
-  const canToggle = item.source === "CHECKLIST_ONLY" || item.toggleSlots.length > 0;
+  const canToggle = item.source === "CHECKLIST_ONLY" || item.source === "GEAR_BACKED";
   const ItemIcon = checklistItemIcons[item.icon];
   const status = getChecklistItemStatus(item);
   const matchingInsight = getChecklistItemMatchingInsight(item, compatibilityBySlot);
@@ -2526,6 +2532,13 @@ function ChecklistItemRow({
           <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${status.className}`}>
             {status.label}
           </span>
+          {status.confirmationLabel ? (
+            <span
+              className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${status.confirmationClassName}`}
+            >
+              {status.confirmationLabel}
+            </span>
+          ) : null}
         </span>
         {item.matchingOwnedGear.length > 0 ? (
           <span className="mt-1 block truncate text-xs font-medium text-stone-500">
@@ -2559,8 +2572,7 @@ function ConfirmedChecklistItemRow({
   item: ChecklistItem;
   onToggle: (item: ChecklistItem) => void;
 }) {
-  const canToggle =
-    item.source === "CHECKLIST_ONLY" || item.toggleSlots.length > 0;
+  const canToggle = item.source === "CHECKLIST_ONLY" || item.source === "GEAR_BACKED";
   const status = getChecklistItemStatus(item);
 
   return (
@@ -2582,8 +2594,17 @@ function ConfirmedChecklistItemRow({
       <span className="min-w-0 flex-1 truncate text-sm font-medium text-stone-400">
         {item.label}
       </span>
-      <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${status.className}`}>
-        {status.label}
+      <span className="flex shrink-0 flex-wrap justify-end gap-1">
+        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${status.className}`}>
+          {status.label}
+        </span>
+        {status.confirmationLabel ? (
+          <span
+            className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${status.confirmationClassName}`}
+          >
+            {status.confirmationLabel}
+          </span>
+        ) : null}
       </span>
     </label>
   );
@@ -2635,14 +2656,20 @@ function getChecklistItemStatus(item: ChecklistItem) {
   if (item.matchingOwnedGear.length > 0) {
     return {
       label: "所持済み",
-      className: "bg-forest-50 text-forest-800"
+      className: "bg-forest-50 text-forest-800",
+      confirmationLabel: item.checked ? "確認済み" : "未確認",
+      confirmationClassName: item.checked
+        ? "bg-blue-50 text-blue-700"
+        : "bg-stone-100 text-stone-600"
     };
   }
 
   if (item.source === "GEAR_BACKED" && item.checked) {
     return {
-      label: "確認済み",
-      className: "bg-blue-50 text-blue-700"
+      label: "不足",
+      className: "bg-red-50 text-red-700",
+      confirmationLabel: "確認済み",
+      confirmationClassName: "bg-blue-50 text-blue-700"
     };
   }
 

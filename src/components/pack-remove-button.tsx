@@ -10,8 +10,8 @@ export function PackRemoveButton({ onRemove }: { onRemove: () => void }) {
       onClick={onRemove}
       className="inline-flex h-11 w-11 shrink-0 items-center justify-center transition active:scale-95"
     >
-      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-red-800 text-white">
-        <Minus aria-hidden className="h-4 w-4" strokeWidth={2.5} />
+      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-stone-500 text-white">
+        <Minus aria-hidden className="h-3.5 w-3.5" strokeWidth={2.5} />
       </span>
     </button>
   );

@@ -487,7 +487,7 @@ function SummaryMetric({
     <>
       <img src={iconSrc} alt="" className="h-4 w-auto object-contain" />
       <p className="font-din text-[22px] font-bold leading-none text-black">{value}</p>
-      <p className="text-[10px] font-medium text-gray-400">{label}</p>
+      <p className="whitespace-nowrap text-xs font-medium text-gray-400">{label}</p>
     </>
   );
 

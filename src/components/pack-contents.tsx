@@ -59,9 +59,9 @@ export function PackContents({ items: serverItems }: PackContentsProps) {
   return (
     <>
       <section className="grid grid-cols-2 overflow-hidden rounded-2xl bg-white shadow-sm">
-        <PackStat label="包内装備" value={`${summary.itemCount.toLocaleString("ja-JP")}点`} />
+        <PackStat label="装備数" value={`${summary.itemCount.toLocaleString("ja-JP")}点`} />
         <PackStat
-          label="既知の総重量"
+          label="総重量"
           value={summary.knownWeightG > 0 ? formatWeight(summary.knownWeightG) : "-"}
           divided
         />

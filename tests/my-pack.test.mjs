@@ -137,6 +137,9 @@ test("pack pages provide grouped contents, accessible direct removal, and a mult
   assert.match(packPageSource, /PackContents/);
   assert.doesNotMatch(packPageSource, /重量未入力/);
   assert.match(packContentsSource, /grid-cols-2/);
+  assert.match(packContentsSource, /label="装備数"/);
+  assert.match(packContentsSource, /label="総重量"/);
+  assert.doesNotMatch(packContentsSource, /包内装備|既知の総重量/);
   assert.doesNotMatch(packContentsSource, /重量未入力/);
   assert.match(packContentsSource, /weightG === null \? null/);
   assert.match(packContentsSource, /setItems\(\(current\) => current\.filter/);
@@ -151,8 +154,9 @@ test("pack pages provide grouped contents, accessible direct removal, and a mult
   assert.match(selectorSource, /h-12 w-full/);
   assert.match(removeButtonSource, /aria-label="パックから外す"/);
   assert.match(removeButtonSource, /h-11 w-11/);
-  assert.match(removeButtonSource, /h-7 w-7/);
-  assert.match(removeButtonSource, /bg-red-800/);
+  assert.match(removeButtonSource, /h-6 w-6/);
+  assert.match(removeButtonSource, /bg-stone-500/);
+  assert.doesNotMatch(removeButtonSource, /bg-red-800/);
 });
 
 test("dashboard derives pack metrics and composition only from current owned pack gear", () => {
@@ -163,6 +167,7 @@ test("dashboard derives pack metrics and composition only from current owned pac
   assert.match(dashboardPageSource, /packKnownWeightG/);
   assert.match(dashboardPageSource, /パック重量構成/);
   assert.match(dashboardPageSource, /マイパック &gt;/);
+  assert.match(dashboardPageSource, /whitespace-nowrap text-xs font-medium text-gray-400/);
   assert.doesNotMatch(dashboardPageSource, /重量未入力/);
   assert.match(dashboardPageSource, /マイパックはまだ空です/);
   assert.doesNotMatch(dashboardPageSource, /summary\.totalWeightG/);

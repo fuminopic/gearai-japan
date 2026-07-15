@@ -9,6 +9,7 @@ import { AppMenuDrawer } from "@/components/app-menu-drawer";
 import { DashboardPlanMeta } from "@/components/dashboard-plan-meta";
 import { HeroGauge } from "@/components/hero-gauge";
 import { getOwnedGearForPlanning } from "@/lib/data/gear";
+import { getPackGearIds } from "@/lib/data/pack";
 import { getPackRequirementPlan } from "@/lib/data/pack-requirements";
 import { getDashboardSummary } from "@/lib/data/dashboard";
 import { getLatestTripPlan } from "@/lib/data/trip-plans";
@@ -68,19 +69,22 @@ async function fetchLatestPlanChecklist(trip: SavedTripPlan) {
   }
 
   try {
-    const [plan, ownedGear] = await Promise.all([
+    const [plan, ownedGear, packedGearIds] = await Promise.all([
       getPackRequirementPlan({
         mountainSlug: trip.mountain_slug,
         season: trip.season,
         style: trip.style
       }),
-      getOwnedGearForPlanning()
+      getOwnedGearForPlanning(),
+      getPackGearIds()
     ]);
 
     return buildPlanChecklist({
       plan,
       checkedSlots: trip.checked_slots,
-      ownedGear
+      uncheckedPackedSlots: trip.unchecked_packed_slots,
+      ownedGear,
+      packedGearIds
     });
   } catch (caught) {
     console.error("Dashboard checklist summary failed:", caught);

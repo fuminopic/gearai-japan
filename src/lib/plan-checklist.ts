@@ -13,6 +13,13 @@ import {
 export type ChecklistPriority = "ESSENTIAL" | "SUGGESTED" | "OPTIONAL";
 export type ChecklistItemSource = "GEAR_BACKED" | "CHECKLIST_ONLY";
 export type ChecklistGearStatus = "PACKED" | "OWNED" | "MISSING";
+export type ChecklistSlotCoverage = {
+  slot: RequirementSlot;
+  status: ChecklistGearStatus;
+  isExplicitlyChecked: boolean;
+  isPackedUnchecked: boolean;
+  isConfirmed: boolean;
+};
 export type ChecklistItemIcon =
   | "baseLayer"
   | "midLayer"
@@ -79,6 +86,7 @@ export type ChecklistItem = ChecklistItemDefinition & {
   toggleSlots: RequirementSlot[];
   matchingOwnedGear: GearMatchingOwnedGearMatch[];
   gearStatus: ChecklistGearStatus | null;
+  slotCoverage: ChecklistSlotCoverage[];
 };
 
 export type ChecklistCategory = {
@@ -432,12 +440,14 @@ function getNavigationItems(plan: PackRequirementPlan): ChecklistItemDefinition[
 export function buildPlanChecklist({
   plan,
   checkedSlots = [],
+  uncheckedPackedSlots = [],
   checkedChecklistOnlyIds = [],
   ownedGear = [],
   packedGearIds = []
 }: {
   plan: PackRequirementPlan;
   checkedSlots?: readonly RequirementSlot[];
+  uncheckedPackedSlots?: readonly RequirementSlot[];
   checkedChecklistOnlyIds?: readonly string[];
   ownedGear?: readonly GearMatchingOwnedGearMatch[];
   packedGearIds?: readonly string[];
@@ -446,6 +456,7 @@ export function buildPlanChecklist({
     plan.required_slots.map((slotPlan) => [slotPlan.slot, slotPlan])
   );
   const checkedSlotSet = new Set(checkedSlots);
+  const uncheckedPackedSlotSet = new Set(uncheckedPackedSlots);
   const checkedChecklistOnlySet = new Set(checkedChecklistOnlyIds);
   const packedGearIdSet = new Set(packedGearIds);
   const categories = [
@@ -466,6 +477,7 @@ export function buildPlanChecklist({
           plan,
           slotPlansBySlot,
           checkedSlotSet,
+          uncheckedPackedSlotSet,
           checkedChecklistOnlySet,
           ownedGear,
           packedGearIdSet
@@ -562,7 +574,7 @@ export function getPreDepartureItemActionStatus(
     return "CONFIRM";
   }
 
-  return item.matchingOwnedGear.length > 0 ? "CONFIRM" : "MISSING";
+  return item.gearStatus === "MISSING" ? "MISSING" : "CONFIRM";
 }
 
 export function isImportantPreDepartureItem(
@@ -618,6 +630,7 @@ function buildChecklistItem({
   plan,
   slotPlansBySlot,
   checkedSlotSet,
+  uncheckedPackedSlotSet,
   checkedChecklistOnlySet,
   ownedGear,
   packedGearIdSet
@@ -626,6 +639,7 @@ function buildChecklistItem({
   plan: PackRequirementPlan;
   slotPlansBySlot: Map<RequirementSlot, PackRequirementSlotPlan>;
   checkedSlotSet: Set<RequirementSlot>;
+  uncheckedPackedSlotSet: Set<RequirementSlot>;
   checkedChecklistOnlySet: Set<string>;
   ownedGear: readonly GearMatchingOwnedGearMatch[];
   packedGearIdSet: ReadonlySet<string>;
@@ -644,19 +658,40 @@ function buildChecklistItem({
       ...auxiliaryOwnedGear
     ]
   );
+  const slotCoverage = slots.map((slot) => {
+    const matchingGear = slotPlansBySlot.get(slot)?.matching_owned_gear ?? [];
+    const status = matchingGear.some((gear) => packedGearIdSet.has(gear.id))
+      ? "PACKED"
+      : matchingGear.length > 0
+        ? "OWNED"
+        : "MISSING";
+    const isExplicitlyChecked = checkedSlotSet.has(slot);
+    const isPackedUnchecked = uncheckedPackedSlotSet.has(slot);
+
+    return {
+      slot,
+      status,
+      isExplicitlyChecked,
+      isPackedUnchecked,
+      isConfirmed:
+        isExplicitlyChecked || (status === "PACKED" && !isPackedUnchecked)
+    } satisfies ChecklistSlotCoverage;
+  });
   const checked =
     source === "GEAR_BACKED"
       ? slots.length > 0
-        ? slots.every((slot) => checkedSlotSet.has(slot))
+        ? slotCoverage.every((coverage) => coverage.isConfirmed)
         : checkedChecklistOnlySet.has(definition.id)
       : checkedChecklistOnlySet.has(definition.id);
   const gearStatus =
     source === "GEAR_BACKED"
-      ? matchingOwnedGear.some((gear) => packedGearIdSet.has(gear.id))
-        ? "PACKED"
-        : matchingOwnedGear.length > 0
-          ? "OWNED"
-          : "MISSING"
+      ? slotCoverage.length > 0
+        ? summarizeSlotCoverageStatus(slotCoverage)
+        : matchingOwnedGear.some((gear) => packedGearIdSet.has(gear.id))
+          ? "PACKED"
+          : matchingOwnedGear.length > 0
+            ? "OWNED"
+            : "MISSING"
       : null;
 
   return {
@@ -667,8 +702,23 @@ function buildChecklistItem({
     slots,
     toggleSlots,
     matchingOwnedGear,
-    gearStatus
+    gearStatus,
+    slotCoverage
   };
+}
+
+function summarizeSlotCoverageStatus(
+  slotCoverage: readonly ChecklistSlotCoverage[]
+): ChecklistGearStatus {
+  if (slotCoverage.some((coverage) => coverage.status === "MISSING")) {
+    return "MISSING";
+  }
+
+  if (slotCoverage.some((coverage) => coverage.status === "OWNED")) {
+    return "OWNED";
+  }
+
+  return "PACKED";
 }
 
 function buildChecklistCategory(
@@ -1446,13 +1496,17 @@ export function calculateChecklistProgress(
   plan: PackRequirementPlan,
   checkedSlots: readonly RequirementSlot[] = [],
   checkedChecklistOnlyIds: readonly string[] = [],
-  ownedGear: readonly GearMatchingOwnedGearMatch[] = []
+  ownedGear: readonly GearMatchingOwnedGearMatch[] = [],
+  packedGearIds: readonly string[] = [],
+  uncheckedPackedSlots: readonly RequirementSlot[] = []
 ) {
   return buildPlanChecklist({
     plan,
     checkedSlots,
     checkedChecklistOnlyIds,
-    ownedGear
+    ownedGear,
+    packedGearIds,
+    uncheckedPackedSlots
   }).summary.percent;
 }
 
@@ -1485,16 +1539,22 @@ export function applyChecklistOnlyIdsToChecklist(
 export function applyChecklistStateToChecklist({
   checklist,
   checkedSlots,
+  uncheckedPackedSlots,
   checkedChecklistOnlyIds
 }: {
   checklist: ChecklistView;
   checkedSlots?: readonly RequirementSlot[];
+  uncheckedPackedSlots?: readonly RequirementSlot[];
   checkedChecklistOnlyIds?: readonly string[];
 }): ChecklistView {
   const shouldApplyCheckedSlots = Array.isArray(checkedSlots);
+  const shouldApplyUncheckedPackedSlots = Array.isArray(uncheckedPackedSlots);
   const shouldApplyChecklistOnlyIds = Array.isArray(checkedChecklistOnlyIds);
   const checkedSlotSet = new Set(
     (checkedSlots ?? []).filter(isSupportedRequirementSlot)
+  );
+  const uncheckedPackedSlotSet = new Set(
+    (uncheckedPackedSlots ?? []).filter(isSupportedRequirementSlot)
   );
   const checkedChecklistOnlySet = new Set(
     (checkedChecklistOnlyIds ?? []).filter(isSupportedChecklistOnlyId)
@@ -1502,10 +1562,32 @@ export function applyChecklistStateToChecklist({
   const categories = checklist.categories.map((category) => {
     const items = category.items.map((item) => {
       if (item.source === "GEAR_BACKED") {
-        if (item.toggleSlots.length > 0 && shouldApplyCheckedSlots) {
+        if (
+          item.toggleSlots.length > 0 &&
+          (shouldApplyCheckedSlots || shouldApplyUncheckedPackedSlots)
+        ) {
+          const slotCoverage = item.slotCoverage.map((coverage) => {
+            const isExplicitlyChecked = shouldApplyCheckedSlots
+              ? checkedSlotSet.has(coverage.slot)
+              : coverage.isExplicitlyChecked;
+            const isPackedUnchecked = shouldApplyUncheckedPackedSlots
+              ? uncheckedPackedSlotSet.has(coverage.slot)
+              : coverage.isPackedUnchecked;
+
+            return {
+              ...coverage,
+              isExplicitlyChecked,
+              isPackedUnchecked,
+              isConfirmed:
+                isExplicitlyChecked ||
+                (coverage.status === "PACKED" && !isPackedUnchecked)
+            };
+          });
+
           return {
             ...item,
-            checked: item.toggleSlots.every((slot) => checkedSlotSet.has(slot))
+            slotCoverage,
+            checked: slotCoverage.every((coverage) => coverage.isConfirmed)
           };
         }
 
@@ -1516,7 +1598,10 @@ export function applyChecklistStateToChecklist({
           };
         }
 
-        if (item.toggleSlots.length === 0 || !shouldApplyCheckedSlots) {
+        if (
+          item.toggleSlots.length === 0 ||
+          (!shouldApplyCheckedSlots && !shouldApplyUncheckedPackedSlots)
+        ) {
           return item;
         }
       }

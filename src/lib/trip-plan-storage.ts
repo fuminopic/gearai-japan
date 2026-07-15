@@ -66,6 +66,17 @@ export function buildLegacyTripPlanCheckedSlotsStorageKey(planId: string) {
   return `yamajitaku:trip-plan:checked-slots:${planId}`;
 }
 
+export function buildTripPlanUncheckedPackedSlotsStorageKey(
+  userId: string,
+  planId: string
+) {
+  return `yamajitaku:${TRIP_PLAN_STORAGE_VERSION}:user:${userId}:trip-plan:${planId}:unchecked-packed-slots`;
+}
+
+export function buildLegacyTripPlanUncheckedPackedSlotsStorageKey(planId: string) {
+  return `yamajitaku:trip-plan:unchecked-packed-slots:${planId}`;
+}
+
 export function buildTripPlanChecklistOnlyStorageKey(
   userId: string,
   planId: string
@@ -203,6 +214,48 @@ export function removeTripPlanCheckedSlots({
     planId,
     buildScopedKey: buildTripPlanCheckedSlotsStorageKey,
     buildLegacyKey: buildLegacyTripPlanCheckedSlotsStorageKey
+  });
+}
+
+export function readTripPlanUncheckedPackedSlots({
+  userId,
+  planId
+}: TripPlanMetaStorageInput): TripPlanChecklistStorageReadResult<
+  RequirementSlot[]
+> {
+  return readTripPlanChecklistStorageArray({
+    userId,
+    planId,
+    buildScopedKey: buildTripPlanUncheckedPackedSlotsStorageKey,
+    buildLegacyKey: buildLegacyTripPlanUncheckedPackedSlotsStorageKey,
+    sanitizeValue: sanitizeRequirementSlots
+  });
+}
+
+export function writeTripPlanUncheckedPackedSlots({
+  userId,
+  planId,
+  value
+}: TripPlanCheckedSlotsWriteInput) {
+  writeTripPlanChecklistStorageArray({
+    userId,
+    planId,
+    value,
+    buildScopedKey: buildTripPlanUncheckedPackedSlotsStorageKey,
+    buildLegacyKey: buildLegacyTripPlanUncheckedPackedSlotsStorageKey,
+    sanitizeValue: sanitizeRequirementSlots
+  });
+}
+
+export function removeTripPlanUncheckedPackedSlots({
+  userId,
+  planId
+}: TripPlanMetaStorageInput) {
+  removeTripPlanChecklistStorageArray({
+    userId,
+    planId,
+    buildScopedKey: buildTripPlanUncheckedPackedSlotsStorageKey,
+    buildLegacyKey: buildLegacyTripPlanUncheckedPackedSlotsStorageKey
   });
 }
 

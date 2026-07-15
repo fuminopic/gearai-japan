@@ -403,7 +403,7 @@ test("M2 pre-departure confirmation reuses checklist-derived counts", () => {
   assert.match(planChecklistSource, /出発前確認済み/);
   assert.match(planChecklistSource, /missingItems\.length === 0/);
   assert.match(planChecklistSource, /importantConfirmationItems\.length === 0/);
-  assert.match(planChecklistSource, /item\.matchingOwnedGear\.length > 0 \? "CONFIRM" : "MISSING"/);
+  assert.match(planChecklistSource, /item\.gearStatus === "MISSING" \? "MISSING" : "CONFIRM"/);
 
   assert.match(dashboardPageSource, /buildPlanChecklist/);
   assert.doesNotMatch(dashboardPlanChecklistSummarySource, /buildPreDepartureSummary/);

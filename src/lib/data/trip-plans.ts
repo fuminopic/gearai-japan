@@ -9,7 +9,7 @@ export async function getLatestTripPlan() {
   const { data, error } = await supabase
     .from("trip_plans")
     .select(
-      "id, user_id, mountain_slug, mountain_name, season, style, image_url, progress, checked_slots, planned_date, planned_end_date, trip_memo, bring_cash, has_mountain_insurance, created_at"
+      "id, user_id, mountain_slug, mountain_name, season, style, image_url, progress, checked_slots, unchecked_packed_slots, planned_date, planned_end_date, trip_memo, bring_cash, has_mountain_insurance, created_at"
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
@@ -28,7 +28,7 @@ export async function getTripPlans() {
   const { data, error } = await supabase
     .from("trip_plans")
     .select(
-      "id, user_id, mountain_slug, mountain_name, season, style, image_url, progress, checked_slots, planned_date, planned_end_date, trip_memo, bring_cash, has_mountain_insurance, created_at"
+      "id, user_id, mountain_slug, mountain_name, season, style, image_url, progress, checked_slots, unchecked_packed_slots, planned_date, planned_end_date, trip_memo, bring_cash, has_mountain_insurance, created_at"
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
@@ -71,6 +71,7 @@ function legacyRecommendationToTripPlan(record: AIRecommendationRecord): SavedTr
     image_url: null,
     progress: 0,
     checked_slots: [],
+    unchecked_packed_slots: [],
     planned_date: null,
     planned_end_date: null,
     trip_memo: null,

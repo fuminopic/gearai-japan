@@ -16,6 +16,9 @@ export async function saveTripPlan(formData: FormData) {
   const style = parseStyle(formData.get("style"));
   const progress = parseProgress(formData.get("progress"));
   const checkedSlots = parseCheckedSlots(formData.get("checked_slots"));
+  const uncheckedPackedSlots = parseCheckedSlots(
+    formData.get("unchecked_packed_slots")
+  );
   const plannedDate = parsePlannedDate(formData.get("planned_date"));
   const plannedEndDate = normalizePlannedEndDate(
     plannedDate,
@@ -43,7 +46,8 @@ export async function saveTripPlan(formData: FormData) {
     bring_cash: bringCash,
     has_mountain_insurance: hasMountainInsurance,
     progress,
-    checked_slots: checkedSlots
+    checked_slots: checkedSlots,
+    unchecked_packed_slots: uncheckedPackedSlots
   };
   const { data, error } = await supabase
     .from("trip_plans")
@@ -93,6 +97,9 @@ export async function updateTripPlan(formData: FormData) {
   const style = parseStyle(formData.get("style"));
   const progress = parseProgress(formData.get("progress"));
   const checkedSlots = parseCheckedSlots(formData.get("checked_slots"));
+  const uncheckedPackedSlots = parseCheckedSlots(
+    formData.get("unchecked_packed_slots")
+  );
   const plannedDate = parsePlannedDate(formData.get("planned_date"));
   const plannedEndDate = normalizePlannedEndDate(
     plannedDate,
@@ -123,7 +130,8 @@ export async function updateTripPlan(formData: FormData) {
     bring_cash: bringCash,
     has_mountain_insurance: hasMountainInsurance,
     progress,
-    checked_slots: checkedSlots
+    checked_slots: checkedSlots,
+    unchecked_packed_slots: uncheckedPackedSlots
   };
   const { error } = await supabase
     .from("trip_plans")
@@ -347,6 +355,7 @@ function uniqueRequirementSlots(values: unknown[]) {
 function withoutOptionalPlanColumns<
   T extends {
     checked_slots: RequirementSlot[];
+    unchecked_packed_slots?: RequirementSlot[];
     planned_date?: string | null;
     planned_end_date?: string | null;
     trip_memo?: string | null;
@@ -356,6 +365,7 @@ function withoutOptionalPlanColumns<
 >(payload: T) {
   const {
     checked_slots: _checkedSlots,
+    unchecked_packed_slots: _uncheckedPackedSlots,
     planned_date: _plannedDate,
     planned_end_date: _plannedEndDate,
     trip_memo: _tripMemo,
@@ -370,7 +380,7 @@ function withoutOptionalPlanColumns<
 function isMissingPlanColumnError(error: { message?: string; code?: string }) {
   return (
     error.code === "42703" ||
-    /(checked_slots|planned_date|planned_end_date|trip_memo|bring_cash|has_mountain_insurance)/i.test(
+    /(checked_slots|unchecked_packed_slots|planned_date|planned_end_date|trip_memo|bring_cash|has_mountain_insurance)/i.test(
       error.message ?? ""
     )
   );

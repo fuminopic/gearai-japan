@@ -28,6 +28,21 @@ const heroGaugeSource = readFileSync(
   new URL("../src/components/hero-gauge.tsx", import.meta.url),
   "utf8"
 );
+const dashboardSource = readFileSync(
+  new URL("../app/(app)/dashboard/page.tsx", import.meta.url),
+  "utf8"
+);
+const tripPlanActionsSource = readFileSync(
+  new URL("../src/lib/actions/trip-plans.ts", import.meta.url),
+  "utf8"
+);
+const uncheckedPackedSlotsMigrationSource = readFileSync(
+  new URL(
+    "../supabase/migrations/20260715150031_trip_plans_unchecked_packed_slots.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 
 const checklistOwnedGearMatchersDataUrl = await toTranspiledDataUrl(
   checklistOwnedGearMatchersSource
@@ -65,13 +80,18 @@ test("manual checked slots survive coverage changes but stale plan slots are rem
   );
 
   const changedStylePlan = planWithSlots(["HEADLAMP"]);
+  const staleUncheckedPackedSlots = ["RAIN_JACKET", "HEADLAMP"];
+  assert.deepEqual(
+    filterCheckedSlotsForPlan(staleUncheckedPackedSlots, changedStylePlan),
+    ["HEADLAMP"]
+  );
   assert.deepEqual(
     filterCheckedSlotsForPlan(["RAIN_JACKET", "HEADLAMP"], changedStylePlan),
     ["HEADLAMP"]
   );
 });
 
-test("pack, owned, and missing status use actual matching gear IDs without changing confirmation progress", () => {
+test("pack, owned, and missing status use actual matching gear IDs with packed defaults", () => {
   const ownedGear = {
     id: "owned-rain-jacket",
     name: "Rain Jacket",
@@ -125,6 +145,22 @@ test("pack, owned, and missing status use actual matching gear IDs without chang
   const packedItem = packedChecklist.categories
     .flatMap((category) => category.items)
     .find((item) => item.id === "clothing-rainwear");
+  const packedCancelledChecklist = buildPlanChecklist({
+    plan,
+    ownedGear: [ownedGear, secondOwnedGear],
+    packedGearIds: [secondOwnedGear.id],
+    uncheckedPackedSlots: ["RAIN_JACKET"]
+  });
+  const packedCancelledItem = packedCancelledChecklist.categories
+    .flatMap((category) => category.items)
+    .find((item) => item.id === "clothing-rainwear");
+  const explicitlyCheckedPackedChecklist = buildPlanChecklist({
+    plan,
+    checkedSlots: ["RAIN_JACKET"],
+    ownedGear: [ownedGear, secondOwnedGear],
+    packedGearIds: [secondOwnedGear.id],
+    uncheckedPackedSlots: ["RAIN_JACKET"]
+  });
   const unpackedChecklist = buildPlanChecklist({
     plan,
     ownedGear: [ownedGear, secondOwnedGear]
@@ -144,19 +180,33 @@ test("pack, owned, and missing status use actual matching gear IDs without chang
   assert.equal(unconfirmedItem?.checked, false);
   assert.equal(unconfirmedItem?.gearStatus, "OWNED");
   assert.equal(packedItem?.gearStatus, "PACKED");
-  assert.equal(packedItem?.checked, false);
+  assert.equal(packedItem?.checked, true);
+  assert.equal(packedItem?.slotCoverage[0]?.isConfirmed, true);
+  assert.equal(packedItem?.slotCoverage[0]?.isExplicitlyChecked, false);
   assert.equal(unpackedItem?.gearStatus, "OWNED");
-  assert.equal(packedChecklist.summary.percent, unconfirmedChecklist.summary.percent);
+  assert.equal(unpackedItem?.checked, false);
+  assert.ok(packedChecklist.summary.percent > unconfirmedChecklist.summary.percent);
+  assert.equal(packedCancelledItem?.checked, false);
+  assert.equal(packedCancelledItem?.slotCoverage[0]?.isPackedUnchecked, true);
+  assert.equal(
+    packedCancelledChecklist.summary.percent,
+    unconfirmedChecklist.summary.percent
+  );
+  assert.equal(explicitlyCheckedPackedChecklist.summary.percent, packedChecklist.summary.percent);
   assert.deepEqual(unconfirmedItem?.toggleSlots, ["RAIN_JACKET"]);
   assert.equal(buildPreDepartureSummary(unconfirmedChecklist).confirmationCount > 0, true);
   assert.equal(confirmedItem?.checked, true);
+  assert.equal(confirmedItem?.gearStatus, "OWNED");
   assert.ok(confirmedChecklist.summary.percent > unconfirmedChecklist.summary.percent);
 
   const dashboardChecklist = applyChecklistStateToChecklist({
-    checklist: unconfirmedChecklist,
-    checkedSlots: ["RAIN_JACKET"]
+    checklist: packedChecklist,
+    uncheckedPackedSlots: ["RAIN_JACKET"]
   });
-  assert.equal(dashboardChecklist.summary.percent, confirmedChecklist.summary.percent);
+  assert.equal(
+    dashboardChecklist.summary.percent,
+    packedCancelledChecklist.summary.percent
+  );
 
   const gearRemovedPlan = {
     ...plan,
@@ -215,9 +265,19 @@ test("plan data loads pack IDs once and pack actions revalidate plan state", () 
   assert.match(planPageContentSource, /packGearIds=\{packGearIds\}/);
   assert.doesNotMatch(planPageContentSource, /required_slots\.map[\s\S]{0,800}getPackGearIds/);
   assert.match(packActionsSource, /revalidatePath\("\/plan"\)/);
+  assert.match(packActionsSource, /revalidatePath\("\/dashboard"\)/);
 });
 
-test("dashboard uses fresh checklist progress whenever it is available", () => {
+test("saved plans persist packed confirmation overrides and dashboard uses the same checklist state", () => {
+  assert.match(
+    uncheckedPackedSlotsMigrationSource,
+    /add column if not exists unchecked_packed_slots text\[\] not null default '\{\}'::text\[\]/
+  );
+  assert.match(tripPlanActionsSource, /formData\.get\("unchecked_packed_slots"\)/);
+  assert.match(tripPlanActionsSource, /unchecked_packed_slots: uncheckedPackedSlots/);
+  assert.match(dashboardSource, /getPackGearIds\(\)/);
+  assert.match(dashboardSource, /uncheckedPackedSlots: trip\.unchecked_packed_slots/);
+  assert.match(dashboardSource, /packedGearIds/);
   assert.match(heroGaugeSource, /const percent = hydrated\?\.summary\.percent \?\? fallbackPercent/);
   assert.doesNotMatch(heroGaugeSource, /Math\.max\(fallbackPercent/);
 });

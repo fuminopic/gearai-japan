@@ -450,18 +450,24 @@ test("current checklist storage reads and writes stay in plan, hero, and dashboa
   );
 });
 
-test("current checked-slots priority differs between plan page and dashboard hydration", () => {
+test("plan page and dashboard hydrate explicit and packed-cancellation slot state", () => {
   assert.match(
     tripPlanningUiSource,
     /storedCheckedSlots\.length > 0 \? storedCheckedSlots : savedCheckedSlots \?\? \[\]/
   );
   assert.match(tripPlanningUiSource, /getSavedPlanCheckedSlots\(hydratedPlan\)/);
   assert.match(tripPlanningUiSource, /if \(!plan \|\| !Array\.isArray\(plan\.checked_slots\)\)/);
+  assert.match(tripPlanningUiSource, /getSavedPlanUncheckedPackedSlots\(hydratedPlan\)/);
+  assert.match(tripPlanningUiSource, /readStoredUncheckedPackedSlots\(planId, currentPlanUserId\)/);
 
   for (const source of [heroGaugeSource, dashboardChecklistSource]) {
-    assert.match(source, /if \(!checkedSlots && !checkedChecklistOnlyIds\)/);
+    assert.match(
+      source,
+      /if \(!checkedSlots && !uncheckedPackedSlots && !checkedChecklistOnlyIds\)/
+    );
     assert.match(source, /applyChecklistStateToChecklist\(\{/);
     assert.match(source, /checkedSlots,/);
+    assert.match(source, /uncheckedPackedSlots,/);
     assert.match(source, /checkedChecklistOnlyIds/);
   }
 });

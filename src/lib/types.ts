@@ -287,6 +287,7 @@ export type SavedTripPlan = {
   image_url: string | null;
   progress: number;
   checked_slots: RequirementSlot[];
+  unchecked_packed_slots: RequirementSlot[];
   planned_date: string | null;
   planned_end_date: string | null;
   trip_memo: string | null;

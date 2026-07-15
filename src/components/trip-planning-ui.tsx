@@ -91,10 +91,12 @@ import {
 import {
   readTripPlanCheckedSlots,
   readTripPlanChecklistOnlyIds,
+  readTripPlanUncheckedPackedSlots,
   removeTripPlanCheckedSlots,
   removeTripPlanChecklistOnlyIds,
   writeTripPlanCheckedSlots,
-  writeTripPlanChecklistOnlyIds
+  writeTripPlanChecklistOnlyIds,
+  writeTripPlanUncheckedPackedSlots
 } from "@/lib/trip-plan-storage";
 import type {
   GearMatchingOwnedGearMatch,
@@ -140,6 +142,7 @@ type DisplayGearMatchingResult = Omit<GearMatchingResult, "slot"> & {
 };
 
 const emptyCheckedSlots: RequirementSlot[] = [];
+const emptyUncheckedPackedSlots: RequirementSlot[] = [];
 const emptyChecklistOnlyIds: string[] = [];
 type ChecklistScanFilter = "ACTION" | "MISSING" | "CONFIRM" | "IMPORTANT" | "ALL";
 
@@ -178,10 +181,15 @@ export function TripPlanningUI({
   const [interactiveCheckedSlots, setInteractiveCheckedSlots] = useState<
     RequirementSlot[] | null
   >(null);
+  const [interactiveUncheckedPackedSlots, setInteractiveUncheckedPackedSlots] =
+    useState<RequirementSlot[] | null>(null);
   const [interactiveChecklistOnlyIds, setInteractiveChecklistOnlyIds] = useState<
     string[] | null
   >(null);
   const [storedCheckedSlots, setStoredCheckedSlots] = useState<RequirementSlot[]>([]);
+  const [storedUncheckedPackedSlots, setStoredUncheckedPackedSlots] = useState<
+    RequirementSlot[] | null
+  >(null);
   const [storedChecklistOnlyIds, setStoredChecklistOnlyIds] = useState<string[]>([]);
   const [isDateEditorOpen, setIsDateEditorOpen] = useState(false);
   const [dateSaveState, setDateSaveState] = useState<
@@ -229,12 +237,20 @@ export function TripPlanningUI({
   const selectedMountain =
     mountains.find((mountain) => mountain.slug === effectiveMountainSlug) ?? null;
   const savedCheckedSlots = getSavedPlanCheckedSlots(hydratedPlan);
+  const savedUncheckedPackedSlots = getSavedPlanUncheckedPackedSlots(hydratedPlan);
   const restoredCheckedSlots =
     storedCheckedSlots.length > 0 ? storedCheckedSlots : savedCheckedSlots ?? [];
   const rawCurrentCheckedSlots = interactiveCheckedSlots ?? restoredCheckedSlots;
   const currentCheckedSlots = plan
     ? filterCheckedSlotsForPlan(rawCurrentCheckedSlots, plan)
     : rawCurrentCheckedSlots;
+  const restoredUncheckedPackedSlots =
+    storedUncheckedPackedSlots ?? savedUncheckedPackedSlots ?? [];
+  const rawCurrentUncheckedPackedSlots =
+    interactiveUncheckedPackedSlots ?? restoredUncheckedPackedSlots;
+  const currentUncheckedPackedSlots = plan
+    ? filterCheckedSlotsForPlan(rawCurrentUncheckedPackedSlots, plan)
+    : rawCurrentUncheckedPackedSlots;
   const currentChecklistOnlyIds =
     interactiveChecklistOnlyIds ?? storedChecklistOnlyIds;
   const currentProgressValue = plan
@@ -242,7 +258,9 @@ export function TripPlanningUI({
         plan,
         currentCheckedSlots,
         currentChecklistOnlyIds,
-        ownedGear
+        ownedGear,
+        packGearIds,
+        currentUncheckedPackedSlots
       )
     : hydratedPlan?.progress ?? 0;
   const planStateKey = plan
@@ -274,10 +292,14 @@ export function TripPlanningUI({
   useEffect(() => {
     setInteractiveProgress(null);
     setInteractiveCheckedSlots(null);
+    setInteractiveUncheckedPackedSlots(null);
     setInteractiveChecklistOnlyIds(null);
     setIsPreparationComplete(false);
     setStoredCheckedSlots(
       planId ? readStoredCheckedSlots(planId, currentPlanUserId) : []
+    );
+    setStoredUncheckedPackedSlots(
+      planId ? readStoredUncheckedPackedSlots(planId, currentPlanUserId) : null
     );
     setStoredChecklistOnlyIds(
       planId ? readStoredChecklistOnlyIds(planId, currentPlanUserId) : []
@@ -434,6 +456,10 @@ export function TripPlanningUI({
     );
     formData.set("progress", String(currentProgressValue));
     formData.set("checked_slots", JSON.stringify(currentCheckedSlots));
+    formData.set(
+      "unchecked_packed_slots",
+      JSON.stringify(currentUncheckedPackedSlots)
+    );
 
     startDateTransition(async () => {
       try {
@@ -502,6 +528,7 @@ export function TripPlanningUI({
             plannedDate={planDetailsDraft.plannedDate}
             plannedEndDate={planDetailsDraft.plannedEndDate}
             checkedSlots={currentCheckedSlots}
+            uncheckedPackedSlots={currentUncheckedPackedSlots}
             checklistOnlyIds={currentChecklistOnlyIds}
             ownedGear={ownedGear}
             packGearIds={packGearIds}
@@ -529,10 +556,12 @@ export function TripPlanningUI({
               plannedEndDate={planDetailsDraft.plannedEndDate}
               isSavedPlanDetail={isSavedPlanMode}
               initialCheckedSlots={currentCheckedSlots}
+              initialUncheckedPackedSlots={currentUncheckedPackedSlots}
               initialChecklistOnlyIds={currentChecklistOnlyIds}
               onProgressChange={setInteractiveProgress}
               onPreparationCompletionChange={setIsPreparationComplete}
               onCheckedSlotsChange={setInteractiveCheckedSlots}
+              onUncheckedPackedSlotsChange={setInteractiveUncheckedPackedSlots}
               onChecklistOnlyIdsChange={setInteractiveChecklistOnlyIds}
               planId={planId}
               userId={currentPlanUserId}
@@ -551,6 +580,7 @@ export function TripPlanningUI({
               hasMountainInsurance={planDetailsDraft.hasMountainInsurance}
               progress={currentProgressValue}
               checkedSlots={currentCheckedSlots}
+              uncheckedPackedSlots={currentUncheckedPackedSlots}
               checklistOnlyIds={currentChecklistOnlyIds}
               isPreparationComplete={isPreparationComplete}
               planId={planId}
@@ -839,6 +869,7 @@ function SavePlanButton({
   hasMountainInsurance,
   progress,
   checkedSlots,
+  uncheckedPackedSlots,
   checklistOnlyIds,
   isPreparationComplete,
   userId
@@ -856,6 +887,7 @@ function SavePlanButton({
   hasMountainInsurance: boolean;
   progress: number;
   checkedSlots: RequirementSlot[];
+  uncheckedPackedSlots: RequirementSlot[];
   checklistOnlyIds: string[];
   isPreparationComplete: boolean;
 }) {
@@ -917,6 +949,11 @@ function SavePlanButton({
 
       if (savedPlanId) {
         writeStoredCheckedSlots(savedPlanId, checkedSlots, userId);
+        writeStoredUncheckedPackedSlots(
+          savedPlanId,
+          uncheckedPackedSlots,
+          userId
+        );
         writeStoredChecklistOnlyIds(savedPlanId, checklistOnlyIds, userId);
         writeTripPlanLocalMeta(savedPlanId, {
           plannedDate,
@@ -953,6 +990,11 @@ function SavePlanButton({
         type="hidden"
         name="checked_slots"
         value={JSON.stringify(checkedSlots)}
+      />
+      <input
+        type="hidden"
+        name="unchecked_packed_slots"
+        value={JSON.stringify(uncheckedPackedSlots)}
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -1174,6 +1216,14 @@ function getSavedPlanCheckedSlots(plan: SavedTripPlan | null) {
   return uniqueRequirementSlots(plan.checked_slots);
 }
 
+function getSavedPlanUncheckedPackedSlots(plan: SavedTripPlan | null) {
+  if (!plan || !Array.isArray(plan.unchecked_packed_slots)) {
+    return null;
+  }
+
+  return uniqueRequirementSlots(plan.unchecked_packed_slots);
+}
+
 function readStoredCheckedSlots(planId: string, userId: string | null) {
   return uniqueRequirementSlots(readTripPlanCheckedSlots({ userId, planId }).value);
 }
@@ -1189,6 +1239,26 @@ function writeStoredCheckedSlots(
   }
 
   writeTripPlanCheckedSlots({ userId, planId, value: checkedSlots });
+}
+
+function readStoredUncheckedPackedSlots(planId: string, userId: string | null) {
+  const result = readTripPlanUncheckedPackedSlots({ userId, planId });
+
+  return result.status === "missing"
+    ? null
+    : uniqueRequirementSlots(result.value);
+}
+
+function writeStoredUncheckedPackedSlots(
+  planId: string,
+  uncheckedPackedSlots: RequirementSlot[],
+  userId: string | null
+) {
+  writeTripPlanUncheckedPackedSlots({
+    userId,
+    planId,
+    value: uncheckedPackedSlots
+  });
 }
 
 function readStoredChecklistOnlyIds(planId: string, userId: string | null) {
@@ -1221,10 +1291,12 @@ function TripPlanningResult({
   planId,
   userId,
   initialCheckedSlots = emptyCheckedSlots,
+  initialUncheckedPackedSlots = emptyUncheckedPackedSlots,
   initialChecklistOnlyIds = emptyChecklistOnlyIds,
   onProgressChange,
   onPreparationCompletionChange,
   onCheckedSlotsChange,
+  onUncheckedPackedSlotsChange,
   onChecklistOnlyIdsChange
 }: {
   plan: PackRequirementPlan;
@@ -1237,23 +1309,30 @@ function TripPlanningResult({
   planId: string | null;
   userId: string | null;
   initialCheckedSlots?: RequirementSlot[];
+  initialUncheckedPackedSlots?: RequirementSlot[];
   initialChecklistOnlyIds?: string[];
   onProgressChange?: (progress: number) => void;
   onPreparationCompletionChange?: (isComplete: boolean) => void;
   onCheckedSlotsChange?: (checkedSlots: RequirementSlot[]) => void;
+  onUncheckedPackedSlotsChange?: (uncheckedPackedSlots: RequirementSlot[]) => void;
   onChecklistOnlyIdsChange?: (checklistOnlyIds: string[]) => void;
 }) {
   const [checkedSlots, setCheckedSlots] = useState<RequirementSlot[]>(() => {
     return filterCheckedSlotsForPlan(initialCheckedSlots, plan);
   });
+  const [uncheckedPackedSlots, setUncheckedPackedSlots] = useState<
+    RequirementSlot[]
+  >(() => filterCheckedSlotsForPlan(initialUncheckedPackedSlots, plan));
   const [checklistOnlyIds, setChecklistOnlyIds] = useState<string[]>(() => {
     return uniqueChecklistOnlyIds(initialChecklistOnlyIds);
   });
   const initialCheckedSlotsKey = initialCheckedSlots.join("|");
+  const initialUncheckedPackedSlotsKey = initialUncheckedPackedSlots.join("|");
   const initialChecklistOnlyIdsKey = initialChecklistOnlyIds.join("|");
   const checklist = buildPlanChecklist({
     plan,
     checkedSlots,
+    uncheckedPackedSlots,
     checkedChecklistOnlyIds: checklistOnlyIds,
     ownedGear,
     packedGearIds: packGearIds
@@ -1310,6 +1389,15 @@ function TripPlanningResult({
   }, [initialCheckedSlotsKey, plan]);
 
   useEffect(() => {
+    const nextUncheckedPackedSlots = filterCheckedSlotsForPlan(
+      initialUncheckedPackedSlots,
+      plan
+    );
+
+    setUncheckedPackedSlots(nextUncheckedPackedSlots);
+  }, [initialUncheckedPackedSlotsKey, plan]);
+
+  useEffect(() => {
     const nextChecklistOnlyIds = uniqueChecklistOnlyIds(initialChecklistOnlyIds);
 
     setChecklistOnlyIds(nextChecklistOnlyIds);
@@ -1349,7 +1437,7 @@ function TripPlanningResult({
 
   function handleToggleChecklistItem(item: ChecklistItem) {
     if (item.source === "GEAR_BACKED" && item.toggleSlots.length > 0) {
-      handleToggleGearBackedItem(item.toggleSlots);
+      handleToggleGearBackedItem(item);
       return;
     }
 
@@ -1380,33 +1468,49 @@ function TripPlanningResult({
     });
   }
 
-  function handleToggleGearBackedItem(slots: RequirementSlot[]) {
+  function handleToggleGearBackedItem(item: ChecklistItem) {
+    const slots = item.toggleSlots;
+
     if (slots.length === 0) {
       return;
     }
 
-    setCheckedSlots((currentSlots) => {
-      const nextSlots = new Set(currentSlots);
-      const shouldUncheck = slots.every((slot) => nextSlots.has(slot));
+    const nextCheckedSlotSet = new Set(checkedSlots);
+    const nextUncheckedPackedSlotSet = new Set(uncheckedPackedSlots);
 
-      for (const slot of slots) {
-        if (shouldUncheck) {
-          nextSlots.delete(slot);
-        } else {
-          nextSlots.add(slot);
+    for (const coverage of item.slotCoverage) {
+      if (item.checked) {
+        nextCheckedSlotSet.delete(coverage.slot);
+
+        if (coverage.status === "PACKED") {
+          nextUncheckedPackedSlotSet.add(coverage.slot);
         }
+      } else if (coverage.status === "PACKED") {
+        nextUncheckedPackedSlotSet.delete(coverage.slot);
+      } else {
+        nextCheckedSlotSet.add(coverage.slot);
       }
+    }
 
-      const nextCheckedSlots = filterCheckedSlotsForPlan(Array.from(nextSlots), plan);
+    const nextCheckedSlots = filterCheckedSlotsForPlan(
+      Array.from(nextCheckedSlotSet),
+      plan
+    );
+    const nextUncheckedPackedSlots = filterCheckedSlotsForPlan(
+      Array.from(nextUncheckedPackedSlotSet),
+      plan
+    );
 
-      if (planId) {
-        writeStoredCheckedSlots(planId, nextCheckedSlots, userId);
-      }
+    setCheckedSlots(nextCheckedSlots);
+    setUncheckedPackedSlots(nextUncheckedPackedSlots);
 
-      onCheckedSlotsChange?.(nextCheckedSlots);
+    if (planId) {
+      writeStoredCheckedSlots(planId, nextCheckedSlots, userId);
+      writeStoredUncheckedPackedSlots(planId, nextUncheckedPackedSlots, userId);
+    }
 
-      return nextCheckedSlots;
-    });
+    onCheckedSlotsChange?.(nextCheckedSlots);
+    onUncheckedPackedSlotsChange?.(nextUncheckedPackedSlots);
   }
 
   function handleToggleChecklistOnlyItem(id: string) {
@@ -1533,6 +1637,7 @@ function SavedPlanFullChecklistView({
   plannedDate,
   plannedEndDate,
   checkedSlots,
+  uncheckedPackedSlots,
   checklistOnlyIds,
   ownedGear,
   packGearIds,
@@ -1542,6 +1647,7 @@ function SavedPlanFullChecklistView({
   plannedDate: string;
   plannedEndDate: string;
   checkedSlots: RequirementSlot[];
+  uncheckedPackedSlots: RequirementSlot[];
   checklistOnlyIds: string[];
   ownedGear: UserGear[];
   packGearIds: string[];
@@ -1550,6 +1656,7 @@ function SavedPlanFullChecklistView({
   const checklist = buildPlanChecklist({
     plan,
     checkedSlots,
+    uncheckedPackedSlots,
     checkedChecklistOnlyIds: checklistOnlyIds,
     ownedGear,
     packedGearIds: packGearIds

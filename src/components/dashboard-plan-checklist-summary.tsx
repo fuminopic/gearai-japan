@@ -11,7 +11,8 @@ import {
 } from "@/lib/plan-checklist";
 import {
   readTripPlanCheckedSlots,
-  readTripPlanChecklistOnlyIds
+  readTripPlanChecklistOnlyIds,
+  readTripPlanUncheckedPackedSlots
 } from "@/lib/trip-plan-storage";
 import type { RequirementSlot } from "@/lib/types";
 
@@ -34,12 +35,16 @@ export function DashboardPlanChecklistSummary({
     }
 
     const checkedSlots = readStoredCheckedSlots(planId, userId ?? null);
+    const uncheckedPackedSlots = readStoredUncheckedPackedSlots(
+      planId,
+      userId ?? null
+    );
     const checkedChecklistOnlyIds = readStoredChecklistOnlyIds(
       planId,
       userId ?? null
     );
 
-    if (!checkedSlots && !checkedChecklistOnlyIds) {
+    if (!checkedSlots && !uncheckedPackedSlots && !checkedChecklistOnlyIds) {
       setHydratedChecklist(checklist);
       return;
     }
@@ -48,6 +53,7 @@ export function DashboardPlanChecklistSummary({
       applyChecklistStateToChecklist({
         checklist,
         checkedSlots,
+        uncheckedPackedSlots,
         checkedChecklistOnlyIds
       })
     );
@@ -101,6 +107,19 @@ function readStoredChecklistOnlyIds(
   }
 
   return result.value.filter(isSupportedChecklistOnlyId);
+}
+
+function readStoredUncheckedPackedSlots(
+  planId: string,
+  userId: string | null
+): RequirementSlot[] | undefined {
+  const result = readTripPlanUncheckedPackedSlots({ userId, planId });
+
+  if (result.status === "missing") {
+    return undefined;
+  }
+
+  return result.value.filter(isSupportedRequirementSlot);
 }
 
 function PlanCategorySummary({

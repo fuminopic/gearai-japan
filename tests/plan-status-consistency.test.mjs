@@ -51,6 +51,7 @@ const {
   applyChecklistStateToChecklist,
   buildPlanChecklist,
   buildPreDepartureSummary,
+  calculateChecklistProgress,
   filterCheckedSlotsForPlan
 } = await importTranspiled(
   planChecklistSource.replace(
@@ -235,6 +236,138 @@ test("pack, owned, and missing status use actual matching gear IDs with packed d
   );
 });
 
+test("every packed requirement defaults to confirmed across checklist categories and match counts", () => {
+  const gear = (id) => ({ id });
+  const rainJacket = gear("rain-jacket");
+  const spareRainJacket = gear("spare-rain-jacket");
+  const headlamp = gear("headlamp");
+  const helmet = gear("helmet");
+  const tent = gear("tent");
+  const waterBottle = gear("water-bottle");
+  const waterFilter = gear("water-filter");
+  const plan = {
+    mountain: {
+      name_ja: "テスト山",
+      helmet_guidance: "REQUIRED",
+      technical_terrain: "MAINTAINED_TRAIL",
+      route_seriousness: "LOW",
+      snow_or_ice_risk: "NONE",
+      volcanic_risk: "NONE",
+      bear_or_wildlife_risk: "LOW",
+      tent_site_availability: "AVAILABLE",
+      hut_support: "NONE",
+      water_availability: "RELIABLE"
+    },
+    season: "SUMMER",
+    style: "OVERNIGHT_TENT",
+    required_slots: [
+      {
+        slot: "RAIN_JACKET",
+        coverage_status: "COVERED",
+        matching_owned_gear: [rainJacket, spareRainJacket]
+      },
+      {
+        slot: "HEADLAMP",
+        coverage_status: "COVERED",
+        matching_owned_gear: [headlamp]
+      },
+      {
+        slot: "HELMET",
+        coverage_status: "COVERED",
+        matching_owned_gear: [helmet]
+      },
+      {
+        slot: "TENT",
+        coverage_status: "COVERED",
+        matching_owned_gear: [tent]
+      },
+      {
+        slot: "WATER_STORAGE",
+        coverage_status: "COVERED",
+        matching_owned_gear: [waterBottle]
+      },
+      {
+        slot: "WATER_TREATMENT",
+        coverage_status: "COVERED",
+        matching_owned_gear: [waterFilter]
+      }
+    ]
+  };
+  const ownedGear = [
+    rainJacket,
+    spareRainJacket,
+    headlamp,
+    helmet,
+    tent,
+    waterBottle,
+    waterFilter
+  ];
+  const packedGearIds = [
+    spareRainJacket.id,
+    headlamp.id,
+    helmet.id,
+    tent.id,
+    waterBottle.id,
+    waterFilter.id
+  ];
+  const initiallyOwnedChecklist = buildPlanChecklist({ plan, ownedGear });
+  const packedChecklist = buildPlanChecklist({ plan, ownedGear, packedGearIds });
+  const itemsById = new Map(
+    packedChecklist.categories.flatMap((category) => category.items).map((item) => [item.id, item])
+  );
+  const packedCoverage = packedChecklist.categories
+    .flatMap((category) => category.items)
+    .flatMap((item) => item.slotCoverage)
+    .filter((coverage) => coverage.status === "PACKED");
+
+  assert.deepEqual(
+    [
+      "clothing-rainwear",
+      "nav-headlamp",
+      "special-helmet",
+      "overnight-tent",
+      "food-water"
+    ].map((id) => itemsById.get(id)?.checked),
+    [true, true, true, true, true]
+  );
+  assert.equal(packedCoverage.length, 6);
+  assert.ok(packedCoverage.every((coverage) => coverage.isConfirmed));
+  assert.ok(packedChecklist.summary.percent > initiallyOwnedChecklist.summary.percent);
+  assert.equal(
+    calculateChecklistProgress(plan, [], [], ownedGear, packedGearIds),
+    packedChecklist.summary.percent
+  );
+
+  const savedPlanWithExplicitCancel = buildPlanChecklist({
+    plan,
+    ownedGear,
+    packedGearIds,
+    uncheckedPackedSlots: ["RAIN_JACKET"]
+  });
+  const unrelatedNewPlan = buildPlanChecklist({ plan, ownedGear, packedGearIds });
+
+  assert.equal(
+    savedPlanWithExplicitCancel.categories
+      .flatMap((category) => category.items)
+      .find((item) => item.id === "clothing-rainwear")?.checked,
+    false
+  );
+  assert.equal(itemsById.get("clothing-rainwear")?.checked, true);
+  assert.equal(
+    unrelatedNewPlan.categories
+      .flatMap((category) => category.items)
+      .find((item) => item.id === "clothing-rainwear")?.checked,
+    true
+  );
+  assert.equal(
+    applyChecklistStateToChecklist({
+      checklist: packedChecklist,
+      uncheckedPackedSlots: []
+    }).summary.percent,
+    packedChecklist.summary.percent
+  );
+});
+
 test("plan rows consistently display pack, owned, missing, and manual confirmation states", () => {
   assert.match(tripPlanningUiSource, /const confirmedItems = fullCategory\.items\.filter/);
   assert.match(tripPlanningUiSource, /const status = getChecklistItemStatus\(item\)/);
@@ -282,7 +415,14 @@ test("saved plans persist packed confirmation overrides and dashboard uses the s
   assert.doesNotMatch(heroGaugeSource, /Math\.max\(fallbackPercent/);
 });
 
-test("packed cancellation state is scoped to the active draft conditions or saved plan", () => {
+test("all checklist state is scoped to the URL-selected saved plan or active draft conditions", () => {
+  assert.match(tripPlanningUiSource, /const planId = searchParams\.get\("id"\);/);
+  assert.doesNotMatch(tripPlanningUiSource, /\?\? selectedPlanId/);
+  assert.match(tripPlanningUiSource, /const initialSavedPlan = planId/);
+  assert.match(
+    tripPlanningUiSource,
+    /const activeSavedPlan =[\s\S]*hydratedPlan\?\.id === planId \? hydratedPlan : initialSavedPlan/
+  );
   assert.match(
     tripPlanningUiSource,
     /const storedUncheckedPackedSlotsScopeKey = planId \? `saved:\$\{planId\}` : null/
@@ -295,6 +435,22 @@ test("packed cancellation state is scoped to the active draft conditions or save
   assert.match(
     tripPlanningUiSource,
     /storedUncheckedPackedSlots\?\.scopeKey === storedUncheckedPackedSlotsScopeKey/
+  );
+  assert.match(
+    tripPlanningUiSource,
+    /interactiveCheckedSlots\?\.scopeKey === uncheckedPackedSlotsScopeKey/
+  );
+  assert.match(
+    tripPlanningUiSource,
+    /interactiveChecklistOnlyIds\?\.scopeKey === uncheckedPackedSlotsScopeKey/
+  );
+  assert.match(
+    tripPlanningUiSource,
+    /const restoredUncheckedPackedSlots = planId[\s\S]*: \[\];/
+  );
+  assert.match(
+    tripPlanningUiSource,
+    /const restoredCheckedSlots = planId[\s\S]*: \[\];/
   );
   assert.match(tripPlanningUiSource, /<TripPlanningResult\s+key=\{uncheckedPackedSlotsScopeKey\}/);
 });

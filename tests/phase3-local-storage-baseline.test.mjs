@@ -453,13 +453,13 @@ test("current checklist storage reads and writes stay in plan, hero, and dashboa
 test("plan page and dashboard hydrate explicit and packed-cancellation slot state", () => {
   assert.match(
     tripPlanningUiSource,
-    /storedCheckedSlots\.length > 0 \? storedCheckedSlots : savedCheckedSlots \?\? \[\]/
+    /const restoredCheckedSlots = planId[\s\S]*storedCheckedSlotsForCurrentPlan \?\? savedCheckedSlots \?\? \[\]/
   );
-  assert.match(tripPlanningUiSource, /getSavedPlanCheckedSlots\(hydratedPlan\)/);
+  assert.match(tripPlanningUiSource, /getSavedPlanCheckedSlots\(activeSavedPlan\)/);
   assert.match(tripPlanningUiSource, /if \(!plan \|\| !Array\.isArray\(plan\.checked_slots\)\)/);
   assert.match(
     tripPlanningUiSource,
-    /getSavedPlanUncheckedPackedSlots\(activeHydratedPlan\)/
+    /getSavedPlanUncheckedPackedSlots\(activeSavedPlan\)/
   );
   assert.match(tripPlanningUiSource, /readStoredUncheckedPackedSlots\(planId, currentPlanUserId\)/);
 
@@ -476,7 +476,10 @@ test("plan page and dashboard hydrate explicit and packed-cancellation slot stat
 });
 
 test("current checklist-only state is localStorage-only and requires legacy fallback", () => {
-  assert.match(tripPlanningUiSource, /const currentChecklistOnlyIds =\s+interactiveChecklistOnlyIds \?\? storedChecklistOnlyIds;/);
+  assert.match(
+    tripPlanningUiSource,
+    /const currentChecklistOnlyIds =[\s\S]*interactiveChecklistOnlyIdsForCurrentPlan \?\?[\s\S]*storedChecklistOnlyIdsForCurrentPlan \?\? \[\]/
+  );
   assert.match(
     tripPlanningUiSource,
     /writeStoredChecklistOnlyIds\(savedPlanId, checklistOnlyIds, userId\)/
@@ -491,7 +494,7 @@ test("trip planning page uses scoped checklist helpers when user scope is availa
   assert.match(tripPlanningUiSource, /writeTripPlanLocalMeta\([\s\S]*\{ userId: currentPlanUserId \}/);
   assert.match(tripPlanningUiSource, /writeTripPlanLocalMeta\([\s\S]*\{ userId \}/);
 
-  assert.match(tripPlanningUiSource, /readTripPlanCheckedSlots\(\{ userId, planId \}\)\.value/);
+  assert.match(tripPlanningUiSource, /const result = readTripPlanCheckedSlots\(\{ userId, planId \}\)/);
   assert.match(tripPlanningUiSource, /readTripPlanChecklistOnlyIds\(\{ userId, planId \}\)\.value/);
   assert.match(tripPlanningUiSource, /writeTripPlanCheckedSlots\(\{ userId, planId, value: checkedSlots \}\)/);
   assert.match(
@@ -520,7 +523,7 @@ test("trip planning page uses scoped checklist helpers when user scope is availa
 test("trip planning page keeps checklist helper reads sanitized for current plan semantics", () => {
   assert.match(
     tripPlanningUiSource,
-    /return uniqueRequirementSlots\(readTripPlanCheckedSlots\(\{ userId, planId \}\)\.value\);/
+    /return result\.status === "missing" \? null : uniqueRequirementSlots\(result\.value\);/
   );
   assert.match(
     tripPlanningUiSource,
@@ -528,7 +531,7 @@ test("trip planning page keeps checklist helper reads sanitized for current plan
   );
   assert.match(
     tripPlanningUiSource,
-    /storedCheckedSlots\.length > 0 \? storedCheckedSlots : savedCheckedSlots \?\? \[\]/
+    /const restoredCheckedSlots = planId[\s\S]*storedCheckedSlotsForCurrentPlan \?\? savedCheckedSlots \?\? \[\]/
   );
 });
 

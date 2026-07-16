@@ -182,7 +182,6 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
         compatibilityBySlot={compatibilityBySlot}
         planHistory={planHistory}
         savedPlans={savedPlans}
-        selectedPlanId={params.id ?? null}
         selectedSavedPlan={selectedSavedPlan}
         error={error}
       />

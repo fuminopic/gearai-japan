@@ -126,7 +126,6 @@ type TripPlanningUIProps = {
   compatibilityBySlot?: Partial<Record<RequirementSlot, GearMatchingResult>>;
   planHistory?: AIRecommendationRecord[];
   savedPlans?: SavedTripPlan[];
-  selectedPlanId?: string | null;
   selectedSavedPlan?: SavedTripPlan | null;
   error?: string;
 };
@@ -144,6 +143,11 @@ type DisplayGearMatchingResult = Omit<GearMatchingResult, "slot"> & {
 type ScopedRequirementSlots = {
   scopeKey: string;
   slots: RequirementSlot[] | null;
+};
+
+type ScopedChecklistOnlyIds = {
+  scopeKey: string;
+  ids: string[];
 };
 
 const emptyCheckedSlots: RequirementSlot[] = [];
@@ -164,52 +168,63 @@ export function TripPlanningUI({
   compatibilityBySlot = {},
   planHistory = [],
   savedPlans = [],
-  selectedPlanId,
   selectedSavedPlan,
   error
 }: TripPlanningUIProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [, startDateTransition] = useTransition();
-  const planId = searchParams.get("id") ?? selectedPlanId ?? null;
+  // The URL is the canonical plan scope. During client navigation the previous
+  // Server Component props can remain available for one render, so never use
+  // them as a fallback for a missing query id.
+  const planId = searchParams.get("id");
   const planView = searchParams.get("view");
   const shouldFocusChecklist = searchParams.get("focus") === "checklist";
   const shouldFocusPreDeparture = searchParams.get("focus") === "predeparture";
   const resultSectionRef = useRef<HTMLDivElement>(null);
   const generatedPlanKeyRef = useRef<string | null>(null);
-  const initialSavedPlan =
-    selectedSavedPlan ?? savedPlans.find((record) => record.id === planId) ?? null;
+  const initialSavedPlan = planId
+    ? selectedSavedPlan?.id === planId
+      ? selectedSavedPlan
+      : savedPlans.find((record) => record.id === planId) ?? null
+    : null;
   const [hydratedPlan, setHydratedPlan] = useState<SavedTripPlan | null>(
     initialSavedPlan
   );
   const [, setInteractiveProgress] = useState<number | null>(null);
   const [interactiveCheckedSlots, setInteractiveCheckedSlots] = useState<
-    RequirementSlot[] | null
+    ScopedRequirementSlots | null
   >(null);
   const [interactiveUncheckedPackedSlots, setInteractiveUncheckedPackedSlots] =
     useState<ScopedRequirementSlots | null>(null);
   const [interactiveChecklistOnlyIds, setInteractiveChecklistOnlyIds] = useState<
-    string[] | null
+    ScopedChecklistOnlyIds | null
   >(null);
-  const [storedCheckedSlots, setStoredCheckedSlots] = useState<RequirementSlot[]>([]);
+  const [storedCheckedSlots, setStoredCheckedSlots] = useState<
+    ScopedRequirementSlots | null
+  >(null);
   const [storedUncheckedPackedSlots, setStoredUncheckedPackedSlots] = useState<
     ScopedRequirementSlots | null
   >(null);
-  const [storedChecklistOnlyIds, setStoredChecklistOnlyIds] = useState<string[]>([]);
+  const [storedChecklistOnlyIds, setStoredChecklistOnlyIds] = useState<
+    ScopedChecklistOnlyIds | null
+  >(null);
   const [isDateEditorOpen, setIsDateEditorOpen] = useState(false);
   const [dateSaveState, setDateSaveState] = useState<
     "idle" | "saving" | "success" | "error"
   >("idle");
   const [isPreparationComplete, setIsPreparationComplete] = useState(false);
-  const currentPlanUserId = hydratedPlan?.user_id ?? initialSavedPlan?.user_id ?? null;
-  const effectiveMountainSlug = hydratedPlan?.mountain_slug ?? selectedMountainSlug;
-  const effectiveSeason = hydratedPlan?.season ?? selectedSeason;
-  const effectiveStyle = hydratedPlan?.style ?? selectedStyle;
+  const activeSavedPlan =
+    hydratedPlan?.id === planId ? hydratedPlan : initialSavedPlan;
+  const currentPlanUserId = activeSavedPlan?.user_id ?? null;
+  const effectiveMountainSlug = activeSavedPlan?.mountain_slug ?? selectedMountainSlug;
+  const effectiveSeason = activeSavedPlan?.season ?? selectedSeason;
+  const effectiveStyle = activeSavedPlan?.style ?? selectedStyle;
   const localPlanMeta = planId
     ? readTripPlanLocalMeta(planId, { userId: currentPlanUserId })
     : null;
   const resolvedPlannedDate = planId
-    ? hydratedPlan?.planned_date ??
+    ? activeSavedPlan?.planned_date ??
       sanitizeDateParam(searchParams.get("date")) ??
       localPlanMeta?.plannedDate ??
       ""
@@ -217,7 +232,7 @@ export function TripPlanningUI({
   const resolvedPlannedEndDate = normalizePlanEndDate(
     resolvedPlannedDate,
     planId
-      ? hydratedPlan?.planned_end_date ??
+      ? activeSavedPlan?.planned_end_date ??
           sanitizeDateParam(searchParams.get("end_date")) ??
           localPlanMeta?.plannedEndDate ??
           ""
@@ -225,12 +240,12 @@ export function TripPlanningUI({
     effectiveStyle
   );
   const resolvedTripMemo =
-    sanitizeMemoParam(searchParams.get("memo")) ?? hydratedPlan?.trip_memo ?? "";
+    sanitizeMemoParam(searchParams.get("memo")) ?? activeSavedPlan?.trip_memo ?? "";
   const resolvedBringCash =
-    parseBooleanParam(searchParams.get("cash")) ?? hydratedPlan?.bring_cash ?? false;
+    parseBooleanParam(searchParams.get("cash")) ?? activeSavedPlan?.bring_cash ?? false;
   const resolvedHasMountainInsurance =
     parseBooleanParam(searchParams.get("insurance")) ??
-    hydratedPlan?.has_mountain_insurance ??
+    activeSavedPlan?.has_mountain_insurance ??
     false;
   const [planDetailsDraft, setPlanDetailsDraft] = useState({
     plannedDate: resolvedPlannedDate,
@@ -248,12 +263,21 @@ export function TripPlanningUI({
   const uncheckedPackedSlotsScopeKey = planId
     ? `saved:${planId}:${planStateKey}`
     : `draft:${planStateKey}`;
-  const activeHydratedPlan = hydratedPlan?.id === planId ? hydratedPlan : null;
-  const savedCheckedSlots = getSavedPlanCheckedSlots(hydratedPlan);
-  const savedUncheckedPackedSlots = getSavedPlanUncheckedPackedSlots(activeHydratedPlan);
-  const restoredCheckedSlots =
-    storedCheckedSlots.length > 0 ? storedCheckedSlots : savedCheckedSlots ?? [];
-  const rawCurrentCheckedSlots = interactiveCheckedSlots ?? restoredCheckedSlots;
+  const savedCheckedSlots = getSavedPlanCheckedSlots(activeSavedPlan);
+  const savedUncheckedPackedSlots = getSavedPlanUncheckedPackedSlots(activeSavedPlan);
+  const storedCheckedSlotsForCurrentPlan =
+    storedCheckedSlots?.scopeKey === storedUncheckedPackedSlotsScopeKey
+      ? storedCheckedSlots.slots
+      : null;
+  const interactiveCheckedSlotsForCurrentPlan =
+    interactiveCheckedSlots?.scopeKey === uncheckedPackedSlotsScopeKey
+      ? interactiveCheckedSlots.slots
+      : null;
+  const restoredCheckedSlots = planId
+    ? storedCheckedSlotsForCurrentPlan ?? savedCheckedSlots ?? []
+    : [];
+  const rawCurrentCheckedSlots =
+    interactiveCheckedSlotsForCurrentPlan ?? restoredCheckedSlots;
   const currentCheckedSlots = plan
     ? filterCheckedSlotsForPlan(rawCurrentCheckedSlots, plan)
     : rawCurrentCheckedSlots;
@@ -265,15 +289,25 @@ export function TripPlanningUI({
     interactiveUncheckedPackedSlots?.scopeKey === uncheckedPackedSlotsScopeKey
       ? interactiveUncheckedPackedSlots.slots
       : null;
-  const restoredUncheckedPackedSlots =
-    storedUncheckedPackedSlotsForCurrentPlan ?? savedUncheckedPackedSlots ?? [];
+  const restoredUncheckedPackedSlots = planId
+    ? storedUncheckedPackedSlotsForCurrentPlan ?? savedUncheckedPackedSlots ?? []
+    : [];
   const rawCurrentUncheckedPackedSlots =
     interactiveUncheckedPackedSlotsForCurrentPlan ?? restoredUncheckedPackedSlots;
   const currentUncheckedPackedSlots = plan
     ? filterCheckedSlotsForPlan(rawCurrentUncheckedPackedSlots, plan)
     : rawCurrentUncheckedPackedSlots;
+  const interactiveChecklistOnlyIdsForCurrentPlan =
+    interactiveChecklistOnlyIds?.scopeKey === uncheckedPackedSlotsScopeKey
+      ? interactiveChecklistOnlyIds.ids
+      : null;
+  const storedChecklistOnlyIdsForCurrentPlan =
+    storedChecklistOnlyIds?.scopeKey === storedUncheckedPackedSlotsScopeKey
+      ? storedChecklistOnlyIds.ids
+      : null;
   const currentChecklistOnlyIds =
-    interactiveChecklistOnlyIds ?? storedChecklistOnlyIds;
+    interactiveChecklistOnlyIdsForCurrentPlan ??
+    (planId ? storedChecklistOnlyIdsForCurrentPlan ?? [] : []);
   const currentProgressValue = plan
     ? calculateChecklistProgress(
         plan,
@@ -283,7 +317,7 @@ export function TripPlanningUI({
         packGearIds,
         currentUncheckedPackedSlots
       )
-    : hydratedPlan?.progress ?? 0;
+    : activeSavedPlan?.progress ?? 0;
   const isSavedPlanMode = Boolean(planId && plan);
   const isFullChecklistView = isSavedPlanMode && planView === "checklist";
 
@@ -314,7 +348,12 @@ export function TripPlanningUI({
     setInteractiveChecklistOnlyIds(null);
     setIsPreparationComplete(false);
     setStoredCheckedSlots(
-      planId ? readStoredCheckedSlots(planId, currentPlanUserId) : []
+      planId
+        ? {
+            scopeKey: `saved:${planId}`,
+            slots: readStoredCheckedSlots(planId, currentPlanUserId)
+          }
+        : null
     );
     setStoredUncheckedPackedSlots(
       planId
@@ -325,7 +364,12 @@ export function TripPlanningUI({
         : null
     );
     setStoredChecklistOnlyIds(
-      planId ? readStoredChecklistOnlyIds(planId, currentPlanUserId) : []
+      planId
+        ? {
+            scopeKey: `saved:${planId}`,
+            ids: readStoredChecklistOnlyIds(planId, currentPlanUserId)
+          }
+        : null
     );
   }, [
     currentPlanUserId,
@@ -589,14 +633,24 @@ export function TripPlanningUI({
               initialChecklistOnlyIds={currentChecklistOnlyIds}
               onProgressChange={setInteractiveProgress}
               onPreparationCompletionChange={setIsPreparationComplete}
-              onCheckedSlotsChange={setInteractiveCheckedSlots}
+              onCheckedSlotsChange={(slots) =>
+                setInteractiveCheckedSlots({
+                  scopeKey: uncheckedPackedSlotsScopeKey,
+                  slots
+                })
+              }
               onUncheckedPackedSlotsChange={(slots) =>
                 setInteractiveUncheckedPackedSlots({
                   scopeKey: uncheckedPackedSlotsScopeKey,
                   slots
                 })
               }
-              onChecklistOnlyIdsChange={setInteractiveChecklistOnlyIds}
+              onChecklistOnlyIdsChange={(ids) =>
+                setInteractiveChecklistOnlyIds({
+                  scopeKey: uncheckedPackedSlotsScopeKey,
+                  ids
+                })
+              }
               planId={planId}
               userId={currentPlanUserId}
             />
@@ -1259,7 +1313,9 @@ function getSavedPlanUncheckedPackedSlots(plan: SavedTripPlan | null) {
 }
 
 function readStoredCheckedSlots(planId: string, userId: string | null) {
-  return uniqueRequirementSlots(readTripPlanCheckedSlots({ userId, planId }).value);
+  const result = readTripPlanCheckedSlots({ userId, planId });
+
+  return result.status === "missing" ? null : uniqueRequirementSlots(result.value);
 }
 
 function writeStoredCheckedSlots(

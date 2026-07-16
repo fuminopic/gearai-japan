@@ -677,12 +677,6 @@ function buildChecklistItem({
         isExplicitlyChecked || (status === "PACKED" && !isPackedUnchecked)
     } satisfies ChecklistSlotCoverage;
   });
-  const checked =
-    source === "GEAR_BACKED"
-      ? slots.length > 0
-        ? slotCoverage.every((coverage) => coverage.isConfirmed)
-        : checkedChecklistOnlySet.has(definition.id)
-      : checkedChecklistOnlySet.has(definition.id);
   const gearStatus =
     source === "GEAR_BACKED"
       ? slotCoverage.length > 0
@@ -693,6 +687,16 @@ function buildChecklistItem({
             ? "OWNED"
             : "MISSING"
       : null;
+  const checked =
+    source === "GEAR_BACKED"
+      ? getGearBackedItemChecked({
+          itemId: definition.id,
+          slots,
+          slotCoverage,
+          gearStatus: gearStatus ?? "MISSING",
+          checkedChecklistOnlySet
+        })
+      : checkedChecklistOnlySet.has(definition.id);
 
   return {
     ...definition,
@@ -719,6 +723,26 @@ function summarizeSlotCoverageStatus(
   }
 
   return "PACKED";
+}
+
+function getGearBackedItemChecked({
+  itemId,
+  slots,
+  slotCoverage,
+  gearStatus,
+  checkedChecklistOnlySet
+}: {
+  itemId: string;
+  slots: readonly RequirementSlot[];
+  slotCoverage: readonly ChecklistSlotCoverage[];
+  gearStatus: ChecklistGearStatus;
+  checkedChecklistOnlySet: ReadonlySet<string>;
+}) {
+  if (slots.length > 0) {
+    return slotCoverage.every((coverage) => coverage.isConfirmed);
+  }
+
+  return gearStatus === "PACKED" || checkedChecklistOnlySet.has(itemId);
 }
 
 function buildChecklistCategory(
@@ -1587,14 +1611,26 @@ export function applyChecklistStateToChecklist({
           return {
             ...item,
             slotCoverage,
-            checked: slotCoverage.every((coverage) => coverage.isConfirmed)
+            checked: getGearBackedItemChecked({
+              itemId: item.id,
+              slots: item.toggleSlots,
+              slotCoverage,
+              gearStatus: item.gearStatus ?? "MISSING",
+              checkedChecklistOnlySet
+            })
           };
         }
 
         if (item.toggleSlots.length === 0 && shouldApplyChecklistOnlyIds) {
           return {
             ...item,
-            checked: checkedChecklistOnlySet.has(item.id)
+            checked: getGearBackedItemChecked({
+              itemId: item.id,
+              slots: item.toggleSlots,
+              slotCoverage: item.slotCoverage,
+              gearStatus: item.gearStatus ?? "MISSING",
+              checkedChecklistOnlySet
+            })
           };
         }
 

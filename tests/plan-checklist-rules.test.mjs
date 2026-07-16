@@ -41,6 +41,7 @@ const planChecklistModule = await import(
   ).toString("base64")}`
 );
 const {
+  applyChecklistStateToChecklist,
   buildPlanChecklist,
   buildPlanDecisionChips,
   buildPlanNotNeededItems
@@ -155,6 +156,56 @@ function makeOwnedGear({
     gear_products: product
   };
 }
+
+test("all packed matcher-only gear is confirmed by default and remains confirmed after hydration", () => {
+  const packedGear = [
+    makeOwnedGear({
+      id: "packed-backpack",
+      name: "パック",
+      categoryName: "backpack",
+      categoryLabel: "バックパック",
+      subcategoryName: "backpack",
+      subcategoryLabel: "バックパック"
+    }),
+    makeOwnedGear({
+      id: "packed-trekking-poles",
+      name: "トレッキングポール",
+      categoryName: "other",
+      categoryLabel: "その他",
+      subcategoryName: "trekking_pole",
+      subcategoryLabel: "トレッキングポール"
+    }),
+    makeOwnedGear({
+      id: "packed-sunglasses",
+      name: "サングラス",
+      categoryName: "clothing",
+      categoryLabel: "ウェア",
+      subcategoryName: "sunglasses",
+      subcategoryLabel: "サングラス"
+    })
+  ];
+  const checklist = buildPlanChecklist({
+    plan: makePlan(),
+    ownedGear: packedGear,
+    packedGearIds: packedGear.map((gear) => gear.id)
+  });
+  const packedItems = checklistItems(checklist).filter(
+    (item) => item.gearStatus === "PACKED"
+  );
+
+  assert.equal(packedItems.length, 3);
+  assert.ok(packedItems.every((item) => item.checked));
+
+  const hydratedChecklist = applyChecklistStateToChecklist({
+    checklist,
+    checkedChecklistOnlyIds: []
+  });
+  const hydratedPackedItems = checklistItems(hydratedChecklist).filter(
+    (item) => item.gearStatus === "PACKED"
+  );
+
+  assert.ok(hydratedPackedItems.every((item) => item.checked));
+});
 
 test("owned backpack category matches the action backpack without confirming it", () => {
   const checklist = buildPlanChecklist({

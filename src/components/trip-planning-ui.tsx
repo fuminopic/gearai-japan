@@ -141,6 +141,11 @@ type DisplayGearMatchingResult = Omit<GearMatchingResult, "slot"> & {
   slot: RequirementSlot;
 };
 
+type ScopedRequirementSlots = {
+  scopeKey: string;
+  slots: RequirementSlot[] | null;
+};
+
 const emptyCheckedSlots: RequirementSlot[] = [];
 const emptyUncheckedPackedSlots: RequirementSlot[] = [];
 const emptyChecklistOnlyIds: string[] = [];
@@ -182,13 +187,13 @@ export function TripPlanningUI({
     RequirementSlot[] | null
   >(null);
   const [interactiveUncheckedPackedSlots, setInteractiveUncheckedPackedSlots] =
-    useState<RequirementSlot[] | null>(null);
+    useState<ScopedRequirementSlots | null>(null);
   const [interactiveChecklistOnlyIds, setInteractiveChecklistOnlyIds] = useState<
     string[] | null
   >(null);
   const [storedCheckedSlots, setStoredCheckedSlots] = useState<RequirementSlot[]>([]);
   const [storedUncheckedPackedSlots, setStoredUncheckedPackedSlots] = useState<
-    RequirementSlot[] | null
+    ScopedRequirementSlots | null
   >(null);
   const [storedChecklistOnlyIds, setStoredChecklistOnlyIds] = useState<string[]>([]);
   const [isDateEditorOpen, setIsDateEditorOpen] = useState(false);
@@ -236,18 +241,34 @@ export function TripPlanningUI({
   });
   const selectedMountain =
     mountains.find((mountain) => mountain.slug === effectiveMountainSlug) ?? null;
+  const planStateKey = plan
+    ? `${plan.mountain.slug}:${plan.season}:${plan.style}`
+    : "no-plan";
+  const storedUncheckedPackedSlotsScopeKey = planId ? `saved:${planId}` : null;
+  const uncheckedPackedSlotsScopeKey = planId
+    ? `saved:${planId}:${planStateKey}`
+    : `draft:${planStateKey}`;
+  const activeHydratedPlan = hydratedPlan?.id === planId ? hydratedPlan : null;
   const savedCheckedSlots = getSavedPlanCheckedSlots(hydratedPlan);
-  const savedUncheckedPackedSlots = getSavedPlanUncheckedPackedSlots(hydratedPlan);
+  const savedUncheckedPackedSlots = getSavedPlanUncheckedPackedSlots(activeHydratedPlan);
   const restoredCheckedSlots =
     storedCheckedSlots.length > 0 ? storedCheckedSlots : savedCheckedSlots ?? [];
   const rawCurrentCheckedSlots = interactiveCheckedSlots ?? restoredCheckedSlots;
   const currentCheckedSlots = plan
     ? filterCheckedSlotsForPlan(rawCurrentCheckedSlots, plan)
     : rawCurrentCheckedSlots;
+  const storedUncheckedPackedSlotsForCurrentPlan =
+    storedUncheckedPackedSlots?.scopeKey === storedUncheckedPackedSlotsScopeKey
+      ? storedUncheckedPackedSlots.slots
+      : null;
+  const interactiveUncheckedPackedSlotsForCurrentPlan =
+    interactiveUncheckedPackedSlots?.scopeKey === uncheckedPackedSlotsScopeKey
+      ? interactiveUncheckedPackedSlots.slots
+      : null;
   const restoredUncheckedPackedSlots =
-    storedUncheckedPackedSlots ?? savedUncheckedPackedSlots ?? [];
+    storedUncheckedPackedSlotsForCurrentPlan ?? savedUncheckedPackedSlots ?? [];
   const rawCurrentUncheckedPackedSlots =
-    interactiveUncheckedPackedSlots ?? restoredUncheckedPackedSlots;
+    interactiveUncheckedPackedSlotsForCurrentPlan ?? restoredUncheckedPackedSlots;
   const currentUncheckedPackedSlots = plan
     ? filterCheckedSlotsForPlan(rawCurrentUncheckedPackedSlots, plan)
     : rawCurrentUncheckedPackedSlots;
@@ -263,9 +284,6 @@ export function TripPlanningUI({
         currentUncheckedPackedSlots
       )
     : hydratedPlan?.progress ?? 0;
-  const planStateKey = plan
-    ? `${plan.mountain.slug}:${plan.season}:${plan.style}`
-    : "no-plan";
   const isSavedPlanMode = Boolean(planId && plan);
   const isFullChecklistView = isSavedPlanMode && planView === "checklist";
 
@@ -299,12 +317,22 @@ export function TripPlanningUI({
       planId ? readStoredCheckedSlots(planId, currentPlanUserId) : []
     );
     setStoredUncheckedPackedSlots(
-      planId ? readStoredUncheckedPackedSlots(planId, currentPlanUserId) : null
+      planId
+        ? {
+            scopeKey: `saved:${planId}`,
+            slots: readStoredUncheckedPackedSlots(planId, currentPlanUserId)
+          }
+        : null
     );
     setStoredChecklistOnlyIds(
       planId ? readStoredChecklistOnlyIds(planId, currentPlanUserId) : []
     );
-  }, [currentPlanUserId, planId, planStateKey]);
+  }, [
+    currentPlanUserId,
+    planId,
+    planStateKey,
+    storedUncheckedPackedSlotsScopeKey
+  ]);
 
   useEffect(() => {
     setPlanDetailsDraft({
@@ -548,6 +576,7 @@ export function TripPlanningUI({
               <MountainCurrentPlanStatusNotice status={planStatusNotice} />
             ) : null}
             <TripPlanningResult
+              key={uncheckedPackedSlotsScopeKey}
               plan={plan}
               compatibilityBySlot={compatibilityBySlot}
               ownedGear={ownedGear}
@@ -561,7 +590,12 @@ export function TripPlanningUI({
               onProgressChange={setInteractiveProgress}
               onPreparationCompletionChange={setIsPreparationComplete}
               onCheckedSlotsChange={setInteractiveCheckedSlots}
-              onUncheckedPackedSlotsChange={setInteractiveUncheckedPackedSlots}
+              onUncheckedPackedSlotsChange={(slots) =>
+                setInteractiveUncheckedPackedSlots({
+                  scopeKey: uncheckedPackedSlotsScopeKey,
+                  slots
+                })
+              }
               onChecklistOnlyIdsChange={setInteractiveChecklistOnlyIds}
               planId={planId}
               userId={currentPlanUserId}

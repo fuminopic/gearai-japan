@@ -457,7 +457,10 @@ test("plan page and dashboard hydrate explicit and packed-cancellation slot stat
   );
   assert.match(tripPlanningUiSource, /getSavedPlanCheckedSlots\(hydratedPlan\)/);
   assert.match(tripPlanningUiSource, /if \(!plan \|\| !Array\.isArray\(plan\.checked_slots\)\)/);
-  assert.match(tripPlanningUiSource, /getSavedPlanUncheckedPackedSlots\(hydratedPlan\)/);
+  assert.match(
+    tripPlanningUiSource,
+    /getSavedPlanUncheckedPackedSlots\(activeHydratedPlan\)/
+  );
   assert.match(tripPlanningUiSource, /readStoredUncheckedPackedSlots\(planId, currentPlanUserId\)/);
 
   for (const source of [heroGaugeSource, dashboardChecklistSource]) {
@@ -508,7 +511,10 @@ test("trip planning page uses scoped checklist helpers when user scope is availa
     tripPlanningUiSource,
     /setStoredChecklistOnlyIds\([\s\S]*readStoredChecklistOnlyIds\(planId, currentPlanUserId\)/
   );
-  assert.match(tripPlanningUiSource, /\}, \[currentPlanUserId, planId, planStateKey\]\);/);
+  assert.match(
+    tripPlanningUiSource,
+    /storedUncheckedPackedSlotsScopeKey\n  \]\);/
+  );
 });
 
 test("trip planning page keeps checklist helper reads sanitized for current plan semantics", () => {

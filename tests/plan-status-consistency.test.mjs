@@ -282,6 +282,23 @@ test("saved plans persist packed confirmation overrides and dashboard uses the s
   assert.doesNotMatch(heroGaugeSource, /Math\.max\(fallbackPercent/);
 });
 
+test("packed cancellation state is scoped to the active draft conditions or saved plan", () => {
+  assert.match(
+    tripPlanningUiSource,
+    /const storedUncheckedPackedSlotsScopeKey = planId \? `saved:\$\{planId\}` : null/
+  );
+  assert.match(tripPlanningUiSource, /: `draft:\$\{planStateKey\}`/);
+  assert.match(
+    tripPlanningUiSource,
+    /interactiveUncheckedPackedSlots\?\.scopeKey === uncheckedPackedSlotsScopeKey/
+  );
+  assert.match(
+    tripPlanningUiSource,
+    /storedUncheckedPackedSlots\?\.scopeKey === storedUncheckedPackedSlotsScopeKey/
+  );
+  assert.match(tripPlanningUiSource, /<TripPlanningResult\s+key=\{uncheckedPackedSlotsScopeKey\}/);
+});
+
 async function importTranspiled(source) {
   return import(await toTranspiledDataUrl(source));
 }

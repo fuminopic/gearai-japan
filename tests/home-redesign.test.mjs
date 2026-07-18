@@ -228,6 +228,13 @@ test("home redesign exposes pack-focused gear summary metrics", () => {
   }
 });
 
+test("home gear summary keeps metric values on one line and only reduces them on narrow screens", () => {
+  assert.match(
+    dashboardSource,
+    /whitespace-nowrap font-din text-\[22px\] font-bold leading-none text-black max-\[374px\]:text-\[18px\]/
+  );
+});
+
 test("home redesign includes gear empty and category empty states", () => {
   for (const copy of [
     "まだ装備がありません",

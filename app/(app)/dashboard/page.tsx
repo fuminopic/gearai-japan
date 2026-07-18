@@ -490,7 +490,7 @@ function SummaryMetric({
   const content = (
     <>
       <img src={iconSrc} alt="" className="h-4 w-auto object-contain" />
-      <p className="font-din text-[22px] font-bold leading-none text-black">{value}</p>
+      <p className="whitespace-nowrap font-din text-[22px] font-bold leading-none text-black max-[374px]:text-[18px]">{value}</p>
       <p className="whitespace-nowrap text-xs font-medium text-gray-400">{label}</p>
     </>
   );

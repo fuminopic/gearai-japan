@@ -1,5 +1,7 @@
 # Phase 1-4 技术整理 Checkpoint
 
+> 文档状态：**历史阶段快照**。测试数量、warning、暂停项和当时分支状态不再是当前长期规则。当前规则见 [`../AGENTS.md`](../AGENTS.md) 与 [`index.md`](index.md)。
+>
 本文档记录 YAMAJITAKU / 山支度 当前技术整理基线，方便后续继续开发时快速理解已完成内容、暂停内容、剩余风险和 Codex 工作规则。
 
 ## 1. 当前项目状态
@@ -101,21 +103,11 @@
 - Phase 6C: Requirement / checklist engine cleanup.
 - Phase 6D: Actions fallback payload cleanup.
 
-## 10. 今后 Codex 工作规则
+## 10. 当时采用的 Codex 工作规则
 
-- 每次只做一个小任务。
-- 明确允许修改文件。
-- 禁止自动大范围重构。
-- 不要直接 push。
-- 每次必须运行：
-  - `npm run build`
-  - `npm run typecheck`
-  - `npm run lint`
-  - `npm test`
-  - `git status`
-- commit 后等待人工确认。
-- push 后等待 Vercel 通过。
-- 高风险文件必须先补测试再改。
+本节只记录 Phase 1-4 当时的执行方式，不再作为当前指令。当前任务应遵守 [`../AGENTS.md`](../AGENTS.md)、[`index.md`](index.md) 和 [`dev-checklist.md`](dev-checklist.md) 的风险分级规则；push和部署必须分别获得明确授权。
+
+当时已识别的高风险区域仍可作为调查线索：
 
 高风险区域:
 

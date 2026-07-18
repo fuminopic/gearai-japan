@@ -1,5 +1,7 @@
 # 启动 / 登录 架构与模块说明（发版记录）
 
+> 文档状态：**登录/启动专题当前权威**。2026-07-18 已与相关源码重新对照；版本号和发版状态仅是历史记录。全项目授权规则以 [`../AGENTS.md`](../AGENTS.md) 和 [`index.md`](index.md) 为准。
+>
 > 本文记录「本地登录页 + 远程主应用」这套架构的模块划分、关键信号、各登录流程、关键配置、测试矩阵,以及踩过的坑。**以后再动登录/启动这块,先读这份。**
 
 最后更新:1.0.1 (build 10) 提交审核时。
@@ -21,7 +23,7 @@ iOS App 用 Capacitor 打包,但 **`capacitor.config.ts` 已去掉 `server.url`*
 | 会话存储 | localStorage(Supabase 客户端) | cookie(@supabase/ssr) |
 | `window.Capacitor` | **有**(可调插件,如 Browser) | **无**(allowNavigation 页面不注入桥) |
 
-> ⚠️ 远程页面里 **没有 `window.Capacitor`**,所以不能用 `Capacitor.isNativePlatform()` 判断「在 App 内」。要用 `window.name` / cookie / User-Agent。
+> ⚠️ 远程页面里 **没有 `window.Capacitor`**。判断“是否在新版 App 本地登录架构内”只能用 `window.name` / `yj_local_app` cookie，不能用 `Capacitor.isNativePlatform()` 或 User-Agent。旧版兼容代码现有的 User-Agent 用途可以保留，但不能扩展为新版检测条件。
 
 ---
 
@@ -100,7 +102,7 @@ App **运行时加载远程站点**,所以:
 | `app/`、`src/`(远程 Next 应用) | `git push` → Vercel 部署 | **新版 + 旧版都受影响**(都加载远程) |
 | `capacitor-www/`、`AppDelegate.swift`、`capacitor.config.ts`、storyboard | `npx cap sync ios` → Xcode 重 build → 新 build 号 → 上传 | 只影响**新 build**(打进 App 包) |
 
-> ⚠️ **改了远程文件一定要 `git push`**(曾漏过一次,导致 App 加载到旧远程代码、问题「没解决」)。
+> ⚠️ 远程文件只有 push 并完成 Vercel 部署后才会影响用户；每次 push 和部署仍必须获得明确授权，本地修改或提交不自动包含该授权。
 > ⚠️ build 号必须比已上传的大且唯一(查 TestFlight/Organizer)。
 
 ---
@@ -121,9 +123,9 @@ App **运行时加载远程站点**,所以:
 
 ## 8. 踩过的坑 / 教训
 
-1. **远程页无 `window.Capacitor`** → 检测「在 App 内」要用 `window.name`(跨域保留)或 UA,不能用 `isNativePlatform()`。
+1. **远程页无 `window.Capacitor`** → 判断新版 App 要用 `window.name`(跨域保留)或 `yj_local_app` cookie，不能用 `isNativePlatform()` 或 UA。
 2. **不能用 User-Agent 区分新旧版**(旧版同样带 `YamajitakuApp`)→ 用 `window.name` / `yj_local_app` cookie。
-3. **远程文件改完必须 push**,否则 App 加载旧远程,问题「没解决」。
+3. **远程文件需经授权 push 并部署后才会影响 App**；只完成本地修改时，必须明确报告尚未上线，不能把“生效条件”误写成push授权。
 4. **双 Splash「splash→白→splash」反复出现**:根因是「本地 Splash + 远程 Splash」靠脆弱信号协调。最终**删掉远程 Splash**,只留本地一个 → 结构上不可能再双。
 5. **OAuth 是一条独立路径**(SFSafari + 原生深链接),曾导致一连串只在 OAuth 出现的问题(没 Splash / 按钮失灵 / 不持久)。最终**让 OAuth 回跳也经过本地页**(AppDelegate 加载 `capacitor://localhost`),和邮箱共用 M4,收口。
 6. **Browser 插件「已开着就拒绝再开」**:OAuth 回跳是原生 dismiss Safari,插件状态没清 → 第二次 `open()` 被忽略。**`open` 前先 `close()`**。

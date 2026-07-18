@@ -1,24 +1,40 @@
-# AGENTS.md — 给 AI 助手 / codex 的工作指令
+# AGENTS.md — 山支度 / YAMAJITAKU 长期工作规则
 
-## 动登录 / 启动 / OAuth / Splash 之前,先读这个
+本文件只保存对整个仓库长期有效的规则。文档权威关系和按任务读取路径见 [`docs/index.md`](docs/index.md)。状态快照、测试数量、审核状态和某次任务的要求不能覆盖本文件；当前任务中的明确限制可以收紧本文件，但不能自行放宽安全规则。
 
-**`docs/auth-launch-architecture.md`** —— 这套「本地登录页 + 远程主应用」架构的模块划分、关键信号、登录流程、配置、踩过的坑。**改这块前必读,否则极易「改一个、碰坏另一个」。**
+## 产品与工作原则
 
-## 工作方式（重要）
+- 山支度是面向日本登山者的登山准备应用，不是地图或导航应用。核心是按山岳、季节和行程方式生成装备清单，管理所持装备，并完成出发前确认。
+- 安全信息质量和现有业务语义优先。先从源码、测试和 migration 确认事实，不凭聊天记忆或文档中的旧状态猜测。
+- 一次处理一个明确模块，保持修改小、可验证、可回退；不得借任务进行无关重构。
+- 只读取当前任务需要的文档。普通任务不要默认加载全部交接、阶段记录或历史运行手册。
 
-- **按模块来**:一次只改一个模块,改完给出验证方式,确认通过再下一个。模块间只通过 session + 标记交互,不互读内部状态。
-- **不确定就先在源码层面确认,不要瞎猜**(改不可测的原生/远程时尤其)。
+## 修改、提交、发布
 
-## 几条绝不能违反的规则
+- 本地修改、本地提交、push、合并、部署和生产数据执行是不同动作，授权互不替代。
+- 可以在任务授权范围内本地修改、验证和提交；每次 `git push`、远程合并、部署或生产执行都必须获得明确授权。不得自动 push 或自动部署。
+- `app/`、`src/`、`public/` 的远程应用修改只有 push 并完成 Vercel 部署后才会影响用户；这描述的是生效条件，不构成 push 授权。
+- `capacitor-www/`、`ios/`、`AppDelegate.swift`、`capacitor.config.ts` 或 storyboard 的修改只有完成 `npx cap sync ios`、新 build、Archive 和上传后才会进入新二进制；这些动作均需单独授权。
+- 中高风险代码、登录、安全和数据库任务原则上使用独立分支或审核流程。提交前检查 `git status` 和差异，只暂存本任务文件，不使用 `git add -A`。
 
-1. **判断「是否在新版 App 内」只用 `window.name`(前缀 `yamajitaku-native`)或 `yj_local_app` cookie,绝不能用 User-Agent**——线上旧版 App 也带 `YamajitakuApp` UA,用 UA 会让旧版用户登录卡死。
-2. **改了 `app/` 或 `src/`(远程 Next 应用)必须 `git push`**——App 运行时加载远程站点,不 push 等于没生效。
-3. **改了 `capacitor-www/`、`AppDelegate.swift`、`capacitor.config.ts`、storyboard → 需 `npx cap sync ios` + Xcode 重 build + 新 build 号**(只影响新二进制)。
-4. **Splash 只保留本地页那一个**(`capacitor-www/index.html` 的 `#splash`)。远程 layout 里不要再加 SplashScreen,否则「splash→白→splash」双 Splash 会回来。
-5. **Supabase 的「Confirm email」保持关闭**,否则注册流程会断。
-6. 不要擅自改 Supabase 数据结构 / OAuth 配置 / Vercel 生产配置,需先确认。
+## 敏感系统与安全数据
 
-## 部署
+- 未经明确授权，不修改 Supabase schema/RLS、OAuth、Confirm email、Vercel/Apple 生产配置、数据库、生产数据、山岳/火山安全数据或登录实现。
+- 生产环境默认禁止 `supabase db push`。数据修正必须有精确范围、变更前快照、断言、精确回退方案和提交后只读复查。
+- 山岳、火山和安全数据由项目负责人 FUMI 最终批准。Codex 可以调查、整理和提出方案，但不能自行批准或执行生产安全数据变更。
+- 任何会改变火山阻断、装备清单、安全提示或 fail-closed 行为的任务，必须先停止并取得负责人确认。
 
-- 远程(`app/`、`src/`)→ `git push` → Vercel 自动部署。
-- 本地包(`capacitor-www/` 等)→ `npx cap sync ios` → Xcode Archive → 上传(build 号要比已上传的大且唯一)。
+## 登录 / 启动长期不变量
+
+修改登录、启动、OAuth 或 Splash 前，必须阅读 [`docs/auth-launch-architecture.md`](docs/auth-launch-architecture.md)。
+
+- 判断“是否在新版 App 本地登录架构内”只能使用 `window.name`（前缀 `yamajitaku-native`）或 `yj_local_app` cookie，绝不能使用 User-Agent。
+- 旧版兼容代码中现有的 `YamajitakuApp` User-Agent 用途可以保留，但不得扩展为新版架构检测条件。
+- Splash 只保留 `capacitor-www/index.html` 的本地 `#splash`；远程 layout 不得再增加 SplashScreen。
+- Supabase Confirm email 当前架构要求保持关闭；修改该设置必须单独授权并完整回归注册流程。
+
+## 任务与验证
+
+- 开始前明确目标、范围、非目标、禁止事项、风险、影响面、完成条件、验证和回退。高风险任务还必须记录权威来源、快照和人工审批点。
+- 验证强度与风险匹配：低风险文档或文案改动使用针对性检查；中风险代码运行相关测试与静态检查；高风险、发布前或核心规则修改运行完整门槛和人工场景验证。
+- 最终报告必须区分：已完成、已验证、本地已提交、已 push、已部署、未执行和仍需授权的事项。

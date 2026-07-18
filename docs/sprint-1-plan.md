@@ -1,5 +1,7 @@
 # Sprint 1 Development Plan
 
+> Document status: **historical Sprint 1 plan**. It does not define current scope or long-term rules. See [`index.md`](index.md).
+
 ## Sprint Goal
 
 Build the foundation that lets Japanese users sign up, log in, and manage personal hiking or camping gear from a mobile-first web app.
@@ -79,4 +81,3 @@ Build the foundation that lets Japanese users sign up, log in, and manage person
 8. Gear list, create, and edit pages.
 9. Dashboard summary.
 10. Final review.
-

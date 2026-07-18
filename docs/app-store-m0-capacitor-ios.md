@@ -1,5 +1,7 @@
 # App Store M0: Capacitor iOS Shell
 
+> Document status: **historical M0 snapshot**. Current authorization rules are in [`../AGENTS.md`](../AGENTS.md), and current auth/launch architecture is in [`auth-launch-architecture.md`](auth-launch-architecture.md).
+
 ## Scope
 
 M0 packages the existing production web app as a Capacitor iOS shell.

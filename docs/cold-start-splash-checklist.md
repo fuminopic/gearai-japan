@@ -1,5 +1,7 @@
 # iOS 冷启动 / Splash 体验修复 — 执行 Checklist
 
+> 文档状态：**历史执行快照**。其中commit、未push状态和部署步骤不构成当前授权；当前登录架构见 [`auth-launch-architecture.md`](auth-launch-architecture.md)，授权规则见 [`../AGENTS.md`](../AGENTS.md)。
+>
 > 目标:打开 App **0 秒出品牌 Splash**,全程**无白屏、无加载页**,Splash 撑住加载、内容就绪后淡出。
 > 架构前提:iOS App 通过 Capacitor `server.url` 直接加载远程 `https://www.yamajitaku.com`,所以 **Web/UI 改动经 Vercel 即时生效、不过审**;只有**原生**改动(Splash 插件 / storyboard / capacitor.config)需要 Xcode 重建 + App Store 重新提交。
 

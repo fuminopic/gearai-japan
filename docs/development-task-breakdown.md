@@ -1,5 +1,7 @@
 # Development Task Breakdown
 
+> Document status: **historical early-phase breakdown**. It does not define current priorities or long-term rules. See [`index.md`](index.md).
+
 ## Product Constraints
 
 - Product positioning stays unchanged: Japanese hiking and camping equipment decision platform.
@@ -89,4 +91,3 @@
 - PDF export.
 - Share links.
 - Public gear database.
-

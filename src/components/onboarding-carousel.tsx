@@ -19,7 +19,8 @@ import { SubmitButton } from "@/components/submit-button";
 
 type Slide = {
   id: string;
-  title: string;
+  /** タイトル行。2要素の場合は全幅で意図した位置(読点)で改行する。 */
+  title: string[];
   description: string;
   Illustration: (props: { className?: string }) => React.ReactNode;
 };
@@ -27,37 +28,37 @@ type Slide = {
 const SLIDES: Slide[] = [
   {
     id: "welcome",
-    title: "山行準備を、もっと確実に",
+    title: ["山へ行く前の不安を、なくす。"],
     description:
-      "山支度は、登山の持ち物準備を支えるアプリです。複雑になりがちな山の準備を、順番に進められる形に整えます。",
+      "山支度は、山行計画から装備確認までをひとつにつなぐ、登山前準備アプリです。",
     Illustration: WelcomeIllustration
   },
   {
     id: "plan",
-    title: "山を選ぶだけで、準備が始まる",
+    title: ["条件を選ぶだけで、", "山行計画が完成"],
     description:
-      "山と日程、季節、日帰りや山小屋泊などのスタイルを選ぶだけ。条件に合わせた山行計画がすぐにできあがります。",
+      "山・季節・スタイル・予定日を選ぶだけ。山行に合わせた装備リストを自動で作成します。",
     Illustration: PlanIllustration
   },
   {
     id: "gear-sort",
-    title: "必要な装備を、自動で整理",
+    title: ["必要な装備を、自動で整理"],
     description:
-      "計画に必要な持ち物は自動でリストアップ。「所持」「不足」「要確認」に整理され、用意すべきものがひと目でわかります。",
+      "計画に必要な装備を「所持済み」「不足」「要確認」に自動で仕分け。足りないものがひと目でわかります。",
     Illustration: GearSortIllustration
   },
   {
     id: "my-gear",
-    title: "マイ装備を、ひとつにまとめる",
+    title: ["装備も重量も、まとめて管理"],
     description:
-      "手持ちの装備をブランドやカテゴリーごとに登録。重さを記録すれば、ザック全体の重量構成まで把握できます。",
+      "持っている装備をブランド・カテゴリー別に登録。総重量や装備構成も確認できます。",
     Illustration: MyGearIllustration
   },
   {
     id: "final-check",
-    title: "出発前に、最後の確認",
+    title: ["出発前の抜け漏れを、", "ひと目で確認"],
     description:
-      "出発の前に、ヘッドライトや防寒着、水分などを一つずつ確認。持ち忘れを防ぎ、落ち着いて山へ向かえます。",
+      "ヘッドライトや防寒着、水分などを一つずつチェック。忘れ物を防ぎ、落ち着いて出発できます。",
     Illustration: FinalCheckIllustration
   }
 ];
@@ -139,18 +140,30 @@ export function OnboardingCarousel() {
             className="flex flex-1 flex-col animate-[yj-onboarding-in_260ms_ease-out]"
             style={{ "--yj-onboarding-dx": `${direction * 28}px` } as React.CSSProperties}
           >
-            <div className="flex min-h-[180px] flex-1 items-center justify-center py-2">
-              <Illustration className="h-auto w-full max-w-[300px] max-[359px]:max-w-[252px]" />
+            {/* 「イラスト+タイトル+本文」をひとつのグループとして、上下の可変
+                スペーサーで Skip とインジケーターの間の視覚的中央に置く。
+                上を僅かに軽くして光学的な中央に寄せる。高さが足りない端末では
+                スペーサーが自然に潰れ、コンテンツは欠けない。 */}
+            <div className="flex-[0.85]" aria-hidden />
+
+            <div className="flex shrink-0 items-center justify-center pb-4 pt-1">
+              <Illustration className="h-auto w-full max-w-[270px] max-[359px]:max-w-[236px]" />
             </div>
 
-            <div className="min-h-[128px] shrink-0 text-center">
+            <div className="min-h-[144px] shrink-0 text-center">
               <h1 className="text-[21px] font-bold leading-snug tracking-normal text-ink max-[359px]:text-[19px] min-[390px]:text-[22px]">
-                {slide.title}
+                {slide.title.map((line) => (
+                  <span key={line} className="block">
+                    {line}
+                  </span>
+                ))}
               </h1>
-              <p className="mx-auto mt-3 max-w-[320px] text-sm font-semibold leading-relaxed text-stone-600">
+              <p className="mx-auto mt-3 max-w-[320px] text-[15px] font-semibold leading-relaxed text-stone-700">
                 {slide.description}
               </p>
             </div>
+
+            <div className="flex-1" aria-hidden />
           </div>
         </section>
 

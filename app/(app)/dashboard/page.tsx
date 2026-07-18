@@ -55,7 +55,7 @@ export default async function DashboardPage() {
       metadata: user.user_metadata
     })
   ) {
-    redirect("/onboarding");
+    redirect("/onboarding" as Route);
   }
 
   // 首屏只等这两个(并行);checklist 不再阻塞渲染,改为 Hero 内 Suspense 流式补上

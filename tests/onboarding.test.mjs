@@ -121,11 +121,11 @@ test("launch baseline is a fixed ISO instant", () => {
 
 test("dashboard gates first entry before rendering home content", () => {
   assert.match(dashboardSource, /shouldAutoShowOnboarding/);
-  assert.match(dashboardSource, /redirect\("\/onboarding"\)/);
+  assert.match(dashboardSource, /redirect\("\/onboarding" as Route\)/);
   assert.match(dashboardSource, /createdAt: user\.created_at/);
   assert.match(dashboardSource, /metadata: user\.user_metadata/);
 
-  const gateIndex = dashboardSource.indexOf('redirect("/onboarding")');
+  const gateIndex = dashboardSource.indexOf('redirect("/onboarding" as Route)');
   const renderIndex = dashboardSource.indexOf("<HomePageContent");
   assert.ok(gateIndex > -1 && renderIndex > -1 && gateIndex < renderIndex);
 });
@@ -164,25 +164,30 @@ test("auth actions stay untouched by onboarding (no auth architecture change)", 
 });
 
 test("carousel has exactly 5 slides with the approved Japanese copy", () => {
-  const titles = [
-    "山行準備を、もっと確実に",
-    "山を選ぶだけで、準備が始まる",
+  // 2行タイトルは読点位置で明示的に分割して保持する
+  const titleLines = [
+    "山へ行く前の不安を、なくす。",
+    "条件を選ぶだけで、",
+    "山行計画が完成",
     "必要な装備を、自動で整理",
-    "マイ装備を、ひとつにまとめる",
-    "出発前に、最後の確認"
+    "装備も重量も、まとめて管理",
+    "出発前の抜け漏れを、",
+    "ひと目で確認"
   ];
-  for (const title of titles) {
-    assert.ok(carouselSource.includes(title), `missing title: ${title}`);
+  for (const line of titleLines) {
+    assert.ok(carouselSource.includes(line), `missing title line: ${line}`);
   }
 
   const slideIds = carouselSource.match(/^    id: "/gm) ?? [];
   assert.equal(slideIds.length, 5);
 
-  // 差別化の核: 所持 / 不足 / 要確認
-  assert.match(carouselSource, /「所持」「不足」「要確認」/);
-  // 既存プロダクト語彙
-  assert.match(carouselSource, /日帰りや山小屋泊/);
-  assert.match(carouselSource, /ザック全体の重量/);
+  // 差別化の核: 所持済み / 不足 / 要確認
+  assert.match(carouselSource, /「所持済み」「不足」「要確認」/);
+  // 必須語彙
+  assert.match(carouselSource, /登山前準備/);
+  assert.match(carouselSource, /山行計画/);
+  assert.match(carouselSource, /総重量や装備構成/);
+  assert.match(carouselSource, /山・季節・スタイル・予定日/);
 });
 
 test("onboarding copy avoids off-positioning pitches", () => {
@@ -212,10 +217,16 @@ test("carousel respects small screens and safe areas", () => {
   assert.match(carouselSource, /env\(safe-area-inset-bottom\)/);
   // 320px 帯(iPhone SE 1st / mini 幅未満)への調整
   assert.match(carouselSource, /max-\[359px\]:text-\[19px\]/);
-  assert.match(carouselSource, /max-\[359px\]:max-w-\[252px\]/);
+  assert.match(carouselSource, /max-\[359px\]:max-w-\[236px\]/);
   assert.match(carouselSource, /max-\[359px\]:px-5/);
-  // ボタン跳ねを防ぐ固定領域
-  assert.match(carouselSource, /min-h-\[128px\]/);
+  // 本文はモバイル可読性のため 15px / stone-700
+  assert.match(carouselSource, /text-\[15px\][^"]*text-stone-700/);
+  // ボタン跳ねを防ぐ固定領域(2行タイトル+3行本文ぶん)
+  assert.match(carouselSource, /min-h-\[144px\]/);
+  // コンテンツグループは上下スペーサーで Skip とインジケーターの間の中央に置く
+  assert.match(carouselSource, /flex-\[0\.85\]/);
+  const spacerCount = (carouselSource.match(/aria-hidden \/>/g) ?? []).length;
+  assert.equal(spacerCount, 2);
 });
 
 test("illustrations form one flat vector system in brand colors", () => {
@@ -232,11 +243,16 @@ test("illustrations form one flat vector system in brand colors", () => {
     );
   }
 
-  // 共通ビューボックスとブランド色
-  assert.match(illustrationsSource, /viewBox: "0 0 320 220"/);
+  // 共通ビューボックス・共通背景ブロブとブランド色
+  assert.match(illustrationsSource, /viewBox: "0 0 320 200"/);
+  assert.match(illustrationsSource, /BLOB_PATH/);
   assert.match(illustrationsSource, /#14724e/);
   assert.match(illustrationsSource, /#1F7950/);
   assert.match(illustrationsSource, /#81AB44/);
+  // ロゴ言語: 黄緑バンド + 山吹色アクセント + clipPath による曲面レイヤー
+  assert.match(illustrationsSource, /#A8C455/);
+  assert.match(illustrationsSource, /#E5B94B/);
+  assert.match(illustrationsSource, /clipPath/);
 
   // 状態色はチェックリストUIと同じ値を引用する
   assert.ok(tripPlanningUiSource.includes("#B91C1C"));

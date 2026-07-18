@@ -41,7 +41,7 @@ npm run build          # 确认 web 构建通过
 git add package-lock.json
 git commit -m "Lock @capacitor/splash-screen dependency"
 
-# ③ 推送 → Vercel 自动部署(web 部分,对老版本 App 也安全)
+# ③ 经明确授权后推送 → Vercel 自动部署(web 部分,对老版本 App 也安全)
 git push origin main
 
 # ④ 同步进 iOS 工程

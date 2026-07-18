@@ -6,11 +6,11 @@
 
 ## 0. 先读 & 铁律（必须遵守）
 
-- 先读 `AGENTS.md` 和 `docs/auth-launch-architecture.md`,理解现有架构。
+- 先读 `AGENTS.md`、`docs/index.md`、项目规则和任务合同；只有实际涉及登录、启动或Splash时才读 `docs/auth-launch-architecture.md`。
 - **按模块来**:一次一个步骤,做完给出验证方式,确认通过再下一个。
 - **动 Supabase 数据结构 / Storage / 本番配置前,必须先取得用户明确授权**。
 - **绝不删原图**,原图单独保留(回退用)。
-- 改了 `app/` 或 `src/`(远程 Next 应用)→ 必须 `git push`(线上才生效,且新旧二进制都受影响 → 务必带回退)。
+- 改动 `app/` 或 `src/` 后，只有经明确授权push并完成部署才会影响远程应用和相关App用户；本地完成不代表已经上线，发布前必须准备回退。
 - 不要重做首页布局。首页卡片布局已完成(`app/(app)/dashboard/page.tsx` 的 `RecentGearSection` / `GearImage`),你只需:**切换图片来源 + 去掉临时的 `mix-blend-multiply`**。
 
 ## 1. 现状（数据所在）
@@ -56,7 +56,7 @@
 - 抽几件目视 before/after(透明、裁切、大小)。
 - 首页「最近追加」、装備一覧/詳細检查:无错位、无残底、大小一致。
 - **旧版二进制安全**:远程改动对所有用户生效,务必保证 `processed_image_url` 为空时完全回退原行为。
-- `npm run typecheck` / 现有测试通过;远程改动 `git push`。
+- 按任务风险运行针对性检查、相关测试和typecheck；push和部署需分别获得明确授权。
 
 ## 3. 注意
 

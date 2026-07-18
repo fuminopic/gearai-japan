@@ -14,7 +14,7 @@
 | --- | --- |
 | 本地仓库 | `/Users/fumi/Documents/Codex/2026-06-01/prd-prd-1-senior-software-architect` |
 | GitHub | `github.com/fuminopic/gearai-japan`（分支 `main`） |
-| 线上 | `https://www.yamajitaku.com`（Vercel，push `main` 自动部署） |
+| 线上 | `https://www.yamajitaku.com`（Vercel，经明确授权 push `main` 后自动部署） |
 | 技术栈 | Next.js(App Router) + React + TypeScript + Tailwind |
 | 界面语言 | **日文**（所有面向用户的文案一律日文） |
 | 产品 | 面向日本登山者的装备准备 App:选山 → 自动生成清单 → 管理装备 → 出发前打勾 |

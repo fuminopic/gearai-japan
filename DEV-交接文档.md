@@ -23,7 +23,7 @@
 ---
 
 ## 1. 技术栈
-- 前端:**Next.js（App Router）+ React + TypeScript**，Tailwind。部署在 **Vercel**（push `main` 自动部署）。
+- 前端:**Next.js（App Router）+ React + TypeScript**，Tailwind。部署在 **Vercel**（经明确授权 push `main` 后自动部署）。
 - App 外壳:**Capacitor 8（iOS）**。开屏是本地打包页面，秒开后跳转到线上网页。
 - 后端:**Supabase**（Postgres + Auth + Storage）。登录支持邮箱 + Google/Apple（OAuth 走 SFSafariViewController，应用内）。
 - 字体:D-DIN（SIL OFL 1.1），工具类 `.font-din`。

@@ -1,0 +1,33 @@
+{
+	"nodes":[
+		{"id":"overview","type":"text","text":"# 山支度如何运行\n## YAMAJITAKU 项目总览","x":-360,"y":-930,"width":720,"height":190,"color":"5"},
+		{"id":"group-development","type":"group","label":"开发与发布","x":-1800,"y":-650,"width":1080,"height":1080,"color":"1"},
+		{"id":"local-development","type":"text","text":"# 本地开发\nCodex · Git 工作区","x":-1700,"y":-500,"width":380,"height":130,"color":"1"},
+		{"id":"git-flow","type":"text","text":"# Git 提交与推送\ngit commit → git push origin/main","x":-1260,"y":-500,"width":440,"height":130,"color":"2"},
+		{"id":"github-main","type":"text","text":"# GitHub\norigin/main · 代码历史","x":-1700,"y":-290,"width":380,"height":130,"color":"2"},
+		{"id":"web-release","type":"text","text":"# Web 发布\nVercel → www.yamajitaku.com","x":-1260,"y":-290,"width":440,"height":130,"color":"3"},
+		{"id":"ios-release","type":"text","text":"# iOS 发布\nCapacitor → Xcode → TestFlight → App Store","x":-1700,"y":-80,"width":880,"height":130,"color":"4"},
+		{"id":"release-guide","type":"file","file":"docs/auth-launch-architecture.md","x":-1700,"y":120,"width":880,"height":220,"color":"4"},
+		{"id":"group-product","type":"group","label":"产品与技术","x":-540,"y":-650,"width":1080,"height":1080,"color":"5"},
+		{"id":"product-core","type":"text","text":"# 登山出发前准备\n计划 · 装备 · 背包 · 出发前确认","x":-440,"y":-500,"width":880,"height":140,"color":"5"},
+		{"id":"product-platforms","type":"text","text":"# 产品形态\nWeb + iOS App","x":-440,"y":-290,"width":400,"height":130,"color":"5"},
+		{"id":"tech-stack","type":"file","file":"docs/tech-stack.md","x":20,"y":-290,"width":420,"height":250,"color":"8"},
+		{"id":"project-rules","type":"file","file":"docs/project-rules.md","x":-440,"y":30,"width":420,"height":270,"color":"7"},
+		{"id":"map-guide","type":"file","file":"docs/project-map-guide.md","x":20,"y":30,"width":420,"height":270,"color":"7"},
+		{"id":"group-services","type":"group","label":"数据与运营服务","x":720,"y":-650,"width":1080,"height":1080,"color":"6"},
+		{"id":"supabase","type":"text","text":"# Supabase\nAuthentication · Database · Storage · RLS","x":820,"y":-500,"width":880,"height":140,"color":"6"},
+		{"id":"data-boundary","type":"text","text":"# 数据发布边界\nmigration 文件 ≠ 生产数据\nGitHub 回退 ≠ 数据回退","x":820,"y":-290,"width":420,"height":170,"color":"6"},
+		{"id":"openai","type":"text","text":"# OpenAI API\n运行时 AI 说明\n无 API Key 时保留规则结果","x":1280,"y":-290,"width":420,"height":170,"color":"2"},
+		{"id":"operations-guide","type":"file","file":"docs/project-map-guide.md","subpath":"权威边界","x":820,"y":-50,"width":880,"height":350,"color":"7"}
+	],
+	"edges":[
+		{"id":"e-local-git","fromNode":"local-development","toNode":"git-flow","fromSide":"right","toSide":"left","color":"1"},
+		{"id":"e-git-github","fromNode":"git-flow","toNode":"github-main","fromSide":"bottom","toSide":"right","color":"2"},
+		{"id":"e-github-web","fromNode":"github-main","toNode":"web-release","fromSide":"right","toSide":"left","color":"3","label":"main"},
+		{"id":"e-local-ios","fromNode":"local-development","toNode":"ios-release","fromSide":"bottom","toSide":"top","color":"4"},
+		{"id":"e-web-platforms","fromNode":"web-release","toNode":"product-platforms","fromSide":"right","toSide":"left","color":"3"},
+		{"id":"e-platforms-supabase","fromNode":"product-platforms","toNode":"supabase","fromSide":"right","toSide":"left","color":"6","label":"读写"},
+		{"id":"e-product-openai","fromNode":"product-core","toNode":"openai","fromSide":"right","toSide":"top","color":"2","label":"必要时"},
+		{"id":"e-supabase-boundary","fromNode":"supabase","toNode":"data-boundary","fromSide":"bottom","toSide":"top","color":"6"}
+	]
+}

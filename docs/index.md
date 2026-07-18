@@ -30,6 +30,12 @@
 
 [`project-rules.md`](project-rules.md) 是核心项目规则的综合权威。若其内容与实现证据冲突，按本页“权威顺序”处理，不能用历史快照覆盖当前规则。
 
+## 项目全局地图
+
+- [`YAMAJITAKU-project-map.canvas`](YAMAJITAKU-project-map.canvas)：可在 Obsidian Canvas 中查看和维护的全局关系图，仅用于快速理解，不替代正式规则。
+- [`project-map-guide.md`](project-map-guide.md)：Canvas 的打开方式、更新边界和 Codex 维护规则。
+- [`tech-stack.md`](tech-stack.md)：由当前仓库文件核实的技术栈、配置位置和无法从仓库确认的边界。
+
 ## 历史快照与交接资料
 
 以下文件保留历史上下文，但其中的版本、测试数量、待办、分支或发布动作不再具有长期权威：

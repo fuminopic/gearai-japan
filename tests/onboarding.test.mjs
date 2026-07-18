@@ -28,6 +28,10 @@ const dashboardSource = readFileSync(
   new URL("../app/(app)/dashboard/page.tsx", import.meta.url),
   "utf8"
 );
+const appLayoutSource = readFileSync(
+  new URL("../app/(app)/layout.tsx", import.meta.url),
+  "utf8"
+);
 const authActionsSource = readFileSync(
   new URL("../src/lib/actions/auth.ts", import.meta.url),
   "utf8"
@@ -119,15 +123,41 @@ test("launch baseline is a fixed ISO instant", () => {
   assert.equal(onboarding.ONBOARDING_STATE_METADATA_KEY, "onboarding_state");
 });
 
-test("dashboard gates first entry before rendering home content", () => {
-  assert.match(dashboardSource, /shouldAutoShowOnboarding/);
-  assert.match(dashboardSource, /redirect\("\/onboarding" as Route\)/);
-  assert.match(dashboardSource, /createdAt: user\.created_at/);
-  assert.match(dashboardSource, /metadata: user\.user_metadata/);
+test("app layout gates new users before rendering any app shell", () => {
+  // ゲートは (app) レイアウトの AuthGate にあり、App Shell (AppNav) を
+  // 返す前に redirect する。streaming でも下部ナビが先に flush されない。
+  assert.match(appLayoutSource, /shouldAutoShowOnboarding/);
+  assert.match(appLayoutSource, /redirect\("\/onboarding" as Route\)/);
+  assert.match(appLayoutSource, /createdAt: user\.created_at/);
+  assert.match(appLayoutSource, /metadata: user\.user_metadata/);
 
-  const gateIndex = dashboardSource.indexOf('redirect("/onboarding" as Route)');
-  const renderIndex = dashboardSource.indexOf("<HomePageContent");
-  assert.ok(gateIndex > -1 && renderIndex > -1 && gateIndex < renderIndex);
+  const gateIndex = appLayoutSource.indexOf('redirect("/onboarding" as Route)');
+  const navIndex = appLayoutSource.indexOf("<AppNav");
+  assert.ok(gateIndex > -1 && navIndex > -1, "gate and AppNav must exist");
+  assert.ok(gateIndex < navIndex, "gate must run before the app shell renders");
+
+  // AppNav はゲート後の1箇所のみ。Suspense fallback (AppAuthLoading) にも
+  // 下部ナビを含めない = ナビがオンボーディング判定より先に描画される
+  // 経路が存在しない。
+  const navMatches = appLayoutSource.match(/<AppNav/g) ?? [];
+  assert.equal(navMatches.length, 1);
+  const fallbackBody = appLayoutSource.slice(
+    appLayoutSource.indexOf("function AppAuthLoading")
+  );
+  assert.doesNotMatch(fallbackBody, /<AppNav/);
+
+  // 認証の一時エラー経路は従来どおり残す
+  assert.match(appLayoutSource, /AuthValidationError/);
+});
+
+test("dashboard no longer duplicates the onboarding gate", () => {
+  // 二重判定を避ける: ダッシュボードにはゲートを置かない。
+  // 既存ユーザー/完了・スキップ済みユーザーはレイアウトのゲートを素通りし、
+  // 従来どおりダッシュボードが描画される(判定ロジック自体の回帰は上の
+  // shouldAutoShowOnboarding マトリクステストが担保する)。
+  assert.doesNotMatch(dashboardSource, /shouldAutoShowOnboarding/);
+  assert.doesNotMatch(dashboardSource, /redirect\("\/onboarding/);
+  assert.match(dashboardSource, /<HomePageContent/);
 });
 
 test("onboarding page is a fullscreen authed route outside the (app) shell", () => {

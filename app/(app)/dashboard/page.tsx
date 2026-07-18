@@ -4,13 +4,11 @@ import { Backpack, Mountain, Package, Plus } from "lucide-react";
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { AppMenuDrawer } from "@/components/app-menu-drawer";
 import { DashboardPlanMeta } from "@/components/dashboard-plan-meta";
 import { HeroGauge } from "@/components/hero-gauge";
-import { getOwnedGearForPlanning, requireUser } from "@/lib/data/gear";
-import { shouldAutoShowOnboarding } from "@/lib/onboarding";
+import { getOwnedGearForPlanning } from "@/lib/data/gear";
 import { getPackGearIds } from "@/lib/data/pack";
 import { getPackRequirementPlan } from "@/lib/data/pack-requirements";
 import { getDashboardSummary } from "@/lib/data/dashboard";
@@ -45,19 +43,8 @@ const LEGEND_ORDER = [
 ];
 
 export default async function DashboardPage() {
-  // 新規ユーザーの初回入場のみオンボーディングへ。requireUser は cache() 済みで
-  // (app) レイアウトの AuthGate と同一リクエスト内では重複コストにならない。
-  // 既存ユーザー(機能導入基線より前の created_at)には表示しない。
-  const { user } = await requireUser();
-  if (
-    shouldAutoShowOnboarding({
-      createdAt: user.created_at,
-      metadata: user.user_metadata
-    })
-  ) {
-    redirect("/onboarding" as Route);
-  }
-
+  // 新規ユーザーのオンボーディング判定は (app)/layout.tsx の AuthGate が
+  // App Shell 描画前に行う(ここで二重に判定しない)。
   // 首屏只等这两个(并行);checklist 不再阻塞渲染,改为 Hero 内 Suspense 流式补上
   const [summary, nextTrip] = await Promise.all([
     getDashboardSummary(),

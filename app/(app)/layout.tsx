@@ -1,10 +1,13 @@
 import { Suspense } from "react";
 
+import type { Route } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { AnalyticsIdentity } from "@/components/analytics-identity";
 import { AppNav } from "@/components/app-nav";
 import { AuthValidationError, requireUser } from "@/lib/data/gear";
+import { shouldAutoShowOnboarding } from "@/lib/onboarding";
 
 export default function AppLayout({
   children
@@ -19,11 +22,10 @@ export default function AppLayout({
 }
 
 async function AuthGate({ children }: { children: React.ReactNode }) {
-  let userId: string;
+  let user: Awaited<ReturnType<typeof requireUser>>["user"];
 
   try {
-    const { user } = await requireUser();
-    userId = user.id;
+    ({ user } = await requireUser());
   } catch (caught) {
     if (caught instanceof AuthValidationError) {
       return <RecoverableAuthError message={caught.message} />;
@@ -31,6 +33,24 @@ async function AuthGate({ children }: { children: React.ReactNode }) {
 
     throw caught;
   }
+
+  // 新規ユーザーの初回入場はオンボーディングへ。判定は App Shell
+  // (AppNav / 下部ナビ)を返す前に行う。以前は dashboard/page.tsx 側で
+  // 判定していたため、streaming でシェル+下部ナビが先に flush され、
+  // ページ側の redirect 前に一瞬チラつく問題があった。/onboarding は
+  // (app) グループの外にあるため、このリダイレクトはループしない。
+  // 既存ユーザー・完了/スキップ済みユーザーは shouldAutoShowOnboarding が
+  // false を返すため従来どおりそのまま通過する。
+  if (
+    shouldAutoShowOnboarding({
+      createdAt: user.created_at,
+      metadata: user.user_metadata
+    })
+  ) {
+    redirect("/onboarding" as Route);
+  }
+
+  const userId = user.id;
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pb-32 text-ink">

@@ -1,5 +1,7 @@
 # Project Folder Structure
 
+> Document status: **historical structure snapshot**. The repository has changed substantially; inspect the current tree instead of treating this file as authoritative. See [`index.md`](index.md).
+
 ```text
 .
 ├─ app

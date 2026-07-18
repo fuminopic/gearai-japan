@@ -1,5 +1,7 @@
 # Safety Essentials Catalog Candidate Template
 
+> Document status: **reference evidence template**. Candidate values require fresh source checks and human approval before any write. Current safety and database rules are in [`project-rules.md`](project-rules.md) and [`codex-task-contract.md`](codex-task-contract.md).
+
 This document is a review template for the first safety essentials catalog seed.
 Do not use it as a migration source until every required evidence field has been
 confirmed by a human reviewer.

@@ -26,8 +26,9 @@
 | [`auth-launch-architecture.md`](auth-launch-architecture.md) | 登录、启动、OAuth、Splash、App新旧版本检测 | 仅相关任务 |
 | [`dev-checklist.md`](dev-checklist.md) | 开发前、提交前的基础检查 | 需要修改或提交时 |
 | [`codex-task-contract.md`](codex-task-contract.md) | 通用任务合同、风险分级、数据库/山岳/安全最低门槛 | 所有修改任务；高风险任务必须完整读取 |
+| [`project-rules.md`](project-rules.md) | 产品、清单、山岳火山、数据库、UI、测试、发布和回退规则 | 涉及对应业务或系统时读取相关章节 |
 
-产品、装备清单、山岳火山、数据库、UI、测试和发布的综合权威规则将在本次标准化的 P1 阶段整理；完成前，以源码、测试、migration、任务合同和上述长期规则为准，不从历史快照推导新规则。
+[`project-rules.md`](project-rules.md) 是核心项目规则的综合权威。若其内容与实现证据冲突，按本页“权威顺序”处理，不能用历史快照覆盖当前规则。
 
 ## 历史快照与交接资料
 
@@ -53,7 +54,7 @@
 
 ## 最小读取规则
 
-- 普通文档、文案或低风险UI：`AGENTS.md`、本索引、相关页面/测试；不要读取登录或数据库文档。
-- 登录、启动、OAuth、Splash：加读 `auth-launch-architecture.md`。
-- 数据库、山岳、火山、安全、装备清单：在专题权威文档完成前，必须只读核对相关源码、测试和 migration，并遵守 `AGENTS.md` 的人工审批门槛。
+- 普通文档、文案或低风险UI：`AGENTS.md`、本索引、`project-rules.md`相关章节和相关页面/测试；不要读取登录或数据库章节。
+- 登录、启动、OAuth、Splash：加读 `auth-launch-architecture.md`和任务合同高风险要求。
+- 数据库、山岳、火山、安全、装备清单：读取`project-rules.md`对应章节和完整任务合同，并只读核对相关源码、测试和migration。
 - 发布或原生打包：必须先确认任务是否明确授权 push、部署、Archive 或上传；了解生效路径不等于获得执行授权。

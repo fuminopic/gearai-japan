@@ -25,8 +25,9 @@
 | [`../AGENTS.md`](../AGENTS.md) | 全项目长期安全、授权和工作规则 | 所有任务 |
 | [`auth-launch-architecture.md`](auth-launch-architecture.md) | 登录、启动、OAuth、Splash、App新旧版本检测 | 仅相关任务 |
 | [`dev-checklist.md`](dev-checklist.md) | 开发前、提交前的基础检查 | 需要修改或提交时 |
+| [`codex-task-contract.md`](codex-task-contract.md) | 通用任务合同、风险分级、数据库/山岳/安全最低门槛 | 所有修改任务；高风险任务必须完整读取 |
 
-产品、装备清单、山岳火山、数据库、UI、测试和发布的综合权威规则将在本次标准化的 P1 阶段整理；完成前，以源码、测试、migration和上述长期规则为准，不从历史快照推导新规则。
+产品、装备清单、山岳火山、数据库、UI、测试和发布的综合权威规则将在本次标准化的 P1 阶段整理；完成前，以源码、测试、migration、任务合同和上述长期规则为准，不从历史快照推导新规则。
 
 ## 历史快照与交接资料
 

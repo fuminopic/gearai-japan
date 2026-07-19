@@ -73,19 +73,15 @@ const SWIPE_THRESHOLD_PX = 48;
 
 export function OnboardingCarousel() {
   const [index, setIndex] = useState(0);
-  const [direction, setDirection] = useState<1 | -1>(1);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const isLast = index === SLIDES.length - 1;
-  const slide = SLIDES[index];
-  const { Illustration } = slide;
 
   const goTo = (nextIndex: number) => {
     const clamped = Math.max(0, Math.min(SLIDES.length - 1, nextIndex));
     if (clamped === index) {
       return;
     }
-    setDirection(clamped > index ? 1 : -1);
     setIndex(clamped);
   };
 
@@ -114,13 +110,6 @@ export function OnboardingCarousel() {
 
   return (
     <main className="flex min-h-[100dvh] select-none flex-col bg-[#FAFAF8] text-ink">
-      <style>{`
-        @keyframes yj-onboarding-in {
-          from { opacity: 0; transform: translateX(var(--yj-onboarding-dx)); }
-          to { opacity: 1; transform: none; }
-        }
-      `}</style>
-
       <div className="mx-auto flex w-full max-w-[430px] flex-1 flex-col px-6 pb-[max(env(safe-area-inset-bottom),20px)] pt-[max(env(safe-area-inset-top),16px)] max-[359px]:px-5">
         {/* 上部バー: スキップのみ(タイトルや戻るは置かない) */}
         <div className="flex h-12 shrink-0 items-center justify-end">
@@ -134,51 +123,64 @@ export function OnboardingCarousel() {
           </form>
         </div>
 
-        {/* スライド本体(左右スワイプ対応) */}
+        {/* スライド本体(左右スワイプ対応)。
+            全ページを同時にマウントし、表示中のページだけを可視にする。
+            こうすると画像はオンボーディング開始時にまとめて読み込まれ、
+            ページを送った瞬間に文字と画像が同時に出る(後追いで画像が
+            差し込まれない)。重ねる都合上、各ページは絶対配置にする。 */}
         <section
-          className="flex flex-1 flex-col"
+          className="relative flex-1"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
           aria-live="polite"
         >
-          <div
-            key={slide.id}
-            className="flex flex-1 flex-col animate-[yj-onboarding-in_260ms_ease-out]"
-            style={{ "--yj-onboarding-dx": `${direction * 28}px` } as React.CSSProperties}
-          >
-            {/* 「イラスト+タイトル+本文」をひとつのグループとして、上下の可変
-                スペーサーで Skip とインジケーターの間の視覚的中央に置く。
-                上を僅かに軽くして光学的な中央に寄せる。高さが足りない端末では
-                スペーサーが自然に潰れ、コンテンツは欠けない。 */}
-            <div className="flex-[0.85]" aria-hidden />
+          {SLIDES.map((item, slideIndex) => {
+            const { Illustration } = item;
+            const isActive = slideIndex === index;
 
-            {/* イラストは正方形。小画面でも本文とボタンを圧迫しない上限に抑える */}
-            <div className="flex shrink-0 items-center justify-center pb-3 pt-1">
-              <Illustration className="h-auto w-full max-w-[250px] max-[359px]:max-w-[200px]" />
-            </div>
+            return (
+              <div
+                key={item.id}
+                aria-hidden={!isActive}
+                className={`absolute inset-0 flex flex-col transition-opacity duration-200 ease-out ${
+                  isActive ? "opacity-100" : "pointer-events-none opacity-0"
+                }`}
+              >
+                {/* 「イラスト+タイトル+本文」をひとつのグループとして、上下の可変
+                    スペーサーで Skip とインジケーターの間の視覚的中央に置く。
+                    上を僅かに軽くして光学的な中央に寄せる。高さが足りない端末では
+                    スペーサーが自然に潰れ、コンテンツは欠けない。 */}
+                <div className="flex-[0.85]" aria-hidden />
 
-            <div className="min-h-[128px] shrink-0 text-center">
-              <h1 className="text-[21px] font-bold leading-snug tracking-normal text-ink max-[359px]:text-[19px] min-[390px]:text-[22px]">
-                {slide.title.map((line) => (
-                  <span key={line} className="block">
-                    {line}
-                  </span>
-                ))}
-              </h1>
-              {/* 本文は全ページ2行に固定する。最長行(25文字)が1行に収まるよう、
-                  画面幅ごとに文字サイズを切り替える(390px以上=13px /
-                  360〜389px=12px / 360px未満=11px)。 */}
-              <p className="mx-auto mt-3 max-w-[360px] text-[13px] font-semibold leading-relaxed text-stone-700 max-[389px]:text-[12px] max-[359px]:text-[11px]">
-                {slide.description.map((line) => (
-                  <span key={line} className="inline-block">
-                    {line}
-                  </span>
-                ))}
-              </p>
-            </div>
+                {/* イラストは正方形。小画面でも本文とボタンを圧迫しない上限に抑える */}
+                <div className="flex shrink-0 items-center justify-center pb-3 pt-1">
+                  <Illustration className="h-auto w-full max-w-[250px] max-[359px]:max-w-[200px]" />
+                </div>
 
-            <div className="flex-1" aria-hidden />
-          </div>
+                <div className="min-h-[128px] shrink-0 text-center">
+                  <h1 className="text-[21px] font-bold leading-snug tracking-normal text-ink max-[359px]:text-[19px] min-[390px]:text-[22px]">
+                    {item.title.map((line) => (
+                      <span key={line} className="block">
+                        {line}
+                      </span>
+                    ))}
+                  </h1>
+                  {/* 本文は全ページ2行に固定する。最長行(25文字)が1行に収まるよう、
+                      画面幅ごとに文字サイズを切り替える(390px以上=13px /
+                      360〜389px=12px / 360px未満=11px)。 */}
+                  <p className="mx-auto mt-3 max-w-[360px] text-[13px] font-semibold leading-relaxed text-stone-700 max-[389px]:text-[12px] max-[359px]:text-[11px]">
+                    {item.description.map((line) => (
+                      <span key={line} className="inline-block">
+                        {line}
+                      </span>
+                    ))}
+                  </p>
+                </div>
+
+                <div className="flex-1" aria-hidden />
+              </div>
+            );
+          })}
         </section>
 
         {/* ページインジケーター */}

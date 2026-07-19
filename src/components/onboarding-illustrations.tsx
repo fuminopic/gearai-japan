@@ -18,15 +18,7 @@ type IllustrationProps = {
 };
 
 /** 正方形イラストの共通ラッパー。比率は 1:1 で固定し、幅は呼び出し側が決める。 */
-function OnboardingImage({
-  src,
-  className,
-  priority = false
-}: {
-  src: string;
-  className?: string;
-  priority?: boolean;
-}) {
+function OnboardingImage({ src, className }: { src: string; className?: string }) {
   return (
     <Image
       src={src}
@@ -34,8 +26,10 @@ function OnboardingImage({
       aria-hidden
       width={1000}
       height={1000}
-      // 1枚目だけ先読みする(初回表示のちらつきを防ぐ)。以降はスワイプで進むため遅延で足りる。
-      priority={priority}
+      // 4枚とも先読みする。カルーセルは全ページを同時にマウントしているので、
+      // ここで eager 読み込みにしておくと、ページを送った瞬間に画像が
+      // キャッシュ済みとなり「文字が先に出て画像が後から出る」ことがない。
+      priority
       sizes="(max-width: 359px) 200px, 250px"
       className={className}
     />
@@ -44,7 +38,7 @@ function OnboardingImage({
 
 /** 1. 山へ行く前の不安を、なくす。 */
 export function WelcomeIllustration({ className }: IllustrationProps) {
-  return <OnboardingImage src="/onboarding/welcome.png" className={className} priority />;
+  return <OnboardingImage src="/onboarding/welcome.png" className={className} />;
 }
 
 /** 2. 条件を選ぶだけで、山行計画が完成 */

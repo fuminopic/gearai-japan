@@ -220,7 +220,7 @@ test("carousel has exactly 4 slides with the approved Japanese copy", () => {
 test("body copy is exactly two lines per page and never breaks mid-token", () => {
   // 各行は inline-block で描画され、折り返しは行の境目でのみ起きる
   assert.match(carouselSource, /description: \[/);
-  assert.match(carouselSource, /slide\.description\.map/);
+  assert.match(carouselSource, /item\.description\.map/);
   assert.match(carouselSource, /className="inline-block"/);
 
   // 実機で割れていた語が、ひとつの行の内側に収まっていること
@@ -256,6 +256,25 @@ test("onboarding copy avoids off-positioning pitches", () => {
       `carousel copy must not pitch: ${banned}`
     );
   }
+});
+
+test("every slide is mounted and every image eager-loaded, so pages appear at once", () => {
+  // 全ページを同時にマウントして可視状態だけ切り替える(条件レンダリングで
+  // 現在ページだけを描画すると、送った先の画像がその時点から読み込まれ、
+  // 文字が先に出て画像が後追いになる)。
+  assert.match(carouselSource, /SLIDES\.map\(/);
+  assert.match(carouselSource, /absolute inset-0/);
+  assert.match(carouselSource, /opacity-0/);
+  assert.match(carouselSource, /pointer-events-none/);
+  assert.match(carouselSource, /aria-hidden=\{!isActive\}/);
+
+  // 4枚とも eager 読み込み(priority)。遅延読み込みは使わない。
+  const priorityCount = (illustrationsSource.match(/\bpriority\b/g) ?? []).length;
+  assert.ok(priorityCount >= 1, "images must be marked priority");
+  assert.doesNotMatch(illustrationsSource, /priority=\{false\}/);
+  assert.doesNotMatch(illustrationsSource, /loading="lazy"/);
+  // priority は共通ラッパー側で一括指定する(ページごとの出し分けをしない)
+  assert.doesNotMatch(illustrationsSource, /className=\{className\} priority/);
 });
 
 test("carousel provides skip, dots, next and the final plan CTA", () => {

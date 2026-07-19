@@ -29,7 +29,7 @@ async function persistOnboardingState(state: OnboardingState) {
   }
 }
 
-/** 最終ページの「山行計画をつくる」。以後は自動表示せず、計画作成へ進む。 */
+/** 最終ページの「さっそく始めよう！」。以後は自動表示せず、計画作成へ進む。 */
 export async function completeOnboarding() {
   await persistOnboardingState("completed");
   redirect("/plan");

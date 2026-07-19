@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { Buffer } from "node:buffer";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 import ts from "typescript";
 
@@ -34,10 +34,6 @@ const appLayoutSource = readFileSync(
 );
 const authActionsSource = readFileSync(
   new URL("../src/lib/actions/auth.ts", import.meta.url),
-  "utf8"
-);
-const tripPlanningUiSource = readFileSync(
-  new URL("../src/components/trip-planning-ui.tsx", import.meta.url),
   "utf8"
 );
 
@@ -193,13 +189,12 @@ test("auth actions stay untouched by onboarding (no auth architecture change)", 
   assert.match(authActionsSource, /redirect\("\/dashboard"\)/);
 });
 
-test("carousel has exactly 5 slides with the approved Japanese copy", () => {
+test("carousel has exactly 4 slides with the approved Japanese copy", () => {
   // 2行タイトルは読点位置で明示的に分割して保持する
   const titleLines = [
     "山へ行く前の不安を、なくす。",
     "条件を選ぶだけで、",
     "山行計画が完成",
-    "必要な装備を、自動で整理",
     "装備も重量も、まとめて管理",
     "出発前の抜け漏れを、",
     "ひと目で確認"
@@ -209,15 +204,49 @@ test("carousel has exactly 5 slides with the approved Japanese copy", () => {
   }
 
   const slideIds = carouselSource.match(/^    id: "/gm) ?? [];
-  assert.equal(slideIds.length, 5);
+  assert.equal(slideIds.length, 4);
 
-  // 差別化の核: 所持済み / 不足 / 要確認
-  assert.match(carouselSource, /「所持済み」「不足」「要確認」/);
+  // 「必要な装備を、自動で整理」のページは削除済み
+  assert.doesNotMatch(carouselSource, /必要な装備を、自動で整理/);
+  assert.doesNotMatch(carouselSource, /gear-sort/);
+
   // 必須語彙
   assert.match(carouselSource, /登山前準備/);
   assert.match(carouselSource, /山行計画/);
   assert.match(carouselSource, /総重量や装備構成/);
   assert.match(carouselSource, /山・季節・スタイル・予定日/);
+});
+
+test("body copy is exactly two lines per page and never breaks mid-token", () => {
+  // 各行は inline-block で描画され、折り返しは行の境目でのみ起きる
+  assert.match(carouselSource, /description: \[/);
+  assert.match(carouselSource, /slide\.description\.map/);
+  assert.match(carouselSource, /className="inline-block"/);
+
+  // 実機で割れていた語が、ひとつの行の内側に収まっていること
+  for (const token of ["ひとつにつなぐ、", "ブランド・カテゴリー別に登録。", "一つずつチェック。"]) {
+    assert.ok(carouselSource.includes(token), `token must stay unbroken: ${token}`);
+  }
+
+  // 全4ページとも本文は2行ちょうど
+  const blocks = [...carouselSource.matchAll(/description: \[([\s\S]*?)\],/g)];
+  assert.equal(blocks.length, 4);
+  const LONGEST_SUPPORTED_LINE = 25;
+  for (const [, body] of blocks) {
+    const lines = [...body.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+    assert.equal(lines.length, 2, `expected 2 body lines, got ${lines.length}`);
+    for (const line of lines) {
+      assert.ok(
+        line.length <= LONGEST_SUPPORTED_LINE,
+        `line longer than the sizing budget (${LONGEST_SUPPORTED_LINE}): ${line}`
+      );
+    }
+  }
+
+  // 最長行(25文字)が各幅で1行に収まる文字サイズが指定されていること
+  assert.match(carouselSource, /text-\[13px\]/);
+  assert.match(carouselSource, /max-\[389px\]:text-\[12px\]/);
+  assert.match(carouselSource, /max-\[359px\]:text-\[11px\]/);
 });
 
 test("onboarding copy avoids off-positioning pitches", () => {
@@ -232,7 +261,8 @@ test("onboarding copy avoids off-positioning pitches", () => {
 test("carousel provides skip, dots, next and the final plan CTA", () => {
   assert.match(carouselSource, /スキップ/);
   assert.match(carouselSource, /次へ/);
-  assert.match(carouselSource, /山行計画をつくる/);
+  assert.match(carouselSource, /さっそく始めよう！/);
+  assert.doesNotMatch(carouselSource, /山行計画をつくる/);
   assert.match(carouselSource, /skipOnboarding/);
   assert.match(carouselSource, /completeOnboarding/);
   assert.match(carouselSource, /ページ目を表示/); // ドットの aria-label
@@ -247,23 +277,22 @@ test("carousel respects small screens and safe areas", () => {
   assert.match(carouselSource, /env\(safe-area-inset-bottom\)/);
   // 320px 帯(iPhone SE 1st / mini 幅未満)への調整
   assert.match(carouselSource, /max-\[359px\]:text-\[19px\]/);
-  assert.match(carouselSource, /max-\[359px\]:max-w-\[236px\]/);
+  assert.match(carouselSource, /max-\[359px\]:max-w-\[200px\]/);
   assert.match(carouselSource, /max-\[359px\]:px-5/);
-  // 本文はモバイル可読性のため 15px / stone-700
-  assert.match(carouselSource, /text-\[15px\][^"]*text-stone-700/);
-  // ボタン跳ねを防ぐ固定領域(2行タイトル+3行本文ぶん)
-  assert.match(carouselSource, /min-h-\[144px\]/);
+  // 本文は 13px / stone-700(サイズ切替は本文2行テストが担保)
+  assert.match(carouselSource, /text-\[13px\][^"]*text-stone-700/);
+  // ボタン跳ねを防ぐ固定領域(2行タイトル+2行本文ぶん)
+  assert.match(carouselSource, /min-h-\[128px\]/);
   // コンテンツグループは上下スペーサーで Skip とインジケーターの間の中央に置く
   assert.match(carouselSource, /flex-\[0\.85\]/);
   const spacerCount = (carouselSource.match(/aria-hidden \/>/g) ?? []).length;
   assert.equal(spacerCount, 2);
 });
 
-test("illustrations form one flat vector system in brand colors", () => {
+test("illustrations are the four supplied assets, served locally", () => {
   for (const name of [
     "WelcomeIllustration",
     "PlanIllustration",
-    "GearSortIllustration",
     "MyGearIllustration",
     "FinalCheckIllustration"
   ]) {
@@ -272,28 +301,28 @@ test("illustrations form one flat vector system in brand colors", () => {
       `missing illustration: ${name}`
     );
   }
+  // 3ページ目の削除に伴い、対応するイラストも残さない
+  assert.doesNotMatch(illustrationsSource, /GearSortIllustration/);
 
-  // 共通ビューボックス・共通背景ブロブとブランド色
-  assert.match(illustrationsSource, /viewBox: "0 0 320 200"/);
-  assert.match(illustrationsSource, /BLOB_PATH/);
-  assert.match(illustrationsSource, /#14724e/);
-  assert.match(illustrationsSource, /#1F7950/);
-  assert.match(illustrationsSource, /#81AB44/);
-  // ロゴ言語: 黄緑バンド + 山吹色アクセント + clipPath による曲面レイヤー
-  assert.match(illustrationsSource, /#A8C455/);
-  assert.match(illustrationsSource, /#E5B94B/);
-  assert.match(illustrationsSource, /clipPath/);
+  // アセットは public/onboarding/ 配下のみ。外部URL・リモート素材は使わない。
+  const sources = [...illustrationsSource.matchAll(/src="([^"]+)"/g)].map((m) => m[1]);
+  assert.equal(sources.length, 4);
+  for (const src of sources) {
+    assert.match(src, /^\/onboarding\/[a-z-]+\.png$/);
+  }
+  assert.doesNotMatch(illustrationsSource, /https?:\/\//);
 
-  // 状態色はチェックリストUIと同じ値を引用する
-  assert.ok(tripPlanningUiSource.includes("#B91C1C"));
-  assert.ok(tripPlanningUiSource.includes("#14724e"));
-  assert.ok(tripPlanningUiSource.includes("#1D4ED8"));
-  assert.match(illustrationsSource, /#B91C1C/);
-  assert.match(illustrationsSource, /#1D4ED8/);
-
-  // 出所不明素材・外部画像・ラスタ画像は使わない
-  assert.doesNotMatch(illustrationsSource, /<image/);
-  assert.doesNotMatch(illustrationsSource, /https?:\/\/(?!www\.w3\.org)/);
-  assert.doesNotMatch(illustrationsSource, /\.(png|jpg|jpeg|webp|gif)/);
+  // next/image で最適化し、装飾画像として読み上げから除外する
+  assert.match(illustrationsSource, /from "next\/image"/);
+  assert.match(illustrationsSource, /alt=""/);
   assert.match(illustrationsSource, /aria-hidden/);
+  assert.match(illustrationsSource, /priority/);
+});
+
+test("supplied illustration assets exist in public/onboarding", () => {
+  const expected = ["welcome.png", "plan.png", "my-gear.png", "final-check.png"];
+  for (const file of expected) {
+    const assetUrl = new URL(`../public/onboarding/${file}`, import.meta.url);
+    assert.equal(existsSync(assetUrl), true, `missing asset: public/onboarding/${file}`);
+  }
 });

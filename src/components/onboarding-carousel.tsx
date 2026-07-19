@@ -5,23 +5,28 @@ import { useRef, useState } from "react";
 import { completeOnboarding, skipOnboarding } from "@/lib/actions/onboarding";
 import {
   FinalCheckIllustration,
-  GearSortIllustration,
   MyGearIllustration,
   PlanIllustration,
   WelcomeIllustration
 } from "@/components/onboarding-illustrations";
 import { SubmitButton } from "@/components/submit-button";
 
-// 新規ユーザー向けオンボーディング(5ページ)。
+// 新規ユーザー向けオンボーディング(4ページ)。
 // 表示判定はサーバー側(/dashboard → /onboarding)で行い、ここは表示専用。
-// 「スキップ」「山行計画をつくる」はどちらも server action で
+// 「スキップ」「さっそく始めよう！」はどちらも server action で
 // user_metadata に終了状態を保存してから遷移する。
 
 type Slide = {
   id: string;
-  /** タイトル行。2要素の場合は全幅で意図した位置(読点)で改行する。 */
+  /** タイトル行。2要素の場合は意図した位置(読点)で改行する。 */
   title: string[];
-  description: string;
+  /**
+   * 本文は「1行ぶん」を1要素として保持する(全ページ2行に統一)。
+   * 各行は inline-block で描画するため、折り返しは必ず行の境目で起き、
+   * 「登 / 録」「チェ / ック」のように語の途中で切れない。
+   * 最長行は25文字。この長さが2行に収まるよう本文の文字サイズを決めている。
+   */
+  description: string[];
   Illustration: (props: { className?: string }) => React.ReactNode;
 };
 
@@ -29,36 +34,37 @@ const SLIDES: Slide[] = [
   {
     id: "welcome",
     title: ["山へ行く前の不安を、なくす。"],
-    description:
-      "山支度は、山行計画から装備確認までをひとつにつなぐ、登山前準備アプリです。",
+    description: [
+      "山支度は、山行計画から装備確認までを",
+      "ひとつにつなぐ、登山前準備アプリです。"
+    ],
     Illustration: WelcomeIllustration
   },
   {
     id: "plan",
     title: ["条件を選ぶだけで、", "山行計画が完成"],
-    description:
-      "山・季節・スタイル・予定日を選ぶだけ。山行に合わせた装備リストを自動で作成します。",
+    description: [
+      "山・季節・スタイル・予定日を選ぶだけ。",
+      "山行に合わせた装備リストを自動で作成します。"
+    ],
     Illustration: PlanIllustration
-  },
-  {
-    id: "gear-sort",
-    title: ["必要な装備を、自動で整理"],
-    description:
-      "計画に必要な装備を「所持済み」「不足」「要確認」に自動で仕分け。足りないものがひと目でわかります。",
-    Illustration: GearSortIllustration
   },
   {
     id: "my-gear",
     title: ["装備も重量も、まとめて管理"],
-    description:
-      "持っている装備をブランド・カテゴリー別に登録。総重量や装備構成も確認できます。",
+    description: [
+      "持っている装備をブランド・カテゴリー別に登録。",
+      "総重量や装備構成も確認できます。"
+    ],
     Illustration: MyGearIllustration
   },
   {
     id: "final-check",
     title: ["出発前の抜け漏れを、", "ひと目で確認"],
-    description:
-      "ヘッドライトや防寒着、水分などを一つずつチェック。忘れ物を防ぎ、落ち着いて出発できます。",
+    description: [
+      "ヘッドライトや防寒着、水分などを一つずつチェック。",
+      "忘れ物を防ぎ、落ち着いて出発できます。"
+    ],
     Illustration: FinalCheckIllustration
   }
 ];
@@ -146,11 +152,12 @@ export function OnboardingCarousel() {
                 スペーサーが自然に潰れ、コンテンツは欠けない。 */}
             <div className="flex-[0.85]" aria-hidden />
 
-            <div className="flex shrink-0 items-center justify-center pb-4 pt-1">
-              <Illustration className="h-auto w-full max-w-[270px] max-[359px]:max-w-[236px]" />
+            {/* イラストは正方形。小画面でも本文とボタンを圧迫しない上限に抑える */}
+            <div className="flex shrink-0 items-center justify-center pb-3 pt-1">
+              <Illustration className="h-auto w-full max-w-[250px] max-[359px]:max-w-[200px]" />
             </div>
 
-            <div className="min-h-[144px] shrink-0 text-center">
+            <div className="min-h-[128px] shrink-0 text-center">
               <h1 className="text-[21px] font-bold leading-snug tracking-normal text-ink max-[359px]:text-[19px] min-[390px]:text-[22px]">
                 {slide.title.map((line) => (
                   <span key={line} className="block">
@@ -158,8 +165,15 @@ export function OnboardingCarousel() {
                   </span>
                 ))}
               </h1>
-              <p className="mx-auto mt-3 max-w-[320px] text-[15px] font-semibold leading-relaxed text-stone-700">
-                {slide.description}
+              {/* 本文は全ページ2行に固定する。最長行(25文字)が1行に収まるよう、
+                  画面幅ごとに文字サイズを切り替える(390px以上=13px /
+                  360〜389px=12px / 360px未満=11px)。 */}
+              <p className="mx-auto mt-3 max-w-[360px] text-[13px] font-semibold leading-relaxed text-stone-700 max-[389px]:text-[12px] max-[359px]:text-[11px]">
+                {slide.description.map((line) => (
+                  <span key={line} className="inline-block">
+                    {line}
+                  </span>
+                ))}
               </p>
             </div>
 
@@ -191,7 +205,7 @@ export function OnboardingCarousel() {
                 pendingLabel="準備中..."
                 className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[#14724e] text-[15px] font-bold text-white shadow-sm transition active:scale-[0.98] disabled:opacity-60"
               >
-                山行計画をつくる
+                さっそく始めよう！
               </SubmitButton>
             </form>
           ) : (

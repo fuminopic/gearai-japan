@@ -40,9 +40,7 @@ export default async function GearPage({ searchParams }: GearPageProps) {
   // → カードは rounded-[20px] / 間隔 11px。以前はここだけ白背景に 34px の
   // 見出しと eyebrow が乗っていて、別アプリのように見えていた。
   return (
-    <main className="gear-redesign min-h-screen bg-[#E5EBE9] pb-32 text-ink">
-      <GearShellCss />
-
+    <main className="gear-redesign brand-shell min-h-screen bg-[#E5EBE9] pb-32 text-ink">
       {/* ロゴとメニューの位置、そしてカードが始まる Y 座標をホームと一致させる。
           ホーム: バンド safe+206 / カード -107 → カード上端 safe+99。
           ここ:   バンド safe+150 / カード -51  → カード上端 safe+99。
@@ -79,28 +77,6 @@ export default async function GearPage({ searchParams }: GearPageProps) {
         />
       </div>
     </main>
-  );
-}
-
-// ホームと同じく、この画面では共通の白ヘッダー(ロゴ行)を隠す。緑のバンドが
-// その役割を兼ねるため、白ヘッダーが残ると二重の見出しになってしまう。
-function GearShellCss() {
-  return (
-    <style>{`
-      body:has(main.gear-redesign) {
-        background: #e5ebe9;
-      }
-      body:has(main.gear-redesign) > div > header:has(a[href="/dashboard"]),
-      body:has(main.gear-redesign) > div > aside:has(a[href="/dashboard"]) {
-        display: none;
-      }
-      main:has(> main.gear-redesign) {
-        margin: 0 !important;
-        max-width: none !important;
-        padding: 0 !important;
-        width: 100% !important;
-      }
-    `}</style>
   );
 }
 

@@ -74,7 +74,7 @@ test("home rebuild exposes a master state component for the four home states", (
   assert.match(dashboardSource, /hasTrip: boolean/);
   assert.match(dashboardSource, /hasGear: boolean/);
   assert.match(dashboardSource, /<HeroCard hasTrip={hasTrip} trip={trip}/);
-  assert.match(dashboardSource, /<main className="home-redesign min-h-screen bg-\[#E5EBE9\] pb-32/);
+  assert.match(dashboardSource, /<main className="home-redesign brand-shell min-h-screen bg-\[#E5EBE9\] pb-32/);
   assert.match(dashboardSource, /<div className="relative z-20 -mt-\[107px\] space-y-\[11px\] px-4">/);
 });
 
@@ -102,6 +102,44 @@ test("home redesign v2 uses shared bottom navigation", () => {
   assert.match(appNavSource, /マイページ/);
   assert.doesNotMatch(dashboardSource, /function BottomNavigation/);
   assert.doesNotMatch(dashboardSource, /bottomNavItems/);
+});
+
+test("branded screens never flash the shared white header while loading", () => {
+  const appChromeSource = readFileSync(
+    new URL("../src/components/app-chrome.tsx", import.meta.url),
+    "utf8"
+  );
+  const gearPageSource = readFileSync(
+    new URL("../app/(app)/gear/page.tsx", import.meta.url),
+    "utf8"
+  );
+  const appLoadingSource = readFileSync(
+    new URL("../app/(app)/loading.tsx", import.meta.url),
+    "utf8"
+  );
+
+  // ヘッダーの非表示はパス名で判定する。CSS の :has(main.home-redesign) では
+  // 遷移中に対象の <main> が DOM から消え、白ヘッダーが一瞬戻ってしまう。
+  assert.match(appChromeSource, /"use client"/);
+  assert.match(appChromeSource, /usePathname/);
+  assert.match(appChromeSource, /"\/dashboard", "\/gear"/);
+  assert.match(appNavSource, /HideOnBrandShell/);
+  assert.doesNotMatch(dashboardSource, /body:has\(main\.home-redesign\) > div > header/);
+  assert.doesNotMatch(gearPageSource, /> div > header/);
+
+  // 背景とレイアウト解除は globals 側の .brand-shell に置き、遷移中の
+  // スケルトンにも同じものが当たるようにする。
+  assert.match(globalsSource, /body:has\(main\.brand-shell\)/);
+  assert.match(globalsSource, /main:has\(> main\.brand-shell\)/);
+  assert.match(dashboardSource, /home-redesign brand-shell/);
+  assert.match(gearPageSource, /gear-redesign brand-shell/);
+
+  // ローディングは行き先に合わせた緑バンドを描く(スピナーを出さない)。
+  assert.match(appLoadingSource, /"use client"/);
+  assert.match(appLoadingSource, /isBrandShellPath/);
+  assert.match(appLoadingSource, /brand-shell/);
+  assert.match(appLoadingSource, /bg-gradient-to-br from-\[#1F7950\] to-\[#81AB44\]/);
+  assert.match(appLoadingSource, /206 : 150/);
 });
 
 test("app middleware keeps navigation lightweight", () => {

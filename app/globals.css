@@ -51,6 +51,29 @@ body:has(main.home-redesign) {
   background: #e5ebe9;
 }
 
+/* 緑バンドを持つ画面(ホーム / マイギア)と、その遷移中スケルトンで共通。
+   ページ側の <style> に置くと遷移中は適用されず、背景と余白が一瞬だけ
+   元に戻ってしまうため、ここに置く。 */
+body:has(main.brand-shell) {
+  background: #e5ebe9;
+}
+
+main:has(> main.brand-shell) {
+  margin: 0 !important;
+  max-width: none !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* 状态栏区不再单独填纯色,由 header 的渐变直接铺到顶,避免割裂 */
 
 button,

@@ -108,9 +108,7 @@ function HomePageContent({
   summary: DashboardSummary;
 }) {
   return (
-    <main className="home-redesign min-h-screen bg-[#E5EBE9] pb-32 text-ink">
-      <HomeShellCss />
-
+    <main className="home-redesign brand-shell min-h-screen bg-[#E5EBE9] pb-32 text-ink">
       <header
         className="relative z-10 flex w-full items-start justify-between bg-gradient-to-br from-[#1F7950] to-[#81AB44] px-4 pt-[max(env(safe-area-inset-top),20px)]"
         style={{ minHeight: "calc(max(env(safe-area-inset-top), 20px) + 206px)" }}
@@ -135,30 +133,6 @@ function HomePageContent({
         <RecentGearSection gear={summary.recentGear} hasGear={hasGear} />
       </div>
     </main>
-  );
-}
-
-function HomeShellCss() {
-  return (
-    <style>{`
-      body:has(main.home-redesign) > div > header:has(a[href="/dashboard"]),
-      body:has(main.home-redesign) > div > aside:has(a[href="/dashboard"]) {
-        display: none;
-      }
-      main:has(> main.home-redesign) {
-        margin: 0 !important;
-        max-width: none !important;
-        padding: 0 !important;
-        width: 100% !important;
-      }
-      .hide-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      .hide-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-    `}</style>
   );
 }
 

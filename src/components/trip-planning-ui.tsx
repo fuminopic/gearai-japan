@@ -10,6 +10,7 @@ import {
   BriefcaseMedical,
   Check,
   ChevronDown,
+  ChevronRight,
   CircleAlert,
   CircleDashed,
   CloudRain,
@@ -36,6 +37,7 @@ import {
   Soup,
   Sparkles,
   Tent,
+  Trash2,
   Toilet,
   Utensils,
   Volume2,
@@ -562,7 +564,7 @@ export function TripPlanningUI({
   }
 
   return (
-    <div className="space-y-[11px] pb-24">
+    <div className={`space-y-[11px] ${plan ? "pb-44" : "pb-24"}`}>
       {isSavedPlanMode && plan && !isFullChecklistView ? (
         <SavedPlanDetailHeader
           plan={plan}
@@ -721,23 +723,20 @@ function PlanResultSummaryHeader({
   plannedEndDate: string;
 }) {
   return (
-    <section className="rounded-lg border border-forest-100 bg-white px-4 py-3 shadow-soft sm:px-5">
+    <section className="rounded-[20px] bg-white px-4 py-4 shadow-sm sm:px-5">
       <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-forest-50 text-forest-700">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-[#14724e]">
           <Mountain className="h-5 w-5" aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h1 className="truncate text-lg font-semibold tracking-normal text-ink">
-              {plan.mountain.name_ja}
-            </h1>
-            <span className="text-sm font-semibold text-stone-600">
-              {mountainFoundationSeasonLabels[plan.season]} / {mountainFoundationStyleLabels[plan.style]}
-            </span>
-            <span className="text-sm font-semibold text-stone-600">
-              {formatPlanDateRange(plannedDate, plannedEndDate, plan.style)}
-            </span>
-          </div>
+          <h1 className="truncate text-base font-bold tracking-normal text-ink">
+            {plan.mountain.name_ja}
+          </h1>
+          <p className="mt-1 truncate text-xs font-semibold text-stone-500">
+            {mountainFoundationSeasonLabels[plan.season]} / {mountainFoundationStyleLabels[plan.style]}
+            {" ・ "}
+            {formatPlanDateRange(plannedDate, plannedEndDate, plan.style)}
+          </p>
         </div>
       </div>
     </section>
@@ -779,45 +778,42 @@ function SavedPlanDetailHeader({
           : null;
 
   return (
-    <section className="rounded-lg border border-forest-100 bg-white px-4 py-3 shadow-soft sm:px-5">
+    <section className="rounded-[20px] bg-white px-4 py-4 shadow-sm sm:px-5">
       <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-forest-50 text-forest-700">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-[#14724e]">
           <Mountain className="h-5 w-5" aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h1 className="truncate text-lg font-semibold tracking-normal text-ink">
-              {plan.mountain.name_ja}
-            </h1>
-            <span className="text-sm font-semibold text-stone-600">
-              {mountainFoundationSeasonLabels[plan.season]} / {mountainFoundationStyleLabels[plan.style]}
-            </span>
-            <button
-              type="button"
-              onClick={onToggleEditor}
-              className="text-left text-sm font-semibold text-stone-600 underline decoration-stone-300 underline-offset-4 transition hover:text-forest-700"
-              aria-expanded={isEditorOpen}
-            >
-              {displayDate}
-            </button>
-          </div>
+          <h1 className="truncate text-base font-bold tracking-normal text-ink">
+            {plan.mountain.name_ja}
+          </h1>
+          <button
+            type="button"
+            onClick={onToggleEditor}
+            className="mt-1 block max-w-full truncate text-left text-xs font-semibold text-stone-500"
+            aria-expanded={isEditorOpen}
+          >
+            {mountainFoundationSeasonLabels[plan.season]} / {mountainFoundationStyleLabels[plan.style]}
+            {" ・ "}
+            {displayDate}
+          </button>
         </div>
         <button
           type="button"
           onClick={onToggleEditor}
-          className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border transition active:scale-95 ${
+          className={`inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full border px-3 text-[11px] font-bold transition active:scale-95 ${
             isEditorOpen
               ? "border-forest-200 bg-forest-50 text-forest-800"
-              : "border-stone-100 bg-stone-50 text-stone-600"
+              : "border-forest-100 bg-white text-[#14724e]"
           }`}
           aria-expanded={isEditorOpen}
-          aria-label="計画条件を編集"
         >
-          <Pencil className="h-4 w-4" aria-hidden="true" />
-          </button>
+          <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+          条件を編集
+        </button>
       </div>
       {isEditorOpen ? (
-        <div className="mt-3 rounded-lg bg-stone-50 p-3">
+        <div className="mt-3 rounded-xl bg-stone-50 p-3">
           <SavedPlanDateRangeField
             label={usesDateRange ? "予定期間" : "予定日"}
             startValue={startInputValue}
@@ -1055,10 +1051,7 @@ function SavePlanButton({
   }
 
   return (
-    <form
-      ref={formRef}
-      className="rounded-lg border border-forest-100 bg-white p-4 shadow-soft sm:p-5"
-    >
+    <form ref={formRef}>
       {planId ? <input type="hidden" name="id" value={planId} /> : null}
       <input type="hidden" name="mountain_slug" value={mountainSlug} />
       <input type="hidden" name="mountain_name" value={mountainName} />
@@ -1084,25 +1077,24 @@ function SavePlanButton({
         name="unchecked_packed_slots"
         value={JSON.stringify(uncheckedPackedSlots)}
       />
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-bold text-forest-700">計画を保存</p>
-          <p className="mt-1 text-xs font-semibold text-stone-500">
+      <div className="fixed inset-x-4 bottom-[104px] z-40">
+        {!planId ? (
+          <p className="mb-2 text-center text-[11px] font-bold text-stone-500">
             保存するとホームの次回山行カードに反映されます。
           </p>
-        </div>
-        <p className="text-sm font-bold text-ink">
-          完成度 {progress.toLocaleString("ja-JP")}%
-        </p>
+        ) : null}
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={handleSavePlan}
+          className="flex h-12 w-full items-center justify-between rounded-full bg-[#14724e] px-5 text-base font-bold text-white shadow-[0_10px_24px_rgba(20,114,78,0.3)] transition active:scale-[0.99] disabled:opacity-70"
+        >
+          <span>{isPending ? "保存中..." : planId ? "変更を更新" : "計画を保存"}</span>
+          <span className="font-din text-sm font-bold text-white/85">
+            完成度 {progress.toLocaleString("ja-JP")}%
+          </span>
+        </button>
       </div>
-      <button
-        type="button"
-        disabled={isPending}
-        onClick={handleSavePlan}
-        className="mt-3 inline-flex h-12 w-full items-center justify-center rounded-lg bg-forest-700 text-base font-bold text-white shadow-sm transition active:scale-[0.99] disabled:opacity-70"
-      >
-        {isPending ? "保存中..." : planId ? "変更を更新" : "計画を保存"}
-      </button>
     </form>
   );
 }
@@ -1115,12 +1107,9 @@ function PlanHistorySection({
   legacyPlans: AIRecommendationRecord[];
 }) {
   return (
-    <section className="rounded-lg bg-white p-5 shadow-soft">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold text-forest-700">保存済みプラン</p>
-          <h2 className="mt-1 text-lg font-semibold text-ink">計画履歴</h2>
-        </div>
+    <section className="rounded-[20px] bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-3 border-b border-[#EEEDE6] pb-3">
+        <h2 className="text-base font-bold text-ink">計画履歴</h2>
         {plans.length > 0 ? (
           <form
             action={clearTripPlans}
@@ -1132,7 +1121,7 @@ function PlanHistorySection({
           >
             <button
               type="submit"
-              className="rounded-full border border-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+              className="rounded-full border border-red-100 px-3 py-1.5 text-[11px] font-bold text-red-700 transition active:scale-95"
             >
               すべて削除
             </button>
@@ -1145,17 +1134,17 @@ function PlanHistorySection({
           {plans.map((record) => (
             <article
               key={record.id}
-              className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3"
+              className="rounded-xl border border-stone-100 px-4 py-3"
             >
               <div className="flex items-start justify-between gap-3">
                 <Link
                   href={`/plan?id=${record.id}` as Route}
                   className="min-w-0 flex-1"
                 >
-                  <h3 className="truncate text-sm font-semibold text-ink">
+                  <h3 className="truncate text-sm font-bold text-ink">
                     {record.mountain_name || "山行"}
                   </h3>
-                  <p className="mt-1 text-xs font-medium text-stone-500">
+                  <p className="mt-1 text-xs font-semibold text-stone-500">
                     {formatSavedPlanMeta(record)}
                   </p>
                 </Link>
@@ -1170,9 +1159,10 @@ function PlanHistorySection({
                   <input type="hidden" name="id" value={record.id} />
                   <button
                     type="submit"
-                    className="rounded-full border border-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                    aria-label="この計画を削除"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full text-stone-400 transition active:scale-90"
                   >
-                    削除
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
                   </button>
                 </form>
               </div>
@@ -1180,7 +1170,7 @@ function PlanHistorySection({
           ))}
         </div>
       ) : (
-        <div className="mt-4 rounded-lg bg-stone-50 px-4 py-3 text-sm font-medium text-stone-500">
+        <div className="mt-4 rounded-xl bg-stone-50 px-4 py-3 text-sm font-semibold text-stone-500">
           <p>まだ保存された計画はありません。</p>
           {legacyPlans.length > 0 ? (
             <p className="mt-2 text-xs">
@@ -1626,20 +1616,22 @@ function TripPlanningResult({
   }
 
   return (
-    <div className="space-y-5">
-      <section className="space-y-4">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold text-forest-700">準備確認</p>
-            <h2 className="mt-1 text-2xl font-semibold tracking-normal text-ink">
-              装備チェックリスト
-            </h2>
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-center sm:w-auto">
-            <ChecklistStat label="完成" value={`${checklist.summary.percent}%`} />
+    <div className="space-y-[11px]">
+      <section className="space-y-[11px]">
+        <div className="rounded-[20px] bg-white px-5 pt-4 pb-4 shadow-sm">
+          <h2 className="border-b border-[#EEEDE6] pb-3 text-base font-bold text-ink">
+            装備チェックリスト
+          </h2>
+          <div className="mt-4 flex">
+            <ChecklistStat
+              label="完成度"
+              value={`${checklist.summary.percent}%`}
+              divided
+            />
             <ChecklistStat
               label="完了"
               value={checklist.summary.checkedCount.toLocaleString("ja-JP")}
+              divided
             />
             <ChecklistStat
               label="未完了"
@@ -1649,9 +1641,19 @@ function TripPlanningResult({
           </div>
         </div>
 
-        <p className="rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-xs font-semibold leading-relaxed text-amber-900">
-          このリストは山・季節・山行スタイルに基づく一般的な目安です。当日の天気予報、具体的なルート状況、入山規制の最新情報は反映されません。出発前に必ず気象情報、登山道情報、自治体・山小屋などの公式情報をご確認ください。
-        </p>
+        {/* 安全上の注意なので位置は動かさない。ただし常時展開だと
+            チェックリスト本体が画面外まで押し下げられるため、既定は折りたたむ。 */}
+        <details className="group rounded-[20px] bg-white px-5 py-4 shadow-sm">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+            <span className="text-sm font-bold text-amber-900">
+              この計画の注意事項
+            </span>
+            <ChevronDown className="h-5 w-5 shrink-0 text-stone-500 transition group-open:rotate-180" />
+          </summary>
+          <p className="mt-3 rounded-xl bg-amber-50 px-4 py-3 text-xs font-semibold leading-relaxed text-amber-900">
+            このリストは山・季節・山行スタイルに基づく一般的な目安です。当日の天気予報、具体的なルート状況、入山規制の最新情報は反映されません。出発前に必ず気象情報、登山道情報、自治体・山小屋などの公式情報をご確認ください。
+          </p>
+        </details>
 
         <ChecklistScanControls
           activeFilter={scanFilter}
@@ -1660,7 +1662,7 @@ function TripPlanningResult({
           onFilterChange={handleScanFilterChange}
         />
 
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className="grid gap-[11px] xl:grid-cols-2">
           {planCategoryCards.length > 0 ? (
             planCategoryCards.map(({ category, confirmedItems }) => (
             <ChecklistCategoryCard
@@ -1672,7 +1674,7 @@ function TripPlanningResult({
             />
             ))
           ) : (
-            <div className="rounded-lg bg-white p-5 text-sm font-semibold text-stone-500 shadow-soft xl:col-span-2">
+            <div className="rounded-[20px] bg-white p-5 text-sm font-semibold text-stone-500 shadow-sm xl:col-span-2">
               {actionCategoryLabel}の項目はありません。
             </div>
           )}
@@ -1689,25 +1691,23 @@ function TripPlanningResult({
         <button
           type="button"
           onClick={() => setScanFilter("ALL")}
-          className="flex w-full items-center justify-between rounded-lg border border-forest-100 bg-white px-5 py-4 text-left shadow-soft transition active:scale-[0.99]"
+          className="flex w-full items-center justify-between rounded-[20px] bg-white px-5 py-4 text-left shadow-sm transition active:scale-[0.99]"
         >
           <span>
-            <span className="block text-sm font-bold text-forest-700">
+            <span className="block text-sm font-bold text-[#14724e]">
               すべての持ち物を確認
             </span>
             <span className="mt-1 block text-xs font-semibold text-stone-500">
               今回の持ち物と確認状態を一覧で見ます
             </span>
           </span>
-          <span className="shrink-0 text-lg font-bold text-forest-700" aria-hidden="true">
-            →
-          </span>
+          <ChevronRight className="h-5 w-5 shrink-0 text-[#14724e]" aria-hidden="true" />
         </button>
       )}
 
-      <details className="group rounded-lg bg-white p-5 shadow-soft">
+      <details className="group rounded-[20px] bg-white p-5 shadow-sm">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-ink">装備カバー状況</h2>
+          <h2 className="text-base font-bold text-ink">装備カバー状況</h2>
           <ChevronDown className="h-5 w-5 shrink-0 text-stone-500 transition group-open:rotate-180" />
         </summary>
         <PlanningNotes
@@ -1755,32 +1755,32 @@ function SavedPlanFullChecklistView({
   const counts = getFullChecklistCounts(checklist);
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-[11px]">
       <Link
         href={`/plan?id=${planId}` as Route}
-        className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-bold text-forest-700 shadow-soft transition active:scale-[0.99]"
+        className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-[#14724e] shadow-sm transition active:scale-[0.99]"
       >
         ← 計画詳細へ戻る
       </Link>
 
-      <div className="rounded-lg bg-white p-5 shadow-soft">
-        <p className="text-sm font-bold text-forest-700">すべての持ち物</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-normal text-ink">
+      <div className="rounded-[20px] bg-white p-5 shadow-sm">
+        <p className="text-[11px] font-bold text-[#14724e]">すべての持ち物</p>
+        <h1 className="mt-1 text-base font-bold tracking-normal text-ink">
           持ち物チェック表
         </h1>
-        <div className="mt-4 flex flex-col gap-3 rounded-lg bg-stone-50 p-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mt-4 flex flex-col gap-3 rounded-xl bg-stone-50 p-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-xs font-bold text-stone-500">
               {formatPlanDateRange(plannedDate, plannedEndDate, plan.style)}
             </p>
-            <p className="mt-1 text-xl font-semibold text-ink">
+            <p className="mt-1 text-lg font-bold text-ink">
               {plan.mountain.name_ja}
             </p>
             <p className="mt-1 text-sm font-semibold text-stone-600">
               {mountainFoundationSeasonLabels[plan.season]} / {mountainFoundationStyleLabels[plan.style]}
             </p>
           </div>
-          <span className="inline-flex w-fit rounded-lg bg-forest-50 px-3 py-2 text-xs font-bold text-forest-800">
+          <span className="inline-flex w-fit rounded-full bg-forest-50 px-3 py-2 text-xs font-bold text-forest-800">
             {summary.statusLabel}
           </span>
         </div>
@@ -1793,7 +1793,7 @@ function SavedPlanFullChecklistView({
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-[11px]">
         {checklist.categories.map((category) => (
           <FullChecklistCategory
             key={category.id}
@@ -1832,18 +1832,20 @@ function FullChecklistMetric({
           : "bg-blue-50 text-blue-700";
 
   return (
-    <div className={`rounded-lg px-2 py-2 ${toneClass}`}>
-      <p className="text-[10px] font-bold leading-none">{label}</p>
-      <p className="mt-1 text-lg font-semibold">{value.toLocaleString("ja-JP")}</p>
+    <div className={`rounded-xl px-2 py-2.5 ${toneClass}`}>
+      <p className="font-din text-lg font-bold leading-none">
+        {value.toLocaleString("ja-JP")}
+      </p>
+      <p className="mt-1.5 text-[10px] font-bold leading-none">{label}</p>
     </div>
   );
 }
 
 function FullChecklistCategory({ category }: { category: ChecklistCategory }) {
   return (
-    <section className="overflow-hidden rounded-lg bg-white shadow-soft">
+    <section className="overflow-hidden rounded-[20px] bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-stone-100 px-4 py-3">
-        <h3 className="text-sm font-bold text-ink">{category.label}</h3>
+        <h3 className="text-base font-bold text-ink">{category.label}</h3>
         <span className="text-xs font-bold text-stone-500">
           {category.items.length.toLocaleString("ja-JP")} 件
         </span>
@@ -1875,7 +1877,7 @@ function FullChecklistRow({
       <span
         className={`flex h-5 w-5 items-center justify-center rounded border ${
           status.checked
-            ? "border-forest-700 bg-forest-700 text-white"
+            ? "border-[#14724e] bg-[#14724e] text-white"
             : "border-stone-300 bg-white text-stone-300"
         }`}
         aria-hidden="true"
@@ -1942,7 +1944,7 @@ function FullChecklistImageSaveButton({
   }
 
   return (
-    <section className="rounded-lg bg-white p-5 shadow-soft">
+    <section className="rounded-[20px] bg-white p-5 shadow-sm">
       <button
         type="button"
         onClick={handleSaveImage}
@@ -2386,19 +2388,17 @@ function AllItemsChecklistLink({ planId }: { planId: string }) {
   return (
     <Link
       href={`/plan?id=${planId}&view=checklist` as Route}
-      className="flex items-center justify-between rounded-lg border border-forest-100 bg-white px-5 py-4 text-left shadow-soft transition active:scale-[0.99]"
+      className="flex items-center justify-between rounded-[20px] bg-white px-5 py-4 text-left shadow-sm transition active:scale-[0.99]"
     >
       <span>
-        <span className="block text-sm font-bold text-forest-700">
+        <span className="block text-sm font-bold text-[#14724e]">
           すべての持ち物を確認
         </span>
         <span className="mt-1 block text-xs font-semibold text-stone-500">
           今回の持ち物と確認状態を一覧で見ます
         </span>
       </span>
-      <span className="shrink-0 text-lg font-bold text-forest-700" aria-hidden="true">
-        →
-      </span>
+      <ChevronRight className="h-5 w-5 shrink-0 text-[#14724e]" aria-hidden="true" />
     </Link>
   );
 }
@@ -2432,13 +2432,14 @@ function ChecklistScanControls({
       count: summary.importantConfirmationCount
     }
   ];
-  const visibleFilters = includeAllFilter
-    ? [...filters, { value: "ALL" as const, label: "すべての持ち物" }]
-    : filters;
+  // 「すべての持ち物」は、この直下に同じ役割の大きなボタンがあるため
+  // チップからは外す(includeAllFilter は呼び出し側の互換のために残す)。
+  void includeAllFilter;
+  const visibleFilters = filters;
 
   return (
-    <div className="rounded-lg bg-white p-3 shadow-soft">
-      <div className="flex gap-2 overflow-x-auto pb-1">
+    <div className="rounded-[20px] bg-white p-3 shadow-sm">
+      <div className="hide-scrollbar flex gap-2 overflow-x-auto">
         {visibleFilters.map((filter) => {
           const isActive = activeFilter === filter.value;
 
@@ -2447,10 +2448,8 @@ function ChecklistScanControls({
               key={filter.value}
               type="button"
               onClick={() => onFilterChange(filter.value)}
-              className={`shrink-0 rounded-full px-3 py-2 text-xs font-bold transition ${
-                isActive
-                  ? "bg-forest-700 text-white"
-                  : "bg-stone-100 text-stone-700"
+              className={`shrink-0 rounded-full px-3.5 py-2 text-xs font-bold transition ${
+                isActive ? "bg-[#14724e] text-white" : "bg-stone-100 text-stone-700"
               }`}
             >
               {filter.label}
@@ -2598,22 +2597,28 @@ function getMountainConditionLine(plan: PackRequirementPlan) {
 function ChecklistStat({
   label,
   value,
-  tone = "neutral"
+  tone = "neutral",
+  divided = false
 }: {
   label: string;
   value: string;
   tone?: "neutral" | "missing";
+  divided?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-stone-100 bg-white px-3 py-2 shadow-soft sm:min-w-24">
-      <p className="text-[11px] font-semibold text-stone-500">{label}</p>
+    <div
+      className={`flex flex-1 flex-col items-center gap-3 px-1.5 text-center max-[359px]:px-1 ${
+        divided ? "border-r border-gray-100" : ""
+      }`}
+    >
       <p
-        className={`mt-1 text-lg font-semibold ${
-          tone === "missing" ? "text-red-700" : "text-ink"
+        className={`whitespace-nowrap font-din text-[22px] font-bold leading-none max-[389px]:text-[19px] max-[359px]:text-[17px] ${
+          tone === "missing" ? "text-red-700" : "text-black"
         }`}
       >
         {value}
       </p>
+      <p className="text-[11px] font-bold leading-none text-[#8a8580]">{label}</p>
     </div>
   );
 }
@@ -2634,10 +2639,10 @@ function ChecklistCategoryCard({
   ).length;
 
   return (
-    <article className="rounded-lg bg-white p-5 shadow-soft">
+    <article className="rounded-[20px] bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="text-lg font-semibold text-ink">{category.label}</h3>
+          <h3 className="text-base font-bold text-ink">{category.label}</h3>
           <p className="mt-1 text-xs font-semibold text-stone-500">
             {category.progress.checkedCount.toLocaleString("ja-JP")} 完了
             {missingCount > 0 ? (
@@ -2652,12 +2657,12 @@ function ChecklistCategoryCard({
           </p>
         </div>
         <div className="text-right">
-          <p className="text-2xl font-semibold tracking-normal text-forest-800">
+          <p className="font-din text-lg font-bold leading-none text-[#14724e]">
             {category.progress.percent}%
           </p>
           <div className="mt-2 h-1.5 w-20 overflow-hidden rounded-full bg-stone-100">
             <div
-              className="h-full rounded-full bg-forest-700"
+              className="h-full rounded-full bg-[#4E914A]"
               style={{ width: `${category.progress.percent}%` }}
             />
           </div>
@@ -2728,10 +2733,10 @@ function ChecklistItemRow({
 
   return (
     <label
-      className={`flex min-h-14 gap-3 rounded-lg border px-3 py-2.5 transition ${
+      className={`flex min-h-14 gap-3 rounded-xl border px-3 py-2.5 transition ${
         item.checked
           ? "border-forest-100 bg-forest-50/70"
-          : "border-stone-100 bg-white hover:border-stone-200"
+          : "border-stone-100 bg-white [@media(hover:hover)]:hover:border-stone-200"
       } ${canToggle ? "cursor-pointer" : ""}`}
     >
       <input
@@ -2747,7 +2752,7 @@ function ChecklistItemRow({
       <span
         className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
           item.checked
-            ? "border-forest-700 bg-forest-700 text-white"
+            ? "border-[#14724e] bg-[#14724e] text-white"
             : "border-stone-300 bg-white text-stone-400"
         }`}
       >

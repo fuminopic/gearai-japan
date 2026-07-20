@@ -73,7 +73,7 @@ test("plan and profile adopt the shared card tokens", () => {
   assert.doesNotMatch(profilePageSource, /rounded-\[22px\]/);
   assert.doesNotMatch(profilePageSource, /shadow-soft/);
   // カード間隔もホームと同じ 11px
-  assert.match(planUiSource, /space-y-\[11px\] pb-24/);
+  assert.match(planUiSource, /space-y-\[11px\] \$\{plan \? "pb-44" : "pb-24"\}/);
   assert.match(profilePageSource, /space-y-\[11px\]/);
 });
 

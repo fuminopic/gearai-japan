@@ -380,7 +380,7 @@ test("pack planning checklist prioritizes readiness before gear-backed details",
   assert.doesNotMatch(tripPlanningUiSource, /登録装備との対応/);
 
   for (const copy of [
-    "準備確認",
+    "装備チェックリスト",
     "完成",
     "完了",
     "未完了"
@@ -427,7 +427,8 @@ test("M2 pre-departure confirmation reuses checklist-derived counts", () => {
   assert.match(tripPlanningUiSource, /planned_end_date/);
   assert.match(tripPlanningUiSource, /normalizePlanEndDate/);
   assert.match(tripPlanningUiSource, /日付を選ぶと自動で保存されます。/);
-  assert.match(tripPlanningUiSource, /計画条件を編集/);
+  // アイコンだけのボタンから、ラベル付きの「条件を編集」に変えた。
+  assert.match(tripPlanningUiSource, /条件を編集/);
   // 「臨行前スキャン」は日本語にない語だったため削除済み。復活させない。
   assert.doesNotMatch(tripPlanningUiSource, /臨行/);
   assert.match(tripPlanningUiSource, /要対応/);
@@ -769,14 +770,18 @@ test("mountain picker starts from Japan Hyakumeizan and avoids a nested scroll t
   assert.match(tripPlanningFormSource, /useState\(3\)/);
   assert.match(tripPlanningFormSource, /もっと表示/);
   assert.match(tripPlanningFormSource, /閉じる/);
-  assert.match(tripPlanningFormSource, /setVisibleMountainCount\(\(count\) => count \+ 20\)/);
+  assert.match(tripPlanningFormSource, /setVisibleMountainCount\(\(count\) => count \+ 30\)/);
+  // 初期3件は据え置き。ただし残り何座あるかを出して、検索に誘導する。
+  assert.match(tripPlanningFormSource, /もっと表示（残り/);
   assert.match(tripPlanningFormSource, /setVisibleMountainCount\(3\)/);
   assert.match(tripPlanningFormSource, /overflow-x-auto/);
   assert.match(tripPlanningFormSource, /次の山行、どこにする？/);
   assert.match(tripPlanningFormSource, /text-\[18px\]/);
   assert.match(tripPlanningFormSource, /<Check className=/);
   assert.doesNotMatch(tripPlanningFormSource, /ChevronRight/);
-  assert.doesNotMatch(tripPlanningFormSource, /選択中/);
+  // 既定の高尾山は既定の絞り込み(百名山)に入らず、リスト内のチェック丸が
+  // どこにも出なかった。検索窓の上に「選択中」を常駐させて可視化する。
+  assert.match(tripPlanningFormSource, /選択中/);
   assert.doesNotMatch(tripPlanningUiSource, /山行計画/);
   assert.doesNotMatch(tripPlanningUiSource, /パック計画/);
   assert.doesNotMatch(tripPlanningFormSource, /max-h-72/);

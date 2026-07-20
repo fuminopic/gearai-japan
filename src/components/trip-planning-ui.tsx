@@ -2604,7 +2604,7 @@ function ChecklistStat({
 }) {
   return (
     <div
-      className={`flex flex-1 flex-col items-center gap-3 px-1.5 text-center max-[359px]:px-1 ${
+      className={`flex flex-1 flex-col items-center gap-2 px-1.5 pt-1 text-center max-[359px]:px-1 ${
         divided ? "border-r border-gray-100" : ""
       }`}
     >

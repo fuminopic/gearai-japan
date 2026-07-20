@@ -149,10 +149,14 @@ test("gear list and actions provide clear post-save feedback", () => {
 
 test("gear delete action is kept on the detail page instead of the dense list", () => {
   assert.doesNotMatch(gearListSource, /deleteGear/);
-  assert.doesNotMatch(gearListSource, /この装備を削除/);
+  assert.doesNotMatch(gearListSource, /このギアを削除/);
   assert.match(gearDetailSource, /装備の管理/);
   assert.match(gearDetailSource, /deleteGear\.bind\(null, gear\.id\)/);
-  assert.match(gearDetailSource, /この装備を削除/);
+  // 取り消せない削除なので、計画の削除と同じく確認をはさむ。
+  assert.match(gearDetailSource, /このギアを削除/);
+  assert.match(gearDetailSource, /<ConfirmSubmitButton/);
+  assert.match(gearDetailSource, /title="このギアを削除しますか？"/);
+  assert.match(gearDetailSource, /削除すると元に戻せません。/);
 });
 
 test("gear detail page uses user-facing Japanese labels instead of internal field names", () => {

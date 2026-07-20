@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { GearImageViewer } from "@/components/gear-image-viewer";
-import { SubmitButton } from "@/components/submit-button";
+import { ConfirmSubmitButton } from "@/components/ui/confirm-dialog";
 import { deleteGear } from "@/lib/actions/gear";
 import { getUserGearById } from "@/lib/data/gear";
 import { getGearDisplayWeightLabel } from "@/lib/gear-display";
@@ -50,6 +50,7 @@ export default async function GearDetailPage({
     : "自分で登録した情報をもとに表示しています。必要に応じて編集してください。";
   // 官方目录装备(有 gear_products 关联)= 只读;自己添加的才可编辑
   const isCatalog = Boolean(gear.gear_products);
+  const gearDisplayName = gear.name || brandLine;
 
   return (
     <div className="space-y-5">
@@ -203,13 +204,16 @@ export default async function GearDetailPage({
         </p>
         <form action={deleteGear.bind(null, gear.id)} className="mt-4">
           <input type="hidden" name="returnTo" value={returnTo ?? ""} />
-          <SubmitButton
+          <ConfirmSubmitButton
+            title="このギアを削除しますか？"
+            description={`${gearDisplayName}を削除します。削除すると元に戻せません。`}
+            confirmLabel="削除する"
             pendingLabel="削除中..."
             className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 disabled:opacity-60 sm:w-auto"
           >
             <Trash2 className="h-4 w-4" />
-            この装備を削除
-          </SubmitButton>
+            このギアを削除
+          </ConfirmSubmitButton>
         </form>
       </section>
     </div>

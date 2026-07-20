@@ -564,7 +564,7 @@ export function TripPlanningUI({
   }
 
   return (
-    <div className={`space-y-[11px] ${plan ? "pb-44" : "pb-24"}`}>
+    <div className={`space-y-[11px] ${plan ? "pb-12" : ""}`}>
       {isSavedPlanMode && plan && !isFullChecklistView ? (
         <SavedPlanDetailHeader
           plan={plan}

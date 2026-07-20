@@ -73,7 +73,7 @@ test("plan and profile adopt the shared card tokens", () => {
   assert.doesNotMatch(profilePageSource, /rounded-\[22px\]/);
   assert.doesNotMatch(profilePageSource, /shadow-soft/);
   // カード間隔もホームと同じ 11px
-  assert.match(planUiSource, /space-y-\[11px\] \$\{plan \? "pb-44" : "pb-24"\}/);
+  assert.match(planUiSource, /space-y-\[11px\] \$\{plan \? "pb-12" : ""\}/);
   assert.match(profilePageSource, /space-y-\[11px\]/);
 });
 
@@ -118,4 +118,23 @@ test("plan cards cannot be widened past the viewport by nowrap content", () => {
 
   // 完成度は画面に1つだけ。保存バーとカードで別々の計算だったものを戻した。
   assert.doesNotMatch(uiSource, /完成度 \{progress/);
+});
+
+test("bottom padding is owned by the page main only", () => {
+  // レイアウトのラッパー <div> と各ページの <main> の両方に pb-32 があり、
+  // 下端に余分な余白と、ラッパーの #FAFAFA が露出した白帯が出ていた。
+  const layoutSource = readFileSync(
+    new URL("../app/(app)/layout.tsx", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(layoutSource, /min-h-screen bg-\[#FAFAFA\] text-ink/);
+  assert.doesNotMatch(layoutSource, /bg-\[#FAFAFA\] pb-32/);
+  // 外側 <main> の pb-32 は、緑バンドを持たない画面のために残す
+  // (brand-shell の画面では globals.css の :has() で padding:0 に落ちる)。
+  assert.match(layoutSource, /max-w-5xl px-4 pb-32 pt-5/);
+
+  for (const source of [planPageSource, profilePageSource, packPageSource]) {
+    assert.match(source, /min-h-screen bg-\[#E5EBE9\] pb-32/);
+  }
 });

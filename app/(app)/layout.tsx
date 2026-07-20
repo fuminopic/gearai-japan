@@ -53,7 +53,7 @@ async function AuthGate({ children }: { children: React.ReactNode }) {
   const userId = user.id;
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] pb-32 text-ink">
+    <div className="min-h-screen bg-[#FAFAFA] text-ink">
       {/* No remote splash here: the bundled local login page owns the single
           splash for the app. Rendering one here too produced the recurring
           "splash → blank → splash" double. Web simply loads straight in. */}

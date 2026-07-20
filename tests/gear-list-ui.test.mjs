@@ -285,3 +285,32 @@ test("the gear form uses the same tokens as the rest of the app", () => {
   assert.match(source, /createSignedUrl|from\("gear-images"\)|storage/);
   assert.match(source, /<UnsavedChangesGuard \/>/);
 });
+
+test("the catalog picker matches the rest of the app", () => {
+  const source = readFileSync(
+    new URL("../src/components/gear-form.tsx", import.meta.url),
+    "utf8"
+  );
+  const layoutSource = readFileSync(
+    new URL("../app/(app)/layout.tsx", import.meta.url),
+    "utf8"
+  );
+  const navSource = readFileSync(
+    new URL("../src/components/app-nav.tsx", import.meta.url),
+    "utf8"
+  );
+
+  // タブ5画面は #E5EBE9、その1階層下だけ #FAFAFA で、深く入ると
+  // 画面全体の色が変わっていた。上の白ヘッダーも合わせる。
+  assert.match(layoutSource, /bg-\[#E5EBE9\]/);
+  assert.doesNotMatch(layoutSource, /#FAFAFA/);
+  assert.match(navSource, /bg-\[#E5EBE9\]\/90/);
+
+  // 検索ボタンだけ黒だった。主操作の色はアプリで1つ。
+  assert.doesNotMatch(source, /bg-ink/);
+  // 白いカードは 20px
+  assert.match(source, /rounded-\[20px\] bg-white/);
+  // iOS では指を離しても hover が残るので、背景を変える hover は使わない
+  assert.doesNotMatch(source, /hover:bg-forest/);
+  assert.match(source, /\[@media\(hover:hover\)\]:hover:/);
+});

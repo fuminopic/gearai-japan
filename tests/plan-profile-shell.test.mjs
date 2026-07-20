@@ -128,8 +128,8 @@ test("bottom padding is owned by the page main only", () => {
     "utf8"
   );
 
-  assert.match(layoutSource, /min-h-screen bg-\[#FAFAFA\] text-ink/);
-  assert.doesNotMatch(layoutSource, /bg-\[#FAFAFA\] pb-32/);
+  assert.match(layoutSource, /min-h-screen bg-\[#E5EBE9\] text-ink/);
+  assert.doesNotMatch(layoutSource, /bg-\[#E5EBE9\] pb-32/);
   // 外側 <main> の pb-32 は、緑バンドを持たない画面のために残す
   // (brand-shell の画面では globals.css の :has() で padding:0 に落ちる)。
   assert.match(layoutSource, /max-w-5xl px-4 pb-32 pt-5/);

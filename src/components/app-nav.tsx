@@ -30,7 +30,7 @@ export function AppNav() {
       {/* ホーム/マイギアは自前の緑バンドを持つので、この白ヘッダーは出さない。
           遷移中も含めて確実に隠すため、CSS ではなくパス名で判定する。 */}
       <HideOnBrandShell>
-        <header className="sticky top-0 z-40 border-b border-gray-100/70 bg-[#FAFAFA]/90 px-4 pb-3 pt-[max(env(safe-area-inset-top),20px)] backdrop-blur-md">
+        <header className="sticky top-0 z-40 border-b border-black/5 bg-[#E5EBE9]/90 px-4 pb-3 pt-[max(env(safe-area-inset-top),20px)] backdrop-blur-md">
           <div className="mx-auto flex max-w-5xl items-center justify-between">
             <Link href="/dashboard" className="inline-flex items-center">
               <AppLogo className="h-12" />

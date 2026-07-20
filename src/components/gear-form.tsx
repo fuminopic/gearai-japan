@@ -450,7 +450,7 @@ export function GearForm({
       <input type="hidden" name="official_weight_grams" value={officialWeightGrams} />
       <input type="hidden" name="returnTo" value={returnTo ?? ""} />
 
-      <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
+      <section className="overflow-hidden rounded-[20px] bg-white shadow-sm">
         <div className="border-b border-stone-100 px-4 py-4 sm:px-5">
           <div className="flex items-center gap-2 text-xs font-bold text-[#14724e]">
             <Sparkles className="h-4 w-4" />
@@ -470,7 +470,7 @@ export function GearForm({
               <button
                 type="button"
                 onClick={confirmProductSearch}
-                className="inline-flex h-9 shrink-0 items-center justify-center rounded-full bg-ink px-3 text-sm font-semibold leading-none text-white transition active:scale-95"
+                className="inline-flex h-9 shrink-0 items-center justify-center rounded-full bg-[#14724e] px-3 text-sm font-bold leading-none text-white transition active:scale-95"
               >
                 検索
               </button>
@@ -550,7 +550,7 @@ export function GearForm({
                   ブランドを選ぶと、その中のカテゴリーだけを表示します
                 </p>
               </div>
-              <span className="shrink-0 rounded bg-white px-2 py-1 text-xs font-semibold text-stone-500">
+              <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-xs font-bold text-stone-500">
                 {productsForBrand.length}件
               </span>
             </div>
@@ -605,7 +605,7 @@ export function GearForm({
                 <button
                   type="button"
                   onClick={() => setProductListExpanded(true)}
-                  className="rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-bold text-[#14724e] shadow-sm transition hover:border-forest-200 hover:bg-forest-50"
+                  className="rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-bold text-[#14724e] shadow-sm transition active:scale-[0.99]"
                 >
                   もっと表示
                   <span className="ml-2 text-xs font-medium text-stone-500">
@@ -632,7 +632,7 @@ export function GearForm({
       </section>
 
       {manualMode ? (
-        <section ref={manualEntryRef} className="scroll-mt-6 rounded-2xl bg-white p-5 shadow-sm">
+        <section ref={manualEntryRef} className="scroll-mt-6 rounded-[20px] bg-white p-5 shadow-sm">
           <div className="mb-4">
             <p className="text-xs font-bold text-[#14724e]">手入力</p>
             <h2 className="mt-1 text-lg font-semibold text-ink">自分のギア情報</h2>
@@ -727,7 +727,7 @@ export function GearForm({
 
             <div>
               <p className="text-sm font-medium text-stone-700">ギアの写真</p>
-              <label className="mt-2 flex min-h-48 cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-3 text-center transition hover:border-forest-400 hover:bg-forest-50">
+              <label className="mt-2 flex min-h-48 cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-3 text-center transition [@media(hover:hover)]:hover:border-forest-400">
                 {localImagePreviewUrl || imageUrl ? (
                   <img
                     src={localImagePreviewUrl || imageUrl}
@@ -781,7 +781,7 @@ export function GearForm({
       ) : null}
 
       {shouldShowGearDetails ? (
-        <section className="rounded-2xl bg-white p-5 shadow-sm">
+        <section className="rounded-[20px] bg-white p-5 shadow-sm">
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-ink">登録情報</h2>
           </div>
@@ -849,7 +849,7 @@ export function GearForm({
       ) : null}
 
       {shouldShowGearDetails ? (
-        <details className="rounded-2xl bg-white p-5 shadow-sm">
+        <details className="rounded-[20px] bg-white p-5 shadow-sm">
           <summary className="cursor-pointer text-sm font-bold text-[#14724e]">
             詳細設定
           </summary>
@@ -1000,10 +1000,10 @@ function ProductFilterChip({
   const stateClass = logoSurface
     ? active
       ? "border-forest-700 bg-white text-stone-900 ring-1 ring-forest-700"
-      : "border-stone-200 bg-white text-stone-700 hover:border-forest-200 hover:bg-forest-50 hover:text-forest-800"
+      : "border-stone-200 bg-white text-stone-700 [@media(hover:hover)]:hover:border-forest-200"
     : active
       ? "border-[#14724e] bg-[#14724e] text-white"
-      : "border-stone-200 bg-white text-stone-700 hover:border-forest-200 hover:bg-forest-50 hover:text-forest-800";
+      : "border-stone-200 bg-white text-stone-700 [@media(hover:hover)]:hover:border-forest-200";
 
   return (
     <button
@@ -1036,10 +1036,10 @@ function ProductResultCard({
     <button
       type="button"
       onClick={onSelect}
-      className={`grid grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border px-3 py-3 text-left shadow-sm transition ${
+      className={`grid grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-3 rounded-[20px] border px-3 py-3 text-left shadow-sm transition ${
         selected
           ? "border-forest-700 bg-forest-50"
-          : "border-stone-200 bg-white hover:border-forest-300 hover:bg-forest-50/60"
+          : "border-stone-200 bg-white [@media(hover:hover)]:hover:border-forest-300"
       }`}
     >
       <span className="flex h-16 w-16 items-center justify-center rounded-xl bg-stone-50 p-2">

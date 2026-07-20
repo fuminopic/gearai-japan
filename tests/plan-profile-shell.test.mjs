@@ -22,9 +22,21 @@ const planChecklistSource = readFileSync(
   new URL("../src/lib/plan-checklist.ts", import.meta.url),
   "utf8"
 );
+const packPageSource = readFileSync(
+  new URL("../app/(app)/pack/page.tsx", import.meta.url),
+  "utf8"
+);
+const packContentsSource = readFileSync(
+  new URL("../src/components/pack-contents.tsx", import.meta.url),
+  "utf8"
+);
+const appChromeSource = readFileSync(
+  new URL("../src/components/app-chrome.tsx", import.meta.url),
+  "utf8"
+);
 
-test("plan and profile use the same shell geometry as home and gear", () => {
-  for (const source of [planPageSource, profilePageSource]) {
+test("plan, profile and pack use the same shell geometry as home and gear", () => {
+  for (const source of [planPageSource, profilePageSource, packPageSource]) {
     assert.match(source, /brand-shell min-h-screen bg-\[#E5EBE9\]/);
     assert.match(source, /bg-gradient-to-br from-\[#1F7950\] to-\[#81AB44\]/);
     // バンド150 + 重なり51 → カード上端はホームと同じ safe+99
@@ -33,6 +45,24 @@ test("plan and profile use the same shell geometry as home and gear", () => {
     // 白ヘッダーを隠すのでメニューはバンド側に置く
     assert.match(source, /AppMenuDrawer/);
   }
+});
+
+test("the pack screen matches the my-gear card, not its own style", () => {
+  // 34px 見出し + eyebrow はやめ、カード内 16px 見出し + 追加ボタンにする
+  assert.doesNotMatch(packPageSource, /text-\[34px\]/);
+  assert.doesNotMatch(packPageSource, /パック管理/);
+  assert.match(packContentsSource, /<h1 className="text-base font-bold">マイパック<\/h1>/);
+  assert.match(packContentsSource, /マイギアから追加/);
+  // 指標はマイギアと同じ metric-*.png + font-din 22px
+  assert.match(packContentsSource, /metric-count\.png/);
+  assert.match(packContentsSource, /metric-weight\.png/);
+  assert.match(packContentsSource, /font-din text-\[22px\]/);
+  // カードのトークン
+  assert.match(packContentsSource, /rounded-\[20px\] bg-white px-5 pt-4 pb-4 shadow-sm/);
+  assert.match(packContentsSource, /rounded-\[20px\] bg-white px-4 py-3 shadow-sm/);
+  assert.doesNotMatch(packContentsSource, /rounded-2xl bg-white p-3 shadow-sm/);
+  // 白ヘッダーを隠すルートに /pack も含める
+  assert.match(appChromeSource, /"\/pack"/);
 });
 
 test("plan and profile adopt the shared card tokens", () => {

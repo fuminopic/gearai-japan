@@ -133,11 +133,13 @@ test("pack data filters pack membership through currently owned gear", () => {
 });
 
 test("pack pages provide grouped contents, accessible direct removal, and a multi-select add flow", () => {
-  assert.match(packPageSource, /マイパック/);
-  assert.match(packPageSource, /マイギアから追加/);
+  // 見出しと追加ボタンは、他画面と同じくカード内(PackContents)へ移動した。
+  assert.match(packContentsSource, /マイパック/);
+  assert.match(packContentsSource, /マイギアから追加/);
   assert.match(packPageSource, /PackContents/);
   assert.doesNotMatch(packPageSource, /重量未入力/);
-  assert.match(packContentsSource, /grid-cols-2/);
+  // 指標は2列のまま(マイギアの3列とは項目数が違うだけ)
+  assert.match(packContentsSource, /PackStat/);
   assert.match(packContentsSource, /label="ギア数"/);
   assert.match(packContentsSource, /label="総重量"/);
   assert.doesNotMatch(packContentsSource, /包内装備|既知の総重量/);

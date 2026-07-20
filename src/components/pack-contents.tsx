@@ -18,12 +18,13 @@ import { formatWeight } from "@/lib/utils/format";
 import { PackRemoveButton } from "./pack-remove-button";
 
 type PackContentsProps = {
+  addHref: Route;
   items: UserGear[];
 };
 
 const packSelectRoute = "/pack/select" as Route;
 
-export function PackContents({ items: serverItems }: PackContentsProps) {
+export function PackContents({ items: serverItems, addHref }: PackContentsProps) {
   const router = useRouter();
   const [items, setItems] = useState(serverItems);
   const [error, setError] = useState<string | null>(null);
@@ -62,13 +63,35 @@ export function PackContents({ items: serverItems }: PackContentsProps) {
 
   return (
     <>
-      <section className="grid grid-cols-2 overflow-hidden rounded-2xl bg-white shadow-sm">
-        <PackStat label="ギア数" value={`${summary.itemCount.toLocaleString("ja-JP")}点`} />
-        <PackStat
-          label="総重量"
-          value={summary.knownWeightG > 0 ? formatWeight(summary.knownWeightG) : "-"}
-          divided
-        />
+      <section className="rounded-[20px] bg-white px-5 pt-4 pb-4 shadow-sm">
+        <div className="flex items-center justify-between border-b border-[#EEEDE6] pb-3">
+          <h1 className="text-base font-bold">マイパック</h1>
+          <Link
+            href={addHref}
+            className="inline-flex h-8 items-center justify-center gap-1 rounded-xl bg-[#4E914A] px-4 text-[12px] font-bold leading-none text-white shadow-sm transition active:scale-95"
+          >
+            <PackagePlus aria-hidden className="h-3.5 w-3.5" />
+            マイギアから追加
+          </Link>
+        </div>
+
+        <div className="flex flex-row items-center justify-between pt-4">
+          <PackStat
+            iconSrc="/metric-count.png"
+            label="ギア数"
+            value={`${summary.itemCount.toLocaleString("ja-JP")}点`}
+            divided
+          />
+          <PackStat
+            iconSrc="/metric-weight.png"
+            label="総重量"
+            value={
+              summary.knownWeightG > 0
+                ? formatWeight(summary.knownWeightG, { compact: true })
+                : "-"
+            }
+          />
+        </div>
       </section>
 
       {error ? (
@@ -78,7 +101,7 @@ export function PackContents({ items: serverItems }: PackContentsProps) {
       ) : null}
 
       {items.length === 0 ? (
-        <section className="rounded-2xl bg-white p-6 text-center shadow-sm">
+        <section className="rounded-[20px] bg-white p-6 text-center shadow-sm">
           <PackagePlus aria-hidden className="mx-auto h-8 w-8 text-forest-700" />
           <h2 className="mt-4 text-lg font-bold text-ink">マイパックはまだ空です</h2>
           <p className="mt-2 text-sm leading-6 text-stone-500">
@@ -86,16 +109,16 @@ export function PackContents({ items: serverItems }: PackContentsProps) {
           </p>
           <Link
             href={packSelectRoute}
-            className="mt-5 inline-flex h-11 items-center justify-center rounded-xl bg-forest-700 px-4 text-sm font-bold text-white transition active:scale-95"
+            className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-[#14724e] px-5 text-sm font-bold text-white transition active:scale-95"
           >
             マイギアから追加
           </Link>
         </section>
       ) : (
-        <div className="space-y-5">
+        <div className="space-y-[11px]">
           {groups.map((group) => (
             <section key={group.id}>
-              <h2 className="px-1 text-sm font-bold text-stone-600">{group.label}</h2>
+              <h2 className="px-1 pt-1 text-base font-bold text-ink">{group.label}</h2>
               <div className="mt-2 space-y-2">
                 {group.items.map((item) => (
                   <PackGearRow key={item.id} item={item} onRemove={() => removeItem(item)} />
@@ -109,19 +132,36 @@ export function PackContents({ items: serverItems }: PackContentsProps) {
   );
 }
 
+// マイギアの SummaryStat と同じ見た目(metric-*.png / font-din 22px / gray-400)。
 function PackStat({
+  iconSrc,
   label,
   value,
   divided = false
 }: {
+  iconSrc: string;
   label: string;
   value: string;
   divided?: boolean;
 }) {
   return (
-    <div className={`px-3 py-4 text-center ${divided ? "border-l border-stone-100" : ""}`}>
-      <p className="font-din text-lg font-bold leading-none text-ink">{value}</p>
-      <p className="mt-2 text-[10px] font-semibold text-stone-500">{label}</p>
+    <div
+      className={`flex flex-1 flex-col items-center gap-3 px-1.5 text-center max-[359px]:px-1 ${
+        divided ? "border-r border-gray-100" : ""
+      }`}
+    >
+      <div className="flex items-center gap-2 max-[389px]:gap-1.5">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={iconSrc}
+          alt=""
+          className="h-5 w-auto shrink-0 object-contain max-[389px]:h-4"
+        />
+        <p className="whitespace-nowrap font-din text-[22px] font-bold leading-none text-black max-[389px]:text-[19px] max-[359px]:text-[17px]">
+          {value}
+        </p>
+      </div>
+      <p className="whitespace-nowrap text-[11px] font-medium text-gray-400">{label}</p>
     </div>
   );
 }
@@ -131,7 +171,7 @@ function PackGearRow({ item, onRemove }: { item: UserGear; onRemove: () => void 
   const detail = item.gear_subcategories?.name_ja ?? item.gear_categories?.name_ja ?? "その他";
 
   return (
-    <article className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm">
+    <article className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-3 shadow-sm">
       <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-stone-50">
         {item.image_url ? (
           // Signed user storage URLs are not configured for the Next.js image optimizer.

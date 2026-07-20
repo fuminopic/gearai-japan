@@ -142,6 +142,41 @@ test("branded screens never flash the shared white header while loading", () => 
   assert.match(appLoadingSource, /206 : 150/);
 });
 
+test("tab switches reuse the client router cache instead of refetching", () => {
+  const nextConfigSource = readFileSync(
+    new URL("../next.config.mjs", import.meta.url),
+    "utf8"
+  );
+  const gearActionsSource = readFileSync(
+    new URL("../src/lib/actions/gear.ts", import.meta.url),
+    "utf8"
+  );
+  const packActionsSource = readFileSync(
+    new URL("../src/lib/actions/pack.ts", import.meta.url),
+    "utf8"
+  );
+  const tripPlanActionsSource = readFileSync(
+    new URL("../src/lib/actions/trip-plans.ts", import.meta.url),
+    "utf8"
+  );
+
+  // 動的ルートの既定は 0 秒。0 のままだと下部ナビの prefetch も即破棄され、
+  // タブを切り替えるたびにサーバー往復が発生する。
+  assert.match(nextConfigSource, /staleTimes/);
+  assert.match(nextConfigSource, /dynamic: 30/);
+
+  // 下部ナビは完全プリフェッチ(動的ルートでもデータごと先読み)
+  assert.match(appBottomNavSource, /prefetch/);
+
+  // キャッシュを持つ前提として、書き込み側が必ず該当パスを revalidate する。
+  // ここが崩れると古い一覧が最大30秒残る。
+  for (const source of [gearActionsSource, packActionsSource, tripPlanActionsSource]) {
+    assert.match(source, /revalidatePath\("\/dashboard"\)/);
+  }
+  assert.match(gearActionsSource, /revalidatePath\("\/gear"\)/);
+  assert.match(packActionsSource, /revalidatePath\("\/pack"\)/);
+});
+
 test("app middleware keeps navigation lightweight", () => {
   assert.match(supabaseMiddlewareSource, /auth\.getSession\(\)/);
   assert.doesNotMatch(supabaseMiddlewareSource, /auth\.getUser\(\)/);

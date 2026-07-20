@@ -272,7 +272,9 @@ test("app navigation responds immediately during dynamic route loading", () => {
   assert.match(appRoutePrefetcherSource, /primaryPrefetchRoutes/);
   assert.match(appRoutePrefetcherSource, /"\/dashboard", "\/plan", "\/gear", "\/profile"/);
   assert.match(appRoutePrefetcherSource, /secondaryPrefetchRoutes/);
-  assert.match(appRoutePrefetcherSource, /"\/gear\/new", "\/ai", "\/ai\/history"/);
+  // メニューに入口の無い /ai は先読みしない
+  assert.doesNotMatch(appRoutePrefetcherSource, /"\/ai"/);
+  assert.match(appRoutePrefetcherSource, /"\/gear\/new"\] satisfies Route\[\]/);
   assert.match(appBottomNavSource, /touch-manipulation/);
   assert.match(appBottomNavSource, /active:scale-95/);
   assert.match(navigationFeedbackSource, /document\.addEventListener\("click"/);

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 const primaryPrefetchRoutes = ["/dashboard", "/plan", "/gear", "/profile"] satisfies Route[];
-const secondaryPrefetchRoutes = ["/gear/new", "/ai", "/ai/history"] satisfies Route[];
+// メニューから辿れない /ai は先読みしない。
+const secondaryPrefetchRoutes = ["/gear/new"] satisfies Route[];
 
 export function AppRoutePrefetcher() {
   const router = useRouter();

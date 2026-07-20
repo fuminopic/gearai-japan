@@ -1,9 +1,8 @@
 import {
-  ArrowLeft,
   UserRound
 } from "lucide-react";
-import Link from "next/link";
 
+import { PageHeader } from "@/components/ui/page-header";
 import { updateProfile } from "@/lib/actions/auth";
 import { requireUser } from "@/lib/data/gear";
 
@@ -22,27 +21,20 @@ export default async function ProfileEditPage({
 
   return (
     <form action={updateProfile} className="mx-auto max-w-2xl space-y-5 pb-24">
-      <section className="flex items-center gap-3">
-        <Link
-          href="/profile"
-          aria-label="マイページへ戻る"
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-stone-800 shadow-sm transition active:scale-95"
-        >
-          <ArrowLeft aria-hidden className="h-5 w-5" />
-        </Link>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-[#14724e]">マイページ</p>
-          <h1 className="text-[30px] font-bold leading-tight tracking-normal text-ink">
-            プロフィール設定
-          </h1>
-        </div>
-        <button className="h-11 shrink-0 rounded-xl bg-[#14724e] px-4 text-sm font-bold text-white shadow-sm transition active:scale-95">
-          保存
-        </button>
-      </section>
+      <PageHeader
+        backHref="/profile"
+        backLabel="マイページへ戻る"
+        eyebrow="マイページ"
+        title="プロフィール設定"
+        action={
+          <button className="inline-flex h-11 items-center justify-center rounded-full bg-[#14724e] px-5 text-sm font-bold text-white shadow-sm transition active:scale-95">
+            保存
+          </button>
+        }
+      />
 
       {params.error ? (
-        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
           {params.error}
         </p>
       ) : null}
@@ -88,7 +80,7 @@ function ProfileSection({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="overflow-hidden rounded-[22px] bg-white shadow-soft">
+    <section id={id} className="overflow-hidden rounded-[22px] bg-white shadow-sm">
       <div className="flex gap-3 border-b border-stone-100 px-5 py-4">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-[#14724e]">
           <Icon aria-hidden className="h-5 w-5" />

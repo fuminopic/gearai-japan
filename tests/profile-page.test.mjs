@@ -73,7 +73,7 @@ test("profile edit page only asks for display profile and mountain insurance", (
   }
 
   assert.match(profileEditPageSource, /action=\{updateProfile\}/);
-  assert.match(profileEditPageSource, /href="\/profile"/);
+  assert.match(profileEditPageSource, /backHref="\/profile"/);
   assert.doesNotMatch(profileEditPageSource, /山岳保険/);
   assert.doesNotMatch(profileEditPageSource, /加入状況/);
   assert.doesNotMatch(profileEditPageSource, /保険名/);
@@ -141,4 +141,40 @@ test("profile and insurance updates store user metadata without adding a new tab
   assert.doesNotMatch(authActionsSource, /hiking_experience/);
   assert.doesNotMatch(authActionsSource, /gear_preference_note/);
   assert.doesNotMatch(authActionsSource, /\.from\("profiles"\)/);
+});
+
+test("secondary pages share one header, so every one of them has a way back", () => {
+  // 以前は見出しが 26/28/30/34px とページごとに違い、戻るも
+  // 「文字のピル」「ArrowLeft の丸ボタン」「ChevronLeft の丸ボタン」の
+  // 3種類あった。ギア編集には戻る導線が無かった。
+  const pageHeaderSource = readFileSync(
+    new URL("../src/components/ui/page-header.tsx", import.meta.url),
+    "utf8"
+  );
+  assert.match(pageHeaderSource, /text-\[20px\] font-bold/);
+  assert.match(pageHeaderSource, /h-11 w-11 shrink-0/);
+  assert.match(pageHeaderSource, /aria-label=\{backLabel\}/);
+
+  const secondaryPages = [
+    "app/(app)/gear/new/page.tsx",
+    "app/(app)/gear/[id]/page.tsx",
+    "app/(app)/gear/[id]/edit/page.tsx",
+    "app/(app)/pack/select/page.tsx",
+    "app/(app)/profile/edit/page.tsx",
+    "app/(app)/profile/insurance/page.tsx",
+    "app/(app)/profile/password/page.tsx"
+  ];
+
+  for (const relativePath of secondaryPages) {
+    const source = readFileSync(
+      new URL(`../${relativePath}`, import.meta.url),
+      "utf8"
+    );
+    assert.match(source, /<PageHeader/, relativePath);
+    assert.match(source, /backHref=/, relativePath);
+    assert.match(source, /backLabel="/, relativePath);
+    // 見出しサイズを各ページで作り直さない
+    assert.doesNotMatch(source, /text-\[(26|28|30|34)px\]/, relativePath);
+    assert.doesNotMatch(source, /shadow-soft/, relativePath);
+  }
 });

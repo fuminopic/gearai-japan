@@ -1,7 +1,7 @@
-import { ArrowLeft, KeyRound, ShieldCheck } from "lucide-react";
-import Link from "next/link";
+import { KeyRound, ShieldCheck } from "lucide-react";
 
 import { SubmitButton } from "@/components/submit-button";
+import { PageHeader } from "@/components/ui/page-header";
 import { updatePassword } from "@/lib/actions/auth";
 import { requireUser } from "@/lib/data/gear";
 
@@ -17,35 +17,26 @@ export default async function PasswordPage({ searchParams }: PasswordPageProps) 
 
   return (
     <form action={updatePassword} className="mx-auto max-w-2xl space-y-4 pb-24">
-      <section className="flex items-center gap-3">
-        <Link
-          href="/profile"
-          aria-label="マイページへ戻る"
-          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-stone-800 shadow-sm transition active:scale-95"
-        >
-          <ArrowLeft aria-hidden className="h-5 w-5" />
-        </Link>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold leading-none text-[#14724e]">マイページ</p>
-          <h1 className="mt-1 text-[26px] font-bold leading-tight tracking-normal text-ink">
-            パスワード管理
-          </h1>
-        </div>
-      </section>
+      <PageHeader
+        backHref="/profile"
+        backLabel="マイページへ戻る"
+        eyebrow="マイページ"
+        title="パスワード管理"
+      />
 
       {params.error ? (
-        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
           {params.error}
         </p>
       ) : null}
 
       {params.saved === "1" ? (
-        <p className="rounded-lg bg-forest-50 px-4 py-3 text-sm font-semibold text-forest-800">
+        <p className="rounded-xl bg-forest-50 px-4 py-3 text-sm font-semibold text-forest-800">
           パスワードを更新しました。次回からメールアドレスとパスワードでもログインできます。
         </p>
       ) : null}
 
-      <section className="overflow-hidden rounded-[20px] bg-white p-4 shadow-soft sm:p-5">
+      <section className="overflow-hidden rounded-[20px] bg-white p-4 shadow-sm sm:p-5">
         <div className="flex items-start gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-[#14724e]">
             <KeyRound aria-hidden className="h-5 w-5" />
@@ -81,7 +72,7 @@ export default async function PasswordPage({ searchParams }: PasswordPageProps) 
         </div>
       </section>
 
-      <section className="rounded-[20px] bg-white p-4 shadow-soft sm:p-5">
+      <section className="rounded-[20px] bg-white p-4 shadow-sm sm:p-5">
         <div className="flex items-start gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-[#14724e]">
             <ShieldCheck aria-hidden className="h-5 w-5" />

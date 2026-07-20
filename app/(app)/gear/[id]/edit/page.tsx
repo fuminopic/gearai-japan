@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { GearForm } from "@/components/gear-form";
+import { PageHeader } from "@/components/ui/page-header";
 import { updateGear } from "@/lib/actions/gear";
 import {
   getGearCategories,
@@ -40,10 +41,12 @@ export default async function EditGearPage({
 
   return (
     <div className="space-y-5">
-      <div>
-        <p className="text-sm font-semibold text-forest-700">ギア編集</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">ギアを編集</h1>
-      </div>
+      <PageHeader
+        backHref={buildGearHref(`/gear/${id}`, returnTo)}
+        backLabel="ギア詳細へ戻る"
+        eyebrow="ギア編集"
+        title="ギアを編集"
+      />
       <GearForm
         categories={categories}
         subcategories={subcategories}

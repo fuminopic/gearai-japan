@@ -1,9 +1,10 @@
-import { ArrowLeft, ExternalLink, ImagePlus, Trash2 } from "lucide-react";
+import { ExternalLink, ImagePlus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { GearImageViewer } from "@/components/gear-image-viewer";
 import { ConfirmSubmitButton } from "@/components/ui/confirm-dialog";
+import { PageHeader } from "@/components/ui/page-header";
 import { deleteGear } from "@/lib/actions/gear";
 import { getUserGearById } from "@/lib/data/gear";
 import { getGearDisplayWeightLabel } from "@/lib/gear-display";
@@ -54,29 +55,28 @@ export default async function GearDetailPage({
 
   return (
     <div className="space-y-5">
-      <section className="flex items-center justify-between gap-3">
-        <Link
-          href={buildGearHref("/gear", returnTo)}
-          className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-stone-600 shadow-sm"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          マイギアへ
-        </Link>
-        {!isCatalog ? (
-          <Link
-            href={buildGearHref(`/gear/${gear.id}/edit`, returnTo)}
-            className="rounded-lg bg-forest-700 px-5 py-3 text-sm font-semibold text-white shadow-soft"
-          >
-            編集
-          </Link>
-        ) : null}
-      </section>
+      <PageHeader
+        backHref={buildGearHref("/gear", returnTo)}
+        backLabel="マイギアへ戻る"
+        eyebrow="ギア詳細"
+        title={gearDisplayName}
+        action={
+          !isCatalog ? (
+            <Link
+              href={buildGearHref(`/gear/${gear.id}/edit`, returnTo)}
+              className="inline-flex h-11 items-center justify-center rounded-full bg-[#14724e] px-5 text-sm font-bold text-white shadow-sm transition active:scale-95"
+            >
+              編集
+            </Link>
+          ) : null
+        }
+      />
 
-      <section className="overflow-hidden rounded-lg border border-white/70 bg-white/90 shadow-soft">
+      <section className="overflow-hidden rounded-[20px] bg-white shadow-sm">
         <div className="grid gap-0 lg:grid-cols-[22rem_minmax(0,1fr)]">
           <div className="border-b border-stone-100 bg-stone-50/70 p-5 lg:border-b-0 lg:border-r">
             <div className="mb-3 flex items-center justify-end">
-              <span className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-forest-700">
+              <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#14724e]">
                 {statusLabels[gear.status]}
               </span>
             </div>
@@ -87,13 +87,13 @@ export default async function GearDetailPage({
                 className="h-72 sm:h-80 lg:h-96"
               />
             ) : (
-              <div className="flex h-72 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-stone-300 bg-white text-center text-stone-400 sm:h-80 lg:h-96">
+              <div className="flex h-72 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-stone-300 bg-white text-center text-stone-400 sm:h-80 lg:h-96">
                 <ImagePlus className="h-8 w-8" />
                 <p className="text-sm font-semibold">写真未登録</p>
                 {!isCatalog ? (
                   <Link
                     href={buildGearHref(`/gear/${gear.id}/edit`, returnTo)}
-                    className="text-xs font-semibold text-forest-700"
+                    className="text-xs font-bold text-[#14724e]"
                   >
                     写真を追加
                   </Link>
@@ -103,11 +103,7 @@ export default async function GearDetailPage({
           </div>
 
           <div className="p-5 sm:p-6">
-            <p className="text-sm font-semibold text-forest-700">ギア詳細</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">
-              {gear.name}
-            </h1>
-            <p className="mt-2 text-sm text-stone-500">{brandLine}</p>
+            <p className="text-sm font-bold text-stone-500">{brandLine}</p>
 
             <div className="mt-5 grid grid-cols-3 gap-2">
               <SummaryPill label="重量" value={weightLabel} />
@@ -149,7 +145,7 @@ export default async function GearDetailPage({
                   href={officialUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 font-semibold text-forest-700"
+                  className="inline-flex items-center gap-2 font-bold text-[#14724e]"
                 >
                   公式製品ページ
                   <ExternalLink className="h-4 w-4" />
@@ -177,7 +173,7 @@ export default async function GearDetailPage({
                   href={msrpSourceUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 font-semibold text-forest-700"
+                  className="inline-flex items-center gap-2 font-bold text-[#14724e]"
                 >
                   価格確認ページ
                   <ExternalLink className="h-4 w-4" />
@@ -189,7 +185,7 @@ export default async function GearDetailPage({
       </section>
 
       {gear.memo ? (
-        <section className="rounded-lg bg-white p-5 shadow-soft">
+        <section className="rounded-[20px] bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-ink">メモ</h2>
           <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-stone-600">
             {gear.memo}
@@ -197,7 +193,7 @@ export default async function GearDetailPage({
         </section>
       ) : null}
 
-      <section className="rounded-lg border border-red-100 bg-white p-5 shadow-soft">
+      <section className="rounded-[20px] border border-red-100 bg-white p-5 shadow-sm">
         <h2 className="text-base font-semibold text-ink">ギアの管理</h2>
         <p className="mt-2 text-sm leading-6 text-stone-500">
           このギアをマイギアから削除します。削除後は元に戻せません。
@@ -209,7 +205,7 @@ export default async function GearDetailPage({
             description={`${gearDisplayName}を削除します。削除すると元に戻せません。`}
             confirmLabel="削除する"
             pendingLabel="削除中..."
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 disabled:opacity-60 sm:w-auto"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-red-50 px-4 py-3 text-sm font-bold text-red-700 disabled:opacity-60 sm:w-auto"
           >
             <Trash2 className="h-4 w-4" />
             このギアを削除
@@ -222,7 +218,7 @@ export default async function GearDetailPage({
 
 function SummaryPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="min-w-0 rounded-lg bg-stone-50 px-3 py-3">
+    <div className="min-w-0 rounded-xl bg-stone-50 px-3 py-3">
       <p className="text-[11px] font-semibold text-stone-400">{label}</p>
       <p className="mt-1 truncate text-sm font-semibold text-ink">{value}</p>
     </div>
@@ -239,7 +235,7 @@ function InfoCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-lg bg-white p-5 shadow-soft">
+    <section className="rounded-[20px] bg-white p-5 shadow-sm">
       <h2 className="text-lg font-semibold text-ink">{title}</h2>
       {description ? (
         <p className="mt-2 text-sm leading-6 text-stone-500">{description}</p>

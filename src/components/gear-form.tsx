@@ -2,12 +2,14 @@
 
 import {
   Check,
+  ChevronDown,
   ChevronRight,
   ImagePlus,
   Loader2,
   PackagePlus,
-  Pencil,
+  PencilLine,
   Search,
+  SearchX,
   Sparkles
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
@@ -251,6 +253,14 @@ export function GearForm({
   const isEditing = Boolean(gear);
   const shouldShowGearDetails = manualMode || Boolean(selectedProduct);
   const shouldShowBottomActions = manualMode || isEditing;
+  // 閉じている時も、何で絞り込んでいるかが分かる要約を出す。
+  const activeFilterSummary = [
+    brandFilter === "all" ? null : brandFilter,
+    productCategoryOptions.find((item) => item.id === productCategoryFilter)?.label ?? null,
+    `${filteredProducts.length.toLocaleString("ja-JP")}件`
+  ]
+    .filter(Boolean)
+    .join(" ・ ");
 
   function handleProductQuery(value: string) {
     setQuery(value);
@@ -431,7 +441,10 @@ export function GearForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form
+      onSubmit={handleSubmit}
+      className={`space-y-4 ${shouldShowBottomActions ? "" : "pb-24"}`}
+    >
       <UnsavedChangesGuard />
       {submitError ? (
         <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
@@ -451,14 +464,16 @@ export function GearForm({
       <input type="hidden" name="returnTo" value={returnTo ?? ""} />
 
       <section className="overflow-hidden rounded-[20px] bg-white shadow-sm">
-        <div className="border-b border-stone-100 px-4 py-4 sm:px-5">
+        <div className="px-4 py-4 sm:px-5">
           <div className="flex items-center gap-2 text-xs font-bold text-[#14724e]">
             <Sparkles className="h-4 w-4" />
             <span>公式カタログから選択</span>
           </div>
-          <div className="mt-3 rounded-xl border border-stone-200 bg-stone-50 px-3 py-3">
+          {/* このページで最初にやることは検索。枠を太く高くして、
+              他の入力欄と同じ重さに見えないようにする。 */}
+          <div className="mt-3 rounded-2xl border-[1.5px] border-forest-200 bg-stone-50 px-3 py-3">
             <div className="flex items-center gap-2">
-              <Search className="h-5 w-5 shrink-0 text-stone-400" />
+              <Search className="h-5 w-5 shrink-0 text-[#14724e]" />
               <input
                 value={query}
                 onChange={(event) => handleProductQuery(event.target.value)}
@@ -501,23 +516,7 @@ export function GearForm({
             ) : null}
           </div>
 
-          <div className="mt-3">
-            <button
-              type="button"
-              onClick={startManualEntry}
-              className="flex w-full items-center justify-between gap-3 rounded-xl border border-forest-100 bg-forest-50 px-3 py-3 text-left text-sm font-semibold text-forest-800 transition active:scale-[0.99]"
-            >
-              <span className="flex items-center gap-2">
-                <Pencil className="h-4 w-4 text-[#14724e]" />
-                カタログにないギアを登録
-              </span>
-              <ChevronRight className="h-4 w-4 text-stone-400" />
-            </button>
-          </div>
-        </div>
-
-        <div className="px-4 py-4 sm:px-5">
-          <p className="text-xs font-semibold text-stone-500">ブランド</p>
+          <p className="mt-4 text-xs font-semibold text-stone-500">ブランド</p>
           <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto px-1 pb-1">
             <ProductFilterChip
               active={brandFilter === "all"}
@@ -540,20 +539,25 @@ export function GearForm({
             ))}
           </div>
 
-          <div className="mt-4 rounded-xl bg-[#F7F8F5] p-3">
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <p className="text-xs font-semibold text-stone-500">
-                  {brandFilter === "all" ? "カテゴリー" : `${brandFilter} のカテゴリー`}
-                </p>
-                <p className="mt-1 text-xs text-stone-400">
-                  ブランドを選ぶと、その中のカテゴリーだけを表示します
-                </p>
-              </div>
-              <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-xs font-bold text-stone-500">
-                {productsForBrand.length}件
+          {/* カテゴリーのチップは11個あり、開いたままだと6行占めて
+              一覧が画面外まで押し下げられていた。マイギアと同じく
+              既定は閉じ、絞り込み中は開いた状態で出す。 */}
+          <details
+            open={productCategoryFilter !== "all"}
+            className="group mt-4 border-t border-[#EEEDE6] pt-3"
+          >
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+              <span className="text-sm font-bold text-ink">
+                絞り込み
+                <span className="ml-1 font-semibold text-stone-500">
+                  ・{activeFilterSummary}
+                </span>
               </span>
-            </div>
+              <ChevronDown className="h-5 w-5 shrink-0 text-stone-500 transition group-open:rotate-180" />
+            </summary>
+            <p className="mt-3 text-xs text-stone-400">
+              ブランドを選ぶと、その中のカテゴリーだけを表示します
+            </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <ProductFilterChip
                 active={productCategoryFilter === "all"}
@@ -572,13 +576,10 @@ export function GearForm({
                 </ProductFilterChip>
               ))}
             </div>
-          </div>
+          </details>
 
           {selectedProduct && !manualMode ? (
-            <SelectedProductConfirmCard
-              product={selectedProduct}
-              submitStatus={submitStatus}
-            />
+            <SelectedProductConfirmCard product={selectedProduct} />
           ) : null}
 
           {categoryProductGroups.length > 0 ? (
@@ -624,9 +625,25 @@ export function GearForm({
               ) : null}
             </div>
           ) : (
-            <p className="mt-4 rounded-2xl bg-stone-50 px-4 py-3 text-sm text-stone-500">
-              該当する製品はありません
-            </p>
+            <div className="mt-4 rounded-[20px] border-[1.5px] border-[#14724e] bg-white p-5 text-center">
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-forest-50 text-[#14724e]">
+                <SearchX className="h-6 w-6" aria-hidden="true" />
+              </span>
+              <p className="mt-3 text-sm font-bold text-ink">
+                カタログに見つかりませんでした
+              </p>
+              <p className="mt-1.5 text-xs font-semibold leading-relaxed text-stone-500">
+                名前と重量を入力すれば、そのまま登録できます
+              </p>
+              <button
+                type="button"
+                onClick={startManualEntry}
+                className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#14724e] text-sm font-bold text-white transition active:scale-[0.99]"
+              >
+                <PencilLine className="h-4 w-4" aria-hidden="true" />
+                自分で登録する
+              </button>
+            </div>
           )}
         </div>
       </section>
@@ -939,6 +956,14 @@ export function GearForm({
         </details>
       ) : null}
 
+      {!shouldShowBottomActions ? (
+        <GearPickerActionBar
+          product={manualMode ? null : selectedProduct}
+          submitStatus={submitStatus}
+          onManualEntry={startManualEntry}
+        />
+      ) : null}
+
       {shouldShowBottomActions ? (
         <div className="flex flex-col gap-3 pb-4 sm:flex-row">
           <Link
@@ -1036,13 +1061,13 @@ function ProductResultCard({
     <button
       type="button"
       onClick={onSelect}
-      className={`grid grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-3 rounded-[20px] border px-3 py-3 text-left shadow-sm transition ${
+      className={`flex w-full items-center gap-3 rounded-[20px] px-3 py-2.5 text-left shadow-sm transition active:scale-[0.99] ${
         selected
-          ? "border-forest-700 bg-forest-50"
-          : "border-stone-200 bg-white [@media(hover:hover)]:hover:border-forest-300"
+          ? "border-[1.5px] border-[#14724e] bg-forest-50"
+          : "border-[1.5px] border-transparent bg-white [@media(hover:hover)]:hover:border-forest-200"
       }`}
     >
-      <span className="flex h-16 w-16 items-center justify-center rounded-xl bg-stone-50 p-2">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-50 p-1">
         {product.image_url ? (
           <img
             src={product.image_url}
@@ -1054,41 +1079,34 @@ function ProductResultCard({
           <ProductImageFallback brand={product.brand} compact />
         )}
       </span>
-      <span className="min-w-0">
-        <span className="block truncate text-base font-semibold text-ink">
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-bold text-ink">
           {displayName}
         </span>
-        <span className="mt-0.5 block truncate text-sm text-stone-500">
-          {[product.brand, product.model].filter(Boolean).join(" / ")}
-        </span>
-        <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-          <span className="rounded-full bg-forest-50 px-2 py-0.5 font-bold text-forest-800">
-            {getProductCategoryLabel(product)}
-          </span>
-          <span className="font-semibold text-stone-600">{formatWeightGrams(weight)}</span>
-          <span className="text-stone-400">{formatProductPrice(product.msrp_jpy)}</span>
+        {/* 分類はグループ見出しに出ているので行では繰り返さない。
+            重量と価格は1行にまとめる。 */}
+        <span className="mt-0.5 block truncate text-[11px] font-semibold text-stone-500">
+          {[
+            [product.brand, product.model].filter(Boolean).join(" / "),
+            formatWeightGrams(weight),
+            formatProductPrice(product.msrp_jpy)
+          ]
+            .filter(Boolean)
+            .join("・")}
         </span>
       </span>
-      <span
-        className={`flex h-10 w-10 items-center justify-center rounded-xl border ${
-          selected
-            ? "border-[#14724e] bg-[#14724e] text-white"
-            : "border-stone-200 bg-white text-[#14724e]"
-        }`}
-      >
-        {selected ? <Check className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-      </span>
+      {selected ? (
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#14724e] text-white">
+          <Check className="h-3.5 w-3.5" />
+        </span>
+      ) : (
+        <ChevronRight className="h-5 w-5 shrink-0 text-stone-300" aria-hidden="true" />
+      )}
     </button>
   );
 }
 
-function SelectedProductConfirmCard({
-  product,
-  submitStatus
-}: {
-  product: GearProduct;
-  submitStatus: "idle" | "pending" | "success";
-}) {
+function SelectedProductConfirmCard({ product }: { product: GearProduct }) {
   const displayName = getProductDisplayTitle(product);
   const productVolume = getProductVolume(product);
   const productCapacity = isBackpackProduct(product) ? null : product.capacity;
@@ -1125,13 +1143,77 @@ function SelectedProductConfirmCard({
           </dl>
         </div>
       </div>
-      <GearSubmitButton
-        status={submitStatus}
-        className="mt-3 w-full rounded-full bg-[#14724e] px-5 py-3 text-base font-bold text-white transition active:scale-[0.99] disabled:opacity-60"
-      >
-        このギアを登録
-      </GearSubmitButton>
     </div>
+  );
+}
+
+/**
+ * 画面下に常駐する1枠。中身は状態で入れ替わる。
+ *
+ * - 未選択: 「自分で登録」のピル。カタログ 442件に自分のギアが無い人は
+ *   多いので、いつでも押せる所に置く。マイパック条と同じ右寄せの形。
+ * - 選択中: 選んだ製品の確認と「登録する」。以前は確認カードが一覧の
+ *   *上* にあり、下の方の行を押しても画面外で何も起きないように見えた。
+ *   指のすぐ近くで結果が出るようにする。
+ * - 手入力/編集中: 何も出さない(その画面は下部に自前の操作を持つ)。
+ */
+function GearPickerActionBar({
+  product,
+  submitStatus,
+  onManualEntry
+}: {
+  product: GearProduct | null;
+  submitStatus: "idle" | "pending" | "success";
+  onManualEntry: () => void;
+}) {
+  if (product) {
+    const weight = product.official_weight_grams ?? product.weight_grams;
+
+    return (
+      <div className="fixed inset-x-4 bottom-[104px] z-40 flex items-center gap-3 rounded-[20px] bg-white p-3 shadow-[0_10px_28px_rgba(0,0,0,0.14)]">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-50 p-1">
+          {product.image_url ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={product.image_url}
+              alt=""
+              className="max-h-full max-w-full object-contain"
+              loading="lazy"
+            />
+          ) : (
+            <ProductImageFallback brand={product.brand} compact />
+          )}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[10px] font-bold text-[#14724e]">
+            登録内容
+          </span>
+          <span className="block truncate text-sm font-bold text-ink">
+            {getProductDisplayTitle(product)}
+          </span>
+          <span className="block truncate text-[11px] font-semibold text-stone-500">
+            {formatWeightGrams(weight)}・{getProductCategoryLabel(product)}
+          </span>
+        </span>
+        <GearSubmitButton
+          status={submitStatus}
+          className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#14724e] px-5 text-sm font-bold text-white transition active:scale-[0.99] disabled:opacity-60"
+        >
+          登録する
+        </GearSubmitButton>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onManualEntry}
+      className="fixed bottom-[104px] right-4 z-40 inline-flex items-center gap-2 rounded-full bg-[#14724e] py-3 pl-4 pr-5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(20,114,78,0.32)] transition active:scale-95"
+    >
+      <PencilLine className="h-4 w-4" aria-hidden="true" />
+      自分で登録
+    </button>
   );
 }
 

@@ -238,7 +238,7 @@ test("gear form component baseline keeps product picker, manual entry, image upl
 
   for (const copy of [
     "製品名・ブランド・型番で検索",
-    "該当する製品はありません",
+    "カタログに見つかりませんでした",
     "製品名",
     "ギアの写真",
     "写真を追加",
@@ -326,7 +326,7 @@ test("phase 4 records current repeated ui patterns before extracting shared prim
   for (const emptyStateCopy of [
     "まだ計画はありません",
     "まだギアがありません",
-    "該当する製品はありません",
+    "カタログに見つかりませんでした",
     "過去の推薦履歴はまだありません"
   ]) {
     assert.match(uiSources, new RegExp(emptyStateCopy));

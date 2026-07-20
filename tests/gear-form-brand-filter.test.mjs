@@ -55,7 +55,10 @@ test("gear add form supports explicit search, suggestions, and real brand logo c
 });
 
 test("gear add form replaces scanning shortcuts with manual registration and photo upload", () => {
-  assert.match(gearFormSource, /カタログにないギアを登録/);
+  // 手入力の導線はカード内の一行をやめ、画面下に常駐させた。
+  // カタログ442件に自分のギアが無い人が多いので、いつでも押せる所に置く。
+  assert.match(gearFormSource, /GearPickerActionBar/);
+  assert.match(gearFormSource, /自分で登録/);
   assert.match(gearFormSource, /manualEntryRef/);
   assert.match(gearFormSource, /scrollIntoView/);
   assert.match(gearFormSource, /SelectedProductConfirmCard/);
@@ -106,7 +109,8 @@ test("gear add form separates brand results by product category", () => {
   assert.match(gearFormSource, /SelectedProductConfirmCard/);
   assert.match(gearFormSource, /compareProductPickerItems/);
   assert.match(gearFormSource, /のカテゴリー/);
-  assert.match(gearFormSource, /該当する製品はありません/);
+  assert.match(gearFormSource, /カタログに見つかりませんでした/);
+  assert.match(gearFormSource, /自分で登録する/);
 });
 
 test("gear add form treats backpack liters as volume, not people capacity", () => {
@@ -139,4 +143,31 @@ test("gear actions canonicalize manually entered brand names without changing th
   assert.match(gearActionSource, /brand: brand \? canonicalizeBrandName\(brand\) : null/);
   assert.match(gearFormSource, /value=\{brand\}/);
   assert.match(gearFormSource, /onChange=\{\(event\) => setBrand\(event\.target\.value\)\}/);
+});
+
+test("selecting a product answers where the finger is, not off-screen", () => {
+  const source = readFileSync(
+    new URL("../src/components/gear-form.tsx", import.meta.url),
+    "utf8"
+  );
+
+  // 以前は確認カードが一覧の *上* にあり、下の方の行を押しても画面外で
+  // 何も起きないように見えた。登録ボタンは画面下の常駐バーが持つ。
+  assert.match(source, /function GearPickerActionBar/);
+  assert.match(source, /fixed inset-x-4 bottom-\[104px\]/);
+  assert.match(source, /登録する/);
+  // 常駐バーは form の中。type="submit" と Server Action の経路は変えない。
+  assert.match(source, /<GearPickerActionBar/);
+  assert.doesNotMatch(source, /createPortal/);
+  // 未選択時は右寄せのピル(マイパック条と同じ位置)
+  assert.match(source, /fixed bottom-\[104px\] right-4/);
+  // 手入力・編集中は自前の下部操作があるので常駐バーは出さない
+  assert.match(source, /\{!shouldShowBottomActions \? \(/);
+
+  // カテゴリーの11チップは既定で閉じる(6行占めていた)
+  assert.match(source, /<details\s*\n\s*open=\{productCategoryFilter !== "all"\}/);
+  assert.match(source, /activeFilterSummary/);
+
+  // 行の分類チップは、すぐ上のグループ見出しと重複していたので外した
+  assert.doesNotMatch(source, /rounded-full bg-forest-50 px-2 py-0\.5 font-bold text-forest-800/);
 });

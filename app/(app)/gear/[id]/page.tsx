@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 import { GearImageViewer } from "@/components/gear-image-viewer";
 import { ConfirmSubmitButton } from "@/components/ui/confirm-dialog";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/ui/page-shell";
 import { deleteGear } from "@/lib/actions/gear";
 import { getUserGearById } from "@/lib/data/gear";
 import { getGearDisplayWeightLabel } from "@/lib/gear-display";
@@ -54,23 +54,22 @@ export default async function GearDetailPage({
   const gearDisplayName = gear.name || brandLine;
 
   return (
-    <div className="space-y-5">
-      <PageHeader
-        backHref={buildGearHref("/gear", returnTo)}
-        backLabel="マイギアへ戻る"
-        eyebrow="ギア詳細"
-        title={gearDisplayName}
-        action={
-          !isCatalog ? (
-            <Link
-              href={buildGearHref(`/gear/${gear.id}/edit`, returnTo)}
-              className="inline-flex h-11 items-center justify-center rounded-full bg-[#14724e] px-5 text-sm font-bold text-white shadow-sm transition active:scale-95"
-            >
-              編集
-            </Link>
-          ) : null
-        }
-      />
+    <PageShell
+      backHref={buildGearHref("/gear", returnTo)}
+      backLabel="マイギアへ戻る"
+      eyebrow="ギア詳細"
+      title={gearDisplayName}
+      action={
+        !isCatalog ? (
+          <Link
+            href={buildGearHref(`/gear/${gear.id}/edit`, returnTo)}
+            className="inline-flex h-10 items-center justify-center rounded-full bg-white px-5 text-sm font-bold text-[#14724e] shadow-sm transition active:scale-95"
+          >
+            編集
+          </Link>
+        ) : null
+      }
+    >
 
       <section className="overflow-hidden rounded-[20px] bg-white shadow-sm">
         <div className="grid gap-0 lg:grid-cols-[22rem_minmax(0,1fr)]">
@@ -212,7 +211,7 @@ export default async function GearDetailPage({
           </ConfirmSubmitButton>
         </form>
       </section>
-    </div>
+    </PageShell>
   );
 }
 

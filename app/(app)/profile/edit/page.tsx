@@ -2,7 +2,7 @@ import {
   UserRound
 } from "lucide-react";
 
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/ui/page-shell";
 import { UnsavedChangesGuard } from "@/components/ui/unsaved-changes-guard";
 import { updateProfile } from "@/lib/actions/auth";
 import { requireUser } from "@/lib/data/gear";
@@ -21,19 +21,14 @@ export default async function ProfileEditPage({
   const displayName = getDisplayName(user.email, metadata);
 
   return (
-    <form action={updateProfile} className="mx-auto max-w-2xl space-y-5 pb-24">
+    <PageShell
+      backHref="/profile"
+      backLabel="マイページへ戻る"
+      eyebrow="マイページ"
+      title="プロフィール設定"
+    >
+      <form action={updateProfile} className="mx-auto max-w-2xl space-y-4">
       <UnsavedChangesGuard />
-      <PageHeader
-        backHref="/profile"
-        backLabel="マイページへ戻る"
-        eyebrow="マイページ"
-        title="プロフィール設定"
-        action={
-          <button className="inline-flex h-11 items-center justify-center rounded-full bg-[#14724e] px-5 text-sm font-bold text-white shadow-sm transition active:scale-95">
-            保存
-          </button>
-        }
-      />
 
       {params.error ? (
         <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
@@ -64,7 +59,8 @@ export default async function ProfileEditPage({
       <button className="sticky bottom-24 z-20 inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#14724e] text-base font-bold text-white shadow-lg shadow-forest-900/10 transition active:scale-[0.99] md:static">
         保存する
       </button>
-    </form>
+      </form>
+    </PageShell>
   );
 }
 

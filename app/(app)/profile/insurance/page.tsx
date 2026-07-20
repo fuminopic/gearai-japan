@@ -1,6 +1,6 @@
 import { CalendarDays, ShieldCheck } from "lucide-react";
 
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/ui/page-shell";
 import { updateInsurance } from "@/lib/actions/auth";
 import { requireUser } from "@/lib/data/gear";
 
@@ -17,18 +17,13 @@ export default async function InsurancePage({ searchParams }: InsurancePageProps
     getMetadataString(metadata, "mountain_insurance_status") || "none";
 
   return (
-    <form action={updateInsurance} className="mx-auto max-w-2xl space-y-4 pb-24">
-      <PageHeader
-        backHref="/profile"
-        backLabel="マイページへ戻る"
-        eyebrow="マイページ"
-        title="保険のご加入"
-        action={
-          <button className="inline-flex h-11 items-center justify-center rounded-full bg-[#14724e] px-5 text-sm font-bold text-white shadow-sm transition active:scale-95">
-            保存
-          </button>
-        }
-      />
+    <PageShell
+      backHref="/profile"
+      backLabel="マイページへ戻る"
+      eyebrow="マイページ"
+      title="保険のご加入"
+    >
+      <form action={updateInsurance} className="mx-auto max-w-2xl space-y-4">
 
       {params.error ? (
         <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
@@ -100,7 +95,8 @@ export default async function InsurancePage({ searchParams }: InsurancePageProps
       <button className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-[#14724e] text-sm font-bold text-white shadow-sm transition active:scale-[0.99]">
         保存する
       </button>
-    </form>
+      </form>
+    </PageShell>
   );
 }
 

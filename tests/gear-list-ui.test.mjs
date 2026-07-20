@@ -245,17 +245,17 @@ test("long forms warn before throwing the input away", () => {
     new URL("../app/(app)/profile/edit/page.tsx", import.meta.url),
     "utf8"
   );
-  const pageHeaderSource = readFileSync(
-    new URL("../src/components/ui/page-header.tsx", import.meta.url),
+  const pageShellSource = readFileSync(
+    new URL("../src/components/ui/page-shell.tsx", import.meta.url),
     "utf8"
   );
 
   // 囲っている <form> を自分で探すので、フォーム側の state には触れない。
   assert.match(guardSource, /closest\("form"\)/);
   assert.match(guardSource, /beforeunload/);
-  // 止めるのは PageHeader の戻るリンクだけ。他のリンクは素通しする。
+  // 止めるのは PageShell の戻るリンクだけ。他のリンクは素通しする。
   assert.match(guardSource, /a\[data-guarded-back\]/);
-  assert.match(pageHeaderSource, /data-guarded-back=""/);
+  assert.match(pageShellSource, /data-guarded-back=""/);
 
   assert.match(gearFormSource, /<UnsavedChangesGuard \/>/);
   assert.match(profileEditSource, /<UnsavedChangesGuard \/>/);

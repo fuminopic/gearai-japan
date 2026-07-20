@@ -51,6 +51,7 @@ test("the pack screen matches the my-gear card, not its own style", () => {
   // 34px 見出し + eyebrow はやめ、カード内 16px 見出し + 追加ボタンにする
   assert.doesNotMatch(packPageSource, /text-\[34px\]/);
   assert.doesNotMatch(packPageSource, /パック管理/);
+  assert.match(packPageSource, /"\/pack\/select"/);
   assert.match(packContentsSource, /<h1 className="text-base font-bold">マイパック<\/h1>/);
   assert.match(packContentsSource, /マイギアから追加/);
   // 指標はマイギアと同じ metric-*.png + font-din 22px
@@ -61,8 +62,10 @@ test("the pack screen matches the my-gear card, not its own style", () => {
   assert.match(packContentsSource, /rounded-\[20px\] bg-white px-5 pt-4 pb-4 shadow-sm/);
   assert.match(packContentsSource, /rounded-\[20px\] bg-white px-4 py-3 shadow-sm/);
   assert.doesNotMatch(packContentsSource, /rounded-2xl bg-white p-3 shadow-sm/);
-  // 白ヘッダーを隠すルートに /pack も含める
-  assert.match(appChromeSource, /"\/pack"/);
+  // 白ヘッダーは既定で出さない方に変わったので、/pack を列挙する必要は
+  // なくなった。旧AI・管理画面・ヘルプだけが白ヘッダーのまま。
+  assert.doesNotMatch(appChromeSource, /"\/pack"/);
+  assert.match(appChromeSource, /LEGACY_HEADER_ROUTE_PREFIXES/);
 });
 
 test("plan and profile adopt the shared card tokens", () => {

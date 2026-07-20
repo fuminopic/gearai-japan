@@ -9,16 +9,15 @@ import type { ReactNode } from "react";
 // いたが、遷移中は対象の <main> がまだ DOM にないためセレクタが外れ、
 // 白ヘッダーが一瞬だけ戻っていた(ローディングのスピナーと一緒に見えて
 // いたのがこれ)。パス名で判定すれば、遷移が始まった時点で消える。
-const BRAND_SHELL_ROUTES = new Set<string>([
-  "/dashboard",
-  "/gear",
-  "/plan",
-  "/profile",
-  "/pack"
-]);
+// 逆に「白ヘッダーのまま残す」方を列挙する。タブも二次画面も緑バンドを
+// 自前で持つようになったので、既定をバンド側にした方が、これから増える
+// 画面が黙って揃う。ここに並ぶのは入口の無い旧AI・管理画面とヘルプだけ。
+const LEGACY_HEADER_ROUTE_PREFIXES = ["/ai", "/admin", "/help"];
 
 export function isBrandShellPath(pathname: string) {
-  return BRAND_SHELL_ROUTES.has(pathname);
+  return !LEGACY_HEADER_ROUTE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
 }
 
 export function useIsBrandShellRoute() {

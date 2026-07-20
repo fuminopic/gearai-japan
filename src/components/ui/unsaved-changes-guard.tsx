@@ -76,7 +76,7 @@ export function UnsavedChangesGuard({
       return;
     }
 
-    // PageHeader の戻るリンクだけを対象にする。フォーム内のリンクや
+    // PageShell の戻るリンクだけを対象にする。フォーム内のリンクや
     // 外部リンクは止めない。
     function handleClick(event: MouseEvent) {
       const target = event.target;

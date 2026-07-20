@@ -1,7 +1,7 @@
 import type { Route } from "next";
 
 import { PackGearSelector } from "@/components/pack-gear-selector";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/ui/page-shell";
 import { getPackSelectionData } from "@/lib/data/pack";
 
 export const dynamic = "force-dynamic";
@@ -13,15 +13,13 @@ export default async function PackSelectPage() {
   const { ownedGear, packGearIds } = await getPackSelectionData();
 
   return (
-    <div className="space-y-5">
-      <PageHeader
-        backHref={packRoute}
-        backLabel="マイパックへ戻る"
-        eyebrow="所有しているギア"
-        title="マイパックに追加"
-      />
-
+    <PageShell
+      backHref={packRoute}
+      backLabel="マイパックへ戻る"
+      eyebrow="所有しているギア"
+      title="マイパックに追加"
+    >
       <PackGearSelector gear={ownedGear} packGearIds={packGearIds} />
-    </div>
+    </PageShell>
   );
 }

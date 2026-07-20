@@ -122,10 +122,15 @@ test("branded screens never flash the shared white header while loading", () => 
   // 遷移中に対象の <main> が DOM から消え、白ヘッダーが一瞬戻ってしまう。
   assert.match(appChromeSource, /"use client"/);
   assert.match(appChromeSource, /usePathname/);
-  // 緑バンドを持つ4画面すべてでヘッダーを隠す
-  for (const route of ["/dashboard", "/gear", "/plan", "/profile"]) {
-    assert.ok(appChromeSource.includes(`"${route}"`), `missing brand shell route: ${route}`);
+  // 二次画面も自前の緑バンドを持つようになったので、既定をバンド側にし、
+  // 白ヘッダーのまま残す方(入口の無い旧AI・管理画面・ヘルプ)を列挙する。
+  for (const prefix of ["/ai", "/admin", "/help"]) {
+    assert.ok(
+      appChromeSource.includes(`"${prefix}"`),
+      `missing legacy header route: ${prefix}`
+    );
   }
+  assert.match(appChromeSource, /LEGACY_HEADER_ROUTE_PREFIXES/);
   assert.match(appNavSource, /HideOnBrandShell/);
   assert.doesNotMatch(dashboardSource, /body:has\(main\.home-redesign\) > div > header/);
   assert.doesNotMatch(gearPageSource, /> div > header/);

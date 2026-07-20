@@ -2,7 +2,7 @@ import { KeyRound, ShieldCheck } from "lucide-react";
 
 import { SubmitButton } from "@/components/submit-button";
 import { Notice } from "@/components/ui/notice";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/ui/page-shell";
 import { updatePassword } from "@/lib/actions/auth";
 import { requireUser } from "@/lib/data/gear";
 
@@ -17,13 +17,13 @@ export default async function PasswordPage({ searchParams }: PasswordPageProps) 
   const [{ user }, params] = await Promise.all([requireUser(), searchParams]);
 
   return (
-    <form action={updatePassword} className="mx-auto max-w-2xl space-y-4 pb-24">
-      <PageHeader
-        backHref="/profile"
-        backLabel="マイページへ戻る"
-        eyebrow="マイページ"
-        title="パスワード管理"
-      />
+    <PageShell
+      backHref="/profile"
+      backLabel="マイページへ戻る"
+      eyebrow="マイページ"
+      title="パスワード管理"
+    >
+      <form action={updatePassword} className="mx-auto max-w-2xl space-y-4">
 
       {params.error ? (
         <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
@@ -93,7 +93,8 @@ export default async function PasswordPage({ searchParams }: PasswordPageProps) 
       >
         パスワードを更新する
       </SubmitButton>
-    </form>
+      </form>
+    </PageShell>
   );
 }
 

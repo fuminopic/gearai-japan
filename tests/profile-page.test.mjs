@@ -147,13 +147,16 @@ test("secondary pages share one header, so every one of them has a way back", ()
   // 以前は見出しが 26/28/30/34px とページごとに違い、戻るも
   // 「文字のピル」「ArrowLeft の丸ボタン」「ChevronLeft の丸ボタン」の
   // 3種類あった。ギア編集には戻る導線が無かった。
-  const pageHeaderSource = readFileSync(
-    new URL("../src/components/ui/page-header.tsx", import.meta.url),
+  const pageShellSource = readFileSync(
+    new URL("../src/components/ui/page-shell.tsx", import.meta.url),
     "utf8"
   );
-  assert.match(pageHeaderSource, /text-\[20px\] font-bold/);
-  assert.match(pageHeaderSource, /h-11 w-11 shrink-0/);
-  assert.match(pageHeaderSource, /aria-label=\{backLabel\}/);
+  // 上部はタブ5画面と同じ緑バンド。戻ると見出しをその中に入れる。
+  assert.match(pageShellSource, /text-\[20px\] font-bold/);
+  assert.match(pageShellSource, /from-\[#1F7950\] to-\[#81AB44\]/);
+  assert.match(pageShellSource, /\+ 150px\)/);
+  assert.match(pageShellSource, /-mt-\[51px\]/);
+  assert.match(pageShellSource, /aria-label=\{backLabel\}/);
 
   const secondaryPages = [
     "app/(app)/gear/new/page.tsx",
@@ -170,7 +173,7 @@ test("secondary pages share one header, so every one of them has a way back", ()
       new URL(`../${relativePath}`, import.meta.url),
       "utf8"
     );
-    assert.match(source, /<PageHeader/, relativePath);
+    assert.match(source, /<PageShell/, relativePath);
     assert.match(source, /backHref=/, relativePath);
     assert.match(source, /backLabel="/, relativePath);
     // 見出しサイズを各ページで作り直さない

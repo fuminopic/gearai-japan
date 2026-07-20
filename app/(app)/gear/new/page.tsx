@@ -1,6 +1,6 @@
 
 import { GearForm } from "@/components/gear-form";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageShell } from "@/components/ui/page-shell";
 import { createGear } from "@/lib/actions/gear";
 import {
   getGearCategories,
@@ -26,13 +26,12 @@ export default async function NewGearPage({ searchParams }: NewGearPageProps) {
   const returnTo = getPlanReturnTo(params.returnTo);
 
   return (
-    <div className="space-y-5">
-      <PageHeader
-        backHref={buildGearHref("/gear", returnTo)}
-        backLabel="マイギアへ戻る"
-        eyebrow="新規登録"
-        title="ギアを追加"
-      />
+    <PageShell
+      backHref={buildGearHref("/gear", returnTo)}
+      backLabel="マイギアへ戻る"
+      eyebrow="新規登録"
+      title="ギアを追加"
+    >
       <GearForm
         categories={categories}
         subcategories={subcategories}
@@ -41,6 +40,6 @@ export default async function NewGearPage({ searchParams }: NewGearPageProps) {
         error={params.error}
         returnTo={returnTo}
       />
-    </div>
+    </PageShell>
   );
 }

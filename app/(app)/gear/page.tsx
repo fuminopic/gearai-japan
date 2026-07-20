@@ -2,7 +2,8 @@ import { AppMenuDrawer } from "@/components/app-menu-drawer";
 import { GearList } from "@/components/gear-list";
 import { Notice } from "@/components/ui/notice";
 import { getUserGear, getUserGearBrands } from "@/lib/data/gear";
-import { getMyPack } from "@/lib/data/pack";
+import { getPackGearIds } from "@/lib/data/pack";
+import { buildPackSummary } from "@/lib/pack-summary";
 import { buildGearHref, getPlanReturnTo } from "@/lib/plan-return-to";
 import type { GearFilters, GearStatus } from "@/lib/types";
 
@@ -31,12 +32,20 @@ export default async function GearPage({ searchParams }: GearPageProps) {
 
   // パックは一覧の絞り込みに関係なく全体を見せる(行のスイッチと右下のバーは
   // 常に「パック全体」を指す)。
-  const [brands, gear, summaryGear, myPack] = await Promise.all([
+  //
+  // ここで getMyPack() を呼ぶと、その中で getUserGear({ status: "owned" }) が
+  // もう一度走り、下の summaryGear と完全に重複する(画像URLの署名まで二重)。
+  // 軽い ID 取得だけにして、集計は取得済みの summaryGear から行う。
+  const [brands, gear, summaryGear, packedGearIds] = await Promise.all([
     getUserGearBrands(),
     getUserGear(filters),
     getUserGear({ status: "owned" }),
-    getMyPack()
+    getPackGearIds()
   ]);
+  const packedIdSet = new Set(packedGearIds);
+  const packSummary = buildPackSummary(
+    summaryGear.filter((item) => packedIdSet.has(item.id))
+  );
   const savedMessage = getSavedMessage(params.saved);
   const returnTo = getPlanReturnTo(params.returnTo);
 
@@ -73,9 +82,9 @@ export default async function GearPage({ searchParams }: GearPageProps) {
 
         <GearList
           addHref={buildGearHref("/gear/new", returnTo)}
-          packedGearIds={myPack.items.map((item) => item.id)}
-          packItemCount={myPack.summary.itemCount}
-          packKnownWeightG={myPack.summary.knownWeightG}
+          packedGearIds={packedGearIds}
+          packItemCount={packSummary.itemCount}
+          packKnownWeightG={packSummary.knownWeightG}
           gear={gear}
           summaryGear={summaryGear}
           brands={brands}

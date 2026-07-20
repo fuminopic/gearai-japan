@@ -336,7 +336,10 @@ function GearCard({
   const weightLabel = getGearDisplayWeightLabel(item);
 
   return (
-    <article className="flex items-center overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm transition hover:border-forest-100 hover:bg-forest-50/30">
+    // hover の背景は付けない。bg-forest-50/30 は白を「30%の色」で置き換えるため、
+    // タッチ端末で hover が残るとカードの白背景が抜けて見える(スクロールすると
+    // 直るのは hover が外れるから)。枠線だけ、ポインタのある端末で変える。
+    <article className="flex items-center overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm transition [@media(hover:hover)]:hover:border-forest-200">
       <Link
         href={buildGearHref(`/gear/${item.id}`, returnTo)}
         className="grid min-w-0 flex-1 grid-cols-[4rem_minmax(0,1fr)] items-center gap-3 px-3 py-3 sm:px-4"

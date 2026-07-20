@@ -62,10 +62,16 @@ test("wishlist gear cannot be packed, matching the server rule", () => {
 });
 
 test("the pack bar reflects the whole pack, not the filtered list", () => {
-  // 一覧のフィルタとは独立に、パック全体の点数と重量を渡す
-  assert.match(gearPageSource, /getMyPack\(\)/);
-  assert.match(gearPageSource, /packItemCount=\{myPack\.summary\.itemCount\}/);
-  assert.match(gearPageSource, /packKnownWeightG=\{myPack\.summary\.knownWeightG\}/);
+  // 一覧のフィルタとは独立に、パック全体の点数と重量を渡す。
+  // 集計は取得済みの summaryGear から行う(getMyPack を呼ぶと
+  // getUserGear({status:"owned"}) が二重に走り、ページが目に見えて遅くなる)。
+  assert.match(gearPageSource, /getPackGearIds\(\)/);
+  assert.match(gearPageSource, /buildPackSummary\(/);
+  // (コメント内の言及は無視し、実際の import と呼び出しだけを見る)
+  assert.doesNotMatch(gearPageSource, /import \{[^}]*getMyPack/);
+  assert.doesNotMatch(gearPageSource, /^\s*getMyPack\(\)/m);
+  assert.match(gearPageSource, /packItemCount=\{packSummary\.itemCount\}/);
+  assert.match(gearPageSource, /packKnownWeightG=\{packSummary\.knownWeightG\}/);
 
   // 見た目の指定(単色 #4e914a / 右下 / 矢印は1つ)
   assert.match(controlsSource, /bg-\[#4e914a\]/);
@@ -73,6 +79,13 @@ test("the pack bar reflects the whole pack, not the filtered list", () => {
   const chevronCount = (controlsSource.match(/<ChevronRight/g) ?? []).length;
   assert.equal(chevronCount, 1);
   assert.match(controlsSource, /マイパック/);
+});
+
+test("gear cards never lose their white background on touch", () => {
+  // bg-forest-50/30 は白を30%不透明の色で「置き換える」ため、hover が residual に
+  // なるタッチ端末ではカードの背景が抜けたように見えていた。
+  assert.doesNotMatch(gearListSource, /hover:bg-forest-50\/30/);
+  assert.match(gearListSource, /\[@media\(hover:hover\)\]:hover:/);
 });
 
 test("switch geometry matches the agreed spec", () => {

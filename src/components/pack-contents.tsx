@@ -7,6 +7,10 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { removePackItem } from "@/lib/actions/pack";
+import {
+  getRetailGearCategory,
+  MAJOR_GEAR_CATEGORIES
+} from "@/lib/gear-major-categories";
 import { buildPackSummary, getPackItemWeightGrams } from "@/lib/pack-summary";
 import type { UserGear } from "@/lib/types";
 import { formatWeight } from "@/lib/utils/format";
@@ -149,19 +153,34 @@ function PackGearRow({ item, onRemove }: { item: UserGear; onRemove: () => void 
   );
 }
 
+// マイギア画面と同じ6大分類・同じ並び順でまとめる。
+//
+// 以前は gear_categories.name_ja(DBの細かい分類)を五十音順に並べていたため、
+// 同じギアがマイギアでは「安全・ナビ」、ここでは「電子機器」のように別の
+// グループに入り、行き来すると見失っていた。ホームの「パック重量構成」の
+// 凡例とも、これで一致する。表示のまとめ方だけで、DBの分類やチェックリスト
+// の判定には影響しない。
 function groupPackGearByCategory(items: UserGear[]) {
-  const groups = new Map<string, { id: string; label: string; items: UserGear[] }>();
+  const order = new Map<string, number>(
+    MAJOR_GEAR_CATEGORIES.map((category, index) => [category.id, index])
+  );
+  const groups = new Map<
+    string,
+    { id: string; label: string; sortOrder: number; items: UserGear[] }
+  >();
 
   for (const item of items) {
-    const id = item.category_id;
-    const label = item.gear_categories?.name_ja ?? "その他";
-    const group = groups.get(id) ?? { id, label, items: [] };
+    const major = getRetailGearCategory(item);
+    const id = major?.id ?? "other";
+    const label = major?.label ?? "その他";
+    const sortOrder = major ? (order.get(major.id) ?? MAJOR_GEAR_CATEGORIES.length) : Number.MAX_SAFE_INTEGER;
+    const group = groups.get(id) ?? { id, label, sortOrder, items: [] };
 
     group.items.push(item);
     groups.set(id, group);
   }
 
-  return Array.from(groups.values()).sort((a, b) => a.label.localeCompare(b.label, "ja"));
+  return Array.from(groups.values()).sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 function restorePackItem(current: UserGear[], item: UserGear, snapshot: UserGear[]) {

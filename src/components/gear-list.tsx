@@ -4,6 +4,12 @@ import type { Route } from "next";
 import type { ReactNode } from "react";
 
 import { BrandLogo } from "@/components/brand-logo";
+import {
+  GearPackBar,
+  GearPackProvider,
+  GearPackToggle
+} from "@/components/gear-pack-controls";
+import { GearStepHint } from "@/components/gear-step-hint";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   compareGearBrands,
@@ -20,8 +26,13 @@ import { buildGearHref } from "@/lib/plan-return-to";
 import type { GearFilters, UserGear } from "@/lib/types";
 import { formatWeight } from "@/lib/utils/format";
 
+const packRoute = "/pack" as Route;
+
 type GearListProps = {
   addHref: Route;
+  packedGearIds: string[];
+  packItemCount: number;
+  packKnownWeightG: number;
   gear: UserGear[];
   summaryGear: UserGear[];
   brands: string[];
@@ -31,6 +42,9 @@ type GearListProps = {
 
 export function GearList({
   addHref,
+  packedGearIds,
+  packItemCount,
+  packKnownWeightG,
   gear,
   summaryGear,
   brands,
@@ -55,6 +69,11 @@ export function GearList({
   ].sort(compareGearBrands);
 
   return (
+    <GearPackProvider
+      initialPackedIds={packedGearIds}
+      initialItemCount={packItemCount}
+      initialKnownWeightG={packKnownWeightG}
+    >
     <div className="space-y-[11px]">
       {/* 概要カード: ホームのマイギアカードと同じ骨格(rounded-[20px] /
           font-din の数値 / metric-*.png のアイコン / #EEEDE6 の区切り線)。
@@ -107,6 +126,8 @@ export function GearList({
           )}
         </div>
       </section>
+
+      <GearStepHint hasGear={summaryGear.length > 0} hasPackItems={packItemCount > 0} />
 
       {/* 一覧より前に置くのは折りたたんだ絞り込みだけ。検索はこの中に入れて
           ファーストビューをギアに明け渡す(登録数が増えるまで検索は使わない)。
@@ -295,7 +316,10 @@ export function GearList({
           ))}
         </div>
       )}
+
+      <GearPackBar href={packRoute} />
     </div>
+    </GearPackProvider>
   );
 }
 
@@ -312,10 +336,10 @@ function GearCard({
   const weightLabel = getGearDisplayWeightLabel(item);
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm transition hover:border-forest-100 hover:bg-forest-50/30">
+    <article className="flex items-center overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm transition hover:border-forest-100 hover:bg-forest-50/30">
       <Link
         href={buildGearHref(`/gear/${item.id}`, returnTo)}
-        className="grid grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-3 px-3 py-3 sm:px-4"
+        className="grid min-w-0 flex-1 grid-cols-[4rem_minmax(0,1fr)] items-center gap-3 px-3 py-3 sm:px-4"
       >
         {item.image_url ? (
           <span className="flex h-16 w-16 items-center justify-center rounded-xl border border-stone-100 bg-white p-2">
@@ -360,10 +384,17 @@ function GearCard({
             </span>
           </div>
         </div>
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-stone-100 bg-white text-forest-700">
-          <ChevronRight className="h-5 w-5" />
-        </span>
       </Link>
+
+      {/* スイッチはリンクの外。行本体をタップ=詳細、スイッチ=パック出し入れ。
+          「欲しい」のギアは addPackItems が受け付けないので無効表示にする。 */}
+      <div className="flex shrink-0 items-center pr-3 sm:pr-4">
+        <GearPackToggle
+          gearId={item.id}
+          weightGrams={getGearWeightGrams(item)}
+          disabled={item.status !== "owned"}
+        />
+      </div>
     </article>
   );
 }

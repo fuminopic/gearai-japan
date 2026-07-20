@@ -2,6 +2,7 @@ import { AppMenuDrawer } from "@/components/app-menu-drawer";
 import { GearList } from "@/components/gear-list";
 import { Notice } from "@/components/ui/notice";
 import { getUserGear, getUserGearBrands } from "@/lib/data/gear";
+import { getMyPack } from "@/lib/data/pack";
 import { buildGearHref, getPlanReturnTo } from "@/lib/plan-return-to";
 import type { GearFilters, GearStatus } from "@/lib/types";
 
@@ -28,10 +29,13 @@ export default async function GearPage({ searchParams }: GearPageProps) {
     sort: isSort(params.sort) ? params.sort : "newest"
   };
 
-  const [brands, gear, summaryGear] = await Promise.all([
+  // パックは一覧の絞り込みに関係なく全体を見せる(行のスイッチと右下のバーは
+  // 常に「パック全体」を指す)。
+  const [brands, gear, summaryGear, myPack] = await Promise.all([
     getUserGearBrands(),
     getUserGear(filters),
-    getUserGear({ status: "owned" })
+    getUserGear({ status: "owned" }),
+    getMyPack()
   ]);
   const savedMessage = getSavedMessage(params.saved);
   const returnTo = getPlanReturnTo(params.returnTo);
@@ -69,6 +73,9 @@ export default async function GearPage({ searchParams }: GearPageProps) {
 
         <GearList
           addHref={buildGearHref("/gear/new", returnTo)}
+          packedGearIds={myPack.items.map((item) => item.id)}
+          packItemCount={myPack.summary.itemCount}
+          packKnownWeightG={myPack.summary.knownWeightG}
           gear={gear}
           summaryGear={summaryGear}
           brands={brands}

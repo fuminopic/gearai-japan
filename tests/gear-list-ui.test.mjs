@@ -85,6 +85,32 @@ test("gear list exposes brand and category-oriented list controls", () => {
   assert.match(gearDisplaySource, /compareGearBrands/);
 });
 
+test("gear filters collapse by default so the gear list reaches the first view", () => {
+  // 折りたたみは素の <details>。フィルタ自体は従来どおり URL 駆動の <Link> の
+  // ままで、クライアント状態は増やさない。
+  assert.match(gearListSource, /<details/);
+  assert.match(gearListSource, /open=\{hasActiveFilters\}/);
+  assert.match(gearListSource, /<summary/);
+  assert.match(gearListSource, /ブランド・カテゴリーで絞り込む/);
+  assert.match(gearListSource, /絞り込み中 ・ \$\{gear\.length/);
+  assert.match(gearListSource, /絞り込みを解除/);
+
+  // 検索は折りたたみの外に常時出す(コメント中の <details> ではなく、実際の
+  // 開閉制御が現れる位置を境界にする)
+  const detailsIndex = gearListSource.indexOf("open={hasActiveFilters}");
+  const searchIndex = gearListSource.indexOf('placeholder="ギア名・ブランドで検索"');
+  assert.ok(searchIndex > -1 && detailsIndex > -1);
+  assert.ok(searchIndex < detailsIndex, "search must stay outside the collapsed filters");
+
+  // ブランド/カテゴリー/状態/並び順は折りたたみの内側
+  for (const marker of ['label="ブランド"', "StatusChip", 'htmlFor="gear-sort"']) {
+    assert.ok(
+      gearListSource.indexOf(marker) > detailsIndex,
+      `${marker} must live inside the collapsed filters`
+    );
+  }
+});
+
 test("gear list groups registered gear by category without changing cards", () => {
   assert.match(gearListSource, /groupGearByCategory/);
   assert.match(gearListSource, /getRetailGearCategory\(item\)/);

@@ -49,6 +49,12 @@ export function GearList({
   );
   const majorCategoryCoverage = getMajorGearCategoryCoverage(summaryGear);
   const selectedBrand = filters.brand ?? "";
+  const hasActiveFilters = Boolean(
+    filters.q ||
+      filters.brand ||
+      filters.category ||
+      (filters.status && filters.status !== "all")
+  );
   const visibleBrands = [
     ...new Set([selectedBrand, ...brands].filter((brand): brand is string => Boolean(brand)))
   ].sort(compareGearBrands);
@@ -89,43 +95,56 @@ export function GearList({
         </div>
       </section>
 
-      <section className="rounded-2xl bg-white p-4 shadow-sm">
-        <div className="mb-3 flex items-center justify-between gap-3 px-1">
-          <div>
-            <p className="text-xs font-semibold text-forest-700">絞り込み</p>
-            <p className="mt-0.5 text-sm font-medium text-stone-500">
-              {gear.length.toLocaleString("ja-JP")}点を表示中
-            </p>
-          </div>
-          {(filters.q || filters.brand || filters.category || (filters.status && filters.status !== "all")) ? (
+      {/* 検索は常時表示。ブランド/カテゴリー/状態/並び順は既定で畳んでおき、
+          ギア一覧をファーストビューに入れる。絞り込み中は open で開いた状態に
+          なるので、フィルタが効いていることを見落とさない。
+          折りたたみは素の <details> で行い、フィルタは従来どおり URL 駆動の
+          <Link> のまま(クライアント状態を増やさない)。 */}
+      <form className="flex items-center gap-2 rounded-2xl bg-white px-3 py-2 shadow-sm">
+        <Search className="h-5 w-5 shrink-0 text-stone-400" />
+        <input
+          name="q"
+          defaultValue={filters.q}
+          className="min-w-0 flex-1 bg-transparent py-1 text-base outline-none"
+          placeholder="ギア名・ブランドで検索"
+        />
+        <input type="hidden" name="status" value={filters.status ?? "all"} />
+        <input type="hidden" name="brand" value={filters.brand ?? ""} />
+        <input type="hidden" name="category" value={filters.category ?? ""} />
+        <input type="hidden" name="sort" value={filters.sort ?? "newest"} />
+        <input type="hidden" name="returnTo" value={returnTo ?? ""} />
+        <button className="inline-flex h-9 items-center justify-center rounded-lg bg-ink px-3 text-xs font-semibold leading-none text-white transition active:scale-95">
+          検索
+        </button>
+      </form>
+
+      <details
+        open={hasActiveFilters}
+        className="group rounded-2xl bg-white shadow-sm [&_summary::-webkit-details-marker]:hidden"
+      >
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
+          <span className="text-[13px] font-bold text-ink">
+            {hasActiveFilters
+              ? `絞り込み中 ・ ${gear.length.toLocaleString("ja-JP")}点を表示`
+              : "ブランド・カテゴリーで絞り込む"}
+          </span>
+          <ChevronRight
+            aria-hidden
+            className="h-4 w-4 shrink-0 text-stone-300 transition-transform group-open:rotate-90"
+          />
+        </summary>
+
+        <div className="border-t border-stone-100 p-4">
+          {hasActiveFilters ? (
             <Link
               href={buildFilteredGearHref(filters, {}, returnTo)}
-              className="inline-flex h-8 items-center justify-center rounded-lg bg-stone-100 px-3 text-xs font-semibold leading-none text-stone-600"
+              className="mb-4 inline-flex h-8 items-center justify-center rounded-lg bg-stone-100 px-3 text-xs font-semibold leading-none text-stone-600"
             >
-              解除
+              絞り込みを解除
             </Link>
           ) : null}
-        </div>
 
-        <form className="flex items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2">
-          <Search className="h-5 w-5 shrink-0 text-stone-400" />
-          <input
-            name="q"
-            defaultValue={filters.q}
-            className="min-w-0 flex-1 bg-transparent py-1 text-base outline-none"
-            placeholder="ギア名・ブランドで検索"
-          />
-          <input type="hidden" name="status" value={filters.status ?? "all"} />
-          <input type="hidden" name="brand" value={filters.brand ?? ""} />
-          <input type="hidden" name="category" value={filters.category ?? ""} />
-          <input type="hidden" name="sort" value={filters.sort ?? "newest"} />
-          <input type="hidden" name="returnTo" value={returnTo ?? ""} />
-          <button className="inline-flex h-9 items-center justify-center rounded-lg bg-ink px-3 text-xs font-semibold leading-none text-white transition active:scale-95">
-            検索
-          </button>
-        </form>
-
-        <div className="mt-4">
+        <div className="mt-0">
           <FilterLabel icon={<PackagePlus className="h-4 w-4" />} label="ブランド" />
           <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto px-1 pb-1">
             <FilterChip
@@ -209,7 +228,8 @@ export function GearList({
             </button>
           </form>
         </div>
-      </section>
+        </div>
+      </details>
 
       {gear.length === 0 ? (
         <EmptyState

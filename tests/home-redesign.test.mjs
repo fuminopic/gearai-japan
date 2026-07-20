@@ -207,13 +207,38 @@ test("home gear summary uses the pack-only weight composition bar", () => {
 });
 
 test("home redesign exposes pack-focused gear summary metrics", () => {
-  for (const copy of ["マイギア", "マイパック", "パック内カテゴリー"]) {
+  for (const copy of ["マイギア", "マイパック"]) {
     assert.match(dashboardSource, new RegExp(copy));
   }
+  // パック内カテゴリー(4/6)はホームから外した。同じ 4/6 がマイギア側にもあり
+  // 集計範囲が違うため、ホームでは誤解の元にしかならなかった。
+  assert.doesNotMatch(dashboardSource, /パック内カテゴリー/);
+  assert.doesNotMatch(dashboardSource, /packMajorCategoryCoverageCount/);
   assert.match(dashboardDataSource, /user_pack_items/);
   assert.match(dashboardDataSource, /buildPackSummary/);
   assert.match(dashboardSource, /packKnownWeightG/);
   assert.doesNotMatch(dashboardSource, /totalWeightG/);
+});
+
+test("home gear card exposes exactly two destinations, both signposted", () => {
+  // 指標は2つだけで、どちらもリンク。見た目が同じなのに一部だけ遷移する、
+  // という状態を作らない。
+  const metrics = dashboardSource.match(/<SummaryMetric/g) ?? [];
+  assert.equal(metrics.length, 2);
+
+  const card = dashboardSource.slice(
+    dashboardSource.indexOf("function GearSummaryCard"),
+    dashboardSource.indexOf("function RecentGearSection")
+  );
+  const hrefs = card.match(/href=\{(\w+)\}/g) ?? [];
+  assert.deepEqual(hrefs.sort(), ["href={gearRoute}", "href={packRoute}"]);
+
+  // リンクのときだけ chevron を出す(アフォーダンスの目印)
+  assert.match(dashboardSource, /\{href \? <ChevronRight/);
+
+  // カード内のショートカット + は廃止。追加導線はマイギア画面に集約する。
+  assert.doesNotMatch(card, /href="\/gear\/new"/);
+  assert.doesNotMatch(dashboardSource, /<Plus /);
 
   for (const forbidden of [
     "私の装備",

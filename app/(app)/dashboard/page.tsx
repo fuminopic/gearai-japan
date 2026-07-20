@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import { Backpack, Mountain, Package, Plus } from "lucide-react";
+import { Backpack, ChevronRight, Mountain, Package } from "lucide-react";
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,6 +24,7 @@ export const revalidate = 0;
 const planRoute = "/plan" as Route;
 const packRoute = "/pack" as Route;
 const packSelectRoute = "/pack/select" as Route;
+const gearRoute = "/gear" as Route;
 // 首页装備構成配色:规范 v1「米色系」6 色,按 id 覆盖 MAJOR_GEAR_CATEGORIES 旧色(仅首页用)
 const categoryColorById = new Map<string, string>([
   ["clothing", "#C05A86"],
@@ -312,17 +313,13 @@ function HeroTitle({ trip }: { trip?: SavedTripPlan }) {
 }
 
 function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
+  // このカードのタップ先は2つだけ(マイギア / マイパック)。以前は同じ見た目の
+  // 指標が3つ並び、リンクなのは中央だけ、さらに小さな + が最深部の
+  // /gear/new に飛んでいたため、初見では押す場所が読めなかった。
   return (
     <section className="flex flex-col gap-3 rounded-[20px] bg-white px-5 pt-3 pb-5 shadow-sm">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-bold">マイギア</h2>
-        <Link
-          href="/gear/new"
-          aria-label="ギアを追加"
-          className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#4E914A] text-white opacity-70 shadow-sm transition active:scale-95"
-        >
-          <Plus className="h-3 w-3" strokeWidth={2.5} />
-        </Link>
       </div>
 
       <div className="flex flex-row items-center justify-between">
@@ -330,6 +327,7 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
           iconSrc="/metric-count.png"
           value={`${summary.ownedCount.toLocaleString("ja-JP")}点`}
           label="マイギア"
+          href={gearRoute}
           divided
         />
         <SummaryMetric
@@ -337,16 +335,6 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
           value={`${summary.packItemCount.toLocaleString("ja-JP")}点・${formatKg(summary.packKnownWeightG)}`}
           label="マイパック"
           href={packRoute}
-          divided
-        />
-        {/* これは「マイパックの中で埋まっている主要カテゴリー数」。
-            マイギア画面にある同じ 4/6 表記は「マイギア全体で登録済みの
-            カテゴリー数」で、母数は同じでも別の数字なので、双方のラベルで
-            集計範囲がわかるようにしている。 */}
-        <SummaryMetric
-          iconSrc="/metric-category.png"
-          value={`${summary.packMajorCategoryCoverageCount} / ${summary.packMajorCategoryTotalCount}`}
-          label="パック内カテゴリー"
         />
       </div>
       <GearComposition summary={summary} />
@@ -494,11 +482,16 @@ function SummaryMetric({
   const className = `flex flex-1 flex-col items-center gap-1.5 px-1 text-center ${
     divided ? "border-r border-gray-100" : ""
   }`;
+  // リンクのときだけラベルに chevron を出す。指標の見た目が同じまま一部だけ
+  // 遷移する状態を作らないための目印。
   const content = (
     <>
       <img src={iconSrc} alt="" className="h-4 w-auto object-contain" />
       <p className="whitespace-nowrap font-din text-[22px] font-bold leading-none text-black max-[374px]:text-[18px]">{value}</p>
-      <p className="whitespace-nowrap text-xs font-medium text-gray-400">{label}</p>
+      <p className="flex items-center justify-center gap-0.5 whitespace-nowrap text-xs font-medium text-gray-400">
+        {label}
+        {href ? <ChevronRight aria-hidden className="h-3.5 w-3.5 text-gray-300" /> : null}
+      </p>
     </>
   );
 

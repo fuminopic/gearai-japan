@@ -1,6 +1,4 @@
-import Link from "next/link";
-import { Plus } from "lucide-react";
-
+import { AppMenuDrawer } from "@/components/app-menu-drawer";
 import { GearList } from "@/components/gear-list";
 import { Notice } from "@/components/ui/notice";
 import { getUserGear, getUserGearBrands } from "@/lib/data/gear";
@@ -38,43 +36,71 @@ export default async function GearPage({ searchParams }: GearPageProps) {
   const savedMessage = getSavedMessage(params.saved);
   const returnTo = getPlanReturnTo(params.returnTo);
 
+  // ホーム画面と同じ見た目の骨格にする: 緑のバンド → その上にカードを重ねる
+  // → カードは rounded-[20px] / 間隔 11px。以前はここだけ白背景に 34px の
+  // 見出しと eyebrow が乗っていて、別アプリのように見えていた。
   return (
-    <div className="space-y-5">
-      <section className="flex items-end justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold text-forest-700">ギア管理</p>
-          <h1 className="mt-1 text-[34px] font-bold leading-tight tracking-normal text-ink">
-            マイギア
-          </h1>
-        </div>
-        <Link
-          href={buildGearHref("/gear/new", returnTo)}
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-forest-700 px-4 text-sm font-bold text-white shadow-sm transition active:scale-95"
-          aria-label="ギアを追加"
-        >
-          <Plus className="h-5 w-5" />
-          追加
-        </Link>
-      </section>
+    <main className="gear-redesign min-h-screen bg-[#E5EBE9] pb-32 text-ink">
+      <GearShellCss />
 
-      {params.error ? (
-        <Notice tone="error">{params.error}</Notice>
-      ) : null}
+      {/* ロゴとメニューの位置、そしてカードが始まる Y 座標をホームと一致させる。
+          ホーム: バンド safe+206 / カード -107 → カード上端 safe+99。
+          ここ:   バンド safe+150 / カード -51  → カード上端 safe+99。
+          こうするとタブを切り替えても上部がずれない(バンドは56px短い)。 */}
+      <header
+        className="relative z-10 flex w-full items-start justify-between bg-gradient-to-br from-[#1F7950] to-[#81AB44] px-4 pt-[max(env(safe-area-inset-top),20px)]"
+        style={{ minHeight: "calc(max(env(safe-area-inset-top), 20px) + 150px)" }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/yamajitaku-wordmark-white.png"
+          alt="山支度 YAMAJITAKU"
+          className="mt-[42px] h-10 w-auto select-none object-contain"
+        />
+        <AppMenuDrawer buttonClassName="-mr-2 mt-[42px] inline-flex h-10 w-10 items-center justify-center rounded-xl text-white transition-transform active:scale-95" />
+      </header>
 
-      {savedMessage && !params.error ? (
-        <Notice tone="success" className="border border-forest-100">
-          {savedMessage}
-        </Notice>
-      ) : null}
+      <div className="relative z-20 -mt-[51px] space-y-[11px] px-4">
+        {params.error ? <Notice tone="error">{params.error}</Notice> : null}
 
-      <GearList
-        gear={gear}
-        summaryGear={summaryGear}
-        brands={brands}
-        filters={filters}
-        returnTo={returnTo}
-      />
-    </div>
+        {savedMessage && !params.error ? (
+          <Notice tone="success" className="border border-forest-100">
+            {savedMessage}
+          </Notice>
+        ) : null}
+
+        <GearList
+          addHref={buildGearHref("/gear/new", returnTo)}
+          gear={gear}
+          summaryGear={summaryGear}
+          brands={brands}
+          filters={filters}
+          returnTo={returnTo}
+        />
+      </div>
+    </main>
+  );
+}
+
+// ホームと同じく、この画面では共通の白ヘッダー(ロゴ行)を隠す。緑のバンドが
+// その役割を兼ねるため、白ヘッダーが残ると二重の見出しになってしまう。
+function GearShellCss() {
+  return (
+    <style>{`
+      body:has(main.gear-redesign) {
+        background: #e5ebe9;
+      }
+      body:has(main.gear-redesign) > div > header:has(a[href="/dashboard"]),
+      body:has(main.gear-redesign) > div > aside:has(a[href="/dashboard"]) {
+        display: none;
+      }
+      main:has(> main.gear-redesign) {
+        margin: 0 !important;
+        max-width: none !important;
+        padding: 0 !important;
+        width: 100% !important;
+      }
+    `}</style>
   );
 }
 

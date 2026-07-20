@@ -1,11 +1,4 @@
-import {
-  Archive,
-  ChevronRight,
-  PackagePlus,
-  Search,
-  SlidersHorizontal,
-  Weight
-} from "lucide-react";
+import { ChevronRight, PackagePlus, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
 import type { ReactNode } from "react";
@@ -28,6 +21,7 @@ import type { GearFilters, UserGear } from "@/lib/types";
 import { formatWeight } from "@/lib/utils/format";
 
 type GearListProps = {
+  addHref: Route;
   gear: UserGear[];
   summaryGear: UserGear[];
   brands: string[];
@@ -36,6 +30,7 @@ type GearListProps = {
 };
 
 export function GearList({
+  addHref,
   gear,
   summaryGear,
   brands,
@@ -60,91 +55,111 @@ export function GearList({
   ].sort(compareGearBrands);
 
   return (
-    <div className="space-y-5">
-      <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
-        <div className="grid grid-cols-3 divide-x divide-stone-100">
-          <InventoryStat
-            icon={<Archive className="h-4 w-4" />}
-            label="マイギア"
+    <div className="space-y-[11px]">
+      {/* 概要カード: ホームのマイギアカードと同じ骨格(rounded-[20px] /
+          font-din の数値 / metric-*.png のアイコン / #EEEDE6 の区切り線)。
+          ホームは指標2つ、こちらは3つ。同じ 22px だと3列では重すぎるので
+          17px まで落とし、そのぶん列間と行間は広げて窮屈に見せない。 */}
+      <section className="rounded-[20px] bg-white px-5 pt-4 pb-4 shadow-sm">
+        <div className="flex items-center justify-between border-b border-[#EEEDE6] pb-3">
+          <h2 className="text-base font-bold">マイギア</h2>
+          <Link
+            href={addHref}
+            aria-label="ギアを追加"
+            className="inline-flex h-8 items-center justify-center gap-1 rounded-xl bg-[#4E914A] px-4 text-[12px] font-bold leading-none text-white shadow-sm transition active:scale-95"
+          >
+            <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+            追加
+          </Link>
+        </div>
+
+        <div className="flex flex-row items-center justify-between pt-4">
+          <SummaryStat
+            iconSrc="/metric-count.png"
             value={`${summaryGear.length.toLocaleString("ja-JP")}点`}
+            label="マイギア"
+            divided
           />
-          <InventoryStat
-            icon={<Weight className="h-4 w-4" />}
+          <SummaryStat
+            iconSrc="/metric-weight.png"
+            value={formatWeight(totalWeightGrams, { compact: true })}
             label="総重量"
-            value={formatWeight(totalWeightGrams)}
+            divided
           />
-          {/* こちらはマイギア全体で登録済みの主要カテゴリー数。ホームの
-              「パック内カテゴリー」とは集計範囲が違うため、母数が同じでも
-              値は一致しない。ラベルで範囲を明示する。 */}
-          <InventoryStat
-            icon={<PackagePlus className="h-4 w-4" />}
-            label="登録済みカテゴリー"
+          {/* マイギア全体で登録済みの主要カテゴリー数。直下の「未登録: …」が
+              数え方を補足する。3カラムに収まる長さにするため短いラベルにする。 */}
+          <SummaryStat
+            iconSrc="/metric-category.png"
             value={`${majorCategoryCoverage.coveredCount} / ${majorCategoryCoverage.totalCount}`}
+            label="カテゴリー"
           />
         </div>
-        <div className="border-t border-stone-100 px-4 py-3">
+
+        <div className="mt-4 border-t border-[#EEEDE6] pt-3">
           {majorCategoryCoverage.missingLabels.length > 0 ? (
-            <p className="text-xs font-semibold leading-5 text-stone-500">
+            <p className="text-[11px] font-medium leading-4 text-gray-400">
               未登録: {majorCategoryCoverage.missingLabels.join("、")}
             </p>
           ) : (
-            <p className="text-xs font-semibold text-forest-700">
+            <p className="text-[11px] font-medium leading-4 text-[#14724e]">
               主要カテゴリーは登録済みです
             </p>
           )}
         </div>
       </section>
 
-      {/* 検索は常時表示。ブランド/カテゴリー/状態/並び順は既定で畳んでおき、
-          ギア一覧をファーストビューに入れる。絞り込み中は open で開いた状態に
-          なるので、フィルタが効いていることを見落とさない。
-          折りたたみは素の <details> で行い、フィルタは従来どおり URL 駆動の
-          <Link> のまま(クライアント状態を増やさない)。 */}
-      <form className="flex items-center gap-2 rounded-2xl bg-white px-3 py-2 shadow-sm">
-        <Search className="h-5 w-5 shrink-0 text-stone-400" />
-        <input
-          name="q"
-          defaultValue={filters.q}
-          className="min-w-0 flex-1 bg-transparent py-1 text-base outline-none"
-          placeholder="ギア名・ブランドで検索"
-        />
-        <input type="hidden" name="status" value={filters.status ?? "all"} />
-        <input type="hidden" name="brand" value={filters.brand ?? ""} />
-        <input type="hidden" name="category" value={filters.category ?? ""} />
-        <input type="hidden" name="sort" value={filters.sort ?? "newest"} />
-        <input type="hidden" name="returnTo" value={returnTo ?? ""} />
-        <button className="inline-flex h-9 items-center justify-center rounded-lg bg-ink px-3 text-xs font-semibold leading-none text-white transition active:scale-95">
-          検索
-        </button>
-      </form>
-
+      {/* 一覧より前に置くのは折りたたんだ絞り込みだけ。検索はこの中に入れて
+          ファーストビューをギアに明け渡す(登録数が増えるまで検索は使わない)。
+          絞り込み中は open で開いた状態になるので、フィルタが効いていることを
+          見落とさない。折りたたみは素の <details>、フィルタは従来どおり
+          URL 駆動の <Link> のまま(クライアント状態を増やさない)。 */}
       <details
         open={hasActiveFilters}
-        className="group rounded-2xl bg-white shadow-sm [&_summary::-webkit-details-marker]:hidden"
+        className="group rounded-[20px] bg-white shadow-sm [&:not([open])]:w-fit [&_summary::-webkit-details-marker]:hidden"
       >
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
-          <span className="text-[13px] font-bold text-ink">
+        {/* 閉じているときは幅も高さも約半分の控えめなボタン。開くと
+            パネルとして全幅に戻る。 */}
+        <summary className="flex h-8 cursor-pointer list-none items-center gap-1.5 px-4 group-open:h-auto group-open:justify-between group-open:py-3">
+          <span className="whitespace-nowrap text-[12px] font-bold text-ink">
             {hasActiveFilters
-              ? `絞り込み中 ・ ${gear.length.toLocaleString("ja-JP")}点を表示`
+              ? `絞り込み中 ・ ${gear.length.toLocaleString("ja-JP")}点`
               : "ブランド・カテゴリーで絞り込む"}
           </span>
           <ChevronRight
             aria-hidden
-            className="h-4 w-4 shrink-0 text-stone-300 transition-transform group-open:rotate-90"
+            className="h-3.5 w-3.5 shrink-0 text-gray-300 transition-transform group-open:rotate-90"
           />
         </summary>
 
-        <div className="border-t border-stone-100 p-4">
+        <div className="border-t border-[#EEEDE6] p-5">
           {hasActiveFilters ? (
             <Link
               href={buildFilteredGearHref(filters, {}, returnTo)}
-              className="mb-4 inline-flex h-8 items-center justify-center rounded-lg bg-stone-100 px-3 text-xs font-semibold leading-none text-stone-600"
+              className="mb-4 inline-flex h-8 items-center justify-center rounded-full bg-stone-100 px-3 text-xs font-semibold leading-none text-stone-600"
             >
               絞り込みを解除
             </Link>
           ) : null}
 
-        <div className="mt-0">
+          <form className="flex items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2">
+            <Search className="h-5 w-5 shrink-0 text-stone-400" />
+            <input
+              name="q"
+              defaultValue={filters.q}
+              className="min-w-0 flex-1 bg-transparent py-1 text-base outline-none"
+              placeholder="ギア名・ブランドで検索"
+            />
+            <input type="hidden" name="status" value={filters.status ?? "all"} />
+            <input type="hidden" name="brand" value={filters.brand ?? ""} />
+            <input type="hidden" name="category" value={filters.category ?? ""} />
+            <input type="hidden" name="sort" value={filters.sort ?? "newest"} />
+            <input type="hidden" name="returnTo" value={returnTo ?? ""} />
+            <button className="inline-flex h-9 items-center justify-center rounded-lg bg-ink px-3 text-xs font-semibold leading-none text-white transition active:scale-95">
+              検索
+            </button>
+          </form>
+
+        <div className="mt-4">
           <FilterLabel icon={<PackagePlus className="h-4 w-4" />} label="ブランド" />
           <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto px-1 pb-1">
             <FilterChip
@@ -246,29 +261,29 @@ export function GearList({
           }
         />
       ) : (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-3 px-1">
-            <div>
-              <p className="text-xs font-semibold text-forest-700">マイギア</p>
-              <h2 className="text-xl font-semibold tracking-normal text-ink">
-                {selectedBrand ? selectedBrand : "すべてのブランド"}
-              </h2>
-            </div>
-            <p className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-stone-500 shadow-sm">
-              {gear.length.toLocaleString("ja-JP")}点
-            </p>
-          </div>
+        <div className="space-y-[11px]">
+          {/* ブランドを絞り込んでいるときだけ、解除できるチップを出す。
+              「すべてのブランド」という情報量ゼロの見出しは置かない
+              (件数も上の概要カードに出ている)。 */}
+          {selectedBrand ? (
+            <Link
+              href={buildFilteredGearHref(filters, { brand: undefined }, returnTo)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#14724e] px-3 py-1.5 text-[11px] font-bold text-white"
+            >
+              {selectedBrand} {gear.length.toLocaleString("ja-JP")}点
+              <X aria-hidden className="h-3 w-3" strokeWidth={3} />
+            </Link>
+          ) : null}
 
           {gearGroups.map((group) => (
             <section key={group.id} className="space-y-2">
-              <div className="flex items-end justify-between gap-3 px-1">
-                <div>
-                  <h2 className="text-base font-semibold text-ink">{group.name}</h2>
-                  <p className="mt-1 text-xs text-stone-500">
-                    {group.count.toLocaleString("ja-JP")}点 /{" "}
-                    {formatWeight(group.weightGrams)}
-                  </p>
-                </div>
+              {/* 見出しはホームのセクション見出しと同じ 16px bold。件数と重量は
+                  gray-400 の補足として同じ行に置き、縦を使わない。 */}
+              <div className="flex items-baseline justify-between gap-3 px-1 pt-1">
+                <h2 className="text-base font-bold text-ink">{group.name}</h2>
+                <span className="whitespace-nowrap font-din text-[11px] font-medium text-gray-400">
+                  {group.count.toLocaleString("ja-JP")}点 / {formatWeight(group.weightGrams)}
+                </span>
               </div>
 
               <div className="grid gap-2">
@@ -353,22 +368,36 @@ function GearCard({
   );
 }
 
-function InventoryStat({
-  icon,
+// ホームの SummaryMetric と同じ見た目(metric-*.png / font-din / gray-400)。
+// 同じ「数値+ラベル」がアプリ内で二通りに見えないよう揃えている。
+function SummaryStat({
+  iconSrc,
   label,
-  value
+  value,
+  divided = false
 }: {
-  icon: ReactNode;
+  iconSrc: string;
   label: string;
   value: string;
+  divided?: boolean;
 }) {
   return (
-    <div className="px-3 py-4 text-center">
-      <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-forest-50 text-forest-700">
-        {icon}
+    <div
+      className={`flex flex-1 flex-col items-center gap-3 px-3 text-center ${
+        divided ? "border-r border-gray-100" : ""
+      }`}
+    >
+      {/* アイコンは数値の左に置く。ホームは指標2つなので縦積みで余裕があるが、
+          ここは3列。縦積みのままだとアイコンだけで1行(24px)使ってしまい、
+          行間を保ったままカードを縮められないため、横並びにしている。 */}
+      <div className="flex items-center gap-1.5">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={iconSrc} alt="" className="h-4 w-auto shrink-0 object-contain" />
+        <p className="whitespace-nowrap font-din text-[17px] font-bold leading-none text-black max-[374px]:text-[15px]">
+          {value}
+        </p>
       </div>
-      <p className="mt-2 text-lg font-semibold tracking-normal text-ink">{value}</p>
-      <p className="mt-0.5 text-[11px] font-medium text-stone-400">{label}</p>
+      <p className="whitespace-nowrap text-[11px] font-medium text-gray-400">{label}</p>
     </div>
   );
 }

@@ -95,15 +95,17 @@ test("gear filters collapse by default so the gear list reaches the first view",
   assert.match(gearListSource, /絞り込み中 ・ \$\{gear\.length/);
   assert.match(gearListSource, /絞り込みを解除/);
 
-  // 検索は折りたたみの外に常時出す(コメント中の <details> ではなく、実際の
-  // 開閉制御が現れる位置を境界にする)
+  // 一覧より前に出るのは折りたたみだけ。検索を含む全コントロールがこの中。
+  // (コメント中の <details> ではなく、実際の開閉制御の位置を境界にする)
   const detailsIndex = gearListSource.indexOf("open={hasActiveFilters}");
-  const searchIndex = gearListSource.indexOf('placeholder="ギア名・ブランドで検索"');
-  assert.ok(searchIndex > -1 && detailsIndex > -1);
-  assert.ok(searchIndex < detailsIndex, "search must stay outside the collapsed filters");
+  assert.ok(detailsIndex > -1);
 
-  // ブランド/カテゴリー/状態/並び順は折りたたみの内側
-  for (const marker of ['label="ブランド"', "StatusChip", 'htmlFor="gear-sort"']) {
+  for (const marker of [
+    'placeholder="ギア名・ブランドで検索"',
+    'label="ブランド"',
+    "StatusChip",
+    'htmlFor="gear-sort"'
+  ]) {
     assert.ok(
       gearListSource.indexOf(marker) > detailsIndex,
       `${marker} must live inside the collapsed filters`
@@ -118,10 +120,11 @@ test("gear list groups registered gear by category without changing cards", () =
   assert.match(gearListSource, /group\.items\.map/);
   assert.match(gearListSource, /GearCard/);
   assert.match(gearListSource, /formatWeight\(group\.weightGrams\)/);
-  assert.match(gearListSource, /InventoryStat/);
+  assert.match(gearListSource, /SummaryStat/);
   assert.match(gearListSource, /totalWeightGrams/);
   assert.match(gearListSource, /getMajorGearCategoryCoverage/);
-  assert.match(gearListSource, /登録済みカテゴリー/);
+  assert.match(gearListSource, /label="カテゴリー"/);
+  assert.match(gearListSource, /未登録:/);
   assert.match(gearListSource, /未登録:/);
   assert.match(gearPageSource, /summaryGear/);
   assert.match(gearListSource, /マイギア/);

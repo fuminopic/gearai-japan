@@ -175,7 +175,7 @@ test("gear list component baseline keeps filters, badges, cards, and feedback st
   for (const componentName of [
     "GearList",
     "GearCard",
-    "InventoryStat",
+    "SummaryStat",
     "FilterLabel",
     "FilterChip",
     "StatusChip"
@@ -187,7 +187,7 @@ test("gear list component baseline keeps filters, badges, cards, and feedback st
     "ギア名・ブランドで検索",
     "検索",
     "マイギア",
-    "登録済みカテゴリー",
+    "カテゴリー",
     "未登録:",
     "所有",
     "欲しい",

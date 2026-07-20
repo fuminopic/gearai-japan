@@ -94,3 +94,28 @@ test("the plan screen keeps its checklist untouched", () => {
   // 計画ページには見出しを足さない(指示どおり)
   assert.doesNotMatch(planPageSource, /山行計画<\/h1>/);
 });
+
+test("plan cards cannot be widened past the viewport by nowrap content", () => {
+  // grid 項目の既定は min-width:auto。チェック項目の中には truncate
+  // (= white-space:nowrap) の所持ギア名があり、その「文字列の全長」が
+  // 最小幅として効いてカードごと画面外まで伸びていた(横スクロールの原因)。
+  // 項目側で min-width:0 に落として、列が伸びないようにする。
+  const uiSource = readFileSync(
+    new URL("../src/components/trip-planning-ui.tsx", import.meta.url),
+    "utf8"
+  );
+  const formSource = readFileSync(
+    new URL("../src/components/trip-planning-form.tsx", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(uiSource, /<article className="min-w-0 rounded-\[20px\]/);
+  assert.match(uiSource, /xl:grid-cols-\[repeat\(2,minmax\(0,1fr\)\)\]/);
+  assert.match(uiSource, /sm:grid-cols-\[repeat\(2,minmax\(0,1fr\)\)\]/);
+  assert.doesNotMatch(uiSource, /xl:grid-cols-2/);
+  // 選山フォーム側の 2 カラムグリッドも同じ理由で塞ぐ
+  assert.match(formSource, /<section className="min-w-0">/);
+
+  // 完成度は画面に1つだけ。保存バーとカードで別々の計算だったものを戻した。
+  assert.doesNotMatch(uiSource, /完成度 \{progress/);
+});

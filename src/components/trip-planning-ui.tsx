@@ -1087,12 +1087,9 @@ function SavePlanButton({
           type="button"
           disabled={isPending}
           onClick={handleSavePlan}
-          className="flex h-12 w-full items-center justify-between rounded-full bg-[#14724e] px-5 text-base font-bold text-white shadow-[0_10px_24px_rgba(20,114,78,0.3)] transition active:scale-[0.99] disabled:opacity-70"
+          className="flex h-12 w-full items-center justify-center rounded-full bg-[#14724e] px-5 text-base font-bold text-white shadow-[0_10px_24px_rgba(20,114,78,0.3)] transition active:scale-[0.99] disabled:opacity-70"
         >
-          <span>{isPending ? "保存中..." : planId ? "変更を更新" : "計画を保存"}</span>
-          <span className="font-din text-sm font-bold text-white/85">
-            完成度 {progress.toLocaleString("ja-JP")}%
-          </span>
+          {isPending ? "保存中..." : planId ? "変更を更新" : "計画を保存"}
         </button>
       </div>
     </form>
@@ -1662,7 +1659,7 @@ function TripPlanningResult({
           onFilterChange={handleScanFilterChange}
         />
 
-        <div className="grid gap-[11px] xl:grid-cols-2">
+        <div className="grid gap-[11px] xl:grid-cols-[repeat(2,minmax(0,1fr))]">
           {planCategoryCards.length > 0 ? (
             planCategoryCards.map(({ category, confirmedItems }) => (
             <ChecklistCategoryCard
@@ -2526,11 +2523,11 @@ function NotNeededItemsSection({ items }: { items: PlanNotNeededItem[] }) {
         <Check className="h-4 w-4 text-forest-700" aria-hidden="true" />
         <h2 className="text-sm font-bold text-ink">今回不要なもの</h2>
       </div>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+      <div className="mt-3 grid gap-2 sm:grid-cols-[repeat(2,minmax(0,1fr))]">
         {items.map((item) => (
           <div
             key={item.label}
-            className="rounded-lg border border-stone-100 bg-stone-50 px-3 py-2"
+            className="min-w-0 rounded-xl border border-stone-100 bg-stone-50 px-3 py-2"
           >
             <p className="text-sm font-bold text-ink">{item.label}</p>
             <p className="mt-1 text-xs font-semibold leading-5 text-stone-500">
@@ -2639,7 +2636,7 @@ function ChecklistCategoryCard({
   ).length;
 
   return (
-    <article className="rounded-[20px] bg-white p-5 shadow-sm">
+    <article className="min-w-0 rounded-[20px] bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="text-base font-bold text-ink">{category.label}</h3>

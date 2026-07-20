@@ -279,7 +279,7 @@ export function TripPlanningForm({
         <input type="hidden" name="mountain" value={mountainSlug} />
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(300px,0.95fr)]">
-          <section>
+          <section className="min-w-0">
             <h1 className="text-[18px] font-bold leading-tight tracking-normal text-ink sm:text-[20px]">
               次の山行、どこにする？
             </h1>
@@ -379,7 +379,7 @@ export function TripPlanningForm({
 
           </section>
 
-          <section>
+          <section className="min-w-0">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-sm font-semibold text-stone-700">
                 {activeListTitle}

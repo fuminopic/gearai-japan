@@ -434,7 +434,7 @@ export function GearForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <UnsavedChangesGuard />
       {submitError ? (
-        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
           {submitError}
         </p>
       ) : null}
@@ -452,7 +452,7 @@ export function GearForm({
 
       <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
         <div className="border-b border-stone-100 px-4 py-4 sm:px-5">
-          <div className="flex items-center gap-2 text-xs font-semibold text-forest-700">
+          <div className="flex items-center gap-2 text-xs font-bold text-[#14724e]">
             <Sparkles className="h-4 w-4" />
             <span>公式カタログから選択</span>
           </div>
@@ -470,7 +470,7 @@ export function GearForm({
               <button
                 type="button"
                 onClick={confirmProductSearch}
-                className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg bg-ink px-3 text-sm font-semibold leading-none text-white transition active:scale-95"
+                className="inline-flex h-9 shrink-0 items-center justify-center rounded-full bg-ink px-3 text-sm font-semibold leading-none text-white transition active:scale-95"
               >
                 検索
               </button>
@@ -487,7 +487,7 @@ export function GearForm({
                     key={product.id}
                     type="button"
                     onClick={() => applyProduct(product)}
-                    className="shrink-0 rounded-lg border border-stone-200 bg-white px-3 py-2 text-left text-xs font-semibold text-stone-700"
+                    className="shrink-0 rounded-full border border-stone-200 bg-white px-3 py-2 text-left text-xs font-bold text-stone-700"
                   >
                     <span className="block max-w-44 truncate">
                       {getProductDisplayTitle(product)}
@@ -508,7 +508,7 @@ export function GearForm({
               className="flex w-full items-center justify-between gap-3 rounded-xl border border-forest-100 bg-forest-50 px-3 py-3 text-left text-sm font-semibold text-forest-800 transition active:scale-[0.99]"
             >
               <span className="flex items-center gap-2">
-                <Pencil className="h-4 w-4 text-forest-700" />
+                <Pencil className="h-4 w-4 text-[#14724e]" />
                 カタログにないギアを登録
               </span>
               <ChevronRight className="h-4 w-4 text-stone-400" />
@@ -605,7 +605,7 @@ export function GearForm({
                 <button
                   type="button"
                   onClick={() => setProductListExpanded(true)}
-                  className="rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-forest-700 shadow-sm transition hover:border-forest-200 hover:bg-forest-50"
+                  className="rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-bold text-[#14724e] shadow-sm transition hover:border-forest-200 hover:bg-forest-50"
                 >
                   もっと表示
                   <span className="ml-2 text-xs font-medium text-stone-500">
@@ -634,7 +634,7 @@ export function GearForm({
       {manualMode ? (
         <section ref={manualEntryRef} className="scroll-mt-6 rounded-2xl bg-white p-5 shadow-sm">
           <div className="mb-4">
-            <p className="text-xs font-semibold text-forest-700">手入力</p>
+            <p className="text-xs font-bold text-[#14724e]">手入力</p>
             <h2 className="mt-1 text-lg font-semibold text-ink">自分のギア情報</h2>
           </div>
 
@@ -649,7 +649,7 @@ export function GearForm({
                     setName(event.target.value);
                     setQuery(event.target.value);
                   }}
-                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                  className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
                   placeholder="例：Mountain Shot 2"
                 />
               </label>
@@ -659,7 +659,7 @@ export function GearForm({
                 <input
                   value={brand}
                   onChange={(event) => setBrand(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                  className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
                   placeholder="例：finetrack"
                 />
               </label>
@@ -669,7 +669,7 @@ export function GearForm({
                 <input
                   value={model}
                   onChange={(event) => setModel(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                  className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
                   placeholder="例：MINI2"
                 />
               </label>
@@ -683,7 +683,7 @@ export function GearForm({
                     setCategoryId(event.target.value);
                     setSubcategoryId("");
                   }}
-                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                  className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
                 >
                   <option value="">カテゴリーを選択</option>
                   {categoryOptions.map((category) => (
@@ -699,7 +699,7 @@ export function GearForm({
                 <select
                   value={subcategoryId}
                   onChange={(event) => setSubcategoryId(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                  className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
                 >
                   <option value="">サブカテゴリーを選択</option>
                   {subcategoryOptions.map((subcategory) => (
@@ -719,7 +719,7 @@ export function GearForm({
                   step="1"
                   value={officialWeightGrams}
                   onChange={(event) => setOfficialWeightGrams(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                  className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
                   placeholder="例：398"
                 />
               </label>
@@ -727,7 +727,7 @@ export function GearForm({
 
             <div>
               <p className="text-sm font-medium text-stone-700">ギアの写真</p>
-              <label className="mt-2 flex min-h-48 cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-stone-300 bg-stone-50 p-3 text-center transition hover:border-forest-400 hover:bg-forest-50">
+              <label className="mt-2 flex min-h-48 cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-3 text-center transition hover:border-forest-400 hover:bg-forest-50">
                 {localImagePreviewUrl || imageUrl ? (
                   <img
                     src={localImagePreviewUrl || imageUrl}
@@ -736,7 +736,7 @@ export function GearForm({
                   />
                 ) : (
                   <>
-                    <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-white text-forest-700 shadow-sm">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-[#14724e] shadow-sm">
                       <ImagePlus className="h-6 w-6" />
                     </span>
                     <span className="text-sm font-semibold text-ink">
@@ -752,7 +752,7 @@ export function GearForm({
                 />
               </label>
               {imageUploadStatus === "uploading" ? (
-                <p className="mt-2 flex items-center gap-2 text-xs font-semibold text-forest-700">
+                <p className="mt-2 flex items-center gap-2 text-xs font-bold text-[#14724e]">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   画像をアップロード中
                 </p>
@@ -799,7 +799,7 @@ export function GearForm({
               step="1"
               value={msrpJpy}
               onChange={(event) => setMsrpJpy(event.target.value)}
-              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
             />
           </label>
 
@@ -809,7 +809,7 @@ export function GearForm({
               name="status"
               value={status}
               onChange={(event) => setStatus(event.target.value as typeof status)}
-              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
             >
               {Object.entries(statusLabels).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -841,7 +841,7 @@ export function GearForm({
             name="memo"
             rows={3}
             defaultValue={gear?.memo ?? ""}
-            className="mt-2 w-full resize-none rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+            className="mt-2 w-full resize-none rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
             placeholder="使用感、買い替え候補、注意点など"
           />
         </label>
@@ -850,7 +850,7 @@ export function GearForm({
 
       {shouldShowGearDetails ? (
         <details className="rounded-2xl bg-white p-5 shadow-sm">
-          <summary className="cursor-pointer text-sm font-semibold text-forest-700">
+          <summary className="cursor-pointer text-sm font-bold text-[#14724e]">
             詳細設定
           </summary>
           <div className="mt-4 grid gap-4">
@@ -860,7 +860,7 @@ export function GearForm({
                 <select
                   name="weight_type"
                   defaultValue={gear?.weight_type ?? "base"}
-                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                  className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
                 >
                   {Object.entries(weightTypeLabels).map(([value, label]) => (
                     <option key={value} value={value}>
@@ -878,7 +878,7 @@ export function GearForm({
               name="size"
               value={size}
               onChange={(event) => setSize(event.target.value)}
-              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
               placeholder="例：M"
             />
               </label>
@@ -889,7 +889,7 @@ export function GearForm({
               name="volume"
               value={volume}
               onChange={(event) => setVolume(event.target.value)}
-              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
               placeholder="例：25-35L"
             />
               </label>
@@ -900,7 +900,7 @@ export function GearForm({
               name="capacity"
               value={capacity}
               onChange={(event) => setCapacity(event.target.value)}
-              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
               placeholder="例：2人用"
             />
               </label>
@@ -911,7 +911,7 @@ export function GearForm({
               name="color"
               value={color}
               onChange={(event) => setColor(event.target.value)}
-              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
             />
               </label>
 
@@ -921,7 +921,7 @@ export function GearForm({
               name="material"
               value={material}
               onChange={(event) => setMaterial(event.target.value)}
-              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
             />
               </label>
 
@@ -931,7 +931,7 @@ export function GearForm({
               name="official_url"
               value={officialUrl}
               onChange={(event) => setOfficialUrl(event.target.value)}
-              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
             />
               </label>
             </div>
@@ -949,7 +949,7 @@ export function GearForm({
           </Link>
           <GearSubmitButton
             status={submitStatus}
-            className="flex-1 rounded-xl bg-forest-700 px-5 py-3 text-base font-semibold text-white disabled:opacity-60"
+            className="flex-1 rounded-full bg-[#14724e] px-5 py-3 text-base font-bold text-white transition active:scale-[0.99] disabled:opacity-60"
           >
             {isEditing ? "保存" : "このギアを登録"}
           </GearSubmitButton>
@@ -1002,7 +1002,7 @@ function ProductFilterChip({
       ? "border-forest-700 bg-white text-stone-900 ring-1 ring-forest-700"
       : "border-stone-200 bg-white text-stone-700 hover:border-forest-200 hover:bg-forest-50 hover:text-forest-800"
     : active
-      ? "border-forest-700 bg-forest-700 text-white"
+      ? "border-[#14724e] bg-[#14724e] text-white"
       : "border-stone-200 bg-white text-stone-700 hover:border-forest-200 hover:bg-forest-50 hover:text-forest-800";
 
   return (
@@ -1011,7 +1011,7 @@ function ProductFilterChip({
       onClick={onClick}
       aria-label={ariaLabel}
       title={ariaLabel}
-      className={`inline-flex h-10 shrink-0 items-center justify-center rounded-lg border text-sm font-semibold leading-none transition ${
+      className={`inline-flex h-10 shrink-0 items-center justify-center rounded-full border text-sm font-bold leading-none transition ${
         fixedWidth ? "w-[7.75rem] px-2" : "px-3"
       } ${stateClass}`}
     >
@@ -1062,7 +1062,7 @@ function ProductResultCard({
           {[product.brand, product.model].filter(Boolean).join(" / ")}
         </span>
         <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-          <span className="rounded-lg bg-forest-50 px-2 py-0.5 font-semibold text-forest-800">
+          <span className="rounded-full bg-forest-50 px-2 py-0.5 font-bold text-forest-800">
             {getProductCategoryLabel(product)}
           </span>
           <span className="font-semibold text-stone-600">{formatWeightGrams(weight)}</span>
@@ -1072,8 +1072,8 @@ function ProductResultCard({
       <span
         className={`flex h-10 w-10 items-center justify-center rounded-xl border ${
           selected
-            ? "border-forest-700 bg-forest-700 text-white"
-            : "border-stone-200 bg-white text-forest-700"
+            ? "border-[#14724e] bg-[#14724e] text-white"
+            : "border-stone-200 bg-white text-[#14724e]"
         }`}
       >
         {selected ? <Check className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -1110,7 +1110,7 @@ function SelectedProductConfirmCard({
           )}
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-semibold text-forest-700">登録内容を確認</p>
+          <p className="text-xs font-bold text-[#14724e]">登録内容を確認</p>
           <p className="mt-1 truncate text-base font-semibold text-ink">
             {displayName}
           </p>
@@ -1127,7 +1127,7 @@ function SelectedProductConfirmCard({
       </div>
       <GearSubmitButton
         status={submitStatus}
-        className="mt-3 w-full rounded-xl bg-forest-700 px-5 py-3 text-base font-semibold text-white disabled:opacity-60"
+        className="mt-3 w-full rounded-full bg-[#14724e] px-5 py-3 text-base font-bold text-white transition active:scale-[0.99] disabled:opacity-60"
       >
         このギアを登録
       </GearSubmitButton>
@@ -1152,7 +1152,7 @@ function ProductImageFallback({
   compact?: boolean;
 }) {
   return (
-    <span className="flex h-full w-full flex-col items-center justify-center rounded-lg bg-white/70 text-center">
+    <span className="flex h-full w-full flex-col items-center justify-center rounded-2xl bg-white/70 text-center">
       <PackagePlus className={`${compact ? "h-4 w-4" : "h-5 w-5"} text-stone-300`} />
       <span className="mt-1 line-clamp-2 px-1 text-[10px] font-semibold leading-tight text-stone-400">
         {brand}

@@ -263,3 +263,25 @@ test("long forms warn before throwing the input away", () => {
   // 数値入力はモバイルで数字キーを出す
   assert.match(gearFormSource, /inputMode="numeric"/);
 });
+
+test("the gear form uses the same tokens as the rest of the app", () => {
+  // 統一済みの画面から「ギアを追加」に入ると、ここだけ旧スタイルだった。
+  // 変更は className のみ。props・state・アップロード処理・カタログ照合・
+  // 送信の挙動には触れていない(project-rules 7)。
+  const source = readFileSync(
+    new URL("../src/components/gear-form.tsx", import.meta.url),
+    "utf8"
+  );
+
+  assert.doesNotMatch(source, /rounded-lg/);
+  assert.doesNotMatch(source, /shadow-soft/);
+  assert.doesNotMatch(source, /bg-forest-700/);
+  assert.doesNotMatch(source, /text-forest-700/);
+  assert.match(source, /rounded-full bg-\[#14724e\]/);
+  assert.match(source, /rounded-xl border border-stone-200 bg-stone-50/);
+
+  // 挙動側の目印。ここが消えていたら className 以外に手が入っている。
+  assert.match(source, /onSubmit=\{handleSubmit\}/);
+  assert.match(source, /createSignedUrl|from\("gear-images"\)|storage/);
+  assert.match(source, /<UnsavedChangesGuard \/>/);
+});

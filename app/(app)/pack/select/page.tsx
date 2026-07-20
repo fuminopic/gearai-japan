@@ -24,7 +24,7 @@ export default async function PackSelectPage() {
           <ChevronLeft aria-hidden className="h-5 w-5" />
         </Link>
         <div>
-          <p className="text-sm font-semibold text-forest-700">所有している装備</p>
+          <p className="text-sm font-semibold text-forest-700">所有しているギア</p>
           <h1 className="mt-1 text-[28px] font-bold leading-tight tracking-normal text-ink">
             マイパックに追加
           </h1>

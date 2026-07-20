@@ -41,8 +41,8 @@ export default async function EditGearPage({
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-sm font-semibold text-forest-700">装備編集</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">装備を編集</h1>
+        <p className="text-sm font-semibold text-forest-700">ギア編集</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">ギアを編集</h1>
       </div>
       <GearForm
         categories={categories}

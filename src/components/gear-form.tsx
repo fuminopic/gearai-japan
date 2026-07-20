@@ -507,7 +507,7 @@ export function GearForm({
             >
               <span className="flex items-center gap-2">
                 <Pencil className="h-4 w-4 text-forest-700" />
-                カタログにない装備を登録
+                カタログにないギアを登録
               </span>
               <ChevronRight className="h-4 w-4 text-stone-400" />
             </button>
@@ -633,7 +633,7 @@ export function GearForm({
         <section ref={manualEntryRef} className="scroll-mt-6 rounded-2xl bg-white p-5 shadow-sm">
           <div className="mb-4">
             <p className="text-xs font-semibold text-forest-700">手入力</p>
-            <h2 className="mt-1 text-lg font-semibold text-ink">自分の装備情報</h2>
+            <h2 className="mt-1 text-lg font-semibold text-ink">自分のギア情報</h2>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
@@ -723,12 +723,12 @@ export function GearForm({
             </div>
 
             <div>
-              <p className="text-sm font-medium text-stone-700">装備写真</p>
+              <p className="text-sm font-medium text-stone-700">ギアの写真</p>
               <label className="mt-2 flex min-h-48 cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-stone-300 bg-stone-50 p-3 text-center transition hover:border-forest-400 hover:bg-forest-50">
                 {localImagePreviewUrl || imageUrl ? (
                   <img
                     src={localImagePreviewUrl || imageUrl}
-                    alt={name || "装備写真"}
+                    alt={name || "ギアの写真"}
                     className="max-h-40 max-w-full object-contain"
                   />
                 ) : (
@@ -947,7 +947,7 @@ export function GearForm({
             status={submitStatus}
             className="flex-1 rounded-xl bg-forest-700 px-5 py-3 text-base font-semibold text-white disabled:opacity-60"
           >
-            {isEditing ? "保存" : "この装備を登録"}
+            {isEditing ? "保存" : "このギアを登録"}
           </GearSubmitButton>
         </div>
       ) : null}
@@ -1125,7 +1125,7 @@ function SelectedProductConfirmCard({
         status={submitStatus}
         className="mt-3 w-full rounded-xl bg-forest-700 px-5 py-3 text-base font-semibold text-white disabled:opacity-60"
       >
-        この装備を登録
+        このギアを登録
       </GearSubmitButton>
     </div>
   );

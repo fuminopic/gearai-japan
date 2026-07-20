@@ -150,7 +150,7 @@ test("gear list and actions provide clear post-save feedback", () => {
 test("gear delete action is kept on the detail page instead of the dense list", () => {
   assert.doesNotMatch(gearListSource, /deleteGear/);
   assert.doesNotMatch(gearListSource, /このギアを削除/);
-  assert.match(gearDetailSource, /装備の管理/);
+  assert.match(gearDetailSource, /ギアの管理/);
   assert.match(gearDetailSource, /deleteGear\.bind\(null, gear\.id\)/);
   // 取り消せない削除なので、計画の削除と同じく確認をはさむ。
   assert.match(gearDetailSource, /このギアを削除/);
@@ -189,4 +189,45 @@ test("gear display helpers avoid showing unknown weights as zero grams", () => {
   assert.match(gearDisplaySource, /return typeof grams === "number" \? formatWeight\(grams\) : "-"/);
   assert.match(gearListSource, /getGearDisplayWeightLabel\(item\)/);
   assert.doesNotMatch(gearDisplaySource, /const measured/);
+});
+
+test("personal inventory screens say ギア, planning screens keep 装備", () => {
+  // project-rules 3.2 のドメイン分割。自分の持ち物は「ギア」、
+  // 計画側の要求スロットやチェックリストは「装備」のまま。
+  const gearNewSource = readFileSync(
+    new URL("../app/(app)/gear/new/page.tsx", import.meta.url),
+    "utf8"
+  );
+  const gearEditSource = readFileSync(
+    new URL("../app/(app)/gear/[id]/edit/page.tsx", import.meta.url),
+    "utf8"
+  );
+  const packSelectSource = readFileSync(
+    new URL("../app/(app)/pack/select/page.tsx", import.meta.url),
+    "utf8"
+  );
+
+  for (const source of [
+    gearNewSource,
+    gearEditSource,
+    gearDetailSource,
+    packSelectSource
+  ]) {
+    assert.doesNotMatch(source, /装備/);
+  }
+
+  assert.match(gearNewSource, /ギアを追加/);
+  assert.match(gearNewSource, /マイギアへ戻る/);
+  assert.match(gearEditSource, /ギアを編集/);
+  assert.match(gearDetailSource, /ギア詳細/);
+  assert.match(gearDetailSource, /マイギアへ/);
+  assert.match(packSelectSource, /所有しているギア/);
+
+  // 計画ドメインはそのまま
+  const tripPlanningUiSource = readFileSync(
+    new URL("../src/components/trip-planning-ui.tsx", import.meta.url),
+    "utf8"
+  );
+  assert.match(tripPlanningUiSource, /装備チェックリスト/);
+  assert.match(tripPlanningUiSource, /装備カバー状況/);
 });

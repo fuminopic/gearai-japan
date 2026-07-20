@@ -55,7 +55,7 @@ test("gear add form supports explicit search, suggestions, and real brand logo c
 });
 
 test("gear add form replaces scanning shortcuts with manual registration and photo upload", () => {
-  assert.match(gearFormSource, /カタログにない装備を登録/);
+  assert.match(gearFormSource, /カタログにないギアを登録/);
   assert.match(gearFormSource, /manualEntryRef/);
   assert.match(gearFormSource, /scrollIntoView/);
   assert.match(gearFormSource, /SelectedProductConfirmCard/);

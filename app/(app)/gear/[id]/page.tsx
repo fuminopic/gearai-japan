@@ -60,7 +60,7 @@ export default async function GearDetailPage({
           className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-stone-600 shadow-sm"
         >
           <ArrowLeft className="h-4 w-4" />
-          装備一覧へ
+          マイギアへ
         </Link>
         {!isCatalog ? (
           <Link
@@ -103,7 +103,7 @@ export default async function GearDetailPage({
           </div>
 
           <div className="p-5 sm:p-6">
-            <p className="text-sm font-semibold text-forest-700">装備詳細</p>
+            <p className="text-sm font-semibold text-forest-700">ギア詳細</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">
               {gear.name}
             </h1>
@@ -198,9 +198,9 @@ export default async function GearDetailPage({
       ) : null}
 
       <section className="rounded-lg border border-red-100 bg-white p-5 shadow-soft">
-        <h2 className="text-base font-semibold text-ink">装備の管理</h2>
+        <h2 className="text-base font-semibold text-ink">ギアの管理</h2>
         <p className="mt-2 text-sm leading-6 text-stone-500">
-          この装備を一覧から削除します。削除後は元に戻せません。
+          このギアをマイギアから削除します。削除後は元に戻せません。
         </p>
         <form action={deleteGear.bind(null, gear.id)} className="mt-4">
           <input type="hidden" name="returnTo" value={returnTo ?? ""} />

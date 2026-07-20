@@ -32,13 +32,13 @@ export default async function NewGearPage({ searchParams }: NewGearPageProps) {
         <div>
           <p className="text-sm font-semibold text-forest-700">新規登録</p>
           <h1 className="mt-1 text-[34px] font-bold leading-tight tracking-normal text-ink">
-            装備を追加
+            ギアを追加
           </h1>
         </div>
         <Link
           href={buildGearHref("/gear", returnTo)}
           className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white text-stone-700 shadow-sm transition active:scale-95"
-          aria-label="装備一覧へ戻る"
+          aria-label="マイギアへ戻る"
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>

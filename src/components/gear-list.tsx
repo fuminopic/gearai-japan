@@ -58,8 +58,8 @@ export function GearList({
     <div className="space-y-[11px]">
       {/* 概要カード: ホームのマイギアカードと同じ骨格(rounded-[20px] /
           font-din の数値 / metric-*.png のアイコン / #EEEDE6 の区切り線)。
-          ホームは指標2つ、こちらは3つ。同じ 22px だと3列では重すぎるので
-          17px まで落とし、そのぶん列間と行間は広げて窮屈に見せない。 */}
+          数値はホームと同じ 22px。3列に収めるため、アイコンは数値の左に
+          置き、狭い画面では段階的に縮める(SummaryStat 内のコメント参照)。 */}
       <section className="rounded-[20px] bg-white px-5 pt-4 pb-4 shadow-sm">
         <div className="flex items-center justify-between border-b border-[#EEEDE6] pb-3">
           <h2 className="text-base font-bold">マイギア</h2>
@@ -383,17 +383,24 @@ function SummaryStat({
 }) {
   return (
     <div
-      className={`flex flex-1 flex-col items-center gap-3 px-3 text-center ${
+      className={`flex flex-1 flex-col items-center gap-3 px-1.5 text-center max-[359px]:px-1 ${
         divided ? "border-r border-gray-100" : ""
       }`}
     >
       {/* アイコンは数値の左に置く。ホームは指標2つなので縦積みで余裕があるが、
           ここは3列。縦積みのままだとアイコンだけで1行(24px)使ってしまい、
           行間を保ったままカードを縮められないため、横並びにしている。 */}
-      <div className="flex items-center gap-1.5">
+      {/* 3カラムに「アイコン + 数値」を横並びで収める。最長は総重量の
+          "4.87kg" で、幅が足りなくなる 390px 未満と 360px 未満で段階的に
+          縮める(whitespace-nowrap なので、はみ出すと隣の区切り線に重なる)。 */}
+      <div className="flex items-center gap-2 max-[389px]:gap-1.5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={iconSrc} alt="" className="h-4 w-auto shrink-0 object-contain" />
-        <p className="whitespace-nowrap font-din text-[17px] font-bold leading-none text-black max-[374px]:text-[15px]">
+        <img
+          src={iconSrc}
+          alt=""
+          className="h-5 w-auto shrink-0 object-contain max-[389px]:h-4"
+        />
+        <p className="whitespace-nowrap font-din text-[22px] font-bold leading-none text-black max-[389px]:text-[19px] max-[359px]:text-[17px]">
           {value}
         </p>
       </div>

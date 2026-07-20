@@ -1,6 +1,6 @@
 import { requireUser } from "@/lib/data/gear";
 import { buildPackSummary } from "@/lib/pack-summary";
-import type { DashboardRecentGear, DashboardSummary, UserGear } from "@/lib/types";
+import type { DashboardGear, DashboardSummary, UserGear } from "@/lib/types";
 
 const DASHBOARD_GEAR_SELECT =
   "id,name,brand,model,image_url,image_storage_path,status,category_id,subcategory_id,weight_grams,official_weight_grams,weight_type,created_at,gear_categories:category_id(id,name_ja,name_en),gear_subcategories:subcategory_id(id,name_ja,name_en)";
@@ -10,7 +10,7 @@ type DashboardGearRelationRow = {
   name_ja: string;
   name_en: string;
 };
-type DashboardGearRow = DashboardRecentGear &
+type DashboardGearRow = DashboardGear &
   Pick<
     UserGear,
     | "brand"
@@ -72,11 +72,11 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     packMajorCategoryCoverageCount: packSummary.majorCategoryCoverageCount,
     packMajorCategoryTotalCount: packSummary.majorCategoryTotalCount,
     packCategoryWeights: packSummary.categoryWeights,
-    recentGear: gear.slice(0, 8).map(toDashboardRecentGear)
+    gearItems: ownedGear.map(toDashboardGear)
   };
 }
 
-function toDashboardRecentGear(item: DashboardGearRow): DashboardRecentGear {
+function toDashboardGear(item: DashboardGearRow): DashboardGear {
   return {
     id: item.id,
     name: item.name,

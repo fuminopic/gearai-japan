@@ -191,7 +191,7 @@ export type MountainFoundationPrimaryRegion =
   | "YAKUSHIMA"
   | "JOSHU";
 
-export type DashboardRecentGear = Pick<
+export type DashboardGear = Pick<
   UserGear,
   "id" | "name" | "image_url" | "image_storage_path" | "weight_grams"
 >;
@@ -211,7 +211,8 @@ export type DashboardSummary = {
     weightG: number;
     count: number;
   }>;
-  recentGear: DashboardRecentGear[];
+  // 「最近の8件」ではなく、上の指標(ownedCount)と同じ owned 全件。
+  gearItems: DashboardGear[];
 };
 
 export type DataQualitySummary = {

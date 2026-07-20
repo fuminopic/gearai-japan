@@ -1,5 +1,5 @@
 export type {
-  DashboardRecentGear,
+  DashboardGear,
   DashboardSummary,
   DataQualitySummary,
 } from "../types";

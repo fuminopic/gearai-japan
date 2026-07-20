@@ -55,7 +55,7 @@ test("home redesign keeps the required mobile-first section order", () => {
   const order = [
     "HeroCard",
     "GearSummaryCard",
-    "RecentGearSection"
+    "OwnedGearSection"
   ];
   const indexes = order.map((name) => dashboardSource.indexOf(`<${name}`));
 
@@ -304,7 +304,7 @@ test("home gear card exposes exactly two destinations, both signposted", () => {
 
   const card = dashboardSource.slice(
     dashboardSource.indexOf("function GearSummaryCard"),
-    dashboardSource.indexOf("function RecentGearSection")
+    dashboardSource.indexOf("function OwnedGearSection")
   );
   const hrefs = card.match(/href=\{(\w+)\}/g) ?? [];
   assert.deepEqual(hrefs.sort(), ["href={gearRoute}", "href={packRoute}"]);
@@ -396,4 +396,22 @@ test("home typography and green palette follow the latest visual direction", () 
   assert.doesNotMatch(dashboardSource, /#3B5B44|#3A5A40/);
   assert.doesNotMatch(appBottomNavSource, /#3B5B44|#3A5A40/);
   assert.doesNotMatch(dashboardPlanChecklistSummarySource, /#3B5B44|#3A5A40/);
+});
+
+test("home gear strip shows every owned item, not just the newest eight", () => {
+  // 上の指標「マイギア N点」は ownedCount。カード列が最新8件で頭打ちだと
+  // 指標の数とカードの枚数が合わず、途中で止まる。owned 全件を出す。
+  assert.match(dashboardSource, /gear\.map\(\(item\) => \(/);
+  assert.doesNotMatch(dashboardSource, /slice\(0, 8\)/);
+  assert.match(dashboardSource, /summary\.gearItems/);
+  assert.doesNotMatch(dashboardSource, /recentGear/);
+  // 件数が増えるので、画像は遅延読み込みにする
+  assert.match(dashboardSource, /loading="lazy"/);
+
+  const dataSource = readFileSync(
+    new URL("../src/lib/data/dashboard.ts", import.meta.url),
+    "utf8"
+  );
+  assert.match(dataSource, /gearItems: ownedGear\.map\(toDashboardGear\)/);
+  assert.doesNotMatch(dataSource, /slice\(0, 8\)/);
 });

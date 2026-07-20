@@ -15,7 +15,7 @@ import { getDashboardSummary } from "@/lib/data/dashboard";
 import { getLatestTripPlan } from "@/lib/data/trip-plans";
 import { MAJOR_GEAR_CATEGORIES } from "@/lib/gear-major-categories";
 import { buildPlanChecklist } from "@/lib/plan-checklist";
-import type { DashboardRecentGear, DashboardSummary, SavedTripPlan } from "@/lib/types";
+import type { DashboardGear, DashboardSummary, SavedTripPlan } from "@/lib/types";
 import { formatWeight } from "@/lib/utils/format";
 
 export const dynamic = "force-dynamic";
@@ -130,7 +130,7 @@ function HomePageContent({
           <GearSummaryCard summary={summary} />
         </section>
 
-        <RecentGearSection gear={summary.recentGear} hasGear={hasGear} />
+        <OwnedGearSection gear={summary.gearItems} hasGear={hasGear} />
       </div>
     </main>
   );
@@ -316,18 +316,18 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
   );
 }
 
-function RecentGearSection({
+function OwnedGearSection({
   gear,
   hasGear
 }: {
-  gear: DashboardRecentGear[];
+  gear: DashboardGear[];
   hasGear: boolean;
 }) {
   return (
     <section>
       {hasGear ? (
         <div className="hide-scrollbar flex snap-x snap-mandatory gap-[11px] overflow-x-auto pb-4">
-          {gear.slice(0, 8).map((item) => (
+          {gear.map((item) => (
             <div
               key={item.id}
               className="relative flex h-[150px] w-[126px] flex-none snap-start flex-col items-center rounded-2xl bg-white px-3 pt-[17px] pb-[52px] shadow-sm"
@@ -494,7 +494,7 @@ function BackpackIllustration() {
 // 设计逐个微调,值填这里即可,例:{ "サム 45": 1.1, "Fillo™": 0.9 }
 const GEAR_DISPLAY_SCALE: Record<string, number> = {};
 
-function GearImage({ item }: { item: DashboardRecentGear }) {
+function GearImage({ item }: { item: DashboardGear }) {
   const scale = GEAR_DISPLAY_SCALE[item.name] ?? 1;
   return (
     <>
@@ -502,6 +502,8 @@ function GearImage({ item }: { item: DashboardRecentGear }) {
         <img
           src={item.image_url}
           alt=""
+          loading="lazy"
+          decoding="async"
           className="h-full w-full object-contain mix-blend-multiply"
           style={scale !== 1 ? { transform: `scale(${scale})` } : undefined}
         />

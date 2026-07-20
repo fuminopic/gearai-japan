@@ -49,7 +49,7 @@ test("dashboard component baseline keeps the current hero, checklist, and gear s
     "HeroGaugeSkeleton",
     "EmptyTripHero",
     "GearSummaryCard",
-    "RecentGearSection",
+    "OwnedGearSection",
     "GearComposition"
   ]) {
     assert.match(dashboardSource, new RegExp(`function ${componentName}\\b`));

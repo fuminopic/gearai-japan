@@ -190,3 +190,39 @@ async function toTranspiledDataUrl(source) {
 
   return `data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`;
 }
+
+test("optimistic pack changes roll back even when the request never lands", () => {
+  // Server Action が {ok:false} を返す場合だけ巻き戻していた。圏外だと
+  // 呼び出し自体が reject するので result に到達せず、保存できていないのに
+  // 画面だけ変わったままになっていた。山では圏外が普通なので必ず戻す。
+  const controlsSource = readFileSync(
+    new URL("../src/components/gear-pack-controls.tsx", import.meta.url),
+    "utf8"
+  );
+  const contentsSource = readFileSync(
+    new URL("../src/components/pack-contents.tsx", import.meta.url),
+    "utf8"
+  );
+
+  for (const source of [controlsSource, contentsSource]) {
+    assert.match(source, /try \{/);
+    assert.match(source, /\} catch \(caught\) \{/);
+    assert.match(source, /\} finally \{/);
+    assert.match(source, /通信できませんでした/);
+  }
+});
+
+test("gear images are signed in one request, not one per item", () => {
+  // createSignedUrl(単数)を map で回すと、ギア1件につき Storage への
+  // 往復が1回。ホーム・マイギア・計画のどれを開いても件数分走っていた。
+  for (const relativePath of ["src/lib/data/gear.ts", "src/lib/data/dashboard.ts"]) {
+    const source = readFileSync(
+      new URL(`../${relativePath}`, import.meta.url),
+      "utf8"
+    );
+    assert.match(source, /createSignedUrls\(paths, 60 \* 60\)/, relativePath);
+    assert.doesNotMatch(source, /\.createSignedUrl\(/, relativePath);
+    // 入力と同じ件数・同じ順序で返す
+    assert.match(source, /return gear\.map\(\(item\) => \{/, relativePath);
+  }
+});

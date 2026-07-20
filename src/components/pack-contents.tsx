@@ -48,16 +48,25 @@ export function PackContents({ items: serverItems, addHref }: PackContentsProps)
     setItems((current) => current.filter((currentItem) => currentItem.id !== item.id));
 
     startTransition(async () => {
-      const result = await removePackItem(item.id);
-      removingIdsRef.current.delete(item.id);
+      // 圏外では Server Action の呼び出し自体が reject するので、
+      // result を見るだけでは巻き戻せない(行が消えたまま戻らない)。
+      try {
+        const result = await removePackItem(item.id);
 
-      if (!result.ok) {
+        if (!result.ok) {
+          setItems((current) => restorePackItem(current, item, snapshot));
+          setError("パックから外せませんでした。もう一度お試しください。");
+          return;
+        }
+
+        router.refresh();
+      } catch (caught) {
+        console.error("Pack item removal failed:", caught);
         setItems((current) => restorePackItem(current, item, snapshot));
-        setError("パックから外せませんでした。もう一度お試しください。");
-        return;
+        setError("通信できませんでした。電波の良い場所で、もう一度お試しください。");
+      } finally {
+        removingIdsRef.current.delete(item.id);
       }
-
-      router.refresh();
     });
   }
 

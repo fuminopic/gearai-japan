@@ -122,16 +122,26 @@ export function GearPackProvider({
       apply(nextPacked);
 
       startTransition(async () => {
-        const result = nextPacked
-          ? await addPackItems([gearId])
-          : await removePackItem(gearId);
+        // 圏外だと Server Action の呼び出し自体が reject する。
+        // try/catch が無いと result を受け取れず、下の巻き戻しにも
+        // 到達しないため、保存できていないのにスイッチだけ入ったままに
+        // なっていた。山の中では圏外が普通なので、ここは必ず戻す。
+        try {
+          const result = nextPacked
+            ? await addPackItems([gearId])
+            : await removePackItem(gearId);
 
-        inFlightRef.current.delete(gearId);
-        setPendingIds(new Set(inFlightRef.current));
-
-        if (!result.ok) {
+          if (!result.ok) {
+            apply(packed);
+            setError(result.error);
+          }
+        } catch (caught) {
+          console.error("Pack toggle failed:", caught);
           apply(packed);
-          setError(result.error);
+          setError("通信できませんでした。電波の良い場所で、もう一度お試しください。");
+        } finally {
+          inFlightRef.current.delete(gearId);
+          setPendingIds(new Set(inFlightRef.current));
         }
       });
     },

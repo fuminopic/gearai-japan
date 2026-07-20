@@ -162,7 +162,7 @@ test("shared ui primitives are tried only in low-risk static components", () => 
   // 一括の置き換えは引き続き入れない。
   assert.doesNotMatch(
     recommendationDeleteControlsSource,
-    /@\/components\/ui\/(?!confirm-dialog)/
+    /@\/components\/ui\/(?!confirm-dialog|unsaved-changes-guard)/
   );
   assert.match(recommendationDeleteControlsSource, /router\.refresh/);
 
@@ -179,8 +179,13 @@ test("shared ui primitives are tried only in low-risk static components", () => 
   assert.match(recommendationDetailSource, /不足装備/);
   assert.match(recommendationDetailSource, /リスク注意/);
 
-  assert.doesNotMatch(tripPlanningUiSource, /@\/components\/ui\/(?!confirm-dialog)/);
-  assert.doesNotMatch(gearFormSource, /@\/components\/ui\//);
+  assert.doesNotMatch(tripPlanningUiSource, /@\/components\/ui\/(?!confirm-dialog|unsaved-changes-guard)/);
+  // 確認ダイアログと未保存ガードだけは高リスク側にも通す。
+  // Card/Badge などへの一括の置き換えは引き続き入れない。
+  assert.doesNotMatch(
+    gearFormSource,
+    /@\/components\/ui\/(?!confirm-dialog|unsaved-changes-guard)/
+  );
   assert.doesNotMatch(planChecklistSource, /@\/components\/ui\//);
 });
 

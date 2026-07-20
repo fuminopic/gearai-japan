@@ -36,6 +36,7 @@ export function PageHeader({
       <Link
         href={backHref}
         aria-label={backLabel}
+        data-guarded-back=""
         className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-stone-800 shadow-sm transition active:scale-95"
       >
         <ArrowLeft aria-hidden className="h-5 w-5" />

@@ -231,3 +231,35 @@ test("personal inventory screens say ギア, planning screens keep 装備", () =
   assert.match(tripPlanningUiSource, /装備チェックリスト/);
   assert.match(tripPlanningUiSource, /装備カバー状況/);
 });
+
+test("long forms warn before throwing the input away", () => {
+  const guardSource = readFileSync(
+    new URL("../src/components/ui/unsaved-changes-guard.tsx", import.meta.url),
+    "utf8"
+  );
+  const gearFormSource = readFileSync(
+    new URL("../src/components/gear-form.tsx", import.meta.url),
+    "utf8"
+  );
+  const profileEditSource = readFileSync(
+    new URL("../app/(app)/profile/edit/page.tsx", import.meta.url),
+    "utf8"
+  );
+  const pageHeaderSource = readFileSync(
+    new URL("../src/components/ui/page-header.tsx", import.meta.url),
+    "utf8"
+  );
+
+  // 囲っている <form> を自分で探すので、フォーム側の state には触れない。
+  assert.match(guardSource, /closest\("form"\)/);
+  assert.match(guardSource, /beforeunload/);
+  // 止めるのは PageHeader の戻るリンクだけ。他のリンクは素通しする。
+  assert.match(guardSource, /a\[data-guarded-back\]/);
+  assert.match(pageHeaderSource, /data-guarded-back=""/);
+
+  assert.match(gearFormSource, /<UnsavedChangesGuard \/>/);
+  assert.match(profileEditSource, /<UnsavedChangesGuard \/>/);
+
+  // 数値入力はモバイルで数字キーを出す
+  assert.match(gearFormSource, /inputMode="numeric"/);
+});

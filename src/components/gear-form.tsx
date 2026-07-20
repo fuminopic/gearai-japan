@@ -39,6 +39,7 @@ import type {
   UserGear
 } from "@/lib/types";
 import { formatJpy } from "@/lib/utils/format";
+import { UnsavedChangesGuard } from "@/components/ui/unsaved-changes-guard";
 
 type GearFormProps = {
   categories: GearCategory[];
@@ -431,6 +432,7 @@ export function GearForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <UnsavedChangesGuard />
       {submitError ? (
         <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
           {submitError}
@@ -712,6 +714,7 @@ export function GearForm({
                 <span className="text-sm font-medium text-stone-700">公式重量（g）</span>
                 <input
                   type="number"
+                  inputMode="numeric"
                   min="0"
                   step="1"
                   value={officialWeightGrams}
@@ -791,6 +794,7 @@ export function GearForm({
             <input
               name="msrp_jpy"
               type="number"
+              inputMode="numeric"
               min="0"
               step="1"
               value={msrpJpy}

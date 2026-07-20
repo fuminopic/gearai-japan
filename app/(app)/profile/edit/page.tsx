@@ -3,6 +3,7 @@ import {
 } from "lucide-react";
 
 import { PageHeader } from "@/components/ui/page-header";
+import { UnsavedChangesGuard } from "@/components/ui/unsaved-changes-guard";
 import { updateProfile } from "@/lib/actions/auth";
 import { requireUser } from "@/lib/data/gear";
 
@@ -21,6 +22,7 @@ export default async function ProfileEditPage({
 
   return (
     <form action={updateProfile} className="mx-auto max-w-2xl space-y-5 pb-24">
+      <UnsavedChangesGuard />
       <PageHeader
         backHref="/profile"
         backLabel="マイページへ戻る"

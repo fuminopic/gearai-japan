@@ -12,7 +12,7 @@ import { useState } from "react";
 // 実装は素の div のオーバーレイ。<dialog> の showModal() は Safari 15.4
 // からで、このアプリの iOS Deployment Target は 15.0 なので使わない。
 
-type ConfirmShellProps = {
+type ConfirmDialogProps = {
   open: boolean;
   title: string;
   description?: string;
@@ -21,14 +21,14 @@ type ConfirmShellProps = {
   children: ReactNode;
 };
 
-function ConfirmShell({
+export function ConfirmDialog({
   open,
   title,
   description,
   cancelLabel,
   onCancel,
   children
-}: ConfirmShellProps) {
+}: ConfirmDialogProps) {
   const cancelRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -96,7 +96,7 @@ function ConfirmShell({
   );
 }
 
-const confirmButtonClassName =
+export const confirmButtonClassName =
   "inline-flex h-11 w-full items-center justify-center rounded-full bg-red-600 text-sm font-bold text-white transition active:scale-[0.99] disabled:opacity-70";
 
 type SharedProps = {
@@ -144,7 +144,7 @@ export function ConfirmSubmitButton({
       >
         {pending ? pendingLabel : children}
       </button>
-      <ConfirmShell
+      <ConfirmDialog
         open={isOpen}
         title={title}
         description={description}
@@ -154,7 +154,7 @@ export function ConfirmSubmitButton({
         <button type="submit" className={confirmButtonClassName}>
           {confirmLabel}
         </button>
-      </ConfirmShell>
+      </ConfirmDialog>
     </>
   );
 }
@@ -194,7 +194,7 @@ export function ConfirmActionButton({
       >
         {isPending ? pendingLabel : children}
       </button>
-      <ConfirmShell
+      <ConfirmDialog
         open={isOpen}
         title={title}
         description={description}
@@ -211,7 +211,7 @@ export function ConfirmActionButton({
         >
           {confirmLabel}
         </button>
-      </ConfirmShell>
+      </ConfirmDialog>
     </>
   );
 }

@@ -40,9 +40,9 @@ test("account deletion UI requires two confirmations and defaults final focus to
     "本当に削除してもよろしいですか？",
     "この操作は取り消せません。",
     "登録したメールアドレス・パスワード",
-    "所有装備データ",
+    "マイギアのデータ",
     "山行計画データ",
-    "アップロードした装備写真",
+    "アップロードしたギア写真",
     "キャンセル",
     "次へ",
     "削除する"

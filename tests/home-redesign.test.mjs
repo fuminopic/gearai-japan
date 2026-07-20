@@ -97,7 +97,7 @@ test("home redesign v2 uses shared bottom navigation", () => {
   assert.match(appBottomNavSource, /h-5 w-5/);
   assert.match(appBottomNavSource, /text-\[10px\]/);
   assert.match(appNavSource, /ホーム/);
-  assert.match(appNavSource, /装備/);
+  assert.match(appNavSource, /ギア/);
   assert.match(appNavSource, /計画/);
   assert.match(appNavSource, /マイページ/);
   assert.doesNotMatch(dashboardSource, /function BottomNavigation/);
@@ -207,7 +207,7 @@ test("home gear summary uses the pack-only weight composition bar", () => {
 });
 
 test("home redesign exposes pack-focused gear summary metrics", () => {
-  for (const copy of ["マイ装備", "登録装備", "マイパック", "パック内カテゴリー"]) {
+  for (const copy of ["マイギア", "マイパック", "パック内カテゴリー"]) {
     assert.match(dashboardSource, new RegExp(copy));
   }
   assert.match(dashboardDataSource, /user_pack_items/);
@@ -237,16 +237,16 @@ test("home gear summary keeps metric values on one line and only reduces them on
 
 test("home redesign includes gear empty and category empty states", () => {
   for (const copy of [
-    "まだ装備がありません",
-    "最初の装備を追加して、",
-    "装備を追加する"
+    "まだギアがありません",
+    "最初のギアを追加して、",
+    "ギアを追加する"
   ]) {
     assert.match(dashboardSource, new RegExp(copy));
   }
   assert.doesNotMatch(dashboardSource, /未登録:/);
   assert.doesNotMatch(dashboardSource, /主要カテゴリーは登録済みです/);
   assert.doesNotMatch(dashboardSource, /バランスの良い構成です！/);
-  assert.doesNotMatch(dashboardSource, /装備を追加すると、分布とバランスを確認できます/);
+  assert.doesNotMatch(dashboardSource, /ギアを追加すると、分布とバランスを確認できます/);
   assert.match(dashboardSource, /マイパックはまだ空です/);
   assert.match(dashboardSource, /マイパックを作る/);
 });

@@ -63,12 +63,12 @@ test("dashboard component baseline keeps the current hero, checklist, and gear s
     "出発前確認へ",
     "まだ計画はありません",
     "装備チェックを始めましょう",
-    "マイ装備",
-    "登録装備",
+    "マイギア",
+    "マイギア",
     "マイパック",
     "パック重量構成",
-    "まだ装備がありません",
-    "装備を追加する"
+    "まだギアがありません",
+    "ギアを追加する"
   ]) {
     assert.match(dashboardSource, new RegExp(copy));
   }
@@ -184,16 +184,16 @@ test("gear list component baseline keeps filters, badges, cards, and feedback st
   }
 
   for (const copy of [
-    "装備名・ブランドで検索",
+    "ギア名・ブランドで検索",
     "検索",
-    "所有アイテム",
-    "主要カテゴリー",
+    "マイギア",
+    "登録済みカテゴリー",
     "未登録:",
     "所有",
     "欲しい",
-    "まだ装備がありません",
-    "装備を追加",
-    "装備庫"
+    "まだギアがありません",
+    "ギアを追加",
+    "マイギア"
   ]) {
     assert.match(gearListSource, new RegExp(copy));
   }
@@ -201,9 +201,9 @@ test("gear list component baseline keeps filters, badges, cards, and feedback st
   assert.match(gearListSource, /statusLabels\[item\.status\]/);
   assert.match(gearListSource, /buildGearHref/);
   assert.match(gearPageSource, /params\.error/);
-  assert.match(gearPageSource, /装備を登録しました/);
-  assert.match(gearPageSource, /装備を更新しました/);
-  assert.match(gearPageSource, /装備を削除しました/);
+  assert.match(gearPageSource, /ギアを登録しました/);
+  assert.match(gearPageSource, /ギアを更新しました/);
+  assert.match(gearPageSource, /ギアを削除しました/);
 });
 
 test("gear form component baseline keeps product picker, manual entry, image upload, and submit states", () => {
@@ -307,7 +307,7 @@ test("phase 4 records current repeated ui patterns before extracting shared prim
 
   for (const emptyStateCopy of [
     "まだ計画はありません",
-    "まだ装備がありません",
+    "まだギアがありません",
     "該当する製品はありません",
     "過去の推薦履歴はまだありません"
   ]) {

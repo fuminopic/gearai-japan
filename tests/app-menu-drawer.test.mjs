@@ -23,7 +23,7 @@ test("app menu drawer exposes the basic mobile menu structure", () => {
   for (const label of [
     "ホーム",
     "山行計画",
-    "マイ装備",
+    "マイギア",
     "マイページ",
     "ヘルプ",
     "利用規約",

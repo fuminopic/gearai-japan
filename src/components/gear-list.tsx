@@ -59,17 +59,20 @@ export function GearList({
         <div className="grid grid-cols-3 divide-x divide-stone-100">
           <InventoryStat
             icon={<Archive className="h-4 w-4" />}
-            label="所有アイテム"
-            value={`${summaryGear.length.toLocaleString("ja-JP")}件`}
+            label="マイギア"
+            value={`${summaryGear.length.toLocaleString("ja-JP")}点`}
           />
           <InventoryStat
             icon={<Weight className="h-4 w-4" />}
             label="総重量"
             value={formatWeight(totalWeightGrams)}
           />
+          {/* こちらはマイギア全体で登録済みの主要カテゴリー数。ホームの
+              「パック内カテゴリー」とは集計範囲が違うため、母数が同じでも
+              値は一致しない。ラベルで範囲を明示する。 */}
           <InventoryStat
             icon={<PackagePlus className="h-4 w-4" />}
-            label="主要カテゴリー"
+            label="登録済みカテゴリー"
             value={`${majorCategoryCoverage.coveredCount} / ${majorCategoryCoverage.totalCount}`}
           />
         </div>
@@ -91,7 +94,7 @@ export function GearList({
           <div>
             <p className="text-xs font-semibold text-forest-700">絞り込み</p>
             <p className="mt-0.5 text-sm font-medium text-stone-500">
-              {gear.length.toLocaleString("ja-JP")}件を表示中
+              {gear.length.toLocaleString("ja-JP")}点を表示中
             </p>
           </div>
           {(filters.q || filters.brand || filters.category || (filters.status && filters.status !== "all")) ? (
@@ -110,7 +113,7 @@ export function GearList({
             name="q"
             defaultValue={filters.q}
             className="min-w-0 flex-1 bg-transparent py-1 text-base outline-none"
-            placeholder="装備名・ブランドで検索"
+            placeholder="ギア名・ブランドで検索"
           />
           <input type="hidden" name="status" value={filters.status ?? "all"} />
           <input type="hidden" name="brand" value={filters.brand ?? ""} />
@@ -211,14 +214,14 @@ export function GearList({
       {gear.length === 0 ? (
         <EmptyState
           className="rounded-2xl shadow-sm"
-          title="まだ装備がありません"
+          title="まだギアがありません"
           description="まずはバックパック、レインウェア、ヘッドライトなどから登録してみましょう。"
           action={
             <Link
               href={buildGearHref("/gear/new", returnTo)}
               className="inline-flex rounded-xl bg-forest-700 px-5 py-3 text-sm font-semibold text-white"
             >
-              装備を追加
+              ギアを追加
             </Link>
           }
         />
@@ -226,13 +229,13 @@ export function GearList({
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3 px-1">
             <div>
-              <p className="text-xs font-semibold text-forest-700">装備庫</p>
+              <p className="text-xs font-semibold text-forest-700">マイギア</p>
               <h2 className="text-xl font-semibold tracking-normal text-ink">
                 {selectedBrand ? selectedBrand : "すべてのブランド"}
               </h2>
             </div>
             <p className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-stone-500 shadow-sm">
-              {gear.length.toLocaleString("ja-JP")}件
+              {gear.length.toLocaleString("ja-JP")}点
             </p>
           </div>
 
@@ -242,7 +245,7 @@ export function GearList({
                 <div>
                   <h2 className="text-base font-semibold text-ink">{group.name}</h2>
                   <p className="mt-1 text-xs text-stone-500">
-                    {group.count.toLocaleString("ja-JP")}件 /{" "}
+                    {group.count.toLocaleString("ja-JP")}点 /{" "}
                     {formatWeight(group.weightGrams)}
                   </p>
                 </div>

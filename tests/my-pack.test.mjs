@@ -134,11 +134,11 @@ test("pack data filters pack membership through currently owned gear", () => {
 
 test("pack pages provide grouped contents, accessible direct removal, and a multi-select add flow", () => {
   assert.match(packPageSource, /マイパック/);
-  assert.match(packPageSource, /装備庫から追加/);
+  assert.match(packPageSource, /マイギアから追加/);
   assert.match(packPageSource, /PackContents/);
   assert.doesNotMatch(packPageSource, /重量未入力/);
   assert.match(packContentsSource, /grid-cols-2/);
-  assert.match(packContentsSource, /label="装備数"/);
+  assert.match(packContentsSource, /label="ギア数"/);
   assert.match(packContentsSource, /label="総重量"/);
   assert.doesNotMatch(packContentsSource, /包内装備|既知の総重量/);
   assert.doesNotMatch(packContentsSource, /重量未入力/);
@@ -148,7 +148,7 @@ test("pack pages provide grouped contents, accessible direct removal, and a mult
   assert.match(packContentsSource, /restorePackItem/);
   assert.match(packContentsSource, /router\.refresh\(\)/);
   assert.match(packSelectPageSource, /PackGearSelector/);
-  assert.match(selectorSource, /装備名・ブランドで検索/);
+  assert.match(selectorSource, /ギア名・ブランドで検索/);
   assert.match(selectorSource, /getCategories/);
   assert.match(selectorSource, /new Set\(packGearIds\)/);
   assert.match(selectorSource, /選択した\$\{selectedCount\}点を追加/);

@@ -16,6 +16,7 @@ import { getLatestTripPlan } from "@/lib/data/trip-plans";
 import { MAJOR_GEAR_CATEGORIES } from "@/lib/gear-major-categories";
 import { buildPlanChecklist } from "@/lib/plan-checklist";
 import type { DashboardRecentGear, DashboardSummary, SavedTripPlan } from "@/lib/types";
+import { formatWeight } from "@/lib/utils/format";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -314,10 +315,10 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
   return (
     <section className="flex flex-col gap-3 rounded-[20px] bg-white px-5 pt-3 pb-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-bold">マイ装備</h2>
+        <h2 className="text-base font-bold">マイギア</h2>
         <Link
           href="/gear/new"
-          aria-label="装備を追加"
+          aria-label="ギアを追加"
           className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#4E914A] text-white opacity-70 shadow-sm transition active:scale-95"
         >
           <Plus className="h-3 w-3" strokeWidth={2.5} />
@@ -328,7 +329,7 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
         <SummaryMetric
           iconSrc="/metric-count.png"
           value={`${summary.ownedCount.toLocaleString("ja-JP")}点`}
-          label="登録装備"
+          label="マイギア"
           divided
         />
         <SummaryMetric
@@ -338,6 +339,10 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
           href={packRoute}
           divided
         />
+        {/* これは「マイパックの中で埋まっている主要カテゴリー数」。
+            マイギア画面にある同じ 4/6 表記は「マイギア全体で登録済みの
+            カテゴリー数」で、母数は同じでも別の数字なので、双方のラベルで
+            集計範囲がわかるようにしている。 */}
         <SummaryMetric
           iconSrc="/metric-category.png"
           value={`${summary.packMajorCategoryCoverageCount} / ${summary.packMajorCategoryTotalCount}`}
@@ -382,9 +387,9 @@ function RecentGearSection({
       ) : (
         <div className="flex flex-col items-center justify-center rounded-[28px] bg-white px-5 py-6 text-center shadow-sm">
           <BackpackIllustration />
-          <h3 className="mt-4 text-base font-bold">まだ装備がありません</h3>
+          <h3 className="mt-4 text-base font-bold">まだギアがありません</h3>
           <p className="mt-3 text-xs leading-6 text-gray-600">
-            最初の装備を追加して、
+            最初のギアを追加して、
             <br />
             快適な山行の準備を始めましょう。
           </p>
@@ -392,7 +397,7 @@ function RecentGearSection({
             href="/gear/new"
             className="mt-5 rounded-full border border-[#14724e] px-6 py-2 text-xs font-bold text-[#14724e]"
           >
-            装備を追加する
+            ギアを追加する
           </Link>
         </div>
       )}
@@ -406,7 +411,7 @@ function GearComposition({ summary }: { summary: DashboardSummary }) {
       <div className="border-t border-stone-100 pt-4">
         <p className="text-sm font-bold text-ink">マイパックはまだ空です</p>
         <p className="mt-2 text-xs leading-5 text-stone-500">
-          装備庫からよく持っていく装備を追加すると、パック重量を確認できます。
+          マイギアからよく持っていくギアを追加すると、パック重量を確認できます。
         </p>
         <Link
           href={packSelectRoute}
@@ -587,17 +592,12 @@ function styleLabel(style: string) {
   return labels[style] ?? "山行";
 }
 
+// 丸め方は formatWeight(共通)に一本化する。ここは未計測(0以下)の表示と、
+// 幅が限られる指標向けの詰めた書式だけを担当する。
 function formatKg(weightG: number) {
   if (weightG <= 0) {
     return "-";
   }
 
-  if (weightG < 1000) {
-    return `${Math.round(weightG)}g`;
-  }
-
-  return `${(weightG / 1000).toLocaleString("ja-JP", {
-    maximumFractionDigits: 1,
-    minimumFractionDigits: 0
-  })}kg`;
+  return formatWeight(weightG, { compact: true });
 }

@@ -95,10 +95,10 @@ test("gear list groups registered gear by category without changing cards", () =
   assert.match(gearListSource, /InventoryStat/);
   assert.match(gearListSource, /totalWeightGrams/);
   assert.match(gearListSource, /getMajorGearCategoryCoverage/);
-  assert.match(gearListSource, /主要カテゴリー/);
+  assert.match(gearListSource, /登録済みカテゴリー/);
   assert.match(gearListSource, /未登録:/);
   assert.match(gearPageSource, /summaryGear/);
-  assert.match(gearListSource, /装備庫/);
+  assert.match(gearListSource, /マイギア/);
   assert.match(gearListSource, /grid gap-2/);
   assert.match(gearDataSource, /isRetailGearCategoryId/);
   assert.match(gearDataSource, /getRetailGearCategory\(item\)\?\.id === filters\.category/);
@@ -110,9 +110,9 @@ test("gear list groups registered gear by category without changing cards", () =
 test("gear list and actions provide clear post-save feedback", () => {
   assert.match(gearPageSource, /saved\?: string/);
   assert.match(gearPageSource, /getSavedMessage/);
-  assert.match(gearPageSource, /装備を登録しました/);
-  assert.match(gearPageSource, /装備を更新しました/);
-  assert.match(gearPageSource, /装備を削除しました/);
+  assert.match(gearPageSource, /ギアを登録しました/);
+  assert.match(gearPageSource, /ギアを更新しました/);
+  assert.match(gearPageSource, /ギアを削除しました/);
   assert.match(gearActionSource, /\/gear\?saved=created/);
   assert.match(gearActionSource, /\/gear\?saved=updated/);
   assert.match(gearActionSource, /\/gear\?saved=deleted/);

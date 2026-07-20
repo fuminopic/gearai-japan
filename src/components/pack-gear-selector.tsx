@@ -73,15 +73,15 @@ export function PackGearSelector({ gear, packGearIds }: PackGearSelectorProps) {
     return (
       <section className="rounded-2xl bg-white p-6 text-center shadow-sm">
         <PackagePlus aria-hidden className="mx-auto h-8 w-8 text-forest-700" />
-        <h2 className="mt-4 text-lg font-bold text-ink">追加できる装備がありません</h2>
+        <h2 className="mt-4 text-lg font-bold text-ink">追加できるギアがありません</h2>
         <p className="mt-2 text-sm leading-6 text-stone-500">
-          まずは装備庫に所有している装備を登録してください。
+          まずはマイギアに所有しているギアを登録してください。
         </p>
         <Link
           href="/gear/new"
           className="mt-5 inline-flex h-11 items-center justify-center rounded-xl bg-forest-700 px-4 text-sm font-bold text-white transition active:scale-95"
         >
-          装備を追加する
+          ギアを追加する
         </Link>
       </section>
     );
@@ -96,7 +96,7 @@ export function PackGearSelector({ gear, packGearIds }: PackGearSelectorProps) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             className="min-w-0 flex-1 bg-transparent py-1 text-base outline-none"
-            placeholder="装備名・ブランドで検索"
+            placeholder="ギア名・ブランドで検索"
           />
         </label>
 
@@ -171,7 +171,7 @@ export function PackGearSelector({ gear, packGearIds }: PackGearSelectorProps) {
 
       {filteredGear.length === 0 ? (
         <p className="mt-8 text-center text-sm font-medium text-stone-500">
-          条件に合う装備がありません。
+          条件に合うギアがありません。
         </p>
       ) : null}
 

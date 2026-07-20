@@ -2947,10 +2947,10 @@ function getChecklistItemMatchingInsight(
   const classification =
     firstGear.gear_subcategories?.name_ja ??
     firstGear.gear_categories?.name_ja ??
-    "登録装備";
+    "登録ギア";
   const coverage =
     item.matchingOwnedGear.length > 1
-      ? `${classification}など ${item.matchingOwnedGear.length.toLocaleString("ja-JP")} 件の登録装備で、${item.label}をカバーしています。`
+      ? `${classification}など ${item.matchingOwnedGear.length.toLocaleString("ja-JP")} 点の登録ギアで、${item.label}をカバーしています。`
       : `${classification}として登録されているため、${item.label}をカバーしています。`;
   const hasAmbiguity = matchedResults.some((match) => match.ambiguous_cases.length > 0);
   const caution =
@@ -3024,5 +3024,5 @@ function formatDisplayGearName({
     return `${primaryName}（${name}）`;
   }
 
-  return primaryName || name || "登録装備";
+  return primaryName || name || "登録ギア";
 }

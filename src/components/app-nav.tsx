@@ -11,7 +11,7 @@ import { PlanAwareGearLink } from "@/components/plan-aware-gear-link";
 
 const navItems = [
   { href: "/dashboard", label: "ホーム", icon: Home },
-  { href: "/gear", label: "装備", icon: Backpack },
+  { href: "/gear", label: "ギア", icon: Backpack },
   { href: "/plan" as Route, label: "計画", icon: ClipboardCheck },
   { href: "/profile", label: "マイページ", icon: UserRound }
 ] satisfies Array<{

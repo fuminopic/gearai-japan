@@ -25,7 +25,7 @@ import { buildGearHref, getCurrentPlanReturnTo } from "@/lib/plan-return-to";
 const primaryItems = [
   { href: "/dashboard", label: "ホーム", icon: Home },
   { href: "/plan" as Route, label: "山行計画", icon: ClipboardCheck },
-  { href: "/gear", label: "マイ装備", icon: Backpack },
+  { href: "/gear", label: "マイギア", icon: Backpack },
   { href: "/profile", label: "マイページ", icon: UserRound }
 ] satisfies Array<{
   href: Route;

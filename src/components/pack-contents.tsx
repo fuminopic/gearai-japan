@@ -59,7 +59,7 @@ export function PackContents({ items: serverItems }: PackContentsProps) {
   return (
     <>
       <section className="grid grid-cols-2 overflow-hidden rounded-2xl bg-white shadow-sm">
-        <PackStat label="装備数" value={`${summary.itemCount.toLocaleString("ja-JP")}点`} />
+        <PackStat label="ギア数" value={`${summary.itemCount.toLocaleString("ja-JP")}点`} />
         <PackStat
           label="総重量"
           value={summary.knownWeightG > 0 ? formatWeight(summary.knownWeightG) : "-"}
@@ -78,13 +78,13 @@ export function PackContents({ items: serverItems }: PackContentsProps) {
           <PackagePlus aria-hidden className="mx-auto h-8 w-8 text-forest-700" />
           <h2 className="mt-4 text-lg font-bold text-ink">マイパックはまだ空です</h2>
           <p className="mt-2 text-sm leading-6 text-stone-500">
-            装備庫からよく持っていく装備を追加すると、パック重量を確認できます。
+            マイギアからよく持っていくギアを追加すると、パック重量を確認できます。
           </p>
           <Link
             href={packSelectRoute}
             className="mt-5 inline-flex h-11 items-center justify-center rounded-xl bg-forest-700 px-4 text-sm font-bold text-white transition active:scale-95"
           >
-            装備庫から追加
+            マイギアから追加
           </Link>
         </section>
       ) : (

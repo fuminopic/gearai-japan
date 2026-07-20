@@ -321,7 +321,7 @@ test("trip planning UI presents a professional gear checklist", () => {
     "対応済み",
     "確認する",
     "不足",
-    "臨行前スキャン",
+    "要対応",
     "すべての持ち物を確認",
     "今回不要なもの",
     "登山地図アプリ（YAMAP・ヤマレコ等）",
@@ -369,7 +369,7 @@ test("trip planning UI presents a professional gear checklist", () => {
 
 test("pack planning checklist prioritizes readiness before gear-backed details", () => {
   const checklistIndex = tripPlanningUiSource.indexOf("装備チェックリスト");
-  const scanIndex = tripPlanningUiSource.indexOf("臨行前スキャン");
+  const scanIndex = tripPlanningUiSource.indexOf("<ChecklistScanControls");
   const notNeededIndex = tripPlanningUiSource.indexOf("今回不要なもの");
 
   assert.ok(checklistIndex > -1);
@@ -428,8 +428,16 @@ test("M2 pre-departure confirmation reuses checklist-derived counts", () => {
   assert.match(tripPlanningUiSource, /normalizePlanEndDate/);
   assert.match(tripPlanningUiSource, /日付を選ぶと自動で保存されます。/);
   assert.match(tripPlanningUiSource, /計画条件を編集/);
-  assert.match(tripPlanningUiSource, /臨行前スキャン/);
+  // 「臨行前スキャン」は日本語にない語だったため削除済み。復活させない。
+  assert.doesNotMatch(tripPlanningUiSource, /臨行/);
   assert.match(tripPlanningUiSource, /要対応/);
+  // 絞り込みであることが伝わる「〜のみ」表記。
+  assert.match(tripPlanningUiSource, /label: "不足のみ"/);
+  assert.match(tripPlanningUiSource, /label: "未確認のみ"/);
+  assert.match(tripPlanningUiSource, /label: "重要のみ"/);
+  // 「出発前チェック」「出発前確認」「臨行前スキャン」の3重複を解消した結果。
+  assert.match(tripPlanningUiSource, /装備カバー状況/);
+  assert.match(tripPlanningUiSource, /すべての持ち物</);
   assert.match(tripPlanningUiSource, /すべての持ち物を確認/);
   assert.match(tripPlanningUiSource, /view=checklist/);
   assert.match(tripPlanningUiSource, /持ち物チェック表/);

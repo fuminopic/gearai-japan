@@ -270,7 +270,7 @@ test("trip planning ui component baseline keeps save, checklist, history, and ch
     "装備チェックリスト",
     "すべての持ち物を確認",
     "今回の持ち物と確認状態を一覧で見ます",
-    "出発前チェック",
+    "装備カバー状況",
     "持ち物チェック表",
     "山支度の持ち物チェック表"
   ]) {

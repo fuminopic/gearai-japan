@@ -1707,7 +1707,7 @@ function TripPlanningResult({
 
       <details className="group rounded-lg bg-white p-5 shadow-soft">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-ink">出発前チェック</h2>
+          <h2 className="text-lg font-semibold text-ink">装備カバー状況</h2>
           <ChevronDown className="h-5 w-5 shrink-0 text-stone-500 transition group-open:rotate-180" />
         </summary>
         <PlanningNotes
@@ -1764,7 +1764,7 @@ function SavedPlanFullChecklistView({
       </Link>
 
       <div className="rounded-lg bg-white p-5 shadow-soft">
-        <p className="text-sm font-bold text-forest-700">出発前確認</p>
+        <p className="text-sm font-bold text-forest-700">すべての持ち物</p>
         <h1 className="mt-1 text-2xl font-semibold tracking-normal text-ink">
           持ち物チェック表
         </h1>
@@ -2424,9 +2424,13 @@ function ChecklistScanControls({
       label: "要対応",
       count: summary.missingCount + summary.confirmationCount
     },
-    { value: "MISSING", label: "不足", count: summary.missingCount },
-    { value: "CONFIRM", label: "未確認", count: summary.confirmationCount },
-    { value: "IMPORTANT", label: "重要", count: summary.importantConfirmationCount }
+    { value: "MISSING", label: "不足のみ", count: summary.missingCount },
+    { value: "CONFIRM", label: "未確認のみ", count: summary.confirmationCount },
+    {
+      value: "IMPORTANT",
+      label: "重要のみ",
+      count: summary.importantConfirmationCount
+    }
   ];
   const visibleFilters = includeAllFilter
     ? [...filters, { value: "ALL" as const, label: "すべての持ち物" }]
@@ -2434,8 +2438,7 @@ function ChecklistScanControls({
 
   return (
     <div className="rounded-lg bg-white p-3 shadow-soft">
-      <p className="text-xs font-bold text-forest-700">臨行前スキャン</p>
-      <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+      <div className="flex gap-2 overflow-x-auto pb-1">
         {visibleFilters.map((filter) => {
           const isActive = activeFilter === filter.value;
 

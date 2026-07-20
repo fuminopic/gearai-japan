@@ -73,8 +73,12 @@ test("dashboard component baseline keeps the current hero, checklist, and gear s
     assert.match(dashboardSource, new RegExp(copy));
   }
 
-  assert.match(appLoadingSource, /AppLoadingFallback/);
-  assert.match(appLoadingSource, /LoadingBlock/);
+  // AppLoadingFallback(中央のスピナー)は誰からも参照されなくなったので削除。
+  // 二次画面もヘッダー型の骨組みを描く。
+  assert.doesNotMatch(appLoadingSource, /AppLoadingFallback/);
+  assert.match(appLoadingSource, /SecondaryPageSkeleton/);
+  // LoadingBlock 自体は残す(ルート直下と認証待ちの起動時に使う)。
+  assert.match(rootLoadingSource, /LoadingBlock/);
   assert.match(uiLoadingBlockSource, /animate-spin/);
 });
 
@@ -113,8 +117,11 @@ test("shared ui primitives are tried only in low-risk static components", () => 
   assert.match(statCardSource, /text-3xl font-semibold tracking-normal text-ink/);
   assert.match(statCardSource, /rounded-lg bg-forest-50 p-3 text-forest-700/);
 
-  assert.match(appLoadingSource, /import \{ LoadingBlock \} from "@\/components\/ui\/loading-block"/);
-  assert.match(appLoadingSource, /return <LoadingBlock aria-hidden="true" \/>/);
+  // (app) の loading はスピナーをやめて、行き先と同じ形の骨組みを描く。
+  // ルート直下の loading は起動時なので LoadingBlock のまま。
+  assert.doesNotMatch(appLoadingSource, /LoadingBlock/);
+  assert.match(appLoadingSource, /SecondaryPageSkeleton/);
+  assert.match(appLoadingSource, /BrandShellSkeleton/);
   assert.match(rootLoadingSource, /import \{ LoadingBlock \} from "@\/components\/ui\/loading-block"/);
   assert.match(rootLoadingSource, /<LoadingBlock/);
   assert.match(rootLoadingSource, /aria-hidden="true"/);

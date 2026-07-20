@@ -178,3 +178,35 @@ test("secondary pages share one header, so every one of them has a way back", ()
     assert.doesNotMatch(source, /shadow-soft/, relativePath);
   }
 });
+
+test("saving a profile or insurance change says so, and failures land on a real screen", () => {
+  const authActionsSource = readFileSync(
+    new URL("../src/lib/actions/auth.ts", import.meta.url),
+    "utf8"
+  );
+  // 保存できたことを伝えないまま /profile に戻していた。ギアの保存で
+  // 既に使っている ?saved= の形に合わせる(toast は入れない)。
+  assert.match(authActionsSource, /redirect\("\/profile\?saved=profile"/);
+  assert.match(authActionsSource, /redirect\("\/profile\?saved=insurance"/);
+  assert.match(profilePageSource, /getSavedMessage/);
+  assert.match(profilePageSource, /プロフィールを更新しました/);
+  assert.match(profilePageSource, /保険情報を更新しました/);
+  assert.match(profilePageSource, /<Notice tone="success"/);
+
+  // Next.js の既定のエラー/404画面が出ないようにする
+  const appErrorSource = readFileSync(
+    new URL("../app/(app)/error.tsx", import.meta.url),
+    "utf8"
+  );
+  const notFoundSource = readFileSync(
+    new URL("../app/not-found.tsx", import.meta.url),
+    "utf8"
+  );
+  assert.match(appErrorSource, /"use client"/);
+  assert.match(appErrorSource, /読み込めませんでした/);
+  assert.match(appErrorSource, /onClick=\{reset\}/);
+  // 例外の本文はそのまま見せない
+  assert.doesNotMatch(appErrorSource, /\{error\.message\}/);
+  assert.match(notFoundSource, /ページが見つかりません/);
+  assert.match(notFoundSource, /href="\/dashboard"/);
+});

@@ -1,6 +1,7 @@
 import { KeyRound, ShieldCheck } from "lucide-react";
 
 import { SubmitButton } from "@/components/submit-button";
+import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
 import { updatePassword } from "@/lib/actions/auth";
 import { requireUser } from "@/lib/data/gear";
@@ -31,9 +32,9 @@ export default async function PasswordPage({ searchParams }: PasswordPageProps) 
       ) : null}
 
       {params.saved === "1" ? (
-        <p className="rounded-xl bg-forest-50 px-4 py-3 text-sm font-semibold text-forest-800">
+        <Notice tone="success" className="border border-forest-100">
           パスワードを更新しました。次回からメールアドレスとパスワードでもログインできます。
-        </p>
+        </Notice>
       ) : null}
 
       <section className="overflow-hidden rounded-[20px] bg-white p-4 shadow-sm sm:p-5">

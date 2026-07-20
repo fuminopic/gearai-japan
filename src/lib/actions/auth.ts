@@ -243,7 +243,9 @@ export async function updateProfile(formData: FormData) {
 
   revalidatePath("/profile");
   revalidatePath("/profile/edit");
-  redirect("/profile");
+  // 保存できたことを伝えないまま戻していた。ギアの保存と同じ
+  // ?saved= の形に揃える。
+  redirect("/profile?saved=profile" as Route);
 }
 
 export async function updateInsurance(formData: FormData) {
@@ -279,7 +281,7 @@ export async function updateInsurance(formData: FormData) {
 
   revalidatePath("/profile");
   revalidatePath("/profile/insurance");
-  redirect("/profile");
+  redirect("/profile?saved=insurance" as Route);
 }
 
 export async function updatePassword(formData: FormData) {

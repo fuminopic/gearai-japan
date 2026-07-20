@@ -3,7 +3,6 @@
 import { usePathname } from "next/navigation";
 
 import { isBrandShellPath } from "@/components/app-chrome";
-import { LoadingBlock } from "@/components/ui/loading-block";
 
 // タブ切り替え中の見た目。
 //
@@ -20,7 +19,27 @@ export default function AppLoading() {
     return <BrandShellSkeleton bandPx={pathname === "/dashboard" ? 206 : 150} />;
   }
 
-  return <AppLoadingFallback />;
+  // タブの外(ギア詳細・編集・プロフィール各種など)は共通ヘッダーを持つ。
+  // 行き先と同じ形を先に描いておけば、スピナーを挟まずに中身だけが
+  // 差し変わる。ここでスピナーを出すと、せっかくタブ間で消した
+  // 「ぐるぐる」が二次画面で戻ってしまう。
+  return <SecondaryPageSkeleton />;
+}
+
+function SecondaryPageSkeleton() {
+  return (
+    <div className="space-y-5" aria-hidden="true">
+      <section className="flex items-center gap-3">
+        <div className="h-11 w-11 shrink-0 rounded-xl bg-white shadow-sm" />
+        <div className="min-w-0 flex-1">
+          <div className="h-[11px] w-16 rounded-full bg-black/5" />
+          <div className="mt-2 h-5 w-40 max-w-full rounded-full bg-black/5" />
+        </div>
+      </section>
+      <div className="h-56 rounded-[20px] bg-white shadow-sm" />
+      <div className="h-40 rounded-[20px] bg-white shadow-sm" />
+    </div>
+  );
 }
 
 function BrandShellSkeleton({ bandPx }: { bandPx: number }) {
@@ -34,10 +53,3 @@ function BrandShellSkeleton({ bandPx }: { bandPx: number }) {
   );
 }
 
-export function AppLoadingFallback() {
-  // Subtle in-app loading indicator only — no brand logo here. The branded
-  // splash is owned by the native splash screen at launch; showing the logo
-  // again during in-app navigation (e.g. right after login) looked like a
-  // second splash.
-  return <LoadingBlock aria-hidden="true" />;
-}

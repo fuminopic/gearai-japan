@@ -263,7 +263,10 @@ test("app navigation responds immediately during dynamic route loading", () => {
   assert.match(appLayoutSource, /<Suspense fallback=\{<AppAuthLoading \/>/);
   assert.match(appLayoutSource, /function AppLayout/);
   assert.match(appLayoutSource, /async function AuthGate/);
-  assert.match(appLoadingSource, /AppLoadingFallback/);
+  // AppLoadingFallback(中央のスピナー)は誰からも参照されなくなったので削除。
+  // 二次画面もヘッダー型の骨組みを描く。
+  assert.doesNotMatch(appLoadingSource, /AppLoadingFallback/);
+  assert.match(appLoadingSource, /SecondaryPageSkeleton/);
   assert.doesNotMatch(appLoadingSource, /animate-pulse/);
   assert.doesNotMatch(rootLoadingSource, /animate-pulse/);
   assert.match(appNavSource, /NavigationFeedback/);

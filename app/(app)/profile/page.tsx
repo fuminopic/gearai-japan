@@ -11,20 +11,23 @@ import Link from "next/link";
 
 import { AccountDeleteButton } from "@/components/account-delete-button";
 import { AppMenuDrawer } from "@/components/app-menu-drawer";
+import { Notice } from "@/components/ui/notice";
 import { signOut } from "@/lib/actions/auth";
 import { requireUser } from "@/lib/data/gear";
 
 type ProfilePageProps = {
   searchParams: Promise<{
     error?: string;
+    saved?: string;
   }>;
 };
 
 export default async function ProfilePage({ searchParams }: ProfilePageProps) {
-  const [{ error }, { supabase, user }] = await Promise.all([
+  const [{ error, saved }, { supabase, user }] = await Promise.all([
     searchParams,
     requireUser()
   ]);
+  const savedMessage = getSavedMessage(saved);
   const metadata = user.user_metadata;
   const displayName = getDisplayName(user.email, metadata);
   const profileMemo = getMetadataString(metadata, "self_introduction");
@@ -55,6 +58,11 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
       </header>
 
       <div className="relative z-20 mx-auto -mt-[51px] max-w-2xl space-y-[11px] px-4">
+      {savedMessage && !error ? (
+        <Notice tone="success" className="border border-forest-100">
+          {savedMessage}
+        </Notice>
+      ) : null}
       <section className="rounded-[20px] bg-white p-5 shadow-sm">
         <div className="mb-4 flex items-center justify-between border-b border-[#EEEDE6] pb-3">
           <h1 className="text-base font-bold">マイページ</h1>
@@ -159,6 +167,18 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
       </div>
     </main>
   );
+}
+
+function getSavedMessage(value?: string) {
+  if (value === "profile") {
+    return "プロフィールを更新しました";
+  }
+
+  if (value === "insurance") {
+    return "保険情報を更新しました";
+  }
+
+  return "";
 }
 
 function formatInsuranceSummary(provider: string, expiresOn: string) {

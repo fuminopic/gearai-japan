@@ -62,7 +62,7 @@ export async function updateGear(
   }
 
   if (!data) {
-    return { ok: false, error: "装備を保存できませんでした" };
+    return { ok: false, error: "ギアを保存できませんでした" };
   }
 
   revalidatePath("/dashboard");

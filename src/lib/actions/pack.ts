@@ -48,7 +48,7 @@ export async function addPackItems(gearIds: string[]): Promise<PackActionResult>
 
 export async function removePackItem(gearId: string): Promise<PackActionResult> {
   if (!isUuid(gearId)) {
-    return { ok: false, error: "装備をパックから外せませんでした" };
+    return { ok: false, error: "ギアをパックから外せませんでした" };
   }
 
   const { supabase, user } = await requireUser();

@@ -300,26 +300,50 @@ function canonicalizeUserGearBrands(gear: UserGear[]) {
   });
 }
 
+/**
+ * 画像URLの署名。
+ *
+ * 以前は createSignedUrl(単数)を map の中で呼んでいたため、ギア1件に
+ * つき Storage への往復が1回発生していた。14件なら14回、100件なら
+ * 100回。ホーム・マイギア・計画のどれを開いても毎回これが走る。
+ * createSignedUrls(複数)で1回にまとめる。
+ *
+ * 返り値は入力と同じ順序・同じ件数を保つ(呼び出し側がそのまま並べ替えや
+ * 絞り込みに使うため)。署名に失敗した項目は元の image_url のまま返す。
+ */
 async function signGearImageUrls(
   supabase: Awaited<ReturnType<typeof createClient>>,
   gear: UserGear[]
 ) {
-  const signedGear = await Promise.all(
-    gear.map(async (item) => {
-      if (!item.image_storage_path) {
-        return item;
-      }
-
-      const { data } = await supabase.storage
-        .from("gear-images")
-        .createSignedUrl(item.image_storage_path, 60 * 60);
-
-      return {
-        ...item,
-        image_url: data?.signedUrl ?? item.image_url
-      };
-    })
+  const paths = Array.from(
+    new Set(
+      gear
+        .map((item) => item.image_storage_path)
+        .filter((path): path is string => Boolean(path))
+    )
   );
 
-  return signedGear;
+  if (paths.length === 0) {
+    return gear;
+  }
+
+  const { data } = await supabase.storage
+    .from("gear-images")
+    .createSignedUrls(paths, 60 * 60);
+
+  const signedUrlByPath = new Map<string, string>();
+
+  for (const entry of data ?? []) {
+    if (entry.path && entry.signedUrl) {
+      signedUrlByPath.set(entry.path, entry.signedUrl);
+    }
+  }
+
+  return gear.map((item) => {
+    const signedUrl = item.image_storage_path
+      ? signedUrlByPath.get(item.image_storage_path)
+      : undefined;
+
+    return signedUrl ? { ...item, image_url: signedUrl } : item;
+  });
 }

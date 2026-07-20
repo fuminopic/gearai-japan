@@ -86,24 +86,42 @@ function toDashboardGear(item: DashboardGearRow): DashboardGear {
   };
 }
 
+// ギア1件につき1往復していたのを、createSignedUrls で1回にまとめる。
+// ホームはカード列に owned 全件を出すので、件数がそのまま往復回数に
+// なっていた。並び順と件数は入力のまま返す。
 async function signDashboardGearImageUrls(
   supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
   gear: DashboardGearRow[]
 ) {
-  return Promise.all(
-    gear.map(async (item) => {
-      if (!item.image_storage_path) {
-        return item;
-      }
-
-      const { data } = await supabase.storage
-        .from("gear-images")
-        .createSignedUrl(item.image_storage_path, 60 * 60);
-
-      return {
-        ...item,
-        image_url: data?.signedUrl ?? item.image_url
-      };
-    })
+  const paths = Array.from(
+    new Set(
+      gear
+        .map((item) => item.image_storage_path)
+        .filter((path): path is string => Boolean(path))
+    )
   );
+
+  if (paths.length === 0) {
+    return gear;
+  }
+
+  const { data } = await supabase.storage
+    .from("gear-images")
+    .createSignedUrls(paths, 60 * 60);
+
+  const signedUrlByPath = new Map<string, string>();
+
+  for (const entry of data ?? []) {
+    if (entry.path && entry.signedUrl) {
+      signedUrlByPath.set(entry.path, entry.signedUrl);
+    }
+  }
+
+  return gear.map((item) => {
+    const signedUrl = item.image_storage_path
+      ? signedUrlByPath.get(item.image_storage_path)
+      : undefined;
+
+    return signedUrl ? { ...item, image_url: signedUrl } : item;
+  });
 }

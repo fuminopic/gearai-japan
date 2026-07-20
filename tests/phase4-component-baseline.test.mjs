@@ -149,8 +149,14 @@ test("shared ui primitives are tried only in low-risk static components", () => 
   assert.match(recommendationHistoryListSource, /必須装備/);
   assert.match(recommendationHistoryListSource, /詳細/);
   assert.match(recommendationHistoryListSource, /RecommendationDeleteButton id=\{record\.id\}/);
-  assert.doesNotMatch(recommendationDeleteControlsSource, /@\/components\/ui\//);
-  assert.match(recommendationDeleteControlsSource, /window\.confirm/);
+  // phase 4 では共有プリミティブを高リスク側に持ち込まない境界を引いていた。
+  // 破壊的操作の確認ダイアログだけは例外にする(window.confirm は iOS の
+  // WebView でシステムのアラートになるため)。Card/Badge などへの
+  // 一括の置き換えは引き続き入れない。
+  assert.doesNotMatch(
+    recommendationDeleteControlsSource,
+    /@\/components\/ui\/(?!confirm-dialog)/
+  );
   assert.match(recommendationDeleteControlsSource, /router\.refresh/);
 
   assert.match(recommendationDetailSource, /import \{ Badge \} from "@\/components\/ui\/badge"/);
@@ -166,7 +172,7 @@ test("shared ui primitives are tried only in low-risk static components", () => 
   assert.match(recommendationDetailSource, /不足装備/);
   assert.match(recommendationDetailSource, /リスク注意/);
 
-  assert.doesNotMatch(tripPlanningUiSource, /@\/components\/ui\//);
+  assert.doesNotMatch(tripPlanningUiSource, /@\/components\/ui\/(?!confirm-dialog)/);
   assert.doesNotMatch(gearFormSource, /@\/components\/ui\//);
   assert.doesNotMatch(planChecklistSource, /@\/components\/ui\//);
 });
@@ -325,4 +331,33 @@ test("phase 4 records high-risk files that should not be split before dedicated 
   assert.match(planChecklistSource, /export function applyChecklistStateToChecklist/);
   assert.match(planChecklistSource, /export function getChecklistOnlyStorageKey/);
   assert.match(planChecklistSource, /export function getCheckedSlotsStorageKey/);
+});
+
+test("destructive actions are confirmed in-app, never with window.confirm", () => {
+  // iOS Deployment Target は 15.0。<dialog>.showModal() は Safari 15.4
+  // からなので、確認ダイアログは素のオーバーレイで実装している。
+  const confirmDialogSource = readFileSync(
+    new URL("../src/components/ui/confirm-dialog.tsx", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(confirmDialogSource, /export function ConfirmSubmitButton/);
+  assert.match(confirmDialogSource, /export function ConfirmActionButton/);
+  assert.match(confirmDialogSource, /role="dialog"/);
+  assert.match(confirmDialogSource, /aria-modal="true"/);
+  // 素のオーバーレイであることを実装側の印で確かめる
+  // (「showModal を使わない」を否定形で書くと、その説明コメント自体に
+  // 引っかかるので正の印で見る)。
+  assert.match(confirmDialogSource, /fixed inset-0 z-\[60\] flex/);
+  // 送信側は type="submit" のまま。Server Action と useFormStatus の
+  // 挙動を変えないため、ポータルには出さない。
+  assert.match(confirmDialogSource, /type="submit"/);
+  assert.doesNotMatch(confirmDialogSource, /createPortal/);
+
+  for (const [name, source] of [
+    ["trip-planning-ui", tripPlanningUiSource],
+    ["recommendation-delete-controls", recommendationDeleteControlsSource]
+  ]) {
+    assert.doesNotMatch(source, /window\.confirm/, name);
+  }
 });

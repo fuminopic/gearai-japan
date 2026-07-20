@@ -664,7 +664,11 @@ test("plan history supports Supabase-backed delete and clear all actions", () =>
   assert.match(tripPlanningUiSource, /保存済みプラン/);
   assert.match(tripPlanningUiSource, /削除/);
   assert.match(tripPlanningUiSource, /すべて削除/);
-  assert.match(tripPlanningUiSource, /window\.confirm/);
+  // 確認は残す。出し方だけ window.confirm からアプリ内ダイアログに変えた。
+  assert.doesNotMatch(tripPlanningUiSource, /window\.confirm/);
+  assert.match(tripPlanningUiSource, /<ConfirmSubmitButton/);
+  assert.match(tripPlanningUiSource, /title="この計画を削除しますか？"/);
+  assert.match(tripPlanningUiSource, /title="保存済みプランをすべて削除しますか？"/);
   assert.doesNotMatch(tripPlanningUiSource, /Delete/);
   assert.doesNotMatch(tripPlanningUiSource, /一键删除/);
   assert.match(tripPlanningUiSource, /action=\{deleteTripPlan\}/);

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
+import { ConfirmActionButton } from "@/components/ui/confirm-dialog";
 import {
   deleteAllRecommendations,
   deleteRecommendation
@@ -19,14 +20,13 @@ export function RecommendationDeleteButton({
   const [isPending, startTransition] = useTransition();
 
   return (
-    <button
-      type="button"
-      disabled={isPending}
-      onClick={() => {
-        if (!window.confirm("この旧推薦履歴を削除しますか？")) {
-          return;
-        }
-
+    <ConfirmActionButton
+      title="この履歴を削除しますか？"
+      description="削除すると元に戻せません。"
+      confirmLabel="削除する"
+      pendingLabel="削除中..."
+      isPending={isPending}
+      onConfirm={() => {
         startTransition(async () => {
           await deleteRecommendation(id);
           router.refresh();
@@ -34,8 +34,8 @@ export function RecommendationDeleteButton({
       }}
       className="w-full rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-60"
     >
-      {isPending ? "削除中..." : "削除"}
-    </button>
+      削除
+    </ConfirmActionButton>
   );
 }
 
@@ -44,14 +44,13 @@ export function RecommendationDeleteAllButton() {
   const [isPending, startTransition] = useTransition();
 
   return (
-    <button
-      type="button"
-      disabled={isPending}
-      onClick={() => {
-        if (!window.confirm("旧推薦履歴をすべて削除しますか？")) {
-          return;
-        }
-
+    <ConfirmActionButton
+      title="履歴をすべて削除しますか？"
+      description="削除すると元に戻せません。"
+      confirmLabel="すべて削除する"
+      pendingLabel="削除中..."
+      isPending={isPending}
+      onConfirm={() => {
         startTransition(async () => {
           await deleteAllRecommendations();
           router.refresh();
@@ -59,7 +58,7 @@ export function RecommendationDeleteAllButton() {
       }}
       className="w-full rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 disabled:opacity-60"
     >
-      {isPending ? "削除中..." : "すべて削除"}
-    </button>
+      すべて削除
+    </ConfirmActionButton>
   );
 }

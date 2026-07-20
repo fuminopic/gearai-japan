@@ -50,6 +50,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { TripPlanningForm } from "@/components/trip-planning-form";
+import { ConfirmSubmitButton } from "@/components/ui/confirm-dialog";
 import {
   captureAnalyticsEvent,
   captureAnalyticsEventOnce,
@@ -1108,20 +1109,16 @@ function PlanHistorySection({
       <div className="flex items-center justify-between gap-3 border-b border-[#EEEDE6] pb-3">
         <h2 className="text-base font-bold text-ink">計画履歴</h2>
         {plans.length > 0 ? (
-          <form
-            action={clearTripPlans}
-            onSubmit={(event) => {
-              if (!window.confirm("保存済みプランをすべて削除しますか？")) {
-                event.preventDefault();
-              }
-            }}
-          >
-            <button
-              type="submit"
-              className="rounded-full border border-red-100 px-3 py-1.5 text-[11px] font-bold text-red-700 transition active:scale-95"
+          <form action={clearTripPlans}>
+            <ConfirmSubmitButton
+              title="保存済みプランをすべて削除しますか？"
+              description="削除すると元に戻せません。"
+              confirmLabel="すべて削除する"
+              pendingLabel="削除中..."
+              className="rounded-full border border-red-100 px-3 py-1.5 text-[11px] font-bold text-red-700 transition active:scale-95 disabled:opacity-60"
             >
               すべて削除
-            </button>
+            </ConfirmSubmitButton>
           </form>
         ) : null}
       </div>
@@ -1145,22 +1142,18 @@ function PlanHistorySection({
                     {formatSavedPlanMeta(record)}
                   </p>
                 </Link>
-                <form
-                  action={deleteTripPlan}
-                  onSubmit={(event) => {
-                    if (!window.confirm("この計画を削除しますか？")) {
-                      event.preventDefault();
-                    }
-                  }}
-                >
+                <form action={deleteTripPlan}>
                   <input type="hidden" name="id" value={record.id} />
-                  <button
-                    type="submit"
-                    aria-label="この計画を削除"
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full text-stone-400 transition active:scale-90"
+                  <ConfirmSubmitButton
+                    title="この計画を削除しますか？"
+                    description={`${record.mountain_name || "山行"}の計画を削除します。削除すると元に戻せません。`}
+                    confirmLabel="削除する"
+                    pendingLabel="..."
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full text-stone-400 transition active:scale-90 disabled:opacity-60"
                   >
                     <Trash2 className="h-4 w-4" aria-hidden="true" />
-                  </button>
+                    <span className="sr-only">この計画を削除</span>
+                  </ConfirmSubmitButton>
                 </form>
               </div>
             </article>

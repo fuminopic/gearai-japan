@@ -53,8 +53,11 @@ test("legacy recommendation detail is framed as an old record", () => {
 });
 
 test("legacy recommendation delete actions require confirmation", () => {
-  assert.match(deleteControlsSource, /window\.confirm/);
-  assert.match(deleteControlsSource, /この旧推薦履歴を削除しますか？/);
-  assert.match(deleteControlsSource, /旧推薦履歴をすべて削除しますか？/);
-  assert.match(deleteControlsSource, /return;/);
+  // window.confirm は iOS の WebView でシステムのアラートになるため、
+  // アプリ内の確認ダイアログに置き換えた。確認が要る、という要件は同じ。
+  assert.doesNotMatch(deleteControlsSource, /window\.confirm/);
+  assert.match(deleteControlsSource, /ConfirmActionButton/);
+  assert.match(deleteControlsSource, /title="この履歴を削除しますか？"/);
+  assert.match(deleteControlsSource, /title="履歴をすべて削除しますか？"/);
+  assert.match(deleteControlsSource, /description="削除すると元に戻せません。"/);
 });

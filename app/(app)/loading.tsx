@@ -16,6 +16,7 @@ export default function AppLoading() {
   const pathname = usePathname();
 
   if (isBrandShellPath(pathname)) {
+    // ホームだけバンドが高い(206px)。他は150px。
     return <BrandShellSkeleton bandPx={pathname === "/dashboard" ? 206 : 150} />;
   }
 

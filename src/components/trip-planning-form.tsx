@@ -267,7 +267,7 @@ export function TripPlanningForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-lg bg-white p-4 shadow-soft sm:p-5"
+      className="rounded-[20px] bg-white p-4 shadow-sm sm:p-5"
     >
       {planId ? <input type="hidden" name="id" value={planId} /> : null}
 

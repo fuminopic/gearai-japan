@@ -10,6 +10,7 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { AccountDeleteButton } from "@/components/account-delete-button";
+import { AppMenuDrawer } from "@/components/app-menu-drawer";
 import { signOut } from "@/lib/actions/auth";
 import { requireUser } from "@/lib/data/gear";
 
@@ -36,16 +37,28 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     .select("id", { count: "exact", head: true })
     .eq("user_id", user.id);
 
+  // ホーム/ギアと同じ骨格。バンド safe+150 / カード -51 → カード上端 safe+99 で
+  // 他タブと一致する。eyebrow と 34px の見出しは、カード内 16px の見出しに置き換え。
   return (
-    <div className="mx-auto max-w-2xl space-y-5 pb-24">
-      <section>
-        <p className="text-sm font-bold text-[#14724e]">アカウント</p>
-        <h1 className="mt-1 text-[34px] font-bold leading-tight tracking-normal text-ink">
-          マイページ
-        </h1>
-      </section>
+    <main className="profile-redesign brand-shell min-h-screen bg-[#E5EBE9] pb-32 text-ink">
+      <header
+        className="relative z-10 flex w-full items-start justify-between bg-gradient-to-br from-[#1F7950] to-[#81AB44] px-4 pt-[max(env(safe-area-inset-top),20px)]"
+        style={{ minHeight: "calc(max(env(safe-area-inset-top), 20px) + 150px)" }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/yamajitaku-wordmark-white.png"
+          alt="山支度 YAMAJITAKU"
+          className="mt-[42px] h-10 w-auto select-none object-contain"
+        />
+        <AppMenuDrawer buttonClassName="-mr-2 mt-[42px] inline-flex h-10 w-10 items-center justify-center rounded-xl text-white transition-transform active:scale-95" />
+      </header>
 
-      <section className="rounded-[22px] bg-white p-5 shadow-soft">
+      <div className="relative z-20 mx-auto -mt-[51px] max-w-2xl space-y-[11px] px-4">
+      <section className="rounded-[20px] bg-white p-5 shadow-sm">
+        <div className="mb-4 flex items-center justify-between border-b border-[#EEEDE6] pb-3">
+          <h1 className="text-base font-bold">マイページ</h1>
+        </div>
         <div className="flex items-start gap-4">
           <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-forest-50 text-[#14724e]">
             <UserRound aria-hidden className="h-8 w-8" />
@@ -68,7 +81,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
 
         <Link
           href="/profile/edit"
-          className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#14724e] px-4 text-sm font-bold text-white transition active:scale-[0.98]"
+          className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#14724e] px-4 text-sm font-bold text-white transition active:scale-[0.98]"
         >
           <Edit3 aria-hidden className="h-4 w-4" />
           プロフィールを編集
@@ -77,7 +90,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
 
       <Link
         href={"/profile/insurance" as Route}
-        className="block rounded-[22px] bg-white p-5 shadow-soft transition active:scale-[0.99]"
+        className="block rounded-[20px] bg-white p-5 shadow-sm transition active:scale-[0.99]"
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex min-w-0 gap-3">
@@ -115,7 +128,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         </div>
       </Link>
 
-      <section className="rounded-[22px] bg-white p-5 shadow-soft">
+      <section className="rounded-[20px] bg-white p-5 shadow-sm">
         <h2 className="text-lg font-bold tracking-normal text-ink">アカウント</h2>
         {error ? (
           <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold leading-relaxed text-red-700">
@@ -143,7 +156,8 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         </form>
         <AccountDeleteButton gearCount={gearCount ?? 0} />
       </section>
-    </div>
+      </div>
+    </main>
   );
 }
 

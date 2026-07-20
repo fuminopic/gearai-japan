@@ -562,7 +562,7 @@ export function TripPlanningUI({
   }
 
   return (
-    <div className="space-y-5 pb-24">
+    <div className="space-y-[11px] pb-24">
       {isSavedPlanMode && plan && !isFullChecklistView ? (
         <SavedPlanDetailHeader
           plan={plan}
@@ -2519,7 +2519,7 @@ function getChecklistScanFilterLabel(filter: ChecklistScanFilter) {
 
 function NotNeededItemsSection({ items }: { items: PlanNotNeededItem[] }) {
   return (
-    <section className="rounded-lg bg-white p-4 shadow-soft sm:p-5">
+    <section className="rounded-[20px] bg-white p-4 shadow-sm sm:p-5">
       <div className="flex items-center gap-2">
         <Check className="h-4 w-4 text-forest-700" aria-hidden="true" />
         <h2 className="text-sm font-bold text-ink">今回不要なもの</h2>

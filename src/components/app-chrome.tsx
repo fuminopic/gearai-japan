@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 // いたが、遷移中は対象の <main> がまだ DOM にないためセレクタが外れ、
 // 白ヘッダーが一瞬だけ戻っていた(ローディングのスピナーと一緒に見えて
 // いたのがこれ)。パス名で判定すれば、遷移が始まった時点で消える。
-const BRAND_SHELL_ROUTES = new Set<string>(["/dashboard", "/gear"]);
+const BRAND_SHELL_ROUTES = new Set<string>(["/dashboard", "/gear", "/plan", "/profile"]);
 
 export function isBrandShellPath(pathname: string) {
   return BRAND_SHELL_ROUTES.has(pathname);

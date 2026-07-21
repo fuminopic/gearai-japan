@@ -1,12 +1,17 @@
 "use client";
 
-import { PackagePlus } from "lucide-react";
+import { ImageDown, PackagePlus } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { removePackItem } from "@/lib/actions/pack";
+import {
+  createPackShareImageBlob,
+  downloadPackImage,
+  sharePackImageIfAvailable
+} from "@/lib/pack-share-image";
 import {
   getRetailGearCategory,
   MAJOR_GEAR_CATEGORIES
@@ -70,18 +75,67 @@ export function PackContents({ items: serverItems, addHref }: PackContentsProps)
     });
   }
 
+  const [shareState, setShareState] = useState<"idle" | "working">("idle");
+
+  async function handleShareImage() {
+    if (items.length === 0 || shareState === "working") {
+      return;
+    }
+
+    setShareState("working");
+
+    try {
+      const blob = await createPackShareImageBlob(items, {
+        itemCount: summary.itemCount,
+        totalWeightG: summary.knownWeightG
+      });
+      const fileName = "yamajitaku-mypack.png";
+      const didShare = await sharePackImageIfAvailable(blob, fileName);
+
+      if (!didShare) {
+        downloadPackImage(blob, fileName);
+      }
+    } catch (caught) {
+      console.error("Pack share image failed:", caught);
+      setError("画像を作成できませんでした。時間をおいてもう一度お試しください。");
+    } finally {
+      setShareState("idle");
+    }
+  }
+
   return (
     <>
       <section className="rounded-[20px] bg-white px-5 pt-4 pb-4 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[#EEEDE6] pb-3">
+        <div className="flex items-center justify-between gap-2 border-b border-[#EEEDE6] pb-3">
           <h1 className="text-base font-bold">マイパック</h1>
-          <Link
-            href={addHref}
-            className="inline-flex h-8 items-center justify-center gap-1 rounded-xl bg-[#4E914A] px-4 text-[12px] font-bold leading-none text-white shadow-sm transition active:scale-95"
-          >
-            <PackagePlus aria-hidden className="h-3.5 w-3.5" />
-            マイギアから追加
-          </Link>
+          <div className="flex items-center gap-2">
+            {items.length > 0 ? (
+              <button
+                type="button"
+                onClick={handleShareImage}
+                disabled={shareState === "working"}
+                aria-label="マイパックを画像で共有"
+                className="inline-flex h-8 items-center justify-center gap-1 rounded-xl border border-[#4E914A] px-2.5 text-[12px] font-bold leading-none text-[#14724e] transition active:scale-95 disabled:opacity-60 sm:px-3"
+              >
+                <ImageDown aria-hidden className="h-3.5 w-3.5" />
+                {/* 狭い画面では文字を隠してアイコンだけにし、
+                    「マイギアから追加」と競合させない。 */}
+                <span className="hidden sm:inline">
+                  {shareState === "working" ? "作成中..." : "画像で共有"}
+                </span>
+                <span className="sm:hidden">
+                  {shareState === "working" ? "..." : ""}
+                </span>
+              </button>
+            ) : null}
+            <Link
+              href={addHref}
+              className="inline-flex h-8 items-center justify-center gap-1 rounded-xl bg-[#4E914A] px-4 text-[12px] font-bold leading-none text-white shadow-sm transition active:scale-95"
+            >
+              <PackagePlus aria-hidden className="h-3.5 w-3.5" />
+              マイギアから追加
+            </Link>
+          </div>
         </div>
 
         <div className="flex flex-row items-center justify-between pt-4">

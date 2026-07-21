@@ -226,3 +226,35 @@ test("gear images are signed in one request, not one per item", () => {
     assert.match(source, /return gear\.map\(\(item\) => \{/, relativePath);
   }
 });
+
+test("my pack can be saved as a magazine-style share image", () => {
+  const imageSource = readFileSync(
+    new URL("../src/lib/pack-share-image.ts", import.meta.url),
+    "utf8"
+  );
+  const contentsSource = readFileSync(
+    new URL("../src/components/pack-contents.tsx", import.meta.url),
+    "utf8"
+  );
+
+  // 小紅書などの縦画像に合わせた 1242x1660、4列4行
+  assert.match(imageSource, /PACK_SHARE_IMAGE_WIDTH = 1242/);
+  assert.match(imageSource, /PACK_SHARE_IMAGE_HEIGHT = 1660/);
+  assert.match(imageSource, /const COLUMNS = 4/);
+  assert.match(imageSource, /const ROWS = 4/);
+  // 多い時は重い順に16件(大物が上=分享の見栄え)
+  assert.match(imageSource, /getPackItemWeightGrams\(b\) \?\? 0\) - \(getPackItemWeightGrams\(a\) \?\? 0\)/);
+  assert.match(imageSource, /\.slice\(0, MAX_ITEMS\)/);
+  // 署名URLを canvas に描くための crossOrigin。失敗しても null で
+  // プレースホルダに落とし、1枚読めないだけで共有不能にしない。
+  assert.match(imageSource, /img\.crossOrigin = "anonymous"/);
+  assert.match(imageSource, /img\.onerror = \(\) => resolve\(null\)/);
+  // 端末の共有シート、無ければダウンロードに落とす
+  assert.match(imageSource, /navigator\.share/);
+  assert.match(imageSource, /function downloadPackImage/);
+
+  // 中身が無い時はボタンを出さない
+  assert.match(contentsSource, /items\.length > 0 \? \(/);
+  assert.match(contentsSource, /画像で共有/);
+  assert.match(contentsSource, /createPackShareImageBlob/);
+});

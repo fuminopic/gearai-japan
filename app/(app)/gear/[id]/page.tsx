@@ -74,11 +74,6 @@ export default async function GearDetailPage({
       <section className="overflow-hidden rounded-[20px] bg-white shadow-sm">
         <div className="grid gap-0 lg:grid-cols-[22rem_minmax(0,1fr)]">
           <div className="border-b border-stone-100 bg-stone-50/70 p-5 lg:border-b-0 lg:border-r">
-            <div className="mb-3 flex items-center justify-end">
-              <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#14724e]">
-                {statusLabels[gear.status]}
-              </span>
-            </div>
             {gear.image_url ? (
               <GearImageViewer
                 src={gear.image_url}

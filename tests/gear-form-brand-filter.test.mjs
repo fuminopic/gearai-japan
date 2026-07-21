@@ -171,3 +171,26 @@ test("selecting a product answers where the finger is, not off-screen", () => {
   // 行の分類チップは、すぐ上のグループ見出しと重複していたので外した
   assert.doesNotMatch(source, /rounded-full bg-forest-50 px-2 py-0\.5 font-bold text-forest-800/);
 });
+
+test("editing an existing gear goes straight to the manual form, no catalog picker", () => {
+  const source = readFileSync(
+    new URL("../src/components/gear-form.tsx", import.meta.url),
+    "utf8"
+  );
+  // 既存ギアの編集(manualMode)や手入力に切り替えた時は、カタログ検索を
+  // 出さない。以前は無条件で描かれ、編集時に検索窓が再び現れていた。
+  assert.match(source, /\{!manualMode \? \(\n\s*<section className="overflow-hidden rounded-\[20px\]/);
+  // 手入力フォームには写真の追加・変更・削除がある
+  assert.match(source, /写真を追加/);
+  assert.match(source, /写真を削除/);
+});
+
+test("the secondary page header sits above the overlapping card", () => {
+  const shellSource = readFileSync(
+    new URL("../src/components/ui/page-shell.tsx", import.meta.url),
+    "utf8"
+  );
+  // 戻る/メニューの mt-[42px] はホーム(下にロゴだけ)由来。その下に見出しが
+  // 続くここでは、見出しがカードの重なりゾーンに入るので付けない。
+  assert.doesNotMatch(shellSource, /mt-\[42px\]/);
+});

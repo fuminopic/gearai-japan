@@ -463,6 +463,7 @@ export function GearForm({
       <input type="hidden" name="official_weight_grams" value={officialWeightGrams} />
       <input type="hidden" name="returnTo" value={returnTo ?? ""} />
 
+      {!manualMode ? (
       <section className="overflow-hidden rounded-[20px] bg-white shadow-sm">
         <div className="px-4 py-4 sm:px-5">
           <div className="flex items-center gap-2 text-xs font-bold text-[#14724e]">
@@ -647,6 +648,7 @@ export function GearForm({
           )}
         </div>
       </section>
+      ) : null}
 
       {manualMode ? (
         <section ref={manualEntryRef} className="scroll-mt-6 rounded-[20px] bg-white p-5 shadow-sm">

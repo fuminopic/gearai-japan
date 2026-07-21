@@ -54,11 +54,11 @@ export function PageShell({
             href={backHref}
             aria-label={backLabel}
             data-guarded-back=""
-            className="-ml-2 mt-[42px] inline-flex h-10 w-10 items-center justify-center rounded-xl text-white transition-transform active:scale-95"
+            className="-ml-2 inline-flex h-10 w-10 items-center justify-center rounded-xl text-white transition-transform active:scale-95"
           >
             <ArrowLeft aria-hidden className="h-5 w-5" />
           </Link>
-          <AppMenuDrawer buttonClassName="-mr-2 mt-[42px] inline-flex h-10 w-10 items-center justify-center rounded-xl text-white transition-transform active:scale-95" />
+          <AppMenuDrawer buttonClassName="-mr-2 inline-flex h-10 w-10 items-center justify-center rounded-xl text-white transition-transform active:scale-95" />
         </div>
         <div className="mt-2 flex items-end justify-between gap-3">
           <div className="min-w-0 flex-1">

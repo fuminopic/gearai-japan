@@ -92,7 +92,8 @@ export async function createPackShareImageBlob(
   const numberPart = unitMatch ? unitMatch[1] : gramsValue;
   const unitPart = unitMatch ? unitMatch[2] : "";
   const right = W - 56;
-  const baseline = 82;
+  // 3つとも同じベースラインに乗せる(kg基準)。大きい数値は上に伸びるだけ。
+  const baseline = 84;
 
   ctx.textAlign = "left";
   ctx.font = `500 30px ${FONT}`;
@@ -101,17 +102,17 @@ export async function createPackShareImageBlob(
   const numberW = ctx.measureText(numberPart).width;
   ctx.font = `500 26px ${FONT}`;
   const labelW = ctx.measureText("総重量").width;
-  const gapSm = 10;
+  const gapSm = 12;
 
   const numberX = right - unitW - numberW;
   const labelX = numberX - gapSm - labelW;
 
   ctx.font = `500 26px ${FONT}`;
-  ctx.fillText("総重量", labelX, baseline - 4);
+  ctx.fillText("総重量", labelX, baseline);
   ctx.font = `700 60px ${FONT}`;
-  ctx.fillText(numberPart, numberX, baseline + 6);
+  ctx.fillText(numberPart, numberX, baseline);
   ctx.font = `500 30px ${FONT}`;
-  ctx.fillText(unitPart, right - unitW, baseline + 6);
+  ctx.fillText(unitPart, right - unitW, baseline);
 
   // グリッド
   const footerH = 96;
@@ -122,7 +123,15 @@ export async function createPackShareImageBlob(
   const gridW = W - sidePad * 2;
   const cellW = (gridW - gap * (COLUMNS - 1)) / COLUMNS;
   const cellH = (gridBottom - gridTop - gap * (ROWS - 1)) / ROWS;
-  const imageH = cellH - 76; // 下76pxを名前と重量に使う
+
+  // ホームのギアカード(126x150)と同じ比率で画像枠を取る:
+  //   横パディング 12/126、上パディング 17/150、画像高 81/150、
+  //   名前は下から 27/150、重量は下から 14/150。
+  const padX = cellW * (12 / 126);
+  const padTop = cellH * (17 / 150);
+  const imageBoxH = cellH * (81 / 150);
+  const nameBottom = cellH * (27 / 150);
+  const weightBottom = cellH * (14 / 150);
 
   const images = await Promise.all(ordered.map((item) => loadGearImage(item.image_url)));
 
@@ -143,20 +152,25 @@ export async function createPackShareImageBlob(
     ctx.fill();
     ctx.restore();
 
-    // 画像(等比で内接、中央)
+    // 画像。ホームと同じ object-contain(等比内接) + 中央。
     const img = images[i];
-    const boxX = x + 20;
-    const boxY = y + 18;
-    const boxW = cellW - 40;
-    const boxH = imageH - 18;
+    const boxX = x + padX;
+    const boxY = y + padTop;
+    const boxW = cellW - padX * 2;
+    const boxH = imageBoxH;
 
     if (img) {
       const scale = Math.min(boxW / img.width, boxH / img.height);
       const dw = img.width * scale;
       const dh = img.height * scale;
+      // ホームは mix-blend-multiply で白背景をカードに溶かしている。
+      // canvas では multiply 合成で同じにする(白×白=白で消える)。
+      ctx.save();
+      ctx.globalCompositeOperation = "multiply";
       ctx.drawImage(img, boxX + (boxW - dw) / 2, boxY + (boxH - dh) / 2, dw, dh);
+      ctx.restore();
     } else {
-      // 画像が無い/読み込めない時のプレースホルダ(汚染回避で失敗した時もここ)
+      // 画像が無い/読み込めない時のプレースホルダ
       ctx.fillStyle = "#f1efe8";
       roundRectPath(ctx, boxX, boxY, boxW, boxH, 16);
       ctx.fill();
@@ -166,20 +180,20 @@ export async function createPackShareImageBlob(
       ctx.fillText("？", boxX + boxW / 2, boxY + boxH / 2 + 14);
     }
 
-    // 名前(1行・末尾省略)
+    // 名前(1行・末尾省略)。ホームと同じく下から nameBottom。
     ctx.fillStyle = COLORS.ink;
     ctx.textAlign = "center";
     ctx.font = `700 24px ${FONT}`;
-    drawTruncatedText(ctx, item.name, x + cellW / 2, y + cellH - 40, cellW - 28);
+    drawTruncatedText(ctx, item.name, x + cellW / 2, y + cellH - nameBottom, cellW - padX * 2);
 
-    // 重量
+    // 重量。下から weightBottom。
     const weightG = getPackItemWeightGrams(item);
     ctx.fillStyle = COLORS.sub;
     ctx.font = `500 22px ${FONT}`;
     ctx.fillText(
       weightG === null ? "重量未入力" : formatWeight(weightG),
       x + cellW / 2,
-      y + cellH - 12
+      y + cellH - weightBottom
     );
   }
 
@@ -213,46 +227,23 @@ export async function createPackShareImageBlob(
 
 // ギア写真の読み込み。
 //
-// 最初は <img crossOrigin="anonymous"> で読んでいたが、同じURLをホームや
-// マイパックが先に普通の <img>(CORSなし)で読んでキャッシュしていると、
-// ブラウザがそのCORSなしのキャッシュを返してしまい、CORSチェックに落ちて
-// onerror になる(一部だけ「？」になるのはこれ)。
-//
-// fetch(mode:cors) で blob を取り、object URL 経由で読み込む。object URL は
-// 同一オリジン扱いなので canvas を汚染しない。cache:"reload" で <img> の
-// 汚染キャッシュを避け、必ずCORSのレスポンスを取り直す。失敗しても全体は
-// 止めず null(プレースホルダ)に落とす。
-async function loadGearImage(url: string | null): Promise<HTMLImageElement | null> {
+// カタログ商品の画像は各メーカーの外部CDN(CORSヘッダー無し)にあり、
+// 直接 canvas に描くと汚染して書き出せない。自オリジンの画像プロキシ
+// (/api/gear-image)を通すと、canvas から見て同一オリジンになり汚染
+// しない。ユーザーがアップした Supabase の画像も同じ経路でよい。
+// 失敗しても全体は止めず null(プレースホルダ)に落とす。
+function loadGearImage(url: string | null): Promise<HTMLImageElement | null> {
   if (!url) {
-    return null;
+    return Promise.resolve(null);
   }
 
-  try {
-    const response = await fetch(url, { mode: "cors", cache: "reload" });
-    if (!response.ok) {
-      return null;
-    }
-    const blob = await response.blob();
-    return await loadObjectUrlImage(blob);
-  } catch (error) {
-    console.error("Gear image fetch failed:", error);
-    return null;
-  }
-}
+  const proxied = `/api/gear-image?url=${encodeURIComponent(url)}`;
 
-function loadObjectUrlImage(blob: Blob): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
-    const objectUrl = URL.createObjectURL(blob);
     const img = new Image();
-    img.onload = () => {
-      resolve(img);
-      URL.revokeObjectURL(objectUrl);
-    };
-    img.onerror = () => {
-      resolve(null);
-      URL.revokeObjectURL(objectUrl);
-    };
-    img.src = objectUrl;
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = proxied;
   });
 }
 

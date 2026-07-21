@@ -247,11 +247,21 @@ test("my pack can be saved as a magazine-style share image", () => {
   assert.match(imageSource, /\.slice\(0, MAX_ITEMS\)/);
   // 署名URLを canvas に描くための crossOrigin。失敗しても null で
   // プレースホルダに落とし、1枚読めないだけで共有不能にしない。
-  // <img crossOrigin> は先に読まれたCORSなしキャッシュに当たると
-  // 一部だけ失敗する。fetch(mode:cors)→blob→object URL で汚染を避ける。
-  assert.match(imageSource, /fetch\(url, \{ mode: "cors", cache: "reload" \}\)/);
-  assert.match(imageSource, /createObjectURL\(blob\)/);
+  // カタログ商品画像は外部CDN(CORS無し)なので、自オリジンの画像プロキシを
+  // 通す。同一オリジンになり canvas を汚染しない。
+  assert.match(imageSource, /\/api\/gear-image\?url=/);
   assert.doesNotMatch(imageSource, /img\.crossOrigin = "anonymous"/);
+  // プロキシは許可リスト方式で SSRF を防ぐ
+  const proxySource = readFileSync(
+    new URL("../app/api/gear-image/route.ts", import.meta.url),
+    "utf8"
+  );
+  assert.match(proxySource, /ALLOWED_IMAGE_HOSTS/);
+  assert.match(proxySource, /target\.protocol !== "https:"/);
+  assert.match(proxySource, /host not allowed/);
+  assert.match(proxySource, /content-type/);
+  // ホームと同じ写真の見せ方(白背景を溶かす multiply)
+  assert.match(imageSource, /globalCompositeOperation = "multiply"/);
   // 中央ロゴはホームの白ワードマークを使う
   assert.match(imageSource, /yamajitaku-wordmark-white\.png/);
   // 総重量は 総重量(小)+数値(大)+単位(小) を右揃えで積む

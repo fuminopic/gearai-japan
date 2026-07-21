@@ -118,14 +118,7 @@ export function PackContents({ items: serverItems, addHref }: PackContentsProps)
                 className="inline-flex h-8 items-center justify-center gap-1 rounded-xl border border-[#4E914A] px-2.5 text-[12px] font-bold leading-none text-[#14724e] transition active:scale-95 disabled:opacity-60 sm:px-3"
               >
                 <ImageDown aria-hidden className="h-3.5 w-3.5" />
-                {/* 狭い画面では文字を隠してアイコンだけにし、
-                    「マイギアから追加」と競合させない。 */}
-                <span className="hidden sm:inline">
-                  {shareState === "working" ? "作成中..." : "画像で共有"}
-                </span>
-                <span className="sm:hidden">
-                  {shareState === "working" ? "..." : ""}
-                </span>
+                {shareState === "working" ? "作成中..." : "画像で共有"}
               </button>
             ) : null}
             <Link

@@ -80,7 +80,7 @@ export async function createPackShareImageBlob(
   // 中央ロゴ。文字ではなく、ホームの緑バンドと同じ白ワードマークを載せる。
   const wordmark = await loadLocalImage("/yamajitaku-wordmark-white.png");
   if (wordmark) {
-    const logoH = 56;
+    const logoH = 67; // ホームと同じワードマークを +20%
     const logoW = (wordmark.width / wordmark.height) * logoH;
     ctx.drawImage(wordmark, (W - logoW) / 2, (bandH - logoH) / 2, logoW, logoH);
   }

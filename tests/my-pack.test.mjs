@@ -247,8 +247,16 @@ test("my pack can be saved as a magazine-style share image", () => {
   assert.match(imageSource, /\.slice\(0, MAX_ITEMS\)/);
   // 署名URLを canvas に描くための crossOrigin。失敗しても null で
   // プレースホルダに落とし、1枚読めないだけで共有不能にしない。
-  assert.match(imageSource, /img\.crossOrigin = "anonymous"/);
-  assert.match(imageSource, /img\.onerror = \(\) => resolve\(null\)/);
+  // <img crossOrigin> は先に読まれたCORSなしキャッシュに当たると
+  // 一部だけ失敗する。fetch(mode:cors)→blob→object URL で汚染を避ける。
+  assert.match(imageSource, /fetch\(url, \{ mode: "cors", cache: "reload" \}\)/);
+  assert.match(imageSource, /createObjectURL\(blob\)/);
+  assert.doesNotMatch(imageSource, /img\.crossOrigin = "anonymous"/);
+  // 中央ロゴはホームの白ワードマークを使う
+  assert.match(imageSource, /yamajitaku-wordmark-white\.png/);
+  // 総重量は 総重量(小)+数値(大)+単位(小) を右揃えで積む
+  assert.match(imageSource, /const numberPart =/);
+  assert.match(imageSource, /const unitPart =/);
   // 端末の共有シート、無ければダウンロードに落とす
   assert.match(imageSource, /navigator\.share/);
   assert.match(imageSource, /function downloadPackImage/);

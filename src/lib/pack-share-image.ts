@@ -77,21 +77,41 @@ export async function createPackShareImageBlob(
   ctx.font = `700 52px ${FONT}`;
   ctx.fillText("My Pack", 56, 84);
 
-  // 中央ロゴ
-  ctx.textAlign = "center";
-  ctx.font = `500 40px ${FONT}`;
-  ctx.fillText("山支度", W / 2, 66);
-  ctx.font = `500 16px ${FONT}`;
-  ctx.fillText("Y A M A J I T A K U", W / 2, 92);
+  // 中央ロゴ。文字ではなく、ホームの緑バンドと同じ白ワードマークを載せる。
+  const wordmark = await loadLocalImage("/yamajitaku-wordmark-white.png");
+  if (wordmark) {
+    const logoH = 56;
+    const logoW = (wordmark.width / wordmark.height) * logoH;
+    ctx.drawImage(wordmark, (W - logoW) / 2, (bandH - logoH) / 2, logoW, logoH);
+  }
 
-  // 右肩に総重量
-  ctx.textAlign = "right";
+  // 右肩に総重量。「総重量(小) 4.87(大) kg(小)」を右揃えで積む。
+  // 右端から kg → 数値 → ラベル の順に幅を測って戻していく。
+  const gramsValue = formatWeight(context.totalWeightG, { compact: true }); // 例 "4.87kg" or "870g"
+  const unitMatch = gramsValue.match(/([\d.,]+)(\D+)$/);
+  const numberPart = unitMatch ? unitMatch[1] : gramsValue;
+  const unitPart = unitMatch ? unitMatch[2] : "";
+  const right = W - 56;
+  const baseline = 82;
+
+  ctx.textAlign = "left";
+  ctx.font = `500 30px ${FONT}`;
+  const unitW = ctx.measureText(unitPart).width;
+  ctx.font = `700 60px ${FONT}`;
+  const numberW = ctx.measureText(numberPart).width;
   ctx.font = `500 26px ${FONT}`;
-  const totalLabel = "総重量";
-  ctx.fillText(totalLabel, W - 160, 78);
-  ctx.font = `700 52px ${FONT}`;
-  const totalValue = formatWeight(context.totalWeightG, { compact: true });
-  ctx.fillText(totalValue, W - 56, 84);
+  const labelW = ctx.measureText("総重量").width;
+  const gapSm = 10;
+
+  const numberX = right - unitW - numberW;
+  const labelX = numberX - gapSm - labelW;
+
+  ctx.font = `500 26px ${FONT}`;
+  ctx.fillText("総重量", labelX, baseline - 4);
+  ctx.font = `700 60px ${FONT}`;
+  ctx.fillText(numberPart, numberX, baseline + 6);
+  ctx.font = `500 30px ${FONT}`;
+  ctx.fillText(unitPart, right - unitW, baseline + 6);
 
   // グリッド
   const footerH = 96;
@@ -191,20 +211,58 @@ export async function createPackShareImageBlob(
   });
 }
 
-// 署名付きURLを canvas に描くには crossOrigin が要る。Supabase Storage は
-// CORS を返すので通常は通るが、失敗しても全体を止めず null を返して
-// プレースホルダに落とす(1枚読めないだけで共有できないのを避ける)。
-function loadGearImage(url: string | null): Promise<HTMLImageElement | null> {
+// ギア写真の読み込み。
+//
+// 最初は <img crossOrigin="anonymous"> で読んでいたが、同じURLをホームや
+// マイパックが先に普通の <img>(CORSなし)で読んでキャッシュしていると、
+// ブラウザがそのCORSなしのキャッシュを返してしまい、CORSチェックに落ちて
+// onerror になる(一部だけ「？」になるのはこれ)。
+//
+// fetch(mode:cors) で blob を取り、object URL 経由で読み込む。object URL は
+// 同一オリジン扱いなので canvas を汚染しない。cache:"reload" で <img> の
+// 汚染キャッシュを避け、必ずCORSのレスポンスを取り直す。失敗しても全体は
+// 止めず null(プレースホルダ)に落とす。
+async function loadGearImage(url: string | null): Promise<HTMLImageElement | null> {
   if (!url) {
-    return Promise.resolve(null);
+    return null;
   }
 
+  try {
+    const response = await fetch(url, { mode: "cors", cache: "reload" });
+    if (!response.ok) {
+      return null;
+    }
+    const blob = await response.blob();
+    return await loadObjectUrlImage(blob);
+  } catch (error) {
+    console.error("Gear image fetch failed:", error);
+    return null;
+  }
+}
+
+function loadObjectUrlImage(blob: Blob): Promise<HTMLImageElement | null> {
+  return new Promise((resolve) => {
+    const objectUrl = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      resolve(img);
+      URL.revokeObjectURL(objectUrl);
+    };
+    img.onerror = () => {
+      resolve(null);
+      URL.revokeObjectURL(objectUrl);
+    };
+    img.src = objectUrl;
+  });
+}
+
+// ローカルの静的画像(ロゴ)。同一オリジンなので汚染しない。
+function loadLocalImage(src: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const img = new Image();
-    img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
-    img.src = url;
+    img.src = src;
   });
 }
 

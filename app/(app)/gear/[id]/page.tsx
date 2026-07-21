@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { GearImageViewer } from "@/components/gear-image-viewer";
+import { GearPhotoUpload } from "@/components/gear-photo-upload";
 import { ConfirmSubmitButton } from "@/components/ui/confirm-dialog";
 import { PageShell } from "@/components/ui/page-shell";
 import { deleteGear } from "@/lib/actions/gear";
@@ -74,25 +75,26 @@ export default async function GearDetailPage({
       <section className="overflow-hidden rounded-[20px] bg-white shadow-sm">
         <div className="grid gap-0 lg:grid-cols-[22rem_minmax(0,1fr)]">
           <div className="border-b border-stone-100 bg-stone-50/70 p-5 lg:border-b-0 lg:border-r">
-            {gear.image_url ? (
-              <GearImageViewer
-                src={gear.image_url}
-                alt={gear.name}
-                className="h-72 sm:h-80 lg:h-96"
-              />
+            {isCatalog ? (
+              gear.image_url ? (
+                <GearImageViewer
+                  src={gear.image_url}
+                  alt={gear.name}
+                  className="h-72 sm:h-80 lg:h-96"
+                />
+              ) : (
+                <div className="flex h-72 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-stone-300 bg-white text-center text-stone-400 sm:h-80 lg:h-96">
+                  <ImagePlus className="h-8 w-8" />
+                  <p className="text-sm font-semibold">写真未登録</p>
+                </div>
+              )
             ) : (
-              <div className="flex h-72 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-stone-300 bg-white text-center text-stone-400 sm:h-80 lg:h-96">
-                <ImagePlus className="h-8 w-8" />
-                <p className="text-sm font-semibold">写真未登録</p>
-                {!isCatalog ? (
-                  <Link
-                    href={buildGearHref(`/gear/${gear.id}/edit`, returnTo)}
-                    className="text-xs font-bold text-[#14724e]"
-                  >
-                    写真を追加
-                  </Link>
-                ) : null}
-              </div>
+              // 自分で登録したギアは、その場で写真を追加・変更・削除できる。
+              <GearPhotoUpload
+                gearId={gear.id}
+                gearName={gear.name}
+                initialImageUrl={gear.image_url}
+              />
             )}
           </div>
 

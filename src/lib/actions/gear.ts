@@ -75,6 +75,40 @@ export async function updateGear(
   return { ok: true, redirectTo: returnTo ?? "/gear?saved=updated" };
 }
 
+// ギア詳細から、その場で写真だけを差し替える(追加・削除)。
+// フルの編集フォームに飛ばず、詳細ページで完結させるための軽量版。
+// 官方カタログ(product_id 非空)は読み取り専用なので触れない。
+export async function updateGearImage(
+  id: string,
+  imageStoragePath: string | null
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { supabase, user } = await requireUser();
+
+  const { data, error } = await supabase
+    .from("user_gear")
+    .update({ image_storage_path: imageStoragePath })
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .is("product_id", null)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  if (!data) {
+    return { ok: false, error: "写真を更新できませんでした" };
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/gear");
+  revalidatePath(`/gear/${id}`);
+  revalidatePath("/pack");
+
+  return { ok: true };
+}
+
 export async function deleteGear(id: string, formData: FormData) {
   const { supabase, user } = await requireUser();
   const returnTo = getReturnTo(formData);

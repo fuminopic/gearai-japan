@@ -314,3 +314,32 @@ test("the catalog picker matches the rest of the app", () => {
   assert.doesNotMatch(source, /hover:bg-forest/);
   assert.match(source, /\[@media\(hover:hover\)\]:hover:/);
 });
+
+test("user gear can add or change its photo in place on the detail page", () => {
+  const detailSource = readFileSync(
+    new URL("../app/(app)/gear/[id]/page.tsx", import.meta.url),
+    "utf8"
+  );
+  const uploadSource = readFileSync(
+    new URL("../src/components/gear-photo-upload.tsx", import.meta.url),
+    "utf8"
+  );
+  const actionsSource = readFileSync(
+    new URL("../src/lib/actions/gear.ts", import.meta.url),
+    "utf8"
+  );
+
+  // 詳細ページ: 自分のギアは編集フォームに飛ばず、その場で写真を扱う。
+  // カタログ品は読み取り専用のまま。
+  assert.match(detailSource, /<GearPhotoUpload/);
+  assert.match(detailSource, /isCatalog \?/);
+  // 軽量の画像専用アクション(product_id null のみ)
+  assert.match(actionsSource, /export async function updateGearImage/);
+  assert.match(actionsSource, /\.is\("product_id", null\)/);
+  // アップロード → 保存 → 再取得
+  assert.match(uploadSource, /storage\n?\s*\.from\("gear-images"\)|from\("gear-images"\)/);
+  assert.match(uploadSource, /updateGearImage/);
+  assert.match(uploadSource, /router\.refresh/);
+  assert.match(uploadSource, /写真を変更/);
+  assert.match(uploadSource, /写真を削除/);
+});

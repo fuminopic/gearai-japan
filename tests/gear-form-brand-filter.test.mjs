@@ -26,6 +26,20 @@ const gearImageStorageMigrationSource = readFileSync(
   new URL("../supabase/migrations/032_user_gear_private_image_storage.sql", import.meta.url),
   "utf8"
 );
+const photographyConsolidationMigrationSource = readFileSync(
+  new URL("../supabase/migrations/20260722070723_consolidate_photography_under_other.sql", import.meta.url),
+  "utf8"
+);
+
+test("manual gear entry offers photography only as an Other subcategory while legacy photography remains editable", () => {
+  assert.match(gearDataSource, /const PRODUCT_CATEGORY_KEYS = \[[\s\S]*"other"/);
+  assert.doesNotMatch(gearDataSource, /"photography"/);
+  assert.match(gearDataSource, /from\("gear_subcategories"\)[\s\S]*order\("sort_order"/);
+  assert.match(gearFormSource, /subcategories\.filter\(\(item\) => item\.category_id === categoryId\)/);
+  assert.match(gearFormSource, /!gear\?\.gear_categories[\s\S]*categories\.some/);
+  assert.match(photographyConsolidationMigrationSource, /where category\.name_en = 'other'/);
+  assert.match(photographyConsolidationMigrationSource, /set is_default = false/);
+});
 
 test("gear add form exposes a product brand filter beside product search", () => {
   assert.match(gearFormSource, /brandFilter/);

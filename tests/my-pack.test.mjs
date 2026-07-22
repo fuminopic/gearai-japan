@@ -12,6 +12,10 @@ const photographyMigrationSource = readFileSync(
   new URL("../supabase/migrations/20260722035016_add_photography_gear_category.sql", import.meta.url),
   "utf8"
 );
+const photographyConsolidationMigrationSource = readFileSync(
+  new URL("../supabase/migrations/20260722070723_consolidate_photography_under_other.sql", import.meta.url),
+  "utf8"
+);
 const packSummarySource = readFileSync(
   new URL("../src/lib/pack-summary.ts", import.meta.url),
   "utf8"
@@ -115,7 +119,7 @@ test("pack summary counts weight-less gear without adding it to known weight", (
   assert.equal(summary.categoryWeights[0].weightG, 350);
 });
 
-test("photography taxonomy is idempotent and photography pack gear keeps its own weight group", () => {
+test("photography taxonomy keeps legacy rows compatible while grouping shoes and photography into six categories", () => {
   assert.match(photographyMigrationSource, /\('撮影機材', 'photography', 110, true\)/);
   for (const subcategory of [
     "camera",
@@ -130,22 +134,45 @@ test("photography taxonomy is idempotent and photography pack gear keeps its own
   assert.match(photographyMigrationSource, /on conflict \(name_en\) do update/);
   assert.match(photographyMigrationSource, /on conflict \(category_id, name_en\) do update/);
   assert.doesNotMatch(photographyMigrationSource, /update public\.(user_gear|gear_products)/i);
+  assert.match(photographyConsolidationMigrationSource, /where category\.name_en = 'other'/);
+  assert.match(photographyConsolidationMigrationSource, /'撮影機材', 'photography', 110/);
+  assert.match(photographyConsolidationMigrationSource, /set is_default = false/);
+  assert.match(photographyConsolidationMigrationSource, /on conflict \(category_id, name_en\) do update/);
+  assert.doesNotMatch(photographyConsolidationMigrationSource, /update public\.(user_gear|gear_products|trip_plans)/i);
 
   const summary = buildPackSummary([
     gear({
-      id: "camera",
+      id: "legacy-camera",
       category_id: "photography",
       subcategory_id: "camera",
       weight_grams: 420,
       gear_categories: { id: "photography", name_ja: "撮影機材", name_en: "photography" },
       gear_subcategories: { id: "camera", name_ja: "カメラ本体", name_en: "camera" }
+    }),
+    gear({
+      id: "new-camera",
+      category_id: "other",
+      subcategory_id: "photography",
+      weight_grams: 120,
+      gear_categories: { id: "other", name_ja: "その他", name_en: "other" },
+      gear_subcategories: { id: "photography", name_ja: "撮影機材", name_en: "photography" }
+    }),
+    gear({
+      id: "shoes",
+      category_id: "clothing",
+      subcategory_id: "footwear",
+      weight_grams: 800,
+      gear_categories: { id: "clothing", name_ja: "ウェア", name_en: "clothing" },
+      gear_subcategories: { id: "footwear", name_ja: "フットウェア", name_en: "footwear" }
     })
   ]);
 
-  assert.equal(summary.itemCount, 1);
-  assert.equal(summary.knownWeightG, 420);
+  assert.equal(summary.itemCount, 3);
+  assert.equal(summary.knownWeightG, 1340);
+  assert.equal(summary.majorCategoryTotalCount, 6);
   assert.deepEqual(summary.categoryWeights, [
-    { categoryId: "photography", nameJa: "撮影機材", weightG: 420, count: 1 }
+    { categoryId: "other", nameJa: "その他", weightG: 540, count: 2 },
+    { categoryId: "clothing", nameJa: "ウェア", weightG: 800, count: 1 }
   ]);
 });
 

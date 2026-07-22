@@ -5,7 +5,7 @@ export const MAJOR_GEAR_CATEGORIES = [
     id: "clothing",
     label: "ウェア",
     color: "#2E7D32",
-    categoryAliases: ["clothing", "rainwear"],
+    categoryAliases: ["clothing", "rainwear", "shoes"],
     subcategoryAliases: [
       "rainwear",
       "rain_jacket",
@@ -16,7 +16,12 @@ export const MAJOR_GEAR_CATEGORIES = [
       "trekking_pants",
       "gloves",
       "hat",
-      "sunglasses"
+      "sunglasses",
+      "footwear",
+      "gaiter",
+      "gaiters",
+      "socks",
+      "insole"
     ],
     textHints: [
       "ウェア",
@@ -27,7 +32,14 @@ export const MAJOR_GEAR_CATEGORIES = [
       "ベースレイヤー",
       "グローブ",
       "手袋",
-      "帽子"
+      "帽子",
+      "登山靴",
+      "シューズ",
+      "ブーツ",
+      "ゲイター",
+      "靴下",
+      "ソックス",
+      "インソール"
     ]
   },
   {
@@ -37,22 +49,6 @@ export const MAJOR_GEAR_CATEGORIES = [
     categoryAliases: ["backpack", "backpacking", "carry"],
     subcategoryAliases: ["backpack"],
     textHints: ["ザック", "バックパック", "パック", "ポーチ", "サコッシュ"]
-  },
-  {
-    id: "shoes",
-    label: "シューズ",
-    color: "#F57C00",
-    categoryAliases: [],
-    subcategoryAliases: ["footwear", "gaiter", "gaiters", "socks", "insole"],
-    textHints: [
-      "登山靴",
-      "シューズ",
-      "ブーツ",
-      "ゲイター",
-      "靴下",
-      "ソックス",
-      "インソール"
-    ]
   },
   {
     id: "tentSleep",
@@ -112,21 +108,6 @@ export const MAJOR_GEAR_CATEGORIES = [
     ]
   },
   {
-    id: "photography",
-    label: "撮影機材",
-    color: "#8E24AA",
-    categoryAliases: ["photography"],
-    subcategoryAliases: [
-      "camera",
-      "lens",
-      "tripod",
-      "drone",
-      "camera_battery",
-      "camera_accessory"
-    ],
-    textHints: ["カメラ", "レンズ", "三脚", "雲台", "ドローン", "撮影"]
-  },
-  {
     id: "safetyNav",
     label: "安全・ナビ",
     color: "#0097A7",
@@ -164,6 +145,22 @@ export const MAJOR_GEAR_CATEGORIES = [
       "モバイルバッテリー",
       "予備電池"
     ]
+  },
+  {
+    id: "other",
+    label: "その他",
+    color: "#757575",
+    categoryAliases: ["other", "photography"],
+    subcategoryAliases: [
+      "photography",
+      "camera",
+      "lens",
+      "tripod",
+      "drone",
+      "camera_battery",
+      "camera_accessory"
+    ],
+    textHints: ["カメラ", "レンズ", "三脚", "雲台", "ドローン", "撮影"]
   }
 ] as const;
 

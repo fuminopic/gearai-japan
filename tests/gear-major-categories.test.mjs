@@ -11,11 +11,10 @@ test("retail gear categories use shop-friendly labels and avoid sleeping bag clo
   for (const label of [
     "ウェア",
     "ザック",
-    "シューズ",
     "テント・シュラフ",
     "クッキング",
-    "撮影機材",
-    "安全・ナビ"
+    "安全・ナビ",
+    "その他"
   ]) {
     assert.match(gearMajorCategoriesSource, new RegExp(label));
   }
@@ -40,6 +39,10 @@ test("retail gear categories use shop-friendly labels and avoid sleeping bag clo
   ]) {
     assert.match(gearMajorCategoriesSource, new RegExp(`"${alias}"`));
   }
+  assert.doesNotMatch(gearMajorCategoriesSource, /\{\s*id: "shoes"/);
+  assert.doesNotMatch(gearMajorCategoriesSource, /\{\s*id: "photography"/);
+  assert.match(gearMajorCategoriesSource, /id: "other"[\s\S]*categoryAliases: \["other", "photography"\]/);
+  assert.match(gearMajorCategoriesSource, /id: "clothing"[\s\S]*subcategoryAliases:[\s\S]*"footwear"/);
   assert.match(gearMajorCategoriesSource, /for \(const category of MAJOR_GEAR_CATEGORIES\)[\s\S]*subcategoryAliases/);
   assert.match(gearMajorCategoriesSource, /for \(const category of MAJOR_GEAR_CATEGORIES\)[\s\S]*categoryAliases/);
   assert.match(gearMajorCategoriesSource, /for \(const category of MAJOR_GEAR_CATEGORIES\)[\s\S]*textHints/);

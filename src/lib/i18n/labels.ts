@@ -169,7 +169,8 @@ export const gearSubcategoryLabels: Record<string, string> = {
   tripod: "三脚・雲台",
   drone: "ドローン",
   camera_battery: "バッテリー",
-  camera_accessory: "アクセサリー"
+  camera_accessory: "アクセサリー",
+  photography: "撮影機材"
 };
 
 export const gearMatchingConfidenceLabels: Record<GearMatchingConfidence, string> = {

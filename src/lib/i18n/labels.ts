@@ -163,7 +163,13 @@ export const gearSubcategoryLabels: Record<string, string> = {
   gps: "GPS",
   power_bank: "モバイルバッテリー",
   first_aid_kit: "ファーストエイドキット",
-  headlamp: "ヘッドランプ"
+  headlamp: "ヘッドランプ",
+  camera: "カメラ本体",
+  lens: "レンズ",
+  tripod: "三脚・雲台",
+  drone: "ドローン",
+  camera_battery: "バッテリー",
+  camera_accessory: "アクセサリー"
 };
 
 export const gearMatchingConfidenceLabels: Record<GearMatchingConfidence, string> = {

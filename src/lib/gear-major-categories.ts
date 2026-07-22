@@ -112,6 +112,21 @@ export const MAJOR_GEAR_CATEGORIES = [
     ]
   },
   {
+    id: "photography",
+    label: "撮影機材",
+    color: "#8E24AA",
+    categoryAliases: ["photography"],
+    subcategoryAliases: [
+      "camera",
+      "lens",
+      "tripod",
+      "drone",
+      "camera_battery",
+      "camera_accessory"
+    ],
+    textHints: ["カメラ", "レンズ", "三脚", "雲台", "ドローン", "撮影"]
+  },
+  {
     id: "safetyNav",
     label: "安全・ナビ",
     color: "#0097A7",

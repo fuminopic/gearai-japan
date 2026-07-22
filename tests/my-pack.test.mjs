@@ -8,6 +8,10 @@ const migrationSource = readFileSync(
   new URL("../supabase/migrations/20260715132756_user_pack_items.sql", import.meta.url),
   "utf8"
 );
+const photographyMigrationSource = readFileSync(
+  new URL("../supabase/migrations/20260722035016_add_photography_gear_category.sql", import.meta.url),
+  "utf8"
+);
 const packSummarySource = readFileSync(
   new URL("../src/lib/pack-summary.ts", import.meta.url),
   "utf8"
@@ -109,6 +113,40 @@ test("pack summary counts weight-less gear without adding it to known weight", (
   assert.equal(summary.knownWeightG, 350);
   assert.equal(summary.missingWeightCount, 1);
   assert.equal(summary.categoryWeights[0].weightG, 350);
+});
+
+test("photography taxonomy is idempotent and photography pack gear keeps its own weight group", () => {
+  assert.match(photographyMigrationSource, /\('撮影機材', 'photography', 110, true\)/);
+  for (const subcategory of [
+    "camera",
+    "lens",
+    "tripod",
+    "drone",
+    "camera_battery",
+    "camera_accessory"
+  ]) {
+    assert.match(photographyMigrationSource, new RegExp(`'${subcategory}'`));
+  }
+  assert.match(photographyMigrationSource, /on conflict \(name_en\) do update/);
+  assert.match(photographyMigrationSource, /on conflict \(category_id, name_en\) do update/);
+  assert.doesNotMatch(photographyMigrationSource, /update public\.(user_gear|gear_products)/i);
+
+  const summary = buildPackSummary([
+    gear({
+      id: "camera",
+      category_id: "photography",
+      subcategory_id: "camera",
+      weight_grams: 420,
+      gear_categories: { id: "photography", name_ja: "撮影機材", name_en: "photography" },
+      gear_subcategories: { id: "camera", name_ja: "カメラ本体", name_en: "camera" }
+    })
+  ]);
+
+  assert.equal(summary.itemCount, 1);
+  assert.equal(summary.knownWeightG, 420);
+  assert.deepEqual(summary.categoryWeights, [
+    { categoryId: "photography", nameJa: "撮影機材", weightG: 420, count: 1 }
+  ]);
 });
 
 test("pack actions recheck owned ownership, deduplicate, and only remove the relation", () => {

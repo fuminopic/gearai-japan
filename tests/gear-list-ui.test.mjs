@@ -72,6 +72,7 @@ test("gear list exposes brand and category-oriented list controls", () => {
     "シューズ",
     "テント・シュラフ",
     "クッキング",
+    "撮影機材",
     "安全・ナビ"
   ]) {
     assert.match(gearMajorCategoriesSource, new RegExp(label));

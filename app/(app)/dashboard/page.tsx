@@ -34,16 +34,6 @@ const categoryColorById = new Map<string, string>([
   ["cooking", "#C0763A"],
   ["safetyNav", "#1F9B8E"]
 ]);
-// 图例顺序(按设计稿:ウェア/シューズ/ザック ・ クッキング/安全・ナビ/テント)
-const LEGEND_ORDER = [
-  "clothing",
-  "shoes",
-  "backpack",
-  "cooking",
-  "safetyNav",
-  "tentSleep"
-];
-
 export default async function DashboardPage() {
   // 新規ユーザーのオンボーディング判定は (app)/layout.tsx の AuthGate が
   // App Shell 描画前に行う(ここで二重に判定しない)。
@@ -387,12 +377,6 @@ function GearComposition({ summary }: { summary: DashboardSummary }) {
 
   const distribution = buildGearComposition(summary);
   const activeDistribution = distribution.filter((item) => item.value > 0);
-  const byId = new Map<string, (typeof distribution)[number]>(
-    distribution.map((item) => [item.id, item])
-  );
-  const orderedLegend = LEGEND_ORDER.map((id) => byId.get(id)).filter(
-    (item): item is (typeof distribution)[number] => Boolean(item)
-  );
 
   return (
     <div className="border-t border-stone-100 pt-4">
@@ -404,24 +388,22 @@ function GearComposition({ summary }: { summary: DashboardSummary }) {
       </div>
       <div className="mt-3 flex h-3 overflow-hidden rounded-full bg-stone-100">
         {activeDistribution.length > 0 ? (
-          distribution
-            .filter((item) => item.value > 0)
-            .map((item) => (
-              <span
-                key={item.id}
-                className="h-full"
-                style={{
-                  width: `${Math.max(item.percent, 3)}%`,
-                  backgroundColor: item.color
-                }}
-              />
-            ))
+          activeDistribution.map((item) => (
+            <span
+              key={item.id}
+              className="h-full"
+              style={{
+                width: `${Math.max(item.percent, 3)}%`,
+                backgroundColor: item.color
+              }}
+            />
+          ))
         ) : (
           <span className="h-full w-full bg-stone-200" />
         )}
       </div>
       <div className="mt-4 grid grid-cols-3 gap-x-4 gap-y-3">
-        {orderedLegend.map((item) => (
+        {distribution.map((item) => (
           <div key={item.id} className="min-w-0">
             <span
               className="block h-[5px] w-5 rounded-full"

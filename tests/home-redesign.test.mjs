@@ -279,6 +279,10 @@ test("home gear summary uses the pack-only weight composition bar", () => {
   assert.match(dashboardSource, /flex h-3 overflow-hidden rounded-full bg-stone-100/);
   assert.match(dashboardSource, /grid grid-cols-3 gap-x-4 gap-y-3/);
   assert.match(dashboardSource, /MAJOR_GEAR_CATEGORIES\.map/);
+  assert.match(dashboardSource, /const activeDistribution = distribution\.filter\(\(item\) => item\.value > 0\)/);
+  assert.match(dashboardSource, /activeDistribution\.map\(\(item\) => \(/);
+  assert.match(dashboardSource, /\{distribution\.map\(\(item\) => \(/);
+  assert.doesNotMatch(dashboardSource, /LEGEND_ORDER|orderedLegend/);
   assert.doesNotMatch(dashboardSource, /topCategories/);
   assert.doesNotMatch(dashboardSource, /CategoryDistribution/);
   assert.doesNotMatch(dashboardSource, /DonutChart/);

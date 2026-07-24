@@ -45,8 +45,8 @@ test("Capacitor iOS shell boots the bundled local handoff page", () => {
 
 test("iOS metadata includes App Store ready identity and permissions", () => {
   assert.match(projectSource, /PRODUCT_BUNDLE_IDENTIFIER = com\.yamajitaku\.app;/);
-  assert.match(projectSource, /MARKETING_VERSION = 1\.0\.3;/);
-  assert.match(projectSource, /CURRENT_PROJECT_VERSION = 12;/);
+  assert.match(projectSource, /MARKETING_VERSION = 1\.0\.4;/);
+  assert.match(projectSource, /CURRENT_PROJECT_VERSION = 13;/);
 
   assert.match(infoPlistSource, /<key>CFBundleDisplayName<\/key>\s*<string>山支度<\/string>/);
   assert.match(infoPlistSource, /<key>NSPhotoLibraryUsageDescription<\/key>\s*<string>装備の写真を選択してアップロードするため<\/string>/);

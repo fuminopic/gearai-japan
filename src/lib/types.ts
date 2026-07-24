@@ -10,6 +10,7 @@ export type {
   GearActionResult,
   GearCategory,
   GearFilters,
+  GearPickerProduct,
   GearProduct,
   GearStatus,
   GearSubcategory,

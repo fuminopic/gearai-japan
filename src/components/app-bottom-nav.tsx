@@ -76,7 +76,7 @@ export function AppBottomNav() {
             <Link
               key={item.href}
               href={href}
-              prefetch
+              prefetch={false}
               className={`relative z-10 flex flex-1 touch-manipulation flex-col items-center py-1.5 transition-colors duration-200 active:scale-95 ${
                 active ? "text-[#14724e]" : "text-gray-400"
               }`}

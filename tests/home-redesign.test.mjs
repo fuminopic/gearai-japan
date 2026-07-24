@@ -173,8 +173,9 @@ test("tab switches reuse the client router cache instead of refetching", () => {
   assert.match(nextConfigSource, /staleTimes/);
   assert.match(nextConfigSource, /dynamic: 30/);
 
-  // 下部ナビは完全プリフェッチ(動的ルートでもデータごと先読み)
-  assert.match(appBottomNavSource, /prefetch/);
+  // 下部ナビ自身は全リンクを同時に先読みしない。単一のルート制御器が
+  // 現在地・空き時間・ネットワーク状態を見て候補を選ぶ。
+  assert.match(appBottomNavSource, /prefetch=\{false\}/);
 
   // キャッシュを持つ前提として、書き込み側が必ず該当パスを revalidate する。
   // ここが崩れると古い一覧が最大30秒残る。

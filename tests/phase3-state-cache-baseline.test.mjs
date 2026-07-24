@@ -48,6 +48,7 @@ const recommendationDeleteControlsSource = readSource(
 );
 const accountDeleteButtonSource = readSource("src/components/account-delete-button.tsx");
 const gearDataSource = readSource("src/lib/data/gear.ts");
+const gearPhotoUploadSource = readSource("src/components/gear-photo-upload.tsx");
 const mountainFoundationDataSource = readSource("src/lib/data/mountain-foundation.ts");
 const heroGaugeSource = readSource("src/components/hero-gauge.tsx");
 const dashboardChecklistSource = readSource(
@@ -118,8 +119,9 @@ test("trip checklist localStorage keys keep their legacy plan-id-only shape", ()
   );
 });
 
-test("state, refresh, and cache primitives are visible at their current boundaries", () => {
-  assert.match(tripPlanningUiSource, /router\.refresh\(\)/);
+test("state, refresh, and cache primitives stay at their necessary boundaries", () => {
+  assert.doesNotMatch(tripPlanningUiSource, /router\.refresh\(\)/);
+  assert.doesNotMatch(gearPhotoUploadSource, /router\.refresh\(\)/);
   assert.match(recommendationDeleteControlsSource, /router\.refresh\(\)/);
   assert.match(accountDeleteButtonSource, /router\.refresh\(\)/);
 
@@ -141,4 +143,14 @@ test("state, refresh, and cache primitives are visible at their current boundari
   assert.match(appMenuDrawerSource, /navigator\.serviceWorker\?\.controller\?\.postMessage/);
   assert.match(analyticsSource, /sessionStorage/);
   assert.doesNotMatch(stateRuntimeSource, /sessionStorage/);
+});
+
+test("new gear does not invalidate an unchanged pack body", () => {
+  const createGearSource = gearActionsSource.slice(
+    gearActionsSource.indexOf("export async function createGear"),
+    gearActionsSource.indexOf("export async function updateGear")
+  );
+
+  assert.match(createGearSource, /revalidatePath\("\/pack\/select"\)/);
+  assert.doesNotMatch(createGearSource, /revalidatePath\("\/pack"\)/);
 });

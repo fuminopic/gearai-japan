@@ -50,6 +50,31 @@ export type GearProduct = {
   gear_product_aliases?: Array<{ alias: string }> | null;
 };
 
+// 手入力フォームのカタログ選択に必要な最小投影。計画のマッチング用
+// GearProduct 全体とは分け、RSC で未使用の検証・履歴フィールドを送らない。
+export type GearPickerProduct = Pick<
+  GearProduct,
+  | "id"
+  | "brand"
+  | "model"
+  | "name_ja"
+  | "category_id"
+  | "subcategory_id"
+  | "weight_grams"
+  | "official_weight_grams"
+  | "msrp_jpy"
+  | "size"
+  | "volume"
+  | "color"
+  | "material"
+  | "capacity"
+  | "official_url"
+  | "image_url"
+  | "gear_categories"
+  | "gear_subcategories"
+  | "gear_product_aliases"
+>;
+
 export type UserGear = {
   id: string;
   user_id: string;

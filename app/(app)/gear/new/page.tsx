@@ -4,7 +4,7 @@ import { PageShell } from "@/components/ui/page-shell";
 import { createGear } from "@/lib/actions/gear";
 import {
   getGearCategories,
-  getGearProducts,
+  getGearProductsForPicker,
   getGearSubcategories
 } from "@/lib/data/gear";
 import { buildGearHref, getPlanReturnTo } from "@/lib/plan-return-to";
@@ -21,7 +21,7 @@ export default async function NewGearPage({ searchParams }: NewGearPageProps) {
     searchParams,
     getGearCategories(),
     getGearSubcategories(),
-    getGearProducts()
+    getGearProductsForPicker()
   ]);
   const returnTo = getPlanReturnTo(params.returnTo);
 

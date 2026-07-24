@@ -33,7 +33,8 @@ export async function createGear(
   revalidatePath("/dashboard");
   revalidatePath("/gear");
   revalidatePath("/plan");
-  revalidatePath("/pack");
+  // 新規登録だけでは既存パックの内容は変わらない。選択画面だけ更新して、
+  // パック本文を不要に無効化しない。
   revalidatePath("/pack/select");
 
   return { ok: true, redirectTo: returnTo ?? "/gear?saved=created" };

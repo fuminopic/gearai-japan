@@ -5,7 +5,7 @@ import { PageShell } from "@/components/ui/page-shell";
 import { updateGear } from "@/lib/actions/gear";
 import {
   getGearCategories,
-  getGearProducts,
+  getGearProductsForPicker,
   getGearSubcategories,
   getUserGearById
 } from "@/lib/data/gear";
@@ -30,7 +30,7 @@ export default async function EditGearPage({
   const [categories, subcategories, products, gear] = await Promise.all([
     getGearCategories(),
     getGearSubcategories(),
-    getGearProducts(),
+    getGearProductsForPicker(),
     getUserGearById(id)
   ]);
 

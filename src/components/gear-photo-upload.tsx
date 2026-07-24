@@ -1,7 +1,6 @@
 "use client";
 
 import { ImagePlus, Loader2, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
 import { updateGearImage } from "@/lib/actions/gear";
@@ -27,7 +26,6 @@ export function GearPhotoUpload({
   initialImageUrl,
   className
 }: GearPhotoUploadProps) {
-  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialImageUrl);
   const [status, setStatus] = useState<"idle" | "working">("idle");
@@ -72,7 +70,8 @@ export function GearPhotoUpload({
       }
 
       setPreviewUrl(URL.createObjectURL(file));
-      router.refresh();
+      // updateGearImage は表示中の詳細パスを再検証する。プレビューも先に更新済み
+      // なので、同じ詳細 RSC の追加 refresh はしない。
     } catch (caught) {
       console.error("Gear photo upload failed:", caught);
       setError("写真を保存できませんでした。もう一度お試しください。");
@@ -95,7 +94,6 @@ export function GearPhotoUpload({
         throw new Error(result.error);
       }
       setPreviewUrl(null);
-      router.refresh();
     } catch (caught) {
       console.error("Gear photo removal failed:", caught);
       setError("写真を削除できませんでした。もう一度お試しください。");

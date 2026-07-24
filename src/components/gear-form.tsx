@@ -36,7 +36,7 @@ import { createClient } from "@/lib/supabase/client";
 import type {
   GearActionResult,
   GearCategory,
-  GearProduct,
+  GearPickerProduct,
   GearSubcategory,
   UserGear
 } from "@/lib/types";
@@ -46,7 +46,7 @@ import { UnsavedChangesGuard } from "@/components/ui/unsaved-changes-guard";
 type GearFormProps = {
   categories: GearCategory[];
   subcategories: GearSubcategory[];
-  products: GearProduct[];
+  products: GearPickerProduct[];
   action: (formData: FormData) => Promise<GearActionResult>;
   gear?: UserGear;
   error?: string;
@@ -226,7 +226,7 @@ export function GearForm({
   const categoryProductGroups = useMemo(() => {
     const groups = new Map<
       string,
-      { id: string; label: string; sortOrder: number; products: GearProduct[] }
+      { id: string; label: string; sortOrder: number; products: GearPickerProduct[] }
     >();
 
     for (const product of filteredProducts) {
@@ -321,7 +321,7 @@ export function GearForm({
     });
   }
 
-  function applyProduct(product: GearProduct) {
+  function applyProduct(product: GearPickerProduct) {
     const productName = product.name_ja ?? product.model;
     const productVolume = getProductVolume(product);
     setProductId(product.id);
@@ -1052,7 +1052,7 @@ function ProductResultCard({
   selected,
   onSelect
 }: {
-  product: GearProduct;
+  product: GearPickerProduct;
   selected: boolean;
   onSelect: () => void;
 }) {
@@ -1108,7 +1108,7 @@ function ProductResultCard({
   );
 }
 
-function SelectedProductConfirmCard({ product }: { product: GearProduct }) {
+function SelectedProductConfirmCard({ product }: { product: GearPickerProduct }) {
   const displayName = getProductDisplayTitle(product);
   const productVolume = getProductVolume(product);
   const productCapacity = isBackpackProduct(product) ? null : product.capacity;
@@ -1164,7 +1164,7 @@ function GearPickerActionBar({
   submitStatus,
   onManualEntry
 }: {
-  product: GearProduct | null;
+  product: GearPickerProduct | null;
   submitStatus: "idle" | "pending" | "success";
   onManualEntry: () => void;
 }) {
@@ -1245,7 +1245,7 @@ function ProductImageFallback({
   );
 }
 
-function getProductSearchValues(product: GearProduct) {
+function getProductSearchValues(product: GearPickerProduct) {
   return [
     product.name_ja,
     product.model,
@@ -1266,13 +1266,13 @@ function getProductSearchValues(product: GearProduct) {
   ].filter((value): value is string => Boolean(value));
 }
 
-function getProductCategoryLabel(product: GearProduct) {
+function getProductCategoryLabel(product: GearPickerProduct) {
   return product.gear_categories?.name_ja ?? "その他";
 }
 
 function compareProductPickerItems(
-  a: GearProduct,
-  b: GearProduct,
+  a: GearPickerProduct,
+  b: GearPickerProduct,
   categorySortOrder: Map<string, number>
 ) {
   const categoryA = categorySortOrder.get(a.category_id) ?? Number.MAX_SAFE_INTEGER;
@@ -1294,7 +1294,7 @@ function compareProductPickerItems(
   return brandCollator.compare(a.model, b.model);
 }
 
-function getProductBrandOptions(products: GearProduct[]) {
+function getProductBrandOptions(products: GearPickerProduct[]) {
   const productCountByBrand = new Map<string, number>();
 
   for (const product of products) {
@@ -1452,7 +1452,7 @@ function getBrandSearchAliases(brand: string) {
   return [];
 }
 
-function getProductFamilySearchAliases(product: GearProduct) {
+function getProductFamilySearchAliases(product: GearPickerProduct) {
   const text = `${product.name_ja ?? ""} ${product.model ?? ""}`;
   const normalizedText = normalize(text);
   const aliases: string[] = [];
@@ -1875,7 +1875,7 @@ function getImageExtension(file: File) {
   return "jpg";
 }
 
-function matchesProductQuery(product: GearProduct, query: string) {
+function matchesProductQuery(product: GearPickerProduct, query: string) {
   const values = getProductSearchValues(product);
   const tokens = query
     .toLocaleLowerCase()
@@ -1887,7 +1887,7 @@ function matchesProductQuery(product: GearProduct, query: string) {
 }
 
 function matchesProductToken(
-  product: GearProduct,
+  product: GearPickerProduct,
   values: string[],
   normalizedToken: string
 ) {

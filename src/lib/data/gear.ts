@@ -15,6 +15,7 @@ import { createClient } from "@/lib/supabase/server";
 import type {
   GearCategory,
   GearFilters,
+  GearPickerProduct,
   GearProduct,
   GearSubcategory,
   UserGear
@@ -43,6 +44,13 @@ type GearSubcategoryRow = GearSubcategory;
 type GearProductRow = GearProduct;
 type GearCategoryRelationRow = Pick<GearCategory, "id" | "name_ja" | "name_en">;
 type GearSubcategoryRelationRow = Pick<GearSubcategory, "id" | "name_ja" | "name_en">;
+type SupabaseGearPickerProductRow = Omit<
+  GearPickerProduct,
+  "gear_categories" | "gear_subcategories"
+> & {
+  gear_categories?: GearCategoryRelationRow[] | null;
+  gear_subcategories?: GearSubcategoryRelationRow[] | null;
+};
 type UserGearProductRelationRow = Pick<
   GearProduct,
   | "id"
@@ -171,6 +179,31 @@ export const getGearProducts = cache(async function getGearProducts() {
   }
 
   return data as GearProductRow[];
+});
+
+const GEAR_PICKER_PRODUCT_SELECT =
+  "id,brand,model,name_ja,category_id,subcategory_id,weight_grams,official_weight_grams,msrp_jpy,size,volume,color,material,capacity,official_url,image_url,gear_categories:category_id(id, name_ja, name_en),gear_subcategories:subcategory_id(id, name_ja, name_en),gear_product_aliases(alias)";
+
+// 新規/編集フォームはカタログ検索に必要なフィールドだけを RSC 境界へ渡す。
+// 計画のマッチングは getGearProducts() の完全な型を使い続ける。
+export const getGearProductsForPicker = cache(async function getGearProductsForPicker() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("gear_products")
+    .select(GEAR_PICKER_PRODUCT_SELECT)
+    .eq("discontinued", false)
+    .order("brand", { ascending: true })
+    .order("model", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data as SupabaseGearPickerProductRow[]).map((product) => ({
+    ...product,
+    gear_categories: product.gear_categories?.[0] ?? null,
+    gear_subcategories: product.gear_subcategories?.[0] ?? null
+  }));
 });
 
 export async function getUserGear(filters: GearFilters = {}) {

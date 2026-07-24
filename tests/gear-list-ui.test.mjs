@@ -131,6 +131,12 @@ test("gear list groups registered gear by category without changing cards", () =
   assert.match(gearListSource, /grid gap-2/);
   assert.match(gearDataSource, /isRetailGearCategoryId/);
   assert.match(gearDataSource, /getRetailGearCategory\(item\)\?\.id === filters\.category/);
+  // 無条件の二重 user_gear 読み込みは避ける。ただし表示一覧が部分集合なら
+  // パック集計のために全 owned ギアを別途取る。
+  assert.match(gearPageSource, /hasPartialGearFilters\(filters\)/);
+  assert.match(gearPageSource, /needsSeparateOwnedSummary \? getUserGear\(\{ status: "owned" \}\) : Promise\.resolve\(null\)/);
+  assert.match(gearPageSource, /separateOwnedGear \?\? gear\.filter\(\(item\) => item\.status === "owned"\)/);
+  assert.match(gearPageSource, /filters\.status === "wishlist"/);
   assert.doesNotMatch(gearListSource, /総額/);
   assert.doesNotMatch(gearListSource, /高い順/);
   assert.doesNotMatch(gearListSource, /節約/);
@@ -339,7 +345,7 @@ test("user gear can add or change its photo in place on the detail page", () => 
   // アップロード → 保存 → 再取得
   assert.match(uploadSource, /storage\n?\s*\.from\("gear-images"\)|from\("gear-images"\)/);
   assert.match(uploadSource, /updateGearImage/);
-  assert.match(uploadSource, /router\.refresh/);
+  assert.doesNotMatch(uploadSource, /router\.refresh\(\)/);
   assert.match(uploadSource, /写真を変更/);
   assert.match(uploadSource, /写真を削除/);
 });

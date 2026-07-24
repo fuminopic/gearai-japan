@@ -1,4 +1,4 @@
-import type { GearProduct, UserGear } from "@/lib/types";
+import type { GearPickerProduct, UserGear } from "@/lib/types";
 import { formatWeight } from "@/lib/utils/format";
 
 export function getGearDisplayWeightGrams(item: UserGear) {
@@ -16,7 +16,7 @@ export function getGearDisplayWeightLabel(item: UserGear) {
   return typeof grams === "number" ? formatWeight(grams) : "-";
 }
 
-export function getProductDisplayTitle(product: GearProduct) {
+export function getProductDisplayTitle(product: GearPickerProduct) {
   const baseName = product.name_ja ?? product.model;
   const productVolume = getProductVolume(product);
 
@@ -31,7 +31,7 @@ export function getProductDisplayTitle(product: GearProduct) {
   return baseName;
 }
 
-export function getProductVolume(product: GearProduct) {
+export function getProductVolume(product: GearPickerProduct) {
   if (product.volume) {
     return product.volume;
   }
@@ -47,7 +47,7 @@ export function getProductVolume(product: GearProduct) {
   return null;
 }
 
-export function isBackpackProduct(product: GearProduct) {
+export function isBackpackProduct(product: GearPickerProduct) {
   return (
     normalizeGearText(product.gear_categories?.name_en ?? "") === "backpack" ||
     normalizeGearText(product.gear_subcategories?.name_en ?? "") === "backpack"

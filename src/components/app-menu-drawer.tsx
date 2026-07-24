@@ -245,7 +245,7 @@ function MenuLink({
   return (
     <Link
       href={item.href}
-      prefetch
+        prefetch={false}
       className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition active:scale-[0.98] ${
         active
           ? "bg-[#14724e] text-white"

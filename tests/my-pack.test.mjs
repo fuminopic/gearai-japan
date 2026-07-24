@@ -218,7 +218,8 @@ test("pack pages provide grouped contents, accessible direct removal, and a mult
   assert.match(packContentsSource, /setItems\(\(current\) => current\.filter/);
   assert.match(packContentsSource, /removePackItem\(item\.id\)/);
   assert.match(packContentsSource, /restorePackItem/);
-  assert.match(packContentsSource, /router\.refresh\(\)/);
+  assert.doesNotMatch(packContentsSource, /router\.refresh\(\)/);
+  assert.match(packActionsSource, /revalidatePath\("\/pack"\)/);
   assert.match(packSelectPageSource, /PackGearSelector/);
   assert.match(selectorSource, /ギア名・ブランドで検索/);
   assert.match(selectorSource, /getCategories/);

@@ -10,6 +10,14 @@ const gearDataSource = readFileSync(
   new URL("../src/lib/data/gear.ts", import.meta.url),
   "utf8"
 );
+const gearNewPageSource = readFileSync(
+  new URL("../app/(app)/gear/new/page.tsx", import.meta.url),
+  "utf8"
+);
+const gearEditPageSource = readFileSync(
+  new URL("../app/(app)/gear/[id]/edit/page.tsx", import.meta.url),
+  "utf8"
+);
 const gearActionSource = readFileSync(
   new URL("../src/lib/actions/gear.ts", import.meta.url),
   "utf8"
@@ -47,6 +55,23 @@ test("gear add form exposes a product brand filter beside product search", () =>
   assert.match(gearFormSource, /handleBrandFilter\("all"\)/);
   assert.match(gearFormSource, /公式カタログから選択/);
   assert.match(gearFormSource, /productsForBrand/);
+});
+
+test("gear picker serializes only fields used by the form while planning keeps the full catalog reader", () => {
+  assert.match(gearDataSource, /const GEAR_PICKER_PRODUCT_SELECT/);
+  assert.match(gearDataSource, /getGearProductsForPicker/);
+  assert.match(gearDataSource, /\.select\(GEAR_PICKER_PRODUCT_SELECT\)/);
+  assert.match(gearDataSource, /gear_product_aliases\(alias\)/);
+  assert.doesNotMatch(
+    gearDataSource.slice(
+      gearDataSource.indexOf("const GEAR_PICKER_PRODUCT_SELECT"),
+      gearDataSource.indexOf("export async function getUserGear")
+    ),
+    /measured_weight_grams|released_at|msrp_source_url|last_verified_at|verification_status|created_at/
+  );
+  assert.match(gearNewPageSource, /getGearProductsForPicker\(\)/);
+  assert.match(gearEditPageSource, /getGearProductsForPicker\(\)/);
+  assert.match(gearFormSource, /GearPickerProduct\[\]/);
 });
 
 test("gear add form supports explicit search, suggestions, and real brand logo chips", () => {

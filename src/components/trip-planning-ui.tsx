@@ -579,7 +579,8 @@ export function TripPlanningUI({
             : current
         );
         setDateSaveState("success");
-        router.refresh();
+        // updateTripPlan は /plan を再検証する。表示中の日付は draft に反映済み
+        // なので、ここで追加の RSC refresh は不要。
       } catch (saveError) {
         console.error("Plan date update failed:", saveError);
         setDateSaveState("error");

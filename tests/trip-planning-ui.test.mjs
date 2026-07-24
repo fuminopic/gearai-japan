@@ -272,12 +272,16 @@ test("app navigation responds immediately during dynamic route loading", () => {
   assert.match(appNavSource, /NavigationFeedback/);
   assert.match(appNavSource, /AppRoutePrefetcher/);
   assert.match(appRoutePrefetcherSource, /router\.prefetch/);
-  assert.match(appRoutePrefetcherSource, /primaryPrefetchRoutes/);
-  assert.match(appRoutePrefetcherSource, /"\/dashboard", "\/plan", "\/gear", "\/profile"/);
-  assert.match(appRoutePrefetcherSource, /secondaryPrefetchRoutes/);
-  // メニューに入口の無い /ai は先読みしない
+  assert.match(appRoutePrefetcherSource, /getPrefetchTargets/);
+  assert.match(appRoutePrefetcherSource, /requestIdleCallback/);
+  assert.match(appRoutePrefetcherSource, /saveData/);
+  assert.match(appRoutePrefetcherSource, /effectiveType === "3g"/);
+  // 常駐ナビは一括先読みせず、現在地に応じた候補だけを空き時間に先読みする。
+  assert.doesNotMatch(appRoutePrefetcherSource, /primaryPrefetchRoutes/);
+  assert.doesNotMatch(appRoutePrefetcherSource, /for \(const route of/);
+  // メニューに入口の無い /ai は先読みしない。
   assert.doesNotMatch(appRoutePrefetcherSource, /"\/ai"/);
-  assert.match(appRoutePrefetcherSource, /"\/gear\/new"\] satisfies Route\[\]/);
+  assert.match(appRoutePrefetcherSource, /secondary: "\/gear\/new"/);
   assert.match(appBottomNavSource, /touch-manipulation/);
   assert.match(appBottomNavSource, /active:scale-95/);
   assert.match(navigationFeedbackSource, /document\.addEventListener\("click"/);

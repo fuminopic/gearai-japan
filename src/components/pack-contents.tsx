@@ -4,7 +4,6 @@ import { ImageDown, PackagePlus } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 
 import { removePackItem } from "@/lib/actions/pack";
 import {
@@ -35,7 +34,6 @@ export function PackContents({
   foodWaterWeightG,
   addHref
 }: PackContentsProps) {
-  const router = useRouter();
   const [items, setItems] = useState(serverItems);
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
@@ -70,7 +68,8 @@ export function PackContents({
           return;
         }
 
-        router.refresh();
+        // removePackItem は /pack を再検証する。楽観更新済みの一覧をここで
+        // さらに同じ RSC を二度取りに行くため不要。
       } catch (caught) {
         console.error("Pack item removal failed:", caught);
         setItems((current) => restorePackItem(current, item, snapshot));

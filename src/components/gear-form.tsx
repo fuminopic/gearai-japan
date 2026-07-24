@@ -32,6 +32,7 @@ import {
   weightTypeLabels
 } from "@/lib/i18n/labels";
 import { buildGearHref } from "@/lib/plan-return-to";
+import { hapticError, hapticLight, hapticSelection, hapticSuccess } from "@/lib/haptics";
 import { createClient } from "@/lib/supabase/client";
 import type {
   GearActionResult,
@@ -270,6 +271,7 @@ export function GearForm({
   }
 
   function handleProductCategoryFilter(value: string) {
+    hapticSelection();
     setProductCategoryFilter(value);
     setProductListExpanded(false);
     // 同上:切品类时如果之前锁定了某个具体商品的搜索词,也要清空。
@@ -280,6 +282,7 @@ export function GearForm({
   }
 
   function confirmProductSearch() {
+    hapticLight();
     const exactMatch = productSuggestions.find(
       (product) => normalize(getProductDisplayTitle(product)) === normalize(query)
     );
@@ -291,6 +294,7 @@ export function GearForm({
   }
 
   function handleBrandFilter(value: string) {
+    hapticSelection();
     setBrandFilter(value);
     setProductCategoryFilter("all");
     setProductListExpanded(false);
@@ -305,6 +309,7 @@ export function GearForm({
   }
 
   function startManualEntry() {
+    hapticLight();
     setManualMode(true);
     setProductId("");
     setName((current) => current || query);
@@ -409,6 +414,7 @@ export function GearForm({
       const result = await action(formData);
 
       if (result.ok) {
+        hapticSuccess();
         if (status === "owned") {
           captureAnalyticsEvent("gear_mark_owned", {
             source: "gear_form",
@@ -427,10 +433,12 @@ export function GearForm({
 
         router.push(result.redirectTo as Route);
       } else {
+        hapticError();
         setSubmitStatus("idle");
         setSubmitError(result.error);
       }
     } catch (submitException) {
+      hapticError();
       setSubmitStatus("idle");
       setSubmitError(
         submitException instanceof Error
@@ -502,7 +510,10 @@ export function GearForm({
                   <button
                     key={product.id}
                     type="button"
-                    onClick={() => applyProduct(product)}
+                    onClick={() => {
+                      hapticSelection();
+                      applyProduct(product);
+                    }}
                     className="shrink-0 rounded-full border border-stone-200 bg-white px-3 py-2 text-left text-xs font-bold text-stone-700"
                   >
                     <span className="block max-w-44 truncate">
@@ -597,7 +608,10 @@ export function GearForm({
                         key={product.id}
                         product={product}
                         selected={product.id === productId}
-                        onSelect={() => applyProduct(product)}
+                        onSelect={() => {
+                          hapticSelection();
+                          applyProduct(product);
+                        }}
                       />
                     ))}
                   </div>
@@ -606,7 +620,10 @@ export function GearForm({
               {!hasProductQuery && hiddenProductCount > 0 ? (
                 <button
                   type="button"
-                  onClick={() => setProductListExpanded(true)}
+                  onClick={() => {
+                    hapticLight();
+                    setProductListExpanded(true);
+                  }}
                   className="rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-bold text-[#14724e] shadow-sm transition active:scale-[0.99]"
                 >
                   もっと表示
@@ -618,7 +635,10 @@ export function GearForm({
               {!hasProductQuery && productListExpanded && productsForCategory.length > 12 ? (
                 <button
                   type="button"
-                  onClick={() => setProductListExpanded(false)}
+                  onClick={() => {
+                    hapticLight();
+                    setProductListExpanded(false);
+                  }}
                   className="rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-stone-600 shadow-sm transition hover:bg-stone-50"
                 >
                   表示を少なくする

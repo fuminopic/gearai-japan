@@ -15,6 +15,7 @@ import {
   getRetailGearCategory,
   MAJOR_GEAR_CATEGORIES
 } from "@/lib/gear-major-categories";
+import { hapticSelection } from "@/lib/haptics";
 import { buildPackSummary, getPackItemWeightGrams } from "@/lib/pack-summary";
 import type { UserGear } from "@/lib/types";
 import { formatWeight } from "@/lib/utils/format";
@@ -53,6 +54,7 @@ export function PackContents({
 
     const snapshot = items;
     removingIdsRef.current.add(item.id);
+    hapticSelection();
     setError(null);
     setItems((current) => current.filter((currentItem) => currentItem.id !== item.id));
 

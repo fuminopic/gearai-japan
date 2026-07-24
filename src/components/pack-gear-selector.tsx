@@ -7,6 +7,7 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { addPackItems } from "@/lib/actions/pack";
+import { hapticError, hapticSelection, hapticSuccess } from "@/lib/haptics";
 import { getPackItemWeightGrams } from "@/lib/pack-summary";
 import type { UserGear } from "@/lib/types";
 import { formatWeight } from "@/lib/utils/format";
@@ -47,6 +48,7 @@ export function PackGearSelector({ gear, packGearIds }: PackGearSelectorProps) {
       return;
     }
 
+    hapticSelection();
     setSelectedIds((current) => {
       const next = new Set(current);
 
@@ -73,6 +75,7 @@ export function PackGearSelector({ gear, packGearIds }: PackGearSelectorProps) {
         const result = await addPackItems(idsToAdd);
 
         if (!result.ok) {
+          hapticError();
           setError(result.error);
           return;
         }
@@ -81,9 +84,11 @@ export function PackGearSelector({ gear, packGearIds }: PackGearSelectorProps) {
         // 失敗時は selectedIds を残すため、ユーザーは内容を失わず再試行できる。
         setExistingIds((current) => new Set([...current, ...idsToAdd]));
         setSelectedIds(new Set());
+        hapticSuccess();
         router.push("/pack" as Route);
       } catch (caught) {
         console.error("Pack bulk add failed:", caught);
+        hapticError();
         setError("通信できませんでした。電波の良い場所で、もう一度お試しください。");
       }
     });

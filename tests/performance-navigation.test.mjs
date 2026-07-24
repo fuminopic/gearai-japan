@@ -44,7 +44,10 @@ test("bottom navigation acknowledges the intended tab before a dynamic route res
   assert.match(bottomNavSource, /const \[pendingHref, setPendingHref\] = useState<Route \| null>\(null\)/);
   assert.match(bottomNavSource, /const activePath = pendingHref \?\? pathname/);
   assert.match(bottomNavSource, /onPointerDown=\{\(\) => \{\s*setPendingHref\(item\.href\)/);
-  assert.match(bottomNavSource, /onClick=\{\(\) => setPendingHref\(item\.href\)\}/);
+  assert.match(
+    bottomNavSource,
+    /onClick=\{\(\) => \{\s*setPendingHref\(item\.href\);\s*hapticLight\(\);\s*\}\}/
+  );
   assert.match(bottomNavSource, /setPendingHref\(null\)/);
   // ここで新しいユーザー RSC / HTML のキャッシュは作らない。
   assert.doesNotMatch(bottomNavSource, /router\.prefetch/);

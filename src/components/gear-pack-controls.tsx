@@ -16,6 +16,7 @@ import {
 } from "react";
 
 import { addPackItems, removePackItem } from "@/lib/actions/pack";
+import { hapticSelection } from "@/lib/haptics";
 import { formatWeight } from "@/lib/utils/format";
 
 // マイギアの各行からマイパックを出し入れするための状態。
@@ -98,6 +99,7 @@ export function GearPackProvider({
         return;
       }
 
+      hapticSelection();
       const nextPacked = !packed;
       inFlightRef.current.add(gearId);
       setPendingIds(new Set(inFlightRef.current));

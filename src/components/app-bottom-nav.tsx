@@ -7,6 +7,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { buildGearHref, getCurrentPlanReturnTo } from "@/lib/plan-return-to";
+import { hapticLight } from "@/lib/haptics";
 
 const bottomNavItems = [
   { href: "/dashboard", label: "ホーム", icon: Home },
@@ -89,7 +90,10 @@ export function AppBottomNav() {
               onPointerDown={() => {
                 setPendingHref(item.href);
               }}
-              onClick={() => setPendingHref(item.href)}
+              onClick={() => {
+                setPendingHref(item.href);
+                hapticLight();
+              }}
               className={`relative z-10 flex flex-1 touch-manipulation flex-col items-center py-1.5 transition-colors duration-200 active:scale-95 ${
                 active ? "text-[#14724e]" : "text-gray-400"
               }`}

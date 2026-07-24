@@ -9,6 +9,7 @@ import {
   mountainFoundationSeasonLabels,
   mountainFoundationStyleLabels
 } from "@/lib/i18n/labels";
+import { hapticLight, hapticSelection } from "@/lib/haptics";
 import type {
   MountainFoundationProfile,
   MountainFoundationPrimaryRegion,
@@ -260,6 +261,7 @@ export function TripPlanningForm({
 
     params.set("focus", "checklist");
 
+    hapticLight();
     startTransition(() => {
       router.push(`/plan?${params.toString()}` as Route, { scroll: false });
     });
@@ -305,6 +307,7 @@ export function TripPlanningForm({
                 <button
                   type="button"
                   onClick={() => {
+                    hapticLight();
                     searchInputRef.current?.scrollIntoView({
                       behavior: "smooth",
                       block: "center"
@@ -336,6 +339,7 @@ export function TripPlanningForm({
                   key={filter.value}
                   type="button"
                   onClick={() => {
+                    hapticSelection();
                     setMountainListFilter(filter.value);
                     if (filter.value === "AREA" && selectedMountain) {
                       setSelectedArea(selectedMountain.primary_region);
@@ -361,7 +365,10 @@ export function TripPlanningForm({
                   <button
                     key={area.value}
                     type="button"
-                    onClick={() => setSelectedArea(area.value)}
+                    onClick={() => {
+                      hapticSelection();
+                      setSelectedArea(area.value);
+                    }}
                     className={`inline-flex h-7 items-center justify-center rounded-full px-2.5 text-xs font-bold leading-none transition ${
                       selectedArea === area.value
                         ? "bg-[#14724e] text-white"
@@ -401,7 +408,10 @@ export function TripPlanningForm({
                     <button
                       key={mountain.slug}
                       type="button"
-                      onClick={() => setMountainSlug(mountain.slug)}
+                      onClick={() => {
+                        hapticSelection();
+                        setMountainSlug(mountain.slug);
+                      }}
                       aria-pressed={mountain.slug === mountainSlug}
                       aria-disabled={isBlockedMountain}
                       disabled={isBlockedMountain}
@@ -491,6 +501,7 @@ export function TripPlanningForm({
                 key={`${mountainSlug}-season`}
                 name="season"
                 defaultValue={effectiveSeason}
+                onChange={() => hapticSelection()}
                 required
                 disabled={seasonOptions.length === 0}
                 className="h-[42px] w-full min-w-0 appearance-none rounded-xl border border-stone-200 bg-stone-50 px-2 pr-7 text-left text-sm font-semibold leading-none text-ink outline-none focus:border-forest-500 focus:bg-white disabled:opacity-60 sm:px-3 sm:pr-8"
@@ -516,6 +527,7 @@ export function TripPlanningForm({
                 name="style"
                 value={currentStyle}
                 onChange={(event) => {
+                  hapticSelection();
                   const nextStyle = event.target.value as MountainFoundationStyle;
                   setStyleDraft(nextStyle);
                   onPlanDetailsChange?.({

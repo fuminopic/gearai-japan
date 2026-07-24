@@ -68,6 +68,7 @@ import {
   mountainFoundationStyleLabels,
   requirementSlotLabels
 } from "@/lib/i18n/labels";
+import { hapticError, hapticLight, hapticSelection, hapticSuccess } from "@/lib/haptics";
 import { mountainCurrentPlanStatusStaleMessage } from "@/lib/mountain-current-plan-status";
 import {
   getPlanFoodWater,
@@ -581,10 +582,12 @@ export function TripPlanningUI({
             : current
         );
         setDateSaveState("success");
+        hapticSuccess();
         // updateTripPlan は /plan を再検証する。表示中の日付は draft に反映済み
         // なので、ここで追加の RSC refresh は不要。
       } catch (saveError) {
         console.error("Plan date update failed:", saveError);
+        hapticError();
         setDateSaveState("error");
       }
     });
@@ -599,7 +602,10 @@ export function TripPlanningUI({
           plannedEndDate={planDetailsDraft.plannedEndDate}
           isEditorOpen={isDateEditorOpen}
           saveState={dateSaveState}
-          onToggleEditor={() => setIsDateEditorOpen((isOpen) => !isOpen)}
+          onToggleEditor={() => {
+            hapticLight();
+            setIsDateEditorOpen((isOpen) => !isOpen);
+          }}
           onDateChange={handleSavedPlanDateChange}
         />
       ) : null}
@@ -1021,65 +1027,71 @@ function SavePlanButton({
 
     const formData = new FormData(form);
     startTransition(async () => {
-      let result: { id?: string; planCount?: number | null } | undefined;
+      try {
+        let result: { id?: string; planCount?: number | null } | undefined;
 
-      if (planId) {
-        result = await updateTripPlan(formData);
-      } else {
-        result = await saveTripPlan(formData);
-      }
+        if (planId) {
+          result = await updateTripPlan(formData);
+        } else {
+          result = await saveTripPlan(formData);
+        }
 
-      const savedPlanId = result?.id ?? planId;
+        const savedPlanId = result?.id ?? planId;
 
-      if (!planId && result?.id) {
-        const analyticsProperties = {
-          season,
-          style,
-          platform: getAnalyticsPlatform()
-        };
+        if (!planId && result?.id) {
+          const analyticsProperties = {
+            season,
+            style,
+            platform: getAnalyticsPlatform()
+          };
 
-        captureAnalyticsEventOnce({
-          event: "plan_save",
-          key: result.id,
-          properties: analyticsProperties,
-          scope: "persistent"
-        });
-
-        if (result.planCount === 2) {
           captureAnalyticsEventOnce({
-            event: "second_plan_create",
+            event: "plan_save",
             key: result.id,
             properties: analyticsProperties,
             scope: "persistent"
           });
+
+          if (result.planCount === 2) {
+            captureAnalyticsEventOnce({
+              event: "second_plan_create",
+              key: result.id,
+              properties: analyticsProperties,
+              scope: "persistent"
+            });
+          }
+
+          if (isPreparationComplete) {
+            captureAnalyticsEventOnce({
+              event: "preparation_complete",
+              key: result.id,
+              properties: analyticsProperties,
+              scope: "persistent"
+            });
+          }
         }
 
-        if (isPreparationComplete) {
-          captureAnalyticsEventOnce({
-            event: "preparation_complete",
-            key: result.id,
-            properties: analyticsProperties,
-            scope: "persistent"
-          });
+        if (savedPlanId) {
+          writeStoredCheckedSlots(savedPlanId, checkedSlots, userId);
+          writeStoredUncheckedPackedSlots(
+            savedPlanId,
+            uncheckedPackedSlots,
+            userId
+          );
+          writeStoredChecklistOnlyIds(savedPlanId, checklistOnlyIds, userId);
+          writeTripPlanLocalMeta(savedPlanId, {
+            plannedDate,
+            plannedEndDate,
+            tripMemo
+          }, { userId });
         }
-      }
 
-      if (savedPlanId) {
-        writeStoredCheckedSlots(savedPlanId, checkedSlots, userId);
-        writeStoredUncheckedPackedSlots(
-          savedPlanId,
-          uncheckedPackedSlots,
-          userId
-        );
-        writeStoredChecklistOnlyIds(savedPlanId, checklistOnlyIds, userId);
-        writeTripPlanLocalMeta(savedPlanId, {
-          plannedDate,
-          plannedEndDate,
-          tripMemo
-        }, { userId });
+        hapticSuccess();
+        router.push("/dashboard");
+      } catch (saveError) {
+        hapticError();
+        throw saveError;
       }
-
-      router.push("/dashboard");
     });
   }
 
@@ -1565,6 +1577,7 @@ function TripPlanningResult({
   }
 
   function handleScanFilterChange(filter: ChecklistScanFilter) {
+    hapticSelection();
     setScanFilter(filter);
 
     if (
@@ -1732,7 +1745,10 @@ function TripPlanningResult({
       ) : (
         <button
           type="button"
-          onClick={() => setScanFilter("ALL")}
+          onClick={() => {
+            hapticSelection();
+            setScanFilter("ALL");
+          }}
           className="flex w-full items-center justify-between rounded-[20px] bg-white px-5 py-4 text-left shadow-sm transition active:scale-[0.99]"
         >
           <span>

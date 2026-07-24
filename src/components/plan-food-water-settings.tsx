@@ -7,6 +7,7 @@ import {
   getPlanFoodWaterWeightG,
   type PlanFoodWater
 } from "@/lib/plan-food-water";
+import { hapticSelection } from "@/lib/haptics";
 import { formatWeight } from "@/lib/utils/format";
 
 type PlanFoodWaterSettingsProps = {
@@ -51,7 +52,10 @@ export function PlanFoodWaterSettings({
                 <button
                   type="button"
                   aria-pressed={value.trailFoodIncluded}
-                  onClick={() => update({ trailFoodIncluded: true })}
+                  onClick={() => {
+                    hapticSelection();
+                    update({ trailFoodIncluded: true });
+                  }}
                   className={value.trailFoodIncluded ? "bg-[#4E914A] text-white" : "bg-white text-stone-500"}
                 >
                   あり
@@ -59,7 +63,10 @@ export function PlanFoodWaterSettings({
                 <button
                   type="button"
                   aria-pressed={!value.trailFoodIncluded}
-                  onClick={() => update({ trailFoodIncluded: false, trailFoodWeightG: 0 })}
+                  onClick={() => {
+                    hapticSelection();
+                    update({ trailFoodIncluded: false, trailFoodWeightG: 0 });
+                  }}
                   className={!value.trailFoodIncluded ? "bg-stone-100 text-stone-700" : "bg-white text-stone-500"}
                 >
                   なし
@@ -160,7 +167,10 @@ function QuantityStepper({
       <button
         type="button"
         aria-label={`${ariaLabel}を減らす`}
-        onClick={() => onChange(Math.max(0, value - step))}
+        onClick={() => {
+          hapticSelection();
+          onChange(Math.max(0, value - step));
+        }}
         className="flex h-full w-7 shrink-0 items-center justify-center text-stone-500 transition active:scale-90 sm:w-8"
       >
         <Minus className="h-4 w-4" aria-hidden="true" />
@@ -171,7 +181,10 @@ function QuantityStepper({
       <button
         type="button"
         aria-label={`${ariaLabel}を増やす`}
-        onClick={() => onChange(Math.min(maximum, value + step))}
+        onClick={() => {
+          hapticSelection();
+          onChange(Math.min(maximum, value + step));
+        }}
         className="flex h-full w-7 shrink-0 items-center justify-center text-stone-500 transition active:scale-90 sm:w-8"
       >
         <Plus className="h-4 w-4" aria-hidden="true" />

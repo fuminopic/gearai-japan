@@ -1,12 +1,18 @@
-import { TripPlanningUI } from "@/components/trip-planning-ui";
+import { Suspense } from "react";
+
+import { PlanHistorySection, TripPlanningUI } from "@/components/trip-planning-ui";
 import { Notice } from "@/components/ui/notice";
-import { getGearProducts, getOwnedGearForPlanning, requireUser } from "@/lib/data/gear";
+import {
+  getGearProductsForPlanning,
+  getOwnedGearForPlanning,
+  requireUser
+} from "@/lib/data/gear";
 import { getPackGearIds } from "@/lib/data/pack";
 import { getMountainCurrentPlanStatuses } from "@/lib/data/mountain-current-plan-status";
 import { getMountainFoundationProfiles } from "@/lib/data/mountain-foundation";
 import { getPackRequirementPlan } from "@/lib/data/pack-requirements";
 import { getRecommendationHistory } from "@/lib/data/recommendations";
-import { getTripPlans } from "@/lib/data/trip-plans";
+import { getTripPlanById, getTripPlans } from "@/lib/data/trip-plans";
 import { matchGearForRequirementSlot } from "@/lib/gear-matching/engine";
 import {
   getMountainPlanningBlockMessage,
@@ -36,6 +42,7 @@ export type PlanPageContentProps = {
     cash?: string;
     insurance?: string;
     focus?: string;
+    view?: string;
     error?: string;
   }>;
 };
@@ -48,15 +55,14 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
   let mountains: MountainFoundationProfile[] = [];
   let currentPlanStatuses: MountainCurrentPlanStatusBySlug = {};
   let currentPlanStatusReadFailed = false;
-  const [mountainResult, currentPlanStatusResult, planHistory, savedPlans] = await Promise.all([
+  const [mountainResult, currentPlanStatusResult, selectedSavedPlan] = await Promise.all([
     getMountainFoundationProfiles()
       .then((data) => ({ data, error: null }))
       .catch((caught: unknown) => ({ data: [], error: caught })),
     getMountainCurrentPlanStatuses()
       .then((data) => ({ data, error: null }))
       .catch((caught: unknown) => ({ data: {}, error: caught })),
-    getRecommendationHistory(),
-    getTripPlans()
+    params.id ? getTripPlanById(params.id) : Promise.resolve(null)
   ]);
 
   if (mountainResult.error) {
@@ -75,10 +81,6 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
     currentPlanStatuses = currentPlanStatusResult.data;
   }
 
-  const selectedSavedPlan =
-    params.id && savedPlans.length > 0
-      ? savedPlans.find((record) => record.id === params.id) ?? null
-      : null;
   const hydratedMountainParam = params.mountain ?? selectedSavedPlan?.mountain_slug ?? undefined;
   const hydratedSeasonParam = params.season ?? selectedSavedPlan?.season;
   const hydratedStyleParam = params.style ?? selectedSavedPlan?.style;
@@ -127,7 +129,7 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
           season: selectedSeason,
           style: selectedStyle
         }),
-        getGearProducts(),
+        getGearProductsForPlanning(),
         getOwnedGearForPlanning(),
         getPackGearIds()
       ]);
@@ -164,6 +166,8 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
     .filter(([, status]) => status.status === "BLOCKED")
     .map(([slug]) => slug);
 
+  const isFullChecklistView = params.view === "checklist" && Boolean(params.id);
+
   return (
     <>
       {!plan && planStatusNotice ? (
@@ -180,13 +184,25 @@ export async function PlanPageContent({ searchParams }: PlanPageContentProps) {
         ownedGear={ownedGear}
         packGearIds={packGearIds}
         compatibilityBySlot={compatibilityBySlot}
-        planHistory={planHistory}
-        savedPlans={savedPlans}
+        showPlanHistory={false}
         selectedSavedPlan={selectedSavedPlan}
         error={error}
       />
+      {!isFullChecklistView ? (
+        // 履歴は首スクロール外なので、仮の骨組みは置かずデータ到着時だけ表示する。
+        // これで見かけだけ先に出すのではなく、計画の主要操作を先に到達可能にする。
+        <Suspense fallback={null}>
+          <PlanHistoryAsync />
+        </Suspense>
+      ) : null}
     </>
   );
+}
+
+async function PlanHistoryAsync() {
+  const [plans, legacyPlans] = await Promise.all([getTripPlans(), getRecommendationHistory()]);
+
+  return <PlanHistorySection plans={plans} legacyPlans={legacyPlans} />;
 }
 
 function isPlanningBlockedMountain(

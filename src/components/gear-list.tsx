@@ -308,8 +308,13 @@ export function GearList({
               </div>
 
               <div className="grid gap-2">
-                {group.items.map((item) => (
-                  <GearCard key={item.id} item={item} returnTo={returnTo} />
+                {group.items.map((item, index) => (
+                  <GearCard
+                    key={item.id}
+                    item={item}
+                    returnTo={returnTo}
+                    deferRender={index >= 4}
+                  />
                 ))}
               </div>
             </section>
@@ -325,10 +330,14 @@ export function GearList({
 
 function GearCard({
   item,
-  returnTo
+  returnTo,
+  deferRender = false
 }: {
   item: UserGear;
   returnTo?: string | null;
+  /** 各カテゴリの先頭 4 件だけを初期レイアウト対象にし、画面外のカードは
+   * ブラウザに描画を譲る。データ・画像 URL を追加でキャッシュしない。 */
+  deferRender?: boolean;
 }) {
   const retailCategory = getRetailGearCategory(item);
   const categoryLabel =
@@ -339,7 +348,10 @@ function GearCard({
     // hover の背景は付けない。bg-forest-50/30 は白を「30%の色」で置き換えるため、
     // タッチ端末で hover が残るとカードの白背景が抜けて見える(スクロールすると
     // 直るのは hover が外れるから)。枠線だけ、ポインタのある端末で変える。
-    <article className="flex items-center overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm transition [@media(hover:hover)]:hover:border-forest-200">
+    <article
+      className="flex items-center overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm transition [@media(hover:hover)]:hover:border-forest-200"
+      style={deferRender ? { contentVisibility: "auto", containIntrinsicSize: "0 104px" } : undefined}
+    >
       <Link
         href={buildGearHref(`/gear/${item.id}`, returnTo)}
         className="grid min-w-0 flex-1 grid-cols-[4rem_minmax(0,1fr)] items-center gap-3 px-3 py-3 sm:px-4"

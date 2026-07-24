@@ -23,8 +23,10 @@ export function AppBottomNav() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const returnTo = getCurrentPlanReturnTo(pathname, searchParams.toString());
+  const [pendingHref, setPendingHref] = useState<Route | null>(null);
+  const activePath = pendingHref ?? pathname;
   const activeIndex = bottomNavItems.findIndex((item) =>
-    isActivePath(pathname, item.href)
+    isActivePath(activePath, item.href)
   );
 
   // 挂载后才允许过渡:首屏药丸直接出现在当前位置,不从左滑入
@@ -32,6 +34,13 @@ export function AppBottomNav() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // 動的ページの RSC 応答を待ってから pathname が変わると、タブを押しても
+  // 薬丸が約 0.5 秒止まって見える。遷移先そのものはサーバーで検証した最新値を
+  // 使い続け、ここでは現在の操作に対する視覚フィードバックだけを即時に切り替える。
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname, searchParams]);
 
   return (
     <nav className="fixed inset-x-6 bottom-8 z-50 overflow-hidden rounded-full border border-white/40 px-2 py-2 shadow-[0_20px_40px_rgba(0,0,0,0.1)] backdrop-blur-2xl backdrop-saturate-150 md:hidden">
@@ -69,7 +78,7 @@ export function AppBottomNav() {
 
         {bottomNavItems.map((item) => {
           const Icon = item.icon;
-          const active = isActivePath(pathname, item.href);
+          const active = isActivePath(activePath, item.href);
           const href = item.href === "/gear" ? buildGearHref("/gear", returnTo) : item.href;
 
           return (
@@ -77,6 +86,10 @@ export function AppBottomNav() {
               key={item.href}
               href={href}
               prefetch={false}
+              onPointerDown={() => {
+                setPendingHref(item.href);
+              }}
+              onClick={() => setPendingHref(item.href)}
               className={`relative z-10 flex flex-1 touch-manipulation flex-col items-center py-1.5 transition-colors duration-200 active:scale-95 ${
                 active ? "text-[#14724e]" : "text-gray-400"
               }`}

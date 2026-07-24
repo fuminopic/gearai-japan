@@ -183,8 +183,13 @@ export function PackContents({
             <section key={group.id}>
               <h2 className="px-1 pt-1 text-base font-bold text-ink">{group.label}</h2>
               <div className="mt-2 space-y-2">
-                {group.items.map((item) => (
-                  <PackGearRow key={item.id} item={item} onRemove={() => removeItem(item)} />
+                {group.items.map((item, index) => (
+                  <PackGearRow
+                    key={item.id}
+                    item={item}
+                    onRemove={() => removeItem(item)}
+                    deferRender={index >= 4}
+                  />
                 ))}
               </div>
             </section>
@@ -258,12 +263,23 @@ function PackStat({
   );
 }
 
-function PackGearRow({ item, onRemove }: { item: UserGear; onRemove: () => void }) {
+function PackGearRow({
+  item,
+  onRemove,
+  deferRender = false
+}: {
+  item: UserGear;
+  onRemove: () => void;
+  deferRender?: boolean;
+}) {
   const weightG = getPackItemWeightGrams(item);
   const detail = item.gear_subcategories?.name_ja ?? item.gear_categories?.name_ja ?? "その他";
 
   return (
-    <article className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-3 shadow-sm">
+    <article
+      className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-3 shadow-sm"
+      style={deferRender ? { contentVisibility: "auto", containIntrinsicSize: "0 80px" } : undefined}
+    >
       <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-stone-50">
         {item.image_url ? (
           // Signed user storage URLs are not configured for the Next.js image optimizer.

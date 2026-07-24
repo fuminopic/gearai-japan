@@ -22,7 +22,8 @@ export function PackGearSelector({ gear, packGearIds }: PackGearSelectorProps) {
   const [categoryId, setCategoryId] = useState("all");
   const [selectedIds, setSelectedIds] = useState(() => new Set<string>());
   const [isPending, startTransition] = useTransition();
-  const existingIds = useMemo(() => new Set(packGearIds), [packGearIds]);
+  const [existingIds, setExistingIds] = useState(() => new Set(packGearIds));
+  const [error, setError] = useState<string | null>(null);
   const categories = useMemo(() => getCategories(gear), [gear]);
 
   const filteredGear = useMemo(() => {
@@ -60,11 +61,30 @@ export function PackGearSelector({ gear, packGearIds }: PackGearSelectorProps) {
   }
 
   function addSelectedItems() {
-    startTransition(async () => {
-      const result = await addPackItems(Array.from(selectedIds));
+    const idsToAdd = Array.from(selectedIds);
 
-      if (result.ok) {
+    if (idsToAdd.length === 0) {
+      return;
+    }
+
+    setError(null);
+    startTransition(async () => {
+      try {
+        const result = await addPackItems(idsToAdd);
+
+        if (!result.ok) {
+          setError(result.error);
+          return;
+        }
+
+        // 成功後は遷移の RSC 応答を待たず、この画面でも選択済みを即時に反映する。
+        // 失敗時は selectedIds を残すため、ユーザーは内容を失わず再試行できる。
+        setExistingIds((current) => new Set([...current, ...idsToAdd]));
+        setSelectedIds(new Set());
         router.push("/pack" as Route);
+      } catch (caught) {
+        console.error("Pack bulk add failed:", caught);
+        setError("通信できませんでした。電波の良い場所で、もう一度お試しください。");
       }
     });
   }
@@ -172,6 +192,12 @@ export function PackGearSelector({ gear, packGearIds }: PackGearSelectorProps) {
       {filteredGear.length === 0 ? (
         <p className="mt-8 text-center text-sm font-medium text-stone-500">
           条件に合うギアがありません。
+        </p>
+      ) : null}
+
+      {error ? (
+        <p role="status" className="mt-4 px-1 text-sm font-medium text-red-700">
+          パックを更新できませんでした: {error}
         </p>
       ) : null}
 

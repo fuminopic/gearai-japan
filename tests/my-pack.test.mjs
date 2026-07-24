@@ -218,6 +218,8 @@ test("pack pages provide grouped contents, accessible direct removal, and a mult
   assert.match(packContentsSource, /setItems\(\(current\) => current\.filter/);
   assert.match(packContentsSource, /removePackItem\(item\.id\)/);
   assert.match(packContentsSource, /restorePackItem/);
+  assert.match(packContentsSource, /contentVisibility: "auto"/);
+  assert.match(packContentsSource, /deferRender=\{index >= 4\}/);
   assert.doesNotMatch(packContentsSource, /router\.refresh\(\)/);
   assert.match(packActionsSource, /revalidatePath\("\/pack"\)/);
   assert.match(packSelectPageSource, /PackGearSelector/);
@@ -225,6 +227,10 @@ test("pack pages provide grouped contents, accessible direct removal, and a mult
   assert.match(selectorSource, /getCategories/);
   assert.match(selectorSource, /new Set\(packGearIds\)/);
   assert.match(selectorSource, /選択した\$\{selectedCount\}点を追加/);
+  assert.match(selectorSource, /const idsToAdd = Array\.from\(selectedIds\)/);
+  assert.match(selectorSource, /setExistingIds\(\(current\) => new Set\(\[\.\.\.current, \.\.\.idsToAdd\]\)\)/);
+  assert.match(selectorSource, /setSelectedIds\(new Set\(\)\)/);
+  assert.match(selectorSource, /role="status"/);
   assert.match(selectorSource, /h-12 w-full/);
   assert.match(removeButtonSource, /aria-label="パックから外す"/);
   assert.match(removeButtonSource, /h-11 w-11/);

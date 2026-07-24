@@ -178,7 +178,32 @@ export const getGearProducts = cache(async function getGearProducts() {
     throw new Error(error.message);
   }
 
-  return data as GearProductRow[];
+  return data as unknown as GearProductRow[];
+});
+
+// 計画の互換候補表示は、カタログの検証履歴・価格・画像を使わない。
+// 完全な製品行を RSC 境界まで運ぶと、計画を開くたびに老舗ユーザーの
+// 所有ギア照合と競合するため、マッチングエンジンが実際に参照する分類・名称
+// だけに投影する。認証情報や署名 URL はこの結果に含めない。
+const GEAR_PLANNING_PRODUCT_SELECT =
+  "id,brand,model,name_ja,category_id,subcategory_id,gear_categories:category_id(id,name_ja,name_en),gear_subcategories:subcategory_id(id,name_ja,name_en),gear_product_aliases(alias)";
+
+export const getGearProductsForPlanning = cache(async function getGearProductsForPlanning() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("gear_products")
+    .select(GEAR_PLANNING_PRODUCT_SELECT)
+    .eq("discontinued", false)
+    .order("brand", { ascending: true })
+    .order("model", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  // GearProduct の残りのフィールドは計画マッチングでは読まない。呼び出し側の
+  // 入力型を保ちつつ、不要なカタログ列を取得・直列化しない。
+  return data as unknown as GearProductRow[];
 });
 
 const GEAR_PICKER_PRODUCT_SELECT =

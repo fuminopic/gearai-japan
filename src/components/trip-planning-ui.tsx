@@ -136,6 +136,7 @@ type TripPlanningUIProps = {
   planHistory?: AIRecommendationRecord[];
   savedPlans?: SavedTripPlan[];
   selectedSavedPlan?: SavedTripPlan | null;
+  showPlanHistory?: boolean;
   error?: string;
 };
 
@@ -178,6 +179,7 @@ export function TripPlanningUI({
   planHistory = [],
   savedPlans = [],
   selectedSavedPlan,
+  showPlanHistory = true,
   error
 }: TripPlanningUIProps) {
   const router = useRouter();
@@ -710,7 +712,7 @@ export function TripPlanningUI({
         )
       ) : null}
 
-      {!isFullChecklistView ? (
+      {showPlanHistory && !isFullChecklistView ? (
         <PlanHistorySection plans={savedPlans} legacyPlans={planHistory} />
       ) : null}
     </div>
@@ -1140,7 +1142,7 @@ function SavePlanButton({
   );
 }
 
-function PlanHistorySection({
+export function PlanHistorySection({
   plans,
   legacyPlans
 }: {

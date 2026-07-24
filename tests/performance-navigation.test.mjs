@@ -39,3 +39,13 @@ test("persistent navigation delegates prefetch scheduling to the single controll
   assert.match(appNavSource, /prefetch=\{false\}/);
   assert.match(drawerSource, /prefetch=\{false\}/);
 });
+
+test("bottom navigation acknowledges the intended tab before a dynamic route responds", () => {
+  assert.match(bottomNavSource, /const \[pendingHref, setPendingHref\] = useState<Route \| null>\(null\)/);
+  assert.match(bottomNavSource, /const activePath = pendingHref \?\? pathname/);
+  assert.match(bottomNavSource, /onPointerDown=\{\(\) => \{\s*setPendingHref\(item\.href\)/);
+  assert.match(bottomNavSource, /onClick=\{\(\) => setPendingHref\(item\.href\)\}/);
+  assert.match(bottomNavSource, /setPendingHref\(null\)/);
+  // ここで新しいユーザー RSC / HTML のキャッシュは作らない。
+  assert.doesNotMatch(bottomNavSource, /router\.prefetch/);
+});

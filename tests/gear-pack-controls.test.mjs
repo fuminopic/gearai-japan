@@ -86,6 +86,8 @@ test("gear cards never lose their white background on touch", () => {
   // なるタッチ端末ではカードの背景が抜けたように見えていた。
   assert.doesNotMatch(gearListSource, /hover:bg-forest-50\/30/);
   assert.match(gearListSource, /\[@media\(hover:hover\)\]:hover:/);
+  assert.match(gearListSource, /contentVisibility: "auto"/);
+  assert.match(gearListSource, /deferRender=\{index >= 4\}/);
 });
 
 test("switch geometry matches the agreed spec", () => {

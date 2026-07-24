@@ -161,7 +161,7 @@ test("trip planning page exposes the pack planning architecture", () => {
   assert.match(planPageContentSource, /getMountainFoundationProfiles/);
   assert.match(planPageContentSource, /getPackRequirementPlan/);
   assert.match(planPageContentSource, /matchGearForRequirementSlot/);
-  assert.match(planPageContentSource, /getGearProducts/);
+  assert.match(planPageContentSource, /getGearProductsForPlanning/);
   assert.match(planPageContentSource, /getRecommendationHistory/);
   assert.match(planPageContentSource, /getTripPlans/);
   assert.match(planPageContentSource, /requireUser/);
@@ -170,6 +170,13 @@ test("trip planning page exposes the pack planning architecture", () => {
   assert.doesNotMatch(`${aiPageSource}\n${planPageContentSource}`, /AIRecommendationForm/);
   assert.doesNotMatch(`${aiPageSource}\n${planPageContentSource}`, /createRecommendation/);
   assert.doesNotMatch(planPageContentSource, /getMountainImageUrl/);
+  assert.match(gearDataSource, /const GEAR_PLANNING_PRODUCT_SELECT/);
+  assert.match(gearDataSource, /getGearProductsForPlanning/);
+  assert.match(gearDataSource, /gear_product_aliases\(alias\)/);
+  assert.doesNotMatch(
+    gearDataSource.slice(gearDataSource.indexOf("const GEAR_PLANNING_PRODUCT_SELECT"), gearDataSource.indexOf("const GEAR_PICKER_PRODUCT_SELECT")),
+    /"\*,/
+  );
 });
 
 test("trip planning page always refreshes gear-derived pack coverage", () => {
@@ -178,8 +185,14 @@ test("trip planning page always refreshes gear-derived pack coverage", () => {
   assert.match(gearActionsSource, /revalidatePath\("\/plan"\)/);
   assert.match(
     planPageContentSource,
-    /const \[mountainResult, currentPlanStatusResult, planHistory, savedPlans\] = await Promise\.all/
+    /const \[mountainResult, currentPlanStatusResult, selectedSavedPlan\] = await Promise\.all/
   );
+  assert.match(planPageContentSource, /params\.id \? getTripPlanById\(params\.id\) : Promise\.resolve\(null\)/);
+  assert.match(planPageContentSource, /<Suspense fallback=\{null\}>/);
+  assert.doesNotMatch(planPageContentSource, /PlanHistoryLoading/);
+  assert.match(planPageContentSource, /async function PlanHistoryAsync\(\)/);
+  assert.match(planPageContentSource, /Promise\.all\(\[getTripPlans\(\), getRecommendationHistory\(\)\]\)/);
+  assert.match(planPageContentSource, /showPlanHistory=\{false\}/);
   assert.match(planPageContentSource, /getRecommendationHistory\(\)/);
   assert.match(planPageContentSource, /getTripPlans\(\)/);
   assert.match(planPageContentSource, /getPackRequirementPlan\(\{/);

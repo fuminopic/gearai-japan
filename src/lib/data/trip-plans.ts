@@ -66,6 +66,37 @@ export async function getTripPlans() {
   return (data ?? []).map(normalizeTripPlan);
 }
 
+// 計画詳細を開く初回表示では、履歴全件を待つ必要はない。選択中の 1 件だけ
+// を読み、履歴一覧は下方の Suspense 境界で後から表示する。
+export async function getTripPlanById(id: string) {
+  const { supabase, user } = await requireUser();
+  const { data, error } = await supabase
+    .from("trip_plans")
+    .select(tripPlanSelect)
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (error && isMissingPlanFoodWaterColumnError(error)) {
+    const { data: legacyData, error: legacyError } = await supabase
+      .from("trip_plans")
+      .select(legacyTripPlanSelect)
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!legacyError) {
+      return legacyData ? normalizeTripPlan(legacyData) : null;
+    }
+  }
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ? normalizeTripPlan(data) : null;
+}
+
 async function getLatestLegacyRecommendationPlan(
   supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
   userId: string

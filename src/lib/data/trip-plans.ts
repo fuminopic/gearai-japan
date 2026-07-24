@@ -4,40 +4,66 @@ import type { AIRecommendationRecord, SavedTripPlan } from "@/lib/types";
 type TripPlanRow = SavedTripPlan;
 type LegacyRecommendationRow = AIRecommendationRecord;
 
+const tripPlanSelect =
+  "id, user_id, mountain_slug, mountain_name, season, style, image_url, progress, checked_slots, unchecked_packed_slots, planned_date, planned_end_date, trip_memo, bring_cash, has_mountain_insurance, water_volume_ml, trail_food_included, trail_food_weight_g, meal_count, meal_weight_g, created_at";
+const legacyTripPlanSelect =
+  "id, user_id, mountain_slug, mountain_name, season, style, image_url, progress, checked_slots, unchecked_packed_slots, planned_date, planned_end_date, trip_memo, bring_cash, has_mountain_insurance, created_at";
+
 export async function getLatestTripPlan() {
   const { supabase, user } = await requireUser();
   const { data, error } = await supabase
     .from("trip_plans")
-    .select(
-      "id, user_id, mountain_slug, mountain_name, season, style, image_url, progress, checked_slots, unchecked_packed_slots, planned_date, planned_end_date, trip_memo, bring_cash, has_mountain_insurance, created_at"
-    )
+    .select(tripPlanSelect)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(1);
+
+  if (error && isMissingPlanFoodWaterColumnError(error)) {
+    const { data: legacyData, error: legacyError } = await supabase
+      .from("trip_plans")
+      .select(legacyTripPlanSelect)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (!legacyError) {
+      return legacyData?.[0] ? normalizeTripPlan(legacyData[0]) : null;
+    }
+  }
 
   if (error) {
     const fallback = await getLatestLegacyRecommendationPlan(supabase, user.id);
     return fallback;
   }
 
-  return (data?.[0] ?? null) as TripPlanRow | null;
+  return data?.[0] ? normalizeTripPlan(data[0]) : null;
 }
 
 export async function getTripPlans() {
   const { supabase, user } = await requireUser();
   const { data, error } = await supabase
     .from("trip_plans")
-    .select(
-      "id, user_id, mountain_slug, mountain_name, season, style, image_url, progress, checked_slots, unchecked_packed_slots, planned_date, planned_end_date, trip_memo, bring_cash, has_mountain_insurance, created_at"
-    )
+    .select(tripPlanSelect)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
+
+  if (error && isMissingPlanFoodWaterColumnError(error)) {
+    const { data: legacyData, error: legacyError } = await supabase
+      .from("trip_plans")
+      .select(legacyTripPlanSelect)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (!legacyError) {
+      return (legacyData ?? []).map(normalizeTripPlan);
+    }
+  }
 
   if (error) {
     return [];
   }
 
-  return data as TripPlanRow[];
+  return (data ?? []).map(normalizeTripPlan);
 }
 
 async function getLatestLegacyRecommendationPlan(
@@ -77,8 +103,37 @@ function legacyRecommendationToTripPlan(record: AIRecommendationRecord): SavedTr
     trip_memo: null,
     bring_cash: false,
     has_mountain_insurance: false,
+    water_volume_ml: 0,
+    trail_food_included: false,
+    trail_food_weight_g: 0,
+    meal_count: 0,
+    meal_weight_g: 0,
     created_at: record.created_at
   };
+}
+
+function normalizeTripPlan(row: Record<string, unknown>): TripPlanRow {
+  return {
+    ...row,
+    water_volume_ml: numberOrZero(row.water_volume_ml),
+    trail_food_included: row.trail_food_included === true,
+    trail_food_weight_g: numberOrZero(row.trail_food_weight_g),
+    meal_count: numberOrZero(row.meal_count),
+    meal_weight_g: numberOrZero(row.meal_weight_g)
+  } as TripPlanRow;
+}
+
+function numberOrZero(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function isMissingPlanFoodWaterColumnError(error: { message?: string; code?: string }) {
+  return (
+    error.code === "42703" ||
+    /(water_volume_ml|trail_food_included|trail_food_weight_g|meal_count|meal_weight_g)/i.test(
+      error.message ?? ""
+    )
+  );
 }
 
 function legacySeason(season: AIRecommendationRecord["input"]["season"]) {

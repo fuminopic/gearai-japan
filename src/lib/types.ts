@@ -294,6 +294,11 @@ export type SavedTripPlan = {
   trip_memo: string | null;
   bring_cash: boolean;
   has_mountain_insurance: boolean;
+  water_volume_ml: number;
+  trail_food_included: boolean;
+  trail_food_weight_g: number;
+  meal_count: number;
+  meal_weight_g: number;
   created_at: string;
 };
 

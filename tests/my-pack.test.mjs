@@ -195,6 +195,8 @@ test("pack data filters pack membership through currently owned gear", () => {
   assert.match(packDataSource, /getUserGear\(\{ status: "owned" \}\)/);
   assert.match(packDataSource, /flatMap/);
   assert.match(packDataSource, /\.from\("user_pack_items"\)/);
+  assert.match(packDataSource, /getLatestTripPlan/);
+  assert.match(packDataSource, /foodWaterWeightG/);
 });
 
 test("pack pages provide grouped contents, accessible direct removal, and a multi-select add flow", () => {
@@ -207,6 +209,9 @@ test("pack pages provide grouped contents, accessible direct removal, and a mult
   assert.match(packContentsSource, /PackStat/);
   assert.match(packContentsSource, /label="ギア数"/);
   assert.match(packContentsSource, /label="総重量"/);
+  assert.match(packContentsSource, /PackWeightBreakdown/);
+  assert.match(packContentsSource, /ギア重量/);
+  assert.match(packContentsSource, /水・食料/);
   assert.doesNotMatch(packContentsSource, /包内装備|既知の総重量/);
   assert.doesNotMatch(packContentsSource, /重量未入力/);
   assert.match(packContentsSource, /weightG === null \? null/);

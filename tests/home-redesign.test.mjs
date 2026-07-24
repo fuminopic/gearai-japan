@@ -302,7 +302,10 @@ test("home redesign exposes pack-focused gear summary metrics", () => {
   assert.match(dashboardDataSource, /user_pack_items/);
   assert.match(dashboardDataSource, /buildPackSummary/);
   assert.match(dashboardSource, /packKnownWeightG/);
-  assert.doesNotMatch(dashboardSource, /totalWeightG/);
+  assert.match(dashboardSource, /getPlanFoodWaterWeightG/);
+  assert.match(dashboardSource, /ギア重量/);
+  assert.match(dashboardSource, /水・食料/);
+  assert.match(dashboardSource, /総重量/);
 });
 
 test("home gear card exposes exactly two destinations, both signposted", () => {

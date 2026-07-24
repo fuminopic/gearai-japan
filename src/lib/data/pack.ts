@@ -1,4 +1,6 @@
 import { getUserGear, requireUser } from "@/lib/data/gear";
+import { getLatestTripPlan } from "@/lib/data/trip-plans";
+import { getPlanFoodWater, getPlanFoodWaterWeightG } from "@/lib/plan-food-water";
 import { buildPackSummary } from "@/lib/pack-summary";
 import type { UserGear } from "@/lib/types";
 
@@ -10,10 +12,14 @@ type PackItemRow = {
 export type MyPack = {
   items: UserGear[];
   summary: ReturnType<typeof buildPackSummary>;
+  foodWaterWeightG: number;
 };
 
 export async function getMyPack(): Promise<MyPack> {
-  const { ownedGear, packGearIds } = await getPackSelectionData();
+  const [{ ownedGear, packGearIds }, latestPlan] = await Promise.all([
+    getPackSelectionData(),
+    getLatestTripPlan()
+  ]);
   const byId = new Map(ownedGear.map((item) => [item.id, item]));
   const items = packGearIds.flatMap((id) => {
     const item = byId.get(id);
@@ -22,7 +28,10 @@ export async function getMyPack(): Promise<MyPack> {
 
   return {
     items,
-    summary: buildPackSummary(items)
+    summary: buildPackSummary(items),
+    // マイパックと同じ「最新の保存済み山行」を現在の計画として扱う。
+    // 消費物は user_pack_items には追加せず、総重量のレイヤーとしてだけ合算する。
+    foodWaterWeightG: getPlanFoodWaterWeightG(getPlanFoodWater(latestPlan))
   };
 }
 

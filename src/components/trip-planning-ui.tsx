@@ -47,9 +47,10 @@ import {
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { TripPlanningForm } from "@/components/trip-planning-form";
+import { PlanFoodWaterSettings } from "@/components/plan-food-water-settings";
 import { ConfirmSubmitButton } from "@/components/ui/confirm-dialog";
 import {
   captureAnalyticsEvent,
@@ -68,6 +69,10 @@ import {
   requirementSlotLabels
 } from "@/lib/i18n/labels";
 import { mountainCurrentPlanStatusStaleMessage } from "@/lib/mountain-current-plan-status";
+import {
+  getPlanFoodWater,
+  type PlanFoodWater
+} from "@/lib/plan-food-water";
 import {
   buildPlanChecklist,
   buildPlanNotNeededItems,
@@ -257,6 +262,11 @@ export function TripPlanningUI({
     bringCash: resolvedBringCash,
     hasMountainInsurance: resolvedHasMountainInsurance
   });
+  const savedFoodWater = useMemo(
+    () => getPlanFoodWater(activeSavedPlan),
+    [activeSavedPlan]
+  );
+  const [foodWaterDraft, setFoodWaterDraft] = useState<PlanFoodWater>(savedFoodWater);
   const selectedMountain =
     mountains.find((mountain) => mountain.slug === effectiveMountainSlug) ?? null;
   const planStateKey = plan
@@ -398,6 +408,10 @@ export function TripPlanningUI({
   ]);
 
   useEffect(() => {
+    setFoodWaterDraft(savedFoodWater);
+  }, [savedFoodWater]);
+
+  useEffect(() => {
     if (!planId) {
       setHydratedPlan(null);
       return;
@@ -529,6 +543,14 @@ export function TripPlanningUI({
       "has_mountain_insurance",
       planDetailsDraft.hasMountainInsurance ? "1" : "0"
     );
+    formData.set("water_volume_ml", String(foodWaterDraft.waterVolumeMl));
+    formData.set(
+      "trail_food_included",
+      foodWaterDraft.trailFoodIncluded ? "1" : "0"
+    );
+    formData.set("trail_food_weight_g", String(foodWaterDraft.trailFoodWeightG));
+    formData.set("meal_count", String(foodWaterDraft.mealCount));
+    formData.set("meal_weight_g", String(foodWaterDraft.mealWeightG));
     formData.set("progress", String(currentProgressValue));
     formData.set("checked_slots", JSON.stringify(currentCheckedSlots));
     formData.set(
@@ -622,6 +644,10 @@ export function TripPlanningUI({
             {planStatusNotice ? (
               <MountainCurrentPlanStatusNotice status={planStatusNotice} />
             ) : null}
+            <PlanFoodWaterSettings
+              value={foodWaterDraft}
+              onChange={setFoodWaterDraft}
+            />
             <TripPlanningResult
               key={uncheckedPackedSlotsScopeKey}
               plan={plan}
@@ -669,6 +695,7 @@ export function TripPlanningUI({
               tripMemo={planDetailsDraft.tripMemo}
               bringCash={planDetailsDraft.bringCash}
               hasMountainInsurance={planDetailsDraft.hasMountainInsurance}
+              foodWater={foodWaterDraft}
               progress={currentProgressValue}
               checkedSlots={currentCheckedSlots}
               uncheckedPackedSlots={currentUncheckedPackedSlots}
@@ -952,6 +979,7 @@ function SavePlanButton({
   tripMemo,
   bringCash,
   hasMountainInsurance,
+  foodWater,
   progress,
   checkedSlots,
   uncheckedPackedSlots,
@@ -970,6 +998,7 @@ function SavePlanButton({
   tripMemo: string;
   bringCash: boolean;
   hasMountainInsurance: boolean;
+  foodWater: PlanFoodWater;
   progress: number;
   checkedSlots: RequirementSlot[];
   uncheckedPackedSlots: RequirementSlot[];
@@ -1067,6 +1096,19 @@ function SavePlanButton({
         name="has_mountain_insurance"
         value={hasMountainInsurance ? "1" : "0"}
       />
+      <input type="hidden" name="water_volume_ml" value={foodWater.waterVolumeMl} />
+      <input
+        type="hidden"
+        name="trail_food_included"
+        value={foodWater.trailFoodIncluded ? "1" : "0"}
+      />
+      <input
+        type="hidden"
+        name="trail_food_weight_g"
+        value={foodWater.trailFoodWeightG}
+      />
+      <input type="hidden" name="meal_count" value={foodWater.mealCount} />
+      <input type="hidden" name="meal_weight_g" value={foodWater.mealWeightG} />
       <input type="hidden" name="progress" value={progress} />
       <input
         type="hidden"

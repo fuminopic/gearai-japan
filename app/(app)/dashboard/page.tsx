@@ -15,6 +15,7 @@ import { getDashboardSummary } from "@/lib/data/dashboard";
 import { getLatestTripPlan } from "@/lib/data/trip-plans";
 import { MAJOR_GEAR_CATEGORIES } from "@/lib/gear-major-categories";
 import { buildPlanChecklist } from "@/lib/plan-checklist";
+import { getPlanFoodWater, getPlanFoodWaterWeightG } from "@/lib/plan-food-water";
 import type { DashboardGear, DashboardSummary, SavedTripPlan } from "@/lib/types";
 import { formatWeight } from "@/lib/utils/format";
 
@@ -42,6 +43,7 @@ export default async function DashboardPage() {
     getDashboardSummary(),
     fetchLatestPlan()
   ]);
+  const foodWaterWeightG = getPlanFoodWaterWeightG(getPlanFoodWater(nextTrip));
 
   return (
     <HomePageContent
@@ -49,6 +51,7 @@ export default async function DashboardPage() {
       hasGear={summary.ownedCount > 0}
       trip={nextTrip}
       summary={summary}
+      foodWaterWeightG={foodWaterWeightG}
     />
   );
 }
@@ -90,12 +93,14 @@ function HomePageContent({
   hasTrip,
   hasGear,
   trip,
-  summary
+  summary,
+  foodWaterWeightG
 }: {
   hasTrip: boolean;
   hasGear: boolean;
   trip: SavedTripPlan | null;
   summary: DashboardSummary;
+  foodWaterWeightG: number;
 }) {
   return (
     <main className="home-redesign brand-shell min-h-screen bg-[#E5EBE9] pb-32 text-ink">
@@ -117,7 +122,7 @@ function HomePageContent({
         </section>
 
         <section>
-          <GearSummaryCard summary={summary} />
+          <GearSummaryCard summary={summary} foodWaterWeightG={foodWaterWeightG} />
         </section>
 
         <OwnedGearSection gear={summary.gearItems} hasGear={hasGear} />
@@ -276,7 +281,13 @@ function HeroTitle({ trip }: { trip?: SavedTripPlan }) {
   );
 }
 
-function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
+function GearSummaryCard({
+  summary,
+  foodWaterWeightG
+}: {
+  summary: DashboardSummary;
+  foodWaterWeightG: number;
+}) {
   // このカードのタップ先は2つだけ(マイギア / マイパック)。以前は同じ見た目の
   // 指標が3つ並び、リンクなのは中央だけ、さらに小さな + が最深部の
   // /gear/new に飛んでいたため、初見では押す場所が読めなかった。
@@ -296,13 +307,47 @@ function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
         />
         <SummaryMetric
           iconSrc="/metric-weight.png"
-          value={`${summary.packItemCount.toLocaleString("ja-JP")}点・${formatKg(summary.packKnownWeightG)}`}
+          value={`${summary.packItemCount.toLocaleString("ja-JP")}点・${formatWeight(summary.packKnownWeightG + foodWaterWeightG, { compact: true })}`}
           label="マイパック"
           href={packRoute}
         />
       </div>
+      <PackWeightBreakdown
+        gearWeightG={summary.packKnownWeightG}
+        foodWaterWeightG={foodWaterWeightG}
+      />
       <GearComposition summary={summary} />
     </section>
+  );
+}
+
+function PackWeightBreakdown({
+  gearWeightG,
+  foodWaterWeightG
+}: {
+  gearWeightG: number;
+  foodWaterWeightG: number;
+}) {
+  const totalWeightG = gearWeightG + foodWaterWeightG;
+  const values = [
+    { label: "ギア重量", value: gearWeightG },
+    { label: "水・食料", value: foodWaterWeightG },
+    { label: "総重量", value: totalWeightG }
+  ];
+
+  return (
+    <div className="grid grid-cols-3 border-t border-stone-100 pt-3 text-center">
+      {values.map((item) => (
+        <div key={item.label} className="min-w-0 px-1">
+          <p className="whitespace-nowrap font-din text-sm font-bold text-ink max-[359px]:text-[12px]">
+            {formatWeight(item.value, { compact: true })}
+          </p>
+          <p className="mt-1 whitespace-nowrap text-[10px] font-medium text-stone-500">
+            {item.label}
+          </p>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -381,7 +426,7 @@ function GearComposition({ summary }: { summary: DashboardSummary }) {
   return (
     <div className="border-t border-stone-100 pt-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-bold text-stone-500">パック重量構成</p>
+        <p className="text-xs font-bold text-stone-500">パック重量構成（ギア）</p>
         <Link href={packRoute} className="text-xs font-bold text-[#14724e]">
           マイパック &gt;
         </Link>
@@ -541,14 +586,4 @@ function styleLabel(style: string) {
   };
 
   return labels[style] ?? "山行";
-}
-
-// 丸め方は formatWeight(共通)に一本化する。ここは未計測(0以下)の表示と、
-// 幅が限られる指標向けの詰めた書式だけを担当する。
-function formatKg(weightG: number) {
-  if (weightG <= 0) {
-    return "-";
-  }
-
-  return formatWeight(weightG, { compact: true });
 }

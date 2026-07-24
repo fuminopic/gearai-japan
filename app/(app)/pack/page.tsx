@@ -31,7 +31,11 @@ export default async function PackPage() {
       </header>
 
       <div className="relative z-20 -mt-[51px] space-y-[11px] px-4">
-        <PackContents items={pack.items} addHref={packSelectRoute} />
+        <PackContents
+          items={pack.items}
+          foodWaterWeightG={pack.foodWaterWeightG}
+          addHref={packSelectRoute}
+        />
       </div>
     </main>
   );

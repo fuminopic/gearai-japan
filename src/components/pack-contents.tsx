@@ -25,17 +25,23 @@ import { PackRemoveButton } from "./pack-remove-button";
 type PackContentsProps = {
   addHref: Route;
   items: UserGear[];
+  foodWaterWeightG: number;
 };
 
 const packSelectRoute = "/pack/select" as Route;
 
-export function PackContents({ items: serverItems, addHref }: PackContentsProps) {
+export function PackContents({
+  items: serverItems,
+  foodWaterWeightG,
+  addHref
+}: PackContentsProps) {
   const router = useRouter();
   const [items, setItems] = useState(serverItems);
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const removingIdsRef = useRef(new Set<string>());
   const summary = useMemo(() => buildPackSummary(items), [items]);
+  const totalWeightG = summary.knownWeightG + foodWaterWeightG;
   const groups = useMemo(() => groupPackGearByCategory(items), [items]);
 
   useEffect(() => {
@@ -87,7 +93,8 @@ export function PackContents({ items: serverItems, addHref }: PackContentsProps)
     try {
       const blob = await createPackShareImageBlob(items, {
         itemCount: summary.itemCount,
-        totalWeightG: summary.knownWeightG
+        totalWeightG,
+        subtitle: `ギア ${summary.itemCount.toLocaleString("ja-JP")}点・水・食料 ${formatWeight(foodWaterWeightG)}`
       });
       const fileName = "yamajitaku-mypack.png";
       const didShare = await sharePackImageIfAvailable(blob, fileName);
@@ -141,13 +148,14 @@ export function PackContents({ items: serverItems, addHref }: PackContentsProps)
           <PackStat
             iconSrc="/metric-weight.png"
             label="総重量"
-            value={
-              summary.knownWeightG > 0
-                ? formatWeight(summary.knownWeightG, { compact: true })
-                : "-"
-            }
+            value={formatWeight(totalWeightG, { compact: true })}
           />
         </div>
+        <PackWeightBreakdown
+          gearWeightG={summary.knownWeightG}
+          foodWaterWeightG={foodWaterWeightG}
+          totalWeightG={totalWeightG}
+        />
       </section>
 
       {error ? (
@@ -159,7 +167,7 @@ export function PackContents({ items: serverItems, addHref }: PackContentsProps)
       {items.length === 0 ? (
         <section className="rounded-[20px] bg-white p-6 text-center shadow-sm">
           <PackagePlus aria-hidden className="mx-auto h-8 w-8 text-forest-700" />
-          <h2 className="mt-4 text-lg font-bold text-ink">マイパックはまだ空です</h2>
+          <h2 className="mt-4 text-lg font-bold text-ink">マイパックのギアはまだ空です</h2>
           <p className="mt-2 text-sm leading-6 text-stone-500">
             マイギアからよく持っていくギアを追加すると、パック重量を確認できます。
           </p>
@@ -185,6 +193,35 @@ export function PackContents({ items: serverItems, addHref }: PackContentsProps)
         </div>
       )}
     </>
+  );
+}
+
+function PackWeightBreakdown({
+  gearWeightG,
+  foodWaterWeightG,
+  totalWeightG
+}: {
+  gearWeightG: number;
+  foodWaterWeightG: number;
+  totalWeightG: number;
+}) {
+  return (
+    <div className="mt-4 grid grid-cols-3 border-t border-stone-100 pt-3 text-center">
+      <WeightBreakdownItem label="ギア重量" value={formatWeight(gearWeightG, { compact: true })} />
+      <WeightBreakdownItem label="水・食料" value={formatWeight(foodWaterWeightG, { compact: true })} />
+      <WeightBreakdownItem label="総重量" value={formatWeight(totalWeightG, { compact: true })} />
+    </div>
+  );
+}
+
+function WeightBreakdownItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0 px-1">
+      <p className="whitespace-nowrap font-din text-sm font-bold text-ink max-[359px]:text-[12px]">
+        {value}
+      </p>
+      <p className="mt-1 whitespace-nowrap text-[10px] font-medium text-stone-500">{label}</p>
+    </div>
   );
 }
 

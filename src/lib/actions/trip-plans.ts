@@ -28,6 +28,7 @@ export async function saveTripPlan(formData: FormData) {
   const tripMemo = parseTripMemo(formData.get("trip_memo"));
   const bringCash = parseBoolean(formData.get("bring_cash"));
   const hasMountainInsurance = parseBoolean(formData.get("has_mountain_insurance"));
+  const foodWater = parsePlanFoodWater(formData);
 
   if (!mountainSlug || !mountainName || !season || !style) {
     throw new Error("保存する山行計画の情報が不足しています。");
@@ -45,6 +46,11 @@ export async function saveTripPlan(formData: FormData) {
     trip_memo: tripMemo,
     bring_cash: bringCash,
     has_mountain_insurance: hasMountainInsurance,
+    water_volume_ml: foodWater.waterVolumeMl,
+    trail_food_included: foodWater.trailFoodIncluded,
+    trail_food_weight_g: foodWater.trailFoodWeightG,
+    meal_count: foodWater.mealCount,
+    meal_weight_g: foodWater.mealWeightG,
     progress,
     checked_slots: checkedSlots,
     unchecked_packed_slots: uncheckedPackedSlots
@@ -73,6 +79,7 @@ export async function saveTripPlan(formData: FormData) {
 
     revalidatePath("/dashboard");
     revalidatePath("/plan");
+    revalidatePath("/pack");
 
     return {
       id: fallbackData.id as string,
@@ -82,6 +89,7 @@ export async function saveTripPlan(formData: FormData) {
 
   revalidatePath("/dashboard");
   revalidatePath("/plan");
+  revalidatePath("/pack");
 
   return {
     id: data.id as string,
@@ -109,6 +117,7 @@ export async function updateTripPlan(formData: FormData) {
   const tripMemo = parseTripMemo(formData.get("trip_memo"));
   const bringCash = parseBoolean(formData.get("bring_cash"));
   const hasMountainInsurance = parseBoolean(formData.get("has_mountain_insurance"));
+  const foodWater = parsePlanFoodWater(formData);
 
   if (!id) {
     throw new Error("更新する計画IDが見つかりませんでした。");
@@ -129,6 +138,11 @@ export async function updateTripPlan(formData: FormData) {
     trip_memo: tripMemo,
     bring_cash: bringCash,
     has_mountain_insurance: hasMountainInsurance,
+    water_volume_ml: foodWater.waterVolumeMl,
+    trail_food_included: foodWater.trailFoodIncluded,
+    trail_food_weight_g: foodWater.trailFoodWeightG,
+    meal_count: foodWater.mealCount,
+    meal_weight_g: foodWater.mealWeightG,
     progress,
     checked_slots: checkedSlots,
     unchecked_packed_slots: uncheckedPackedSlots
@@ -157,12 +171,14 @@ export async function updateTripPlan(formData: FormData) {
 
     revalidatePath("/dashboard");
     revalidatePath("/plan");
+    revalidatePath("/pack");
 
     return { id };
   }
 
   revalidatePath("/dashboard");
   revalidatePath("/plan");
+  revalidatePath("/pack");
 
   return { id };
 }
@@ -187,6 +203,7 @@ export async function deleteTripPlan(formData: FormData) {
 
   revalidatePath("/plan");
   revalidatePath("/dashboard");
+  revalidatePath("/pack");
 }
 
 export async function clearTripPlans() {
@@ -202,6 +219,7 @@ export async function clearTripPlans() {
 
   revalidatePath("/plan");
   revalidatePath("/dashboard");
+  revalidatePath("/pack");
 }
 
 async function getTripPlanCount(
@@ -296,6 +314,38 @@ function parseBoolean(value: FormDataEntryValue | null) {
   return value === "1" || value === "true" || value === "on";
 }
 
+function parsePlanFoodWater(formData: FormData) {
+  const trailFoodIncluded = parseBoolean(formData.get("trail_food_included"));
+
+  return {
+    waterVolumeMl: parseSteppedNonNegativeInteger(
+      formData.get("water_volume_ml"),
+      500,
+      30000
+    ),
+    trailFoodIncluded,
+    trailFoodWeightG: trailFoodIncluded
+      ? parseSteppedNonNegativeInteger(formData.get("trail_food_weight_g"), 50, 30000)
+      : 0,
+    mealCount: parseSteppedNonNegativeInteger(formData.get("meal_count"), 1, 99),
+    mealWeightG: parseSteppedNonNegativeInteger(formData.get("meal_weight_g"), 50, 30000)
+  };
+}
+
+function parseSteppedNonNegativeInteger(
+  value: FormDataEntryValue | null,
+  step: number,
+  maximum: number
+) {
+  const parsed = Number(value ?? 0);
+
+  if (!Number.isFinite(parsed)) {
+    return 0;
+  }
+
+  return Math.min(maximum, Math.max(0, Math.round(parsed / step) * step));
+}
+
 const requirementSlots = new Set<RequirementSlot>([
   "WATER_STORAGE",
   "WATER_TREATMENT",
@@ -352,6 +402,21 @@ function uniqueRequirementSlots(values: unknown[]) {
   return slots;
 }
 
+const optionalPlanColumns = [
+  "checked_slots",
+  "unchecked_packed_slots",
+  "planned_date",
+  "planned_end_date",
+  "trip_memo",
+  "bring_cash",
+  "has_mountain_insurance",
+  "water_volume_ml",
+  "trail_food_included",
+  "trail_food_weight_g",
+  "meal_count",
+  "meal_weight_g"
+] as const;
+
 function withoutOptionalPlanColumns<
   T extends {
     checked_slots: RequirementSlot[];
@@ -361,18 +426,18 @@ function withoutOptionalPlanColumns<
     trip_memo?: string | null;
     bring_cash?: boolean;
     has_mountain_insurance?: boolean;
+    water_volume_ml?: number;
+    trail_food_included?: boolean;
+    trail_food_weight_g?: number;
+    meal_count?: number;
+    meal_weight_g?: number;
   }
 >(payload: T) {
-  const {
-    checked_slots: _checkedSlots,
-    unchecked_packed_slots: _uncheckedPackedSlots,
-    planned_date: _plannedDate,
-    planned_end_date: _plannedEndDate,
-    trip_memo: _tripMemo,
-    bring_cash: _bringCash,
-    has_mountain_insurance: _hasMountainInsurance,
-    ...fallbackPayload
-  } = payload;
+  const fallbackPayload = { ...payload };
+
+  for (const column of optionalPlanColumns) {
+    delete (fallbackPayload as Record<string, unknown>)[column];
+  }
 
   return fallbackPayload;
 }
@@ -380,7 +445,7 @@ function withoutOptionalPlanColumns<
 function isMissingPlanColumnError(error: { message?: string; code?: string }) {
   return (
     error.code === "42703" ||
-    /(checked_slots|unchecked_packed_slots|planned_date|planned_end_date|trip_memo|bring_cash|has_mountain_insurance)/i.test(
+    /(checked_slots|unchecked_packed_slots|planned_date|planned_end_date|trip_memo|bring_cash|has_mountain_insurance|water_volume_ml|trail_food_included|trail_food_weight_g|meal_count|meal_weight_g)/i.test(
       error.message ?? ""
     )
   );

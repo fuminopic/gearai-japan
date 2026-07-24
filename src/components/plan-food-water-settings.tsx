@@ -25,15 +25,8 @@ export function PlanFoodWaterSettings({
   }
 
   return (
-    <section className="rounded-[20px] bg-white px-4 py-4 shadow-sm sm:px-5">
-      <div className="flex items-center justify-between gap-3 border-b border-[#EEEDE6] pb-3">
-        <h2 className="text-base font-bold text-ink">水・食料</h2>
-        <p className="shrink-0 whitespace-nowrap font-din text-xl font-bold text-[#14724e]">
-          {formatWeight(totalWeightG, { compact: true })}
-        </p>
-      </div>
-
-      <div className="divide-y divide-stone-100">
+    <div className="overflow-hidden rounded-xl border border-stone-100 bg-stone-50/70">
+      <div className="divide-y divide-stone-100 bg-white px-3 sm:px-4">
         <FoodWaterRow
           title="飲み水"
           rule="必須"
@@ -111,11 +104,13 @@ export function PlanFoodWaterSettings({
         />
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-forest-50 px-3 py-2">
+      <div className="flex items-center justify-between gap-3 bg-forest-50 px-3 py-2.5 sm:px-4">
         <p className="text-xs font-bold text-forest-800">水・食料の合計重量</p>
-        <p className="text-[11px] font-semibold text-forest-700">マイパックに含まれます</p>
+        <p className="shrink-0 whitespace-nowrap font-din text-lg font-bold text-[#14724e]">
+          {formatWeight(totalWeightG, { compact: true })}
+        </p>
       </div>
-    </section>
+    </div>
   );
 }
 

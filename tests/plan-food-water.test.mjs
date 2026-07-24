@@ -117,7 +117,11 @@ test("plan persistence, edit flow, and read fallback keep food-water values scop
   assert.match(planActionsSource, /parsePlanFoodWater/);
   assert.match(planActionsSource, /trailFoodIncluded[\s\S]*\? parseSteppedNonNegativeInteger[\s\S]*: 0/);
   assert.match(planActionsSource, /revalidatePath\("\/pack"\)/);
-  assert.match(planUiSource, /<PlanFoodWaterSettings/);
+  assert.match(planUiSource, /category\.id === "FOOD_WATER"/);
+  assert.match(planUiSource, /const hasFoodWaterSettings = category\.id === "FOOD_WATER"/);
+  assert.match(planUiSource, /!hasFoodWaterSettings[\s\S]*visiblePriorityGroups\.length === 0/);
+  assert.match(planUiSource, /<PlanFoodWaterSettings[\s\S]*value=\{foodWater\}[\s\S]*onChange=\{onFoodWaterChange\}/);
+  assert.match(planUiSource, /<ChecklistCategoryCard[\s\S]*foodWater=\{foodWater\}[\s\S]*onFoodWaterChange=\{onFoodWaterChange\}/);
   assert.match(planUiSource, /formData\.set\("water_volume_ml"/);
   assert.match(tripPlansDataSource, /legacyTripPlanSelect/);
   assert.match(tripPlansDataSource, /isMissingPlanFoodWaterColumnError/);
@@ -136,6 +140,8 @@ test("water and food stay as a separate pack weight layer while the home gear ca
   assert.match(packShareImageSource, /subtitle\?: string/);
   assert.match(foodWaterSettingsSource, /水・食料の合計重量/);
   assert.match(foodWaterSettingsSource, /grid-cols-\[76px_minmax\(0,1fr\)_auto\]/);
+  assert.doesNotMatch(foodWaterSettingsSource, /<section/);
+  assert.doesNotMatch(foodWaterSettingsSource, /マイパックに含まれます/);
   assert.doesNotMatch(foodWaterSettingsSource, /この山行で持参する分を設定/);
   assert.doesNotMatch(dashboardSource, /function PackWeightBreakdown/);
   assert.doesNotMatch(dashboardSource, /ギア重量/);

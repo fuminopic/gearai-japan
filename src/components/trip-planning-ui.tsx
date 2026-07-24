@@ -646,14 +646,11 @@ export function TripPlanningUI({
             {planStatusNotice ? (
               <MountainCurrentPlanStatusNotice status={planStatusNotice} />
             ) : null}
-            <PlanFoodWaterSettings
-              value={foodWaterDraft}
-              onChange={setFoodWaterDraft}
-            />
             <TripPlanningResult
               key={uncheckedPackedSlotsScopeKey}
               plan={plan}
               foodWater={foodWaterDraft}
+              onFoodWaterChange={setFoodWaterDraft}
               compatibilityBySlot={compatibilityBySlot}
               ownedGear={ownedGear}
               packGearIds={packGearIds}
@@ -1398,6 +1395,7 @@ function writeStoredChecklistOnlyIds(
 function TripPlanningResult({
   plan,
   foodWater,
+  onFoodWaterChange,
   compatibilityBySlot,
   ownedGear,
   packGearIds,
@@ -1417,6 +1415,7 @@ function TripPlanningResult({
 }: {
   plan: PackRequirementPlan;
   foodWater: PlanFoodWater;
+  onFoodWaterChange: (value: PlanFoodWater) => void;
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
   ownedGear: UserGear[];
   packGearIds: string[];
@@ -1707,6 +1706,8 @@ function TripPlanningResult({
               key={category.id}
               category={category}
               confirmedItems={confirmedItems}
+              foodWater={foodWater}
+              onFoodWaterChange={onFoodWaterChange}
               compatibilityBySlot={compatibilityBySlot}
               onToggle={handleToggleChecklistItem}
             />
@@ -2677,11 +2678,15 @@ function ChecklistStat({
 function ChecklistCategoryCard({
   category,
   confirmedItems = [],
+  foodWater,
+  onFoodWaterChange,
   compatibilityBySlot,
   onToggle
 }: {
   category: ChecklistCategory;
   confirmedItems?: ChecklistItem[];
+  foodWater: PlanFoodWater;
+  onFoodWaterChange: (value: PlanFoodWater) => void;
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
   onToggle: (item: ChecklistItem) => void;
 }) {
@@ -2696,11 +2701,16 @@ function ChecklistCategoryCard({
   const visibleConfirmedItems = confirmedItems.filter(
     (item) => !isPlanFoodWaterChecklistItem(item.id)
   );
+  const hasFoodWaterSettings = category.id === "FOOD_WATER";
   const missingCount = category.items.filter(
     (item) => getPreDepartureItemActionStatus(item) === "MISSING"
   ).length;
 
-  if (visiblePriorityGroups.length === 0 && visibleConfirmedItems.length === 0) {
+  if (
+    !hasFoodWaterSettings &&
+    visiblePriorityGroups.length === 0 &&
+    visibleConfirmedItems.length === 0
+  ) {
     return null;
   }
 
@@ -2736,6 +2746,13 @@ function ChecklistCategoryCard({
       </div>
 
       <div className="mt-4 space-y-4">
+        {hasFoodWaterSettings ? (
+          <PlanFoodWaterSettings
+            value={foodWater}
+            onChange={onFoodWaterChange}
+          />
+        ) : null}
+
         {visiblePriorityGroups.map((group) => (
           <div key={group.priority}>
             <div className="mb-2 flex items-center gap-2">

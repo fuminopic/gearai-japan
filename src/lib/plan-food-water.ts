@@ -8,6 +8,19 @@ export type PlanFoodWater = {
   mealWeightG: number;
 };
 
+export const planFoodWaterChecklistItemIds = [
+  "food-water",
+  "food-trail-snacks",
+  "food-meals"
+] as const;
+
+export type PlanFoodWaterChecklistItemId =
+  (typeof planFoodWaterChecklistItemIds)[number];
+
+export function isPlanFoodWaterChecklistItem(itemId: string) {
+  return (planFoodWaterChecklistItemIds as readonly string[]).includes(itemId);
+}
+
 export const defaultPlanFoodWater: PlanFoodWater = {
   waterVolumeMl: 0,
   trailFoodIncluded: false,
@@ -54,6 +67,27 @@ export function getPlanFoodWater(plan: SavedTripPlan | null | undefined) {
 
 export function getPlanFoodWaterWeightG(value: PlanFoodWater) {
   return value.waterVolumeMl + value.trailFoodWeightG + value.mealWeightG;
+}
+
+// 水・食料の3項目は、手動チェックではなく今回の計画に保存した設定値で完了する。
+// 行動食と食事は、量まで設定されて初めて「持参する」と判断する。
+export function getPlanFoodWaterChecklistItemChecked(
+  itemId: string,
+  value: PlanFoodWater
+): boolean | null {
+  if (itemId === "food-water") {
+    return value.waterVolumeMl > 0;
+  }
+
+  if (itemId === "food-trail-snacks") {
+    return value.trailFoodIncluded && value.trailFoodWeightG > 0;
+  }
+
+  if (itemId === "food-meals") {
+    return value.mealCount > 0 && value.mealWeightG > 0;
+  }
+
+  return null;
 }
 
 function normalizeSteppedNumber(value: unknown, step: number, max: number) {

@@ -123,8 +123,8 @@ test("plan persistence, edit flow, and read fallback keep food-water values scop
   assert.match(tripPlansDataSource, /isMissingPlanFoodWaterColumnError/);
 });
 
-test("water and food are displayed as a separate pack weight layer while sharing the total", () => {
-  for (const source of [packContentsSource, dashboardSource]) {
+test("water and food stay as a separate pack weight layer while the home gear card stays compact", () => {
+  for (const source of [packContentsSource]) {
     assert.match(source, /ギア重量/);
     assert.match(source, /水・食料/);
     assert.match(source, /総重量/);
@@ -134,16 +134,21 @@ test("water and food are displayed as a separate pack weight layer while sharing
   assert.match(packContentsSource, /totalWeightG = summary\.knownWeightG \+ foodWaterWeightG/);
   assert.match(packContentsSource, /totalWeightG,/);
   assert.match(packShareImageSource, /subtitle\?: string/);
-  assert.match(foodWaterSettingsSource, /1L = 1kg/);
-  assert.match(foodWaterSettingsSource, /容器重量はギアとして別に計算/);
   assert.match(foodWaterSettingsSource, /水・食料の合計重量/);
+  assert.match(foodWaterSettingsSource, /grid-cols-\[76px_minmax\(0,1fr\)_auto\]/);
+  assert.doesNotMatch(foodWaterSettingsSource, /この山行で持参する分を設定/);
+  assert.doesNotMatch(dashboardSource, /function PackWeightBreakdown/);
+  assert.doesNotMatch(dashboardSource, /ギア重量/);
+  assert.doesNotMatch(dashboardSource, /水・食料/);
 });
 
-test("food-water settings do not alter checklist requirements or completion rules", () => {
+test("food-water settings keep the existing priorities and replace only their manual confirmation", () => {
   assert.match(checklistSource, /id: "food-water",[\s\S]*priority: "ESSENTIAL"/);
   assert.match(checklistSource, /id: "food-trail-snacks",[\s\S]*priority: "ESSENTIAL"/);
   assert.match(checklistSource, /id: "food-meals",[\s\S]*priority: "SUGGESTED"/);
-  assert.doesNotMatch(checklistSource, /water_volume_ml|trail_food_weight_g|meal_weight_g/);
+  assert.match(checklistSource, /source: "PLAN_SETTING"/);
+  assert.match(checklistSource, /getPlanFoodWaterChecklistItemChecked/);
+  assert.match(planUiSource, /isPlanFoodWaterChecklistItem/);
 });
 
 function toDataUrl(source) {

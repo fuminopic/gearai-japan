@@ -9,9 +9,16 @@ import {
   matchOwnedGearForChecklist,
   type ChecklistOwnedGearMatcher
 } from "@/lib/checklist-owned-gear-matchers";
+import {
+  getPlanFoodWaterChecklistItemChecked,
+  type PlanFoodWater
+} from "@/lib/plan-food-water";
 
 export type ChecklistPriority = "ESSENTIAL" | "SUGGESTED" | "OPTIONAL";
-export type ChecklistItemSource = "GEAR_BACKED" | "CHECKLIST_ONLY";
+export type ChecklistItemSource =
+  | "GEAR_BACKED"
+  | "CHECKLIST_ONLY"
+  | "PLAN_SETTING";
 export type ChecklistGearStatus = "PACKED" | "OWNED" | "MISSING";
 export type ChecklistSlotCoverage = {
   slot: RequirementSlot;
@@ -439,6 +446,7 @@ function getNavigationItems(plan: PackRequirementPlan): ChecklistItemDefinition[
 
 export function buildPlanChecklist({
   plan,
+  foodWater,
   checkedSlots = [],
   uncheckedPackedSlots = [],
   checkedChecklistOnlyIds = [],
@@ -446,6 +454,7 @@ export function buildPlanChecklist({
   packedGearIds = []
 }: {
   plan: PackRequirementPlan;
+  foodWater?: PlanFoodWater;
   checkedSlots?: readonly RequirementSlot[];
   uncheckedPackedSlots?: readonly RequirementSlot[];
   checkedChecklistOnlyIds?: readonly string[];
@@ -472,7 +481,7 @@ export function buildPlanChecklist({
   ]
     .map(({ id, items }) => {
       const checklistItems = items.map((item) => {
-        return buildChecklistItem({
+        const checklistItem = buildChecklistItem({
           definition: item,
           plan,
           slotPlansBySlot,
@@ -482,6 +491,25 @@ export function buildPlanChecklist({
           ownedGear,
           packedGearIdSet
         });
+
+        const isSettingChecked = foodWater
+          ? getPlanFoodWaterChecklistItemChecked(item.id, foodWater)
+          : null;
+
+        if (isSettingChecked === null) {
+          return checklistItem;
+        }
+
+        return {
+          ...checklistItem,
+          source: "PLAN_SETTING" as const,
+          checked: isSettingChecked,
+          slots: [],
+          toggleSlots: [],
+          matchingOwnedGear: [],
+          gearStatus: null,
+          slotCoverage: []
+        };
       });
 
       return buildChecklistCategory(id, checklistItems);
@@ -571,6 +599,10 @@ export function getPreDepartureItemActionStatus(
   }
 
   if (item.source !== "GEAR_BACKED") {
+    if (item.source === "PLAN_SETTING" && item.priority === "ESSENTIAL") {
+      return "MISSING";
+    }
+
     return "CONFIRM";
   }
 

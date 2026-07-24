@@ -549,7 +549,7 @@ test("plan page keeps completed checklist items visible with distinct owned and 
   assert.match(tripPlanningUiSource, /confirmedItems\?: ChecklistItem\[\]/);
   assert.match(
     tripPlanningUiSource,
-    /完了済み \{confirmedItems\.length\.toLocaleString\("ja-JP"\)\}/
+    /完了済み \{visibleConfirmedItems\.length\.toLocaleString\("ja-JP"\)\}/
   );
 
   // 3) 「要対応」ビューでのみ完了済みグループを作り、完了項目は item.checked から導く

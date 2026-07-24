@@ -15,7 +15,7 @@ import { getDashboardSummary } from "@/lib/data/dashboard";
 import { getLatestTripPlan } from "@/lib/data/trip-plans";
 import { MAJOR_GEAR_CATEGORIES } from "@/lib/gear-major-categories";
 import { buildPlanChecklist } from "@/lib/plan-checklist";
-import { getPlanFoodWater, getPlanFoodWaterWeightG } from "@/lib/plan-food-water";
+import { getPlanFoodWater } from "@/lib/plan-food-water";
 import type { DashboardGear, DashboardSummary, SavedTripPlan } from "@/lib/types";
 import { formatWeight } from "@/lib/utils/format";
 
@@ -43,15 +43,12 @@ export default async function DashboardPage() {
     getDashboardSummary(),
     fetchLatestPlan()
   ]);
-  const foodWaterWeightG = getPlanFoodWaterWeightG(getPlanFoodWater(nextTrip));
-
   return (
     <HomePageContent
       hasTrip={Boolean(nextTrip)}
       hasGear={summary.ownedCount > 0}
       trip={nextTrip}
       summary={summary}
-      foodWaterWeightG={foodWaterWeightG}
     />
   );
 }
@@ -80,6 +77,7 @@ async function fetchLatestPlanChecklist(trip: SavedTripPlan) {
       plan,
       checkedSlots: trip.checked_slots,
       uncheckedPackedSlots: trip.unchecked_packed_slots,
+      foodWater: getPlanFoodWater(trip),
       ownedGear,
       packedGearIds
     });
@@ -93,14 +91,12 @@ function HomePageContent({
   hasTrip,
   hasGear,
   trip,
-  summary,
-  foodWaterWeightG
+  summary
 }: {
   hasTrip: boolean;
   hasGear: boolean;
   trip: SavedTripPlan | null;
   summary: DashboardSummary;
-  foodWaterWeightG: number;
 }) {
   return (
     <main className="home-redesign brand-shell min-h-screen bg-[#E5EBE9] pb-32 text-ink">
@@ -122,7 +118,7 @@ function HomePageContent({
         </section>
 
         <section>
-          <GearSummaryCard summary={summary} foodWaterWeightG={foodWaterWeightG} />
+          <GearSummaryCard summary={summary} />
         </section>
 
         <OwnedGearSection gear={summary.gearItems} hasGear={hasGear} />
@@ -281,13 +277,7 @@ function HeroTitle({ trip }: { trip?: SavedTripPlan }) {
   );
 }
 
-function GearSummaryCard({
-  summary,
-  foodWaterWeightG
-}: {
-  summary: DashboardSummary;
-  foodWaterWeightG: number;
-}) {
+function GearSummaryCard({ summary }: { summary: DashboardSummary }) {
   // このカードのタップ先は2つだけ(マイギア / マイパック)。以前は同じ見た目の
   // 指標が3つ並び、リンクなのは中央だけ、さらに小さな + が最深部の
   // /gear/new に飛んでいたため、初見では押す場所が読めなかった。
@@ -307,47 +297,13 @@ function GearSummaryCard({
         />
         <SummaryMetric
           iconSrc="/metric-weight.png"
-          value={`${summary.packItemCount.toLocaleString("ja-JP")}点・${formatWeight(summary.packKnownWeightG + foodWaterWeightG, { compact: true })}`}
+          value={`${summary.packItemCount.toLocaleString("ja-JP")}点・${formatWeight(summary.packKnownWeightG, { compact: true })}`}
           label="マイパック"
           href={packRoute}
         />
       </div>
-      <PackWeightBreakdown
-        gearWeightG={summary.packKnownWeightG}
-        foodWaterWeightG={foodWaterWeightG}
-      />
       <GearComposition summary={summary} />
     </section>
-  );
-}
-
-function PackWeightBreakdown({
-  gearWeightG,
-  foodWaterWeightG
-}: {
-  gearWeightG: number;
-  foodWaterWeightG: number;
-}) {
-  const totalWeightG = gearWeightG + foodWaterWeightG;
-  const values = [
-    { label: "ギア重量", value: gearWeightG },
-    { label: "水・食料", value: foodWaterWeightG },
-    { label: "総重量", value: totalWeightG }
-  ];
-
-  return (
-    <div className="grid grid-cols-3 border-t border-stone-100 pt-3 text-center">
-      {values.map((item) => (
-        <div key={item.label} className="min-w-0 px-1">
-          <p className="whitespace-nowrap font-din text-sm font-bold text-ink max-[359px]:text-[12px]">
-            {formatWeight(item.value, { compact: true })}
-          </p>
-          <p className="mt-1 whitespace-nowrap text-[10px] font-medium text-stone-500">
-            {item.label}
-          </p>
-        </div>
-      ))}
-    </div>
   );
 }
 

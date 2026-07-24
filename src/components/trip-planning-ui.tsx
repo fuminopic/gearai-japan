@@ -71,6 +71,7 @@ import {
 import { mountainCurrentPlanStatusStaleMessage } from "@/lib/mountain-current-plan-status";
 import {
   getPlanFoodWater,
+  isPlanFoodWaterChecklistItem,
   type PlanFoodWater
 } from "@/lib/plan-food-water";
 import {
@@ -629,6 +630,7 @@ export function TripPlanningUI({
             checklistOnlyIds={currentChecklistOnlyIds}
             ownedGear={ownedGear}
             packGearIds={packGearIds}
+            foodWater={foodWaterDraft}
             planId={planId}
           />
         ) : (
@@ -651,6 +653,7 @@ export function TripPlanningUI({
             <TripPlanningResult
               key={uncheckedPackedSlotsScopeKey}
               plan={plan}
+              foodWater={foodWaterDraft}
               compatibilityBySlot={compatibilityBySlot}
               ownedGear={ownedGear}
               packGearIds={packGearIds}
@@ -1394,6 +1397,7 @@ function writeStoredChecklistOnlyIds(
 
 function TripPlanningResult({
   plan,
+  foodWater,
   compatibilityBySlot,
   ownedGear,
   packGearIds,
@@ -1412,6 +1416,7 @@ function TripPlanningResult({
   onChecklistOnlyIdsChange
 }: {
   plan: PackRequirementPlan;
+  foodWater: PlanFoodWater;
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
   ownedGear: UserGear[];
   packGearIds: string[];
@@ -1443,6 +1448,7 @@ function TripPlanningResult({
   const initialChecklistOnlyIdsKey = initialChecklistOnlyIds.join("|");
   const checklist = buildPlanChecklist({
     plan,
+    foodWater,
     checkedSlots,
     uncheckedPackedSlots,
     checkedChecklistOnlyIds: checklistOnlyIds,
@@ -1756,6 +1762,7 @@ function TripPlanningResult({
 
 function SavedPlanFullChecklistView({
   plan,
+  foodWater,
   plannedDate,
   plannedEndDate,
   checkedSlots,
@@ -1766,6 +1773,7 @@ function SavedPlanFullChecklistView({
   planId
 }: {
   plan: PackRequirementPlan;
+  foodWater: PlanFoodWater;
   plannedDate: string;
   plannedEndDate: string;
   checkedSlots: RequirementSlot[];
@@ -1777,6 +1785,7 @@ function SavedPlanFullChecklistView({
 }) {
   const checklist = buildPlanChecklist({
     plan,
+    foodWater,
     checkedSlots,
     uncheckedPackedSlots,
     checkedChecklistOnlyIds: checklistOnlyIds,
@@ -1874,16 +1883,24 @@ function FullChecklistMetric({
 }
 
 function FullChecklistCategory({ category }: { category: ChecklistCategory }) {
+  const visibleItems = category.items.filter(
+    (item) => !isPlanFoodWaterChecklistItem(item.id)
+  );
+
+  if (visibleItems.length === 0) {
+    return null;
+  }
+
   return (
     <section className="overflow-hidden rounded-[20px] bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-stone-100 px-4 py-3">
         <h3 className="text-base font-bold text-ink">{category.label}</h3>
         <span className="text-xs font-bold text-stone-500">
-          {category.items.length.toLocaleString("ja-JP")} 件
+          {visibleItems.length.toLocaleString("ja-JP")} 件
         </span>
       </div>
       <div className="divide-y divide-stone-100">
-        {category.items.map((item) => (
+        {visibleItems.map((item) => (
           <FullChecklistRow
             key={`${category.id}-${item.id}`}
             item={item}
@@ -2010,15 +2027,17 @@ function getFullChecklistCounts(checklist: ReturnType<typeof buildPlanChecklist>
 
   for (const category of checklist.categories) {
     for (const item of category.items) {
-      if (item.gearStatus === "PACKED" || item.gearStatus === "OWNED") {
-        counts.covered += 1;
-      } else if (item.gearStatus === "MISSING" && !item.checked) {
+      const actionStatus = getPreDepartureItemActionStatus(item);
+
+      if (actionStatus === "MISSING") {
         counts.missing += 1;
+      } else if (item.gearStatus === "PACKED" || item.gearStatus === "OWNED") {
+        counts.covered += 1;
       }
 
       if (item.checked) {
         counts.checked += 1;
-      } else {
+      } else if (actionStatus !== "MISSING") {
         counts.confirm += 1;
       }
     }
@@ -2666,9 +2685,24 @@ function ChecklistCategoryCard({
   compatibilityBySlot: Partial<Record<RequirementSlot, GearMatchingResult>>;
   onToggle: (item: ChecklistItem) => void;
 }) {
+  const visiblePriorityGroups = category.priorityGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(
+        (item) => !isPlanFoodWaterChecklistItem(item.id)
+      )
+    }))
+    .filter((group) => group.items.length > 0);
+  const visibleConfirmedItems = confirmedItems.filter(
+    (item) => !isPlanFoodWaterChecklistItem(item.id)
+  );
   const missingCount = category.items.filter(
     (item) => getPreDepartureItemActionStatus(item) === "MISSING"
   ).length;
+
+  if (visiblePriorityGroups.length === 0 && visibleConfirmedItems.length === 0) {
+    return null;
+  }
 
   return (
     <article className="min-w-0 rounded-[20px] bg-white p-5 shadow-sm">
@@ -2702,7 +2736,7 @@ function ChecklistCategoryCard({
       </div>
 
       <div className="mt-4 space-y-4">
-        {category.priorityGroups.map((group) => (
+        {visiblePriorityGroups.map((group) => (
           <div key={group.priority}>
             <div className="mb-2 flex items-center gap-2">
               <span className="h-px flex-1 bg-stone-100" />
@@ -2724,17 +2758,17 @@ function ChecklistCategoryCard({
           </div>
         ))}
 
-        {confirmedItems.length > 0 ? (
+        {visibleConfirmedItems.length > 0 ? (
           <div>
             <div className="mb-2 flex items-center gap-2">
               <span className="h-px flex-1 bg-stone-100" />
               <p className="text-xs font-semibold text-stone-400">
-                完了済み {confirmedItems.length.toLocaleString("ja-JP")}
+                完了済み {visibleConfirmedItems.length.toLocaleString("ja-JP")}
               </p>
               <span className="h-px flex-1 bg-stone-100" />
             </div>
             <div className="space-y-2">
-              {confirmedItems.map((item) => (
+              {visibleConfirmedItems.map((item) => (
                 <ConfirmedChecklistItemRow
                   key={item.id}
                   item={item}
@@ -2921,6 +2955,23 @@ const checklistItemIcons: Record<ChecklistItemIcon, LucideIcon> = {
 };
 
 function getChecklistItemStatus(item: ChecklistItem) {
+  if (item.source === "PLAN_SETTING") {
+    if (item.checked) {
+      return {
+        label: "設定済み",
+        className: "bg-forest-50 text-forest-800"
+      };
+    }
+
+    return {
+      label: item.priority === "ESSENTIAL" ? "不足" : "未設定",
+      className:
+        item.priority === "ESSENTIAL"
+          ? "bg-red-50 text-red-700"
+          : "bg-stone-100 text-stone-600"
+    };
+  }
+
   if (item.gearStatus === "PACKED") {
     return {
       label: "パック済み",

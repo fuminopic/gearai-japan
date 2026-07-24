@@ -12,6 +12,10 @@ const checklistOwnedGearMatchersSource = readFileSync(
   new URL("../src/lib/checklist-owned-gear-matchers.ts", import.meta.url),
   "utf8"
 );
+const planFoodWaterSource = readFileSync(
+  new URL("../src/lib/plan-food-water.ts", import.meta.url),
+  "utf8"
+);
 const tripPlanningUiSource = readFileSync(
   new URL("../src/components/trip-planning-ui.tsx", import.meta.url),
   "utf8"
@@ -47,6 +51,7 @@ const uncheckedPackedSlotsMigrationSource = readFileSync(
 const checklistOwnedGearMatchersDataUrl = await toTranspiledDataUrl(
   checklistOwnedGearMatchersSource
 );
+const planFoodWaterDataUrl = await toTranspiledDataUrl(planFoodWaterSource);
 const {
   applyChecklistStateToChecklist,
   buildPlanChecklist,
@@ -54,10 +59,12 @@ const {
   calculateChecklistProgress,
   filterCheckedSlotsForPlan
 } = await importTranspiled(
-  planChecklistSource.replace(
-    'from "@/lib/checklist-owned-gear-matchers"',
-    `from "${checklistOwnedGearMatchersDataUrl}"`
-  )
+  planChecklistSource
+    .replace(
+      'from "@/lib/checklist-owned-gear-matchers"',
+      `from "${checklistOwnedGearMatchersDataUrl}"`
+    )
+    .replace('from "@/lib/plan-food-water"', `from "${planFoodWaterDataUrl}"`)
 );
 
 function planWithSlots(slots, coverageStatus = "MISSING") {
@@ -374,7 +381,7 @@ test("plan rows consistently display pack, owned, missing, and manual confirmati
   assert.match(tripPlanningUiSource, /\{status\.label\}/);
   assert.match(tripPlanningUiSource, /item\.gearStatus === "PACKED"/);
   assert.match(tripPlanningUiSource, /item\.gearStatus === "OWNED"/);
-  assert.match(tripPlanningUiSource, /item\.gearStatus === "MISSING" && !item\.checked/);
+  assert.match(tripPlanningUiSource, /const actionStatus = getPreDepartureItemActionStatus\(item\)/);
   assert.match(tripPlanningUiSource, /label: "パック済み"/);
   assert.match(tripPlanningUiSource, /label: "所持済み"/);
   assert.match(tripPlanningUiSource, /confirmationLabel: item\.checked \? "確認済み" : "未確認"/);

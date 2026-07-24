@@ -12,6 +12,10 @@ const checklistOwnedGearMatchersSource = readFileSync(
   new URL("../src/lib/checklist-owned-gear-matchers.ts", import.meta.url),
   "utf8"
 );
+const planFoodWaterSource = readFileSync(
+  new URL("../src/lib/plan-food-water.ts", import.meta.url),
+  "utf8"
+);
 
 const { outputText: checklistOwnedGearMatchersOutputText } = ts.transpileModule(
   checklistOwnedGearMatchersSource,
@@ -25,6 +29,15 @@ const { outputText: checklistOwnedGearMatchersOutputText } = ts.transpileModule(
 const checklistOwnedGearMatchersDataUrl = `data:text/javascript;base64,${Buffer.from(
   checklistOwnedGearMatchersOutputText
 ).toString("base64")}`;
+const { outputText: planFoodWaterOutputText } = ts.transpileModule(planFoodWaterSource, {
+  compilerOptions: {
+    module: ts.ModuleKind.ES2022,
+    target: ts.ScriptTarget.ES2022
+  }
+});
+const planFoodWaterDataUrl = `data:text/javascript;base64,${Buffer.from(
+  planFoodWaterOutputText
+).toString("base64")}`;
 
 const { outputText } = ts.transpileModule(planChecklistSource, {
   compilerOptions: {
@@ -34,17 +47,23 @@ const { outputText } = ts.transpileModule(planChecklistSource, {
 });
 const planChecklistModule = await import(
   `data:text/javascript;base64,${Buffer.from(
-    outputText.replace(
-      'from "@/lib/checklist-owned-gear-matchers"',
-      `from "${checklistOwnedGearMatchersDataUrl}"`
-    )
+    outputText
+      .replace(
+        'from "@/lib/checklist-owned-gear-matchers"',
+        `from "${checklistOwnedGearMatchersDataUrl}"`
+      )
+      .replace(
+        'from "@/lib/plan-food-water"',
+        `from "${planFoodWaterDataUrl}"`
+      )
   ).toString("base64")}`
 );
 const {
   applyChecklistStateToChecklist,
   buildPlanChecklist,
   buildPlanDecisionChips,
-  buildPlanNotNeededItems
+  buildPlanNotNeededItems,
+  getPreDepartureItemActionStatus
 } = planChecklistModule;
 
 const baseMountain = {
@@ -969,6 +988,52 @@ test("generic liner text does not mark hut inner sheets as owned", () => {
 
   assert.equal(itemByLabel(checklist, "インナーシーツ")?.source, "CHECKLIST_ONLY");
   assert.equal(itemByLabel(checklist, "インナーシーツ")?.checked, false);
+});
+
+test("water and food settings automatically complete their checklist entries without changing cooking gear", () => {
+  const plan = makePlan({
+    requiredSlots: ["WATER_STORAGE", "WATER_TREATMENT", "STOVE", "COOK_POT", "FUEL"]
+  });
+  const incomplete = buildPlanChecklist({
+    plan,
+    foodWater: {
+      waterVolumeMl: 0,
+      trailFoodIncluded: false,
+      trailFoodWeightG: 0,
+      mealCount: 0,
+      mealWeightG: 0
+    }
+  });
+  const complete = buildPlanChecklist({
+    plan,
+    foodWater: {
+      waterVolumeMl: 1500,
+      trailFoodIncluded: true,
+      trailFoodWeightG: 250,
+      mealCount: 1,
+      mealWeightG: 400
+    }
+  });
+
+  const incompleteItems = new Map(
+    incomplete.categories.flatMap((category) => category.items).map((item) => [item.id, item])
+  );
+  const completeItems = new Map(
+    complete.categories.flatMap((category) => category.items).map((item) => [item.id, item])
+  );
+
+  for (const itemId of ["food-water", "food-trail-snacks", "food-meals"]) {
+    assert.equal(incompleteItems.get(itemId)?.source, "PLAN_SETTING");
+    assert.equal(incompleteItems.get(itemId)?.checked, false);
+    assert.equal(completeItems.get(itemId)?.checked, true);
+    assert.equal(completeItems.get(itemId)?.toggleSlots.length, 0);
+  }
+  assert.equal(getPreDepartureItemActionStatus(incompleteItems.get("food-water")), "MISSING");
+  assert.equal(
+    getPreDepartureItemActionStatus(incompleteItems.get("food-meals")),
+    "CONFIRM"
+  );
+  assert.equal(completeItems.get("food-stove")?.source, "GEAR_BACKED");
 });
 
 test("fixed checklist items are covered by slots, owned matchers, or manual-only lists", () => {

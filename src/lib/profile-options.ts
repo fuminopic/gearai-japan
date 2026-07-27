@@ -150,6 +150,15 @@ export function getProfileOptionValues(
   return getMetadataOptionValues(metadata, metadataKey, options);
 }
 
+export function getProfileOptionValueFromArray(
+  storedValues: unknown,
+  metadata: ProfileMetadata,
+  metadataKey: string,
+  options: readonly ProfileOption[]
+) {
+  return getProfileOptionValues(storedValues, metadata, metadataKey, options)[0] ?? "";
+}
+
 function hasCanonicalProfileDetails(metadata: ProfileMetadata) {
   return metadata?.profile_details_version === PROFILE_DETAILS_METADATA_VERSION;
 }

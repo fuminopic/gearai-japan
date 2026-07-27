@@ -17,12 +17,10 @@ import {
 } from "@/lib/data/profile";
 import {
   AGE_RANGE_OPTIONS,
-  FAVORITE_REGION_MAX,
   FAVORITE_REGION_OPTIONS,
   PROFILE_DETAILS_METADATA_VERSION,
   GENDER_OPTIONS,
   MOUNTAINEERING_EXPERIENCE_OPTIONS,
-  MOUNTAINEERING_GENRE_MAX,
   MOUNTAINEERING_GENRE_OPTIONS,
   PROFILE_AVATAR_BUCKET,
   USUAL_TRIP_STYLE_OPTIONS,
@@ -279,6 +277,7 @@ export type ProfileActionState = {
   ok: boolean;
   message: string;
   profile?: ProfileDetails;
+  displayName?: string;
 };
 
 export async function updateProfile(
@@ -287,7 +286,6 @@ export async function updateProfile(
 ): Promise<ProfileActionState> {
   const supabase = await createClient();
   const displayName = cleanText(formData.get("display_name"), 40);
-  const selfIntroduction = cleanText(formData.get("self_introduction"), 220);
   const profileFields = parseProfileFields(formData);
 
   if (!profileFields.ok) {
@@ -314,9 +312,9 @@ export async function updateProfile(
       gender: profileFields.data.gender || null,
       age_range: profileFields.data.ageRange || null,
       mountaineering_experience: profileFields.data.mountaineeringExperience || null,
-      mountaineering_genres: profileFields.data.mountaineeringGenres,
-      usual_trip_styles: profileFields.data.usualTripStyles,
-      favorite_regions: profileFields.data.favoriteRegions
+      mountaineering_genres: toSingleValueArray(profileFields.data.mountaineeringGenre),
+      usual_trip_styles: toSingleValueArray(profileFields.data.usualTripStyle),
+      favorite_regions: toSingleValueArray(profileFields.data.favoriteRegion)
     })
     .eq("id", user.id)
     .select(profileDetailsSelect)
@@ -331,7 +329,6 @@ export async function updateProfile(
   const { error: metadataError } = await supabase.auth.updateUser({
     data: {
       display_name: displayName,
-      self_introduction: selfIntroduction,
       // These legacy keys are a migration fallback only. Clear them after the
       // canonical profile row has been written so they cannot resurrect values.
       profile_gender: null,
@@ -361,7 +358,12 @@ export async function updateProfile(
 
   revalidatePath("/profile");
   revalidatePath("/profile/edit");
-  return { ok: true, message: "プロフィールを保存しました。", profile: savedProfile };
+  return {
+    ok: true,
+    message: "プロフィールを保存しました。",
+    profile: savedProfile,
+    displayName
+  };
 }
 
 export async function saveProfileAvatar(path: string): Promise<ProfileActionState> {
@@ -573,37 +575,31 @@ function parseProfileFields(formData: FormData):
     "mountaineering_experience",
     MOUNTAINEERING_EXPERIENCE_OPTIONS
   );
-  const mountaineeringGenres = readProfileOptionList(
+  const mountaineeringGenre = readOptionalProfileOption(
     formData,
     "mountaineering_genres",
-    MOUNTAINEERING_GENRE_OPTIONS,
-    MOUNTAINEERING_GENRE_MAX
+    MOUNTAINEERING_GENRE_OPTIONS
   );
-  const usualTripStyles = readProfileOptionList(
+  const usualTripStyle = readOptionalProfileOption(
     formData,
     "usual_trip_styles",
     USUAL_TRIP_STYLE_OPTIONS
   );
-  const favoriteRegions = readProfileOptionList(
+  const favoriteRegion = readOptionalProfileOption(
     formData,
     "favorite_regions",
-    FAVORITE_REGION_OPTIONS,
-    FAVORITE_REGION_MAX
+    FAVORITE_REGION_OPTIONS
   );
 
   if (
     gender === null ||
     ageRange === null ||
     mountaineeringExperience === null ||
-    mountaineeringGenres === null ||
-    usualTripStyles === null ||
-    favoriteRegions === null
+    mountaineeringGenre === null ||
+    usualTripStyle === null ||
+    favoriteRegion === null
   ) {
     return { ok: false, message: "選択内容を確認してから保存してください。" };
-  }
-
-  if (favoriteRegions.includes("no_preference") && favoriteRegions.length > 1) {
-    return { ok: false, message: "「特に決まっていない」は単独で選択してください。" };
   }
 
   return {
@@ -612,9 +608,9 @@ function parseProfileFields(formData: FormData):
       gender,
       ageRange,
       mountaineeringExperience,
-      mountaineeringGenres,
-      usualTripStyles,
-      favoriteRegions
+      mountaineeringGenre,
+      usualTripStyle,
+      favoriteRegion
     }
   };
 }
@@ -623,9 +619,9 @@ type ProfileFields = {
   gender: string;
   ageRange: string;
   mountaineeringExperience: string;
-  mountaineeringGenres: string[];
-  usualTripStyles: string[];
-  favoriteRegions: string[];
+  mountaineeringGenre: string;
+  usualTripStyle: string;
+  favoriteRegion: string;
 };
 
 function readOptionalProfileOption(
@@ -637,27 +633,8 @@ function readOptionalProfileOption(
   return value === "" || options.some((option) => option.value === value) ? value : null;
 }
 
-function readProfileOptionList(
-  formData: FormData,
-  name: string,
-  options: readonly ProfileOption[],
-  max?: number
-) {
-  const values = formData
-    .getAll(name)
-    .filter((value): value is string => typeof value === "string")
-    .map((value) => value.trim());
-  const uniqueValues = Array.from(new Set(values));
-
-  if (
-    uniqueValues.length !== values.length ||
-    (max !== undefined && uniqueValues.length > max) ||
-    uniqueValues.some((value) => !options.some((option) => option.value === value))
-  ) {
-    return null;
-  }
-
-  return uniqueValues;
+function toSingleValueArray(value: string) {
+  return value ? [value] : [];
 }
 
 function getLoginErrorMessage(message: string) {

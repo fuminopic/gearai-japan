@@ -44,16 +44,12 @@ test("my page stays focused on profile, insurance, and account entry points", ()
   assert.doesNotMatch(profilePageSource, /緊急連絡/);
 });
 
-test("profile settings include the requested optional mountaineering data with stable values", () => {
+test("profile settings present compact single-choice profile rows", () => {
   for (const copy of [
     "基本情報",
-    "表示名",
-    "メモ",
-    "ユーザー情報（任意）",
+    "ニックネーム",
     "性別",
     "年齢層",
-    "登山プロフィール（任意）",
-    "装備リストやおすすめ設定の参考にします。",
     "登山歴",
     "主な登山ジャンル",
     "普段よくする山行",
@@ -66,19 +62,33 @@ test("profile settings include the requested optional mountaineering data with s
   }
 
   assert.match(profileSettingsFormSource, /<ProfileAvatarEditor/);
+  assert.match(avatarEditorSource, /プロフィール画像/);
   assert.match(profileSettingsFormSource, /AccountDeleteButton/);
   assert.match(avatarEditorSource, /プロフィール画像/);
   assert.match(profileEditPageSource, /<ProfileSettingsForm/);
   assert.match(profileEditPageSource, /getProfileDetails/);
   assert.match(profileEditPageSource, /getProfileOptionValue/);
-  assert.match(profileEditPageSource, /getProfileOptionValues/);
-  assert.match(profileSettingsFormSource, /MOUNTAINEERING_GENRE_MAX/);
-  assert.match(profileSettingsFormSource, /FAVORITE_REGION_MAX/);
-  assert.match(profileSettingsFormSource, /exclusiveValue="no_preference"/);
+  assert.match(profileEditPageSource, /getProfileOptionValueFromArray/);
+  assert.match(profileSettingsFormSource, /<ProfileOptionRow/);
+  assert.match(profileSettingsFormSource, /<ProfileDialog/);
+  assert.match(profileSettingsFormSource, /role="radiogroup"/);
+  assert.match(profileSettingsFormSource, /aria-checked=\{checked\}/);
+  assert.match(profileSettingsFormSource, /<AccountDeleteButton gearCount=\{gearCount\} variant="row"/);
+  assert.match(profileSettingsFormSource, /form="profile-settings-form"/);
   assert.match(profileOptionsSource, /value: "male"/);
   assert.match(profileOptionsSource, /value: "snow_free_mountain"/);
   assert.match(profileOptionsSource, /value: "kyushu_okinawa"/);
   assert.match(profileOptionsSource, /value: "no_preference"/);
+  assert.doesNotMatch(profileSettingsFormSource, /表示名/);
+  assert.doesNotMatch(profileSettingsFormSource, /メモ/);
+  assert.doesNotMatch(profileSettingsFormSource, /ユーザー情報（任意）/);
+  assert.doesNotMatch(profileSettingsFormSource, /登山プロフィール（任意）/);
+  assert.doesNotMatch(profileSettingsFormSource, /アプリ内で表示する名前とメモです。/);
+  assert.doesNotMatch(profileSettingsFormSource, /統計の参考にします。/);
+  assert.doesNotMatch(profileSettingsFormSource, /装備リストやおすすめ設定の参考にします。/);
+  assert.doesNotMatch(profileSettingsFormSource, /ProfileMultiSelect/);
+  assert.doesNotMatch(profileSettingsFormSource, /MOUNTAINEERING_GENRE_MAX/);
+  assert.doesNotMatch(profileSettingsFormSource, /FAVORITE_REGION_MAX/);
   assert.doesNotMatch(profileSettingsFormSource, /生年月日/);
   assert.doesNotMatch(profileSettingsFormSource, /血液型/);
   assert.doesNotMatch(profileSettingsFormSource, /職業/);
@@ -92,19 +102,19 @@ test("profile update validates options on the server and gives one pending-state
   assert.match(authActionsSource, /export async function updateProfile/);
   assert.match(authActionsSource, /parseProfileFields/);
   assert.match(authActionsSource, /readOptionalProfileOption/);
-  assert.match(authActionsSource, /readProfileOptionList/);
-  assert.match(authActionsSource, /favoriteRegions\.includes\("no_preference"\)/);
   assert.match(authActionsSource, /\.from\("profiles"\)/);
   assert.match(authActionsSource, /gender: profileFields\.data\.gender \|\| null/);
-  assert.match(authActionsSource, /mountaineering_genres: profileFields\.data\.mountaineeringGenres/);
-  assert.match(authActionsSource, /usual_trip_styles: profileFields\.data\.usualTripStyles/);
-  assert.match(authActionsSource, /favorite_regions: profileFields\.data\.favoriteRegions/);
+  assert.match(authActionsSource, /mountaineering_genres: toSingleValueArray\(profileFields\.data\.mountaineeringGenre\)/);
+  assert.match(authActionsSource, /usual_trip_styles: toSingleValueArray\(profileFields\.data\.usualTripStyle\)/);
+  assert.match(authActionsSource, /favorite_regions: toSingleValueArray\(profileFields\.data\.favoriteRegion\)/);
+  assert.match(authActionsSource, /function toSingleValueArray\(value: string\)/);
   assert.match(authActionsSource, /supabase\.auth\.updateUser/);
   assert.match(authActionsSource, /revalidatePath\("\/profile"\)/);
   assert.match(profileDataSource, /getProfileDetails/);
   assert.match(profileDataSource, /isProfileDetailsSchemaUnavailable/);
   assert.match(profileOptionsSource, /getProfileOptionValue/);
   assert.match(profileOptionsSource, /getProfileOptionValues/);
+  assert.match(profileOptionsSource, /getProfileOptionValueFromArray/);
 });
 
 test("profile save treats the returned public.profiles row as the form's canonical state", () => {
@@ -119,10 +129,11 @@ test("profile save treats the returned public.profiles row as the form's canonic
   assert.match(profileSettingsFormSource, /value=\{profileValues\.gender\}/);
   assert.match(profileSettingsFormSource, /value=\{profileValues\.ageRange\}/);
   assert.match(profileSettingsFormSource, /value=\{profileValues\.mountaineeringExperience\}/);
-  assert.match(profileSettingsFormSource, /values=\{profileValues\.mountaineeringGenres\}/);
-  assert.match(profileSettingsFormSource, /values=\{profileValues\.usualTripStyles\}/);
-  assert.match(profileSettingsFormSource, /values=\{profileValues\.favoriteRegions\}/);
-  assert.doesNotMatch(profileSettingsFormSource, /initialValues=/);
+  assert.match(profileSettingsFormSource, /value=\{profileValues\.mountaineeringGenre\}/);
+  assert.match(profileSettingsFormSource, /value=\{profileValues\.usualTripStyle\}/);
+  assert.match(profileSettingsFormSource, /value=\{profileValues\.favoriteRegion\}/);
+  assert.match(profileSettingsFormSource, /nickname: state\.displayName \?\? ""/);
+  assert.match(authActionsSource, /displayName/);
 });
 
 test("legacy metadata is a one-way fallback and cannot overwrite a saved canonical profile", () => {
@@ -141,17 +152,37 @@ test("legacy metadata is a one-way fallback and cannot overwrite a saved canonic
   assert.match(authActionsSource, /profile_details_version: PROFILE_DETAILS_METADATA_VERSION/);
 });
 
-test("all six canonical profile columns use the expected database mappings", () => {
+test("all six canonical profile fields use the expected database mappings", () => {
   for (const mapping of [
     "gender: profileFields.data.gender || null",
     "age_range: profileFields.data.ageRange || null",
     "mountaineering_experience: profileFields.data.mountaineeringExperience || null",
-    "mountaineering_genres: profileFields.data.mountaineeringGenres",
-    "usual_trip_styles: profileFields.data.usualTripStyles",
-    "favorite_regions: profileFields.data.favoriteRegions"
+    "mountaineering_genres: toSingleValueArray(profileFields.data.mountaineeringGenre)",
+    "usual_trip_styles: toSingleValueArray(profileFields.data.usualTripStyle)",
+    "favorite_regions: toSingleValueArray(profileFields.data.favoriteRegion)"
   ]) {
     assert.match(authActionsSource, new RegExp(mapping.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
+});
+
+test("existing arrays are read as one choice and rewritten as single-element arrays without a schema change", () => {
+  assert.match(profileEditPageSource, /mountaineeringGenre=\{getProfileOptionValueFromArray/);
+  assert.match(profileEditPageSource, /usualTripStyle=\{getProfileOptionValueFromArray/);
+  assert.match(profileEditPageSource, /favoriteRegion=\{getProfileOptionValueFromArray/);
+  assert.match(profileOptionsSource, /getProfileOptionValues\(storedValues, metadata, metadataKey, options\)\[0\] \?\? ""/);
+  assert.match(profileDetailsMigrationSource, /mountaineering_genres text\[\]/);
+  assert.match(profileDetailsMigrationSource, /usual_trip_styles text\[\]/);
+  assert.match(profileDetailsMigrationSource, /favorite_regions text\[\]/);
+  assert.match(profileDetailsMigrationSource, /cardinality\(coalesce\(mountaineering_genres/);
+  assert.match(profileDetailsMigrationSource, /cardinality\(coalesce\(favorite_regions/);
+});
+
+test("memo is no longer rendered, edited, or saved", () => {
+  assert.doesNotMatch(profileSettingsFormSource, /self_introduction/);
+  assert.doesNotMatch(profileEditPageSource, /self_introduction/);
+  assert.doesNotMatch(profilePageSource, /self_introduction/);
+  assert.doesNotMatch(authActionsSource, /formData\.get\("self_introduction"\)/);
+  assert.doesNotMatch(authActionsSource, /self_introduction: selfIntroduction/);
 });
 
 test("avatar upload is private, compressed, replaceable, removable, and uses haptic completion feedback", () => {

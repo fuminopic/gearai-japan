@@ -32,7 +32,6 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const savedMessage = getSavedMessage(saved);
   const metadata = user.user_metadata;
   const displayName = getDisplayName(user.email, metadata);
-  const profileMemo = getMetadataString(metadata, "self_introduction");
   const insuranceStatus = getMetadataString(metadata, "mountain_insurance_status");
   const insuranceProvider = getMetadataString(metadata, "mountain_insurance_provider");
   const insuranceExpiresOn = getMetadataString(metadata, "mountain_insurance_expires_on");
@@ -88,12 +87,6 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             </p>
           </div>
         </div>
-
-        {profileMemo ? (
-          <p className="mt-4 rounded-2xl bg-stone-50 px-4 py-3 text-sm font-semibold leading-relaxed text-stone-600">
-            {profileMemo}
-          </p>
-        ) : null}
 
         <Link
           href="/profile/edit"

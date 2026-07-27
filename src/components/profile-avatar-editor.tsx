@@ -132,9 +132,9 @@ export function ProfileAvatarEditor({
   }
 
   return (
-    <div className="px-4 py-4 sm:grid sm:grid-cols-[160px_minmax(0,1fr)] sm:items-center sm:gap-4">
+    <div className="px-5 py-5">
       <span className="text-sm font-bold text-ink">プロフィール画像</span>
-      <div className="mt-3 flex min-w-0 items-center gap-3 sm:mt-0">
+      <div className="mt-4 flex min-w-0 items-center gap-4">
         <input
           ref={inputRef}
           type="file"
@@ -161,7 +161,7 @@ export function ProfileAvatarEditor({
             </span>
           ) : null}
         </button>
-        <div className="min-w-0">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
@@ -176,13 +176,13 @@ export function ProfileAvatarEditor({
               type="button"
               onClick={() => void handleDelete()}
               disabled={isWorking}
-              className="mt-2 inline-flex h-8 items-center gap-1 text-xs font-bold text-stone-500 transition active:scale-[0.98] disabled:opacity-60"
+              className="inline-flex h-10 items-center gap-1.5 rounded-xl px-2 text-sm font-bold text-stone-500 transition active:scale-[0.98] disabled:opacity-60"
             >
-              <Trash2 aria-hidden className="h-3.5 w-3.5" />
+              <Trash2 aria-hidden className="h-4 w-4" />
               画像を削除
             </button>
           ) : (
-            <p className="mt-2 text-xs font-semibold leading-relaxed text-stone-500">
+            <p className="text-xs font-semibold leading-relaxed text-stone-500">
               JPEG・PNG・WebP（10MBまで）
             </p>
           )}
@@ -191,7 +191,7 @@ export function ProfileAvatarEditor({
       {feedback ? (
         <p
           role="status"
-          className={`mt-3 text-xs font-semibold sm:col-start-2 ${
+          className={`mt-3 text-xs font-semibold ${
             feedback.tone === "error" ? "text-red-700" : "text-[#14724e]"
           }`}
         >

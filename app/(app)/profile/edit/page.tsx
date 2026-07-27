@@ -10,7 +10,7 @@ import {
   MOUNTAINEERING_GENRE_OPTIONS,
   USUAL_TRIP_STYLE_OPTIONS,
   getProfileOptionValue,
-  getProfileOptionValues,
+  getProfileOptionValueFromArray,
   getMetadataString
 } from "@/lib/profile-options";
 
@@ -35,7 +35,6 @@ export default async function ProfileEditPage() {
         email={user.email ?? ""}
         gearCount={gearCountResult.count ?? 0}
         displayName={displayName}
-        selfIntroduction={getMetadataString(metadata, "self_introduction")}
         initialAvatarUrl={avatarUrl}
         gender={getProfileOptionValue(profile?.gender, metadata, "profile_gender", GENDER_OPTIONS)}
         ageRange={getProfileOptionValue(profile?.ageRange, metadata, "profile_age_range", AGE_RANGE_OPTIONS)}
@@ -45,19 +44,19 @@ export default async function ProfileEditPage() {
           "mountaineering_experience",
           MOUNTAINEERING_EXPERIENCE_OPTIONS
         )}
-        mountaineeringGenres={getProfileOptionValues(
+        mountaineeringGenre={getProfileOptionValueFromArray(
           profile?.mountaineeringGenres,
           metadata,
           "mountaineering_genres",
           MOUNTAINEERING_GENRE_OPTIONS
         )}
-        usualTripStyles={getProfileOptionValues(
+        usualTripStyle={getProfileOptionValueFromArray(
           profile?.usualTripStyles,
           metadata,
           "usual_trip_styles",
           USUAL_TRIP_STYLE_OPTIONS
         )}
-        favoriteRegions={getProfileOptionValues(
+        favoriteRegion={getProfileOptionValueFromArray(
           profile?.favoriteRegions,
           metadata,
           "favorite_regions",

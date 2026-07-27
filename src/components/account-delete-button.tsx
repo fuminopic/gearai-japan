@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Trash2, X } from "lucide-react";
+import { AlertTriangle, ChevronRight, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 
@@ -8,11 +8,12 @@ import { deleteAccount } from "@/lib/actions/auth";
 
 type AccountDeleteButtonProps = {
   gearCount: number;
+  variant?: "button" | "row";
 };
 
 type DialogStep = "closed" | "first" | "final";
 
-export function AccountDeleteButton({ gearCount }: AccountDeleteButtonProps) {
+export function AccountDeleteButton({ gearCount, variant = "button" }: AccountDeleteButtonProps) {
   const router = useRouter();
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const [step, setStep] = useState<DialogStep>("closed");
@@ -38,10 +39,17 @@ export function AccountDeleteButton({ gearCount }: AccountDeleteButtonProps) {
       <button
         type="button"
         onClick={() => setStep("first")}
-        className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 text-sm font-bold text-red-700 transition active:scale-[0.98]"
+        className={
+          variant === "row"
+            ? "flex h-14 w-full items-center justify-between px-5 text-sm font-bold text-red-700 transition active:bg-red-50"
+            : "mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 text-sm font-bold text-red-700 transition active:scale-[0.98]"
+        }
       >
-        <Trash2 aria-hidden className="h-4 w-4" />
-        アカウントを削除
+        <span className="inline-flex items-center gap-2">
+          <Trash2 aria-hidden className="h-4 w-4" />
+          アカウントを削除
+        </span>
+        {variant === "row" ? <ChevronRight aria-hidden className="h-5 w-5 text-stone-400" /> : null}
       </button>
 
       {step !== "closed" ? (

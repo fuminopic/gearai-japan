@@ -36,10 +36,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const insuranceProvider = getMetadataString(metadata, "mountain_insurance_provider");
   const insuranceExpiresOn = getMetadataString(metadata, "mountain_insurance_expires_on");
   const hasInsurance = insuranceStatus === "active";
-  const [{ count: gearCount }, profile] = await Promise.all([
-    supabase.from("user_gear").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-    getProfileDetails(supabase, user.id)
-  ]);
+  const profile = await getProfileDetails(supabase, user.id);
   const avatarUrl = await getProfileAvatarSignedUrl(supabase, user.id, metadata, profile);
 
   // ホーム/ギアと同じ骨格。バンド safe+150 / カード -51 → カード上端 safe+99 で
@@ -163,7 +160,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             ログアウト
           </button>
         </form>
-        <AccountDeleteButton gearCount={gearCount ?? 0} />
+        <AccountDeleteButton />
       </section>
       </div>
     </main>

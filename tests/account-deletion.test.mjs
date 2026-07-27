@@ -29,8 +29,9 @@ test("profile exposes a low-weight account deletion entry below logout", () => {
       profilePageSource.indexOf("<AccountDeleteButton"),
     "account deletion entry should remain below logout"
   );
-  assert.match(profilePageSource, /\.from\("user_gear"\)/);
-  assert.match(profilePageSource, /count: "exact", head: true/);
+  assert.doesNotMatch(profilePageSource, /count: "exact", head: true/);
+  assert.doesNotMatch(accountDeleteButtonSource, /gearCount/);
+  assert.match(authActionsSource, /export async function deleteAccount/);
 });
 
 test("account deletion UI requires two confirmations and defaults final focus to cancel", () => {
@@ -51,6 +52,8 @@ test("account deletion UI requires two confirmations and defaults final focus to
   }
 
   assert.match(accountDeleteButtonSource, /setStep\("first"\)/);
+  assert.match(accountDeleteButtonSource, /openDeleteDialog/);
+  assert.doesNotMatch(accountDeleteButtonSource, /getAccountDeletionPreview/);
   assert.match(accountDeleteButtonSource, /setStep\("final"\)/);
   assert.match(accountDeleteButtonSource, /setStep\("closed"\)/);
   assert.match(accountDeleteButtonSource, /autoFocus/);

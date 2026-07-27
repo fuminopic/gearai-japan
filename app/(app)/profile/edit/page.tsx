@@ -1,6 +1,13 @@
+import { Suspense } from "react";
+
+import { ProfileAvatarEditor } from "@/components/profile-avatar-editor";
 import { ProfileSettingsForm } from "@/components/profile-settings-form";
 import { PageShell } from "@/components/ui/page-shell";
-import { getProfileAvatarSignedUrl, getProfileDetails } from "@/lib/data/profile";
+import {
+  getProfileAvatarSignedUrl,
+  getProfileDetails,
+  type ProfileDetails
+} from "@/lib/data/profile";
 import { requireUser } from "@/lib/data/gear";
 import {
   AGE_RANGE_OPTIONS,
@@ -13,15 +20,12 @@ import {
   getProfileOptionValueFromArray,
   getMetadataString
 } from "@/lib/profile-options";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function ProfileEditPage() {
   const { supabase, user } = await requireUser();
   const metadata = user.user_metadata;
-  const [profile, gearCountResult] = await Promise.all([
-    getProfileDetails(supabase, user.id),
-    supabase.from("user_gear").select("id", { count: "exact", head: true }).eq("user_id", user.id)
-  ]);
-  const avatarUrl = await getProfileAvatarSignedUrl(supabase, user.id, metadata, profile);
+  const profile = await getProfileDetails(supabase, user.id);
   const displayName = getDisplayName(user.email, metadata);
 
   return (
@@ -33,9 +37,15 @@ export default async function ProfileEditPage() {
     >
       <ProfileSettingsForm
         email={user.email ?? ""}
-        gearCount={gearCountResult.count ?? 0}
         displayName={displayName}
-        initialAvatarUrl={avatarUrl}
+        initialAvatarUrl=""
+        avatarSlot={
+          <Suspense
+            fallback={<ProfileAvatarEditor displayName={displayName} initialAvatarUrl="" />}
+          >
+            <ProfileAvatarSlot displayName={displayName} userId={user.id} metadata={metadata} profile={profile} />
+          </Suspense>
+        }
         gender={getProfileOptionValue(profile?.gender, metadata, "profile_gender", GENDER_OPTIONS)}
         ageRange={getProfileOptionValue(profile?.ageRange, metadata, "profile_age_range", AGE_RANGE_OPTIONS)}
         mountaineeringExperience={getProfileOptionValue(
@@ -65,6 +75,23 @@ export default async function ProfileEditPage() {
       />
     </PageShell>
   );
+}
+
+async function ProfileAvatarSlot({
+  displayName,
+  userId,
+  metadata,
+  profile
+}: {
+  displayName: string;
+  userId: string;
+  metadata: Record<string, unknown>;
+  profile: ProfileDetails | null;
+}) {
+  const supabase = await createClient();
+  const avatarUrl = await getProfileAvatarSignedUrl(supabase, userId, metadata, profile);
+
+  return <ProfileAvatarEditor displayName={displayName} initialAvatarUrl={avatarUrl} />;
 }
 
 function getDisplayName(

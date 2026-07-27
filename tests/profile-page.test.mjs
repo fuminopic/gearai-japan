@@ -76,7 +76,8 @@ test("profile settings present compact single-choice profile rows", () => {
   assert.doesNotMatch(profileSettingsFormSource, /label="選択しない"/);
   assert.match(profileSettingsFormSource, /z-\[60\]/);
   assert.match(profileSettingsFormSource, /safe-area-inset-bottom\)\+7rem/);
-  assert.match(profileSettingsFormSource, /<AccountDeleteButton gearCount=\{gearCount\} variant="row"/);
+  assert.match(profileSettingsFormSource, /avatarSlot/);
+  assert.match(profileSettingsFormSource, /<AccountDeleteButton variant="row"/);
   assert.match(profileSettingsFormSource, /form="profile-settings-form"/);
   assert.match(profileOptionsSource, /value: "male"/);
   assert.match(profileOptionsSource, /value: "snow_free_mountain"/);
@@ -178,6 +179,15 @@ test("existing arrays are read as one choice and rewritten as single-element arr
   assert.match(profileDetailsMigrationSource, /favorite_regions text\[\]/);
   assert.match(profileDetailsMigrationSource, /cardinality\(coalesce\(mountaineering_genres/);
   assert.match(profileDetailsMigrationSource, /cardinality\(coalesce\(favorite_regions/);
+});
+
+test("profile edit keeps the form path free of account-delete counting and streams the private avatar URL separately", () => {
+  assert.doesNotMatch(profileEditPageSource, /count: "exact", head: true/);
+  assert.doesNotMatch(profilePageSource, /count: "exact", head: true/);
+  assert.match(profileEditPageSource, /<Suspense/);
+  assert.match(profileEditPageSource, /<ProfileAvatarSlot/);
+  assert.match(profileEditPageSource, /getProfileAvatarSignedUrl/);
+  assert.match(profileEditPageSource, /initialAvatarUrl=""/);
 });
 
 test("memo is no longer rendered, edited, or saved", () => {

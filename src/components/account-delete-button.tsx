@@ -7,28 +7,31 @@ import { useRef, useState, useTransition } from "react";
 import { deleteAccount } from "@/lib/actions/auth";
 
 type AccountDeleteButtonProps = {
-  gearCount: number;
   variant?: "button" | "row";
 };
 
 type DialogStep = "closed" | "first" | "final";
 
-export function AccountDeleteButton({ gearCount, variant = "button" }: AccountDeleteButtonProps) {
+export function AccountDeleteButton({ variant = "button" }: AccountDeleteButtonProps) {
   const router = useRouter();
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const [step, setStep] = useState<DialogStep>("closed");
-  const [isPending, startTransition] = useTransition();
+  const [isDeleting, startDeleteTransition] = useTransition();
 
   function closeDialog() {
-    if (isPending) {
+    if (isDeleting) {
       return;
     }
 
     setStep("closed");
   }
 
+  function openDeleteDialog() {
+    setStep("first");
+  }
+
   function deleteCurrentAccount() {
-    startTransition(async () => {
+    startDeleteTransition(async () => {
       await deleteAccount();
       router.refresh();
     });
@@ -38,7 +41,7 @@ export function AccountDeleteButton({ gearCount, variant = "button" }: AccountDe
     <>
       <button
         type="button"
-        onClick={() => setStep("first")}
+        onClick={openDeleteDialog}
         className={
           variant === "row"
             ? "flex h-14 w-full items-center justify-between px-5 text-sm font-bold text-red-700 transition active:bg-red-50"
@@ -81,7 +84,7 @@ export function AccountDeleteButton({ gearCount, variant = "button" }: AccountDe
                     </p>
                     <ul className="list-disc space-y-1 pl-5">
                       <li>登録したメールアドレス・パスワード</li>
-                      <li>マイギアのデータ（{gearCount}点）</li>
+                      <li>マイギアのデータ</li>
                       <li>山行計画データ</li>
                       <li>アップロードしたギア写真・プロフィール画像</li>
                     </ul>
@@ -95,7 +98,7 @@ export function AccountDeleteButton({ gearCount, variant = "button" }: AccountDe
               <button
                 type="button"
                 onClick={closeDialog}
-                disabled={isPending}
+                disabled={isDeleting}
                 aria-label="閉じる"
                 className="rounded-lg p-2 text-stone-500 transition active:scale-[0.96] disabled:opacity-50"
               >
@@ -108,7 +111,7 @@ export function AccountDeleteButton({ gearCount, variant = "button" }: AccountDe
                 ref={cancelButtonRef}
                 type="button"
                 onClick={closeDialog}
-                disabled={isPending}
+                disabled={isDeleting}
                 autoFocus
                 className="h-11 rounded-xl border border-stone-200 bg-white px-4 text-sm font-bold text-stone-700 transition active:scale-[0.98] disabled:opacity-50"
               >
@@ -129,10 +132,10 @@ export function AccountDeleteButton({ gearCount, variant = "button" }: AccountDe
                 <button
                   type="button"
                   onClick={deleteCurrentAccount}
-                  disabled={isPending}
+                  disabled={isDeleting}
                   className="h-11 rounded-xl bg-red-700 px-4 text-sm font-bold text-white transition active:scale-[0.98] disabled:opacity-60"
                 >
-                  {isPending ? "削除中..." : "削除する"}
+                  {isDeleting ? "削除中..." : "削除する"}
                 </button>
               )}
             </div>

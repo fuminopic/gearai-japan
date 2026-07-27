@@ -18,6 +18,10 @@ const drawerSource = readFileSync(
   new URL("../src/components/app-menu-drawer.tsx", import.meta.url),
   "utf8"
 );
+const navigationFeedbackSource = readFileSync(
+  new URL("../src/components/navigation-feedback.tsx", import.meta.url),
+  "utf8"
+);
 
 test("global navigation prefetches only adjacent routes when the browser is idle", () => {
   assert.match(prefetcherSource, /usePathname/);
@@ -51,4 +55,14 @@ test("bottom navigation acknowledges the intended tab before a dynamic route res
   assert.match(bottomNavSource, /setPendingHref\(null\)/);
   // ここで新しいユーザー RSC / HTML のキャッシュは作らない。
   assert.doesNotMatch(bottomNavSource, /router\.prefetch/);
+});
+
+test("navigation feedback has a bounded slow state with an in-app retry", () => {
+  assert.match(navigationFeedbackSource, /NAVIGATION_SLOW_AFTER_MS = 5_000/);
+  assert.match(navigationFeedbackSource, /window\.setTimeout/);
+  assert.match(navigationFeedbackSource, /clearNavigationFeedback/);
+  assert.match(navigationFeedbackSource, /通信に時間がかかっています。/);
+  assert.match(navigationFeedbackSource, /再試行/);
+  assert.match(navigationFeedbackSource, /router\.push\(pendingHref as Route\)/);
+  assert.doesNotMatch(navigationFeedbackSource, /window\.location\.(assign|reload)/);
 });

@@ -1,16 +1,45 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Route } from "next";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
+const NAVIGATION_SLOW_AFTER_MS = 5_000;
 
 export function NavigationFeedback() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isNavigating, setIsNavigating] = useState(false);
+  const router = useRouter();
+  const slowNavigationTimerRef = useRef<number | null>(null);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [isSlowNavigation, setIsSlowNavigation] = useState(false);
+
+  const clearNavigationFeedback = useCallback(() => {
+    if (slowNavigationTimerRef.current !== null) {
+      window.clearTimeout(slowNavigationTimerRef.current);
+      slowNavigationTimerRef.current = null;
+    }
+
+    setPendingHref(null);
+    setIsSlowNavigation(false);
+  }, []);
+
+  const startNavigationFeedback = useCallback((href: string) => {
+    if (slowNavigationTimerRef.current !== null) {
+      window.clearTimeout(slowNavigationTimerRef.current);
+    }
+
+    setPendingHref(href);
+    setIsSlowNavigation(false);
+    slowNavigationTimerRef.current = window.setTimeout(() => {
+      slowNavigationTimerRef.current = null;
+      setIsSlowNavigation(true);
+    }, NAVIGATION_SLOW_AFTER_MS);
+  }, []);
 
   useEffect(() => {
-    setIsNavigating(false);
-  }, [pathname, searchParams]);
+    clearNavigationFeedback();
+  }, [clearNavigationFeedback, pathname, searchParams]);
 
   useEffect(() => {
     function handleClick(event: MouseEvent) {
@@ -38,7 +67,7 @@ export function NavigationFeedback() {
         return;
       }
 
-      setIsNavigating(true);
+      startNavigationFeedback(`${link.pathname}${link.search}${link.hash}`);
     }
 
     document.addEventListener("click", handleClick, { capture: true });
@@ -46,10 +75,33 @@ export function NavigationFeedback() {
     return () => {
       document.removeEventListener("click", handleClick, { capture: true });
     };
-  }, []);
+  }, [startNavigationFeedback]);
 
-  if (!isNavigating) {
+  useEffect(() => clearNavigationFeedback, [clearNavigationFeedback]);
+
+  if (!pendingHref) {
     return null;
+  }
+
+  if (isSlowNavigation) {
+    return (
+      <div
+        role="status"
+        className="fixed inset-x-3 top-[max(env(safe-area-inset-top),8px)] z-[80] mx-auto flex max-w-sm items-center justify-between gap-3 rounded-xl bg-white px-4 py-3 text-xs font-semibold text-stone-700 shadow-lg"
+      >
+        <span>通信に時間がかかっています。</span>
+        <button
+          type="button"
+          onClick={() => {
+            startNavigationFeedback(pendingHref);
+            router.push(pendingHref as Route);
+          }}
+          className="shrink-0 rounded-lg bg-forest-50 px-3 py-1.5 font-bold text-[#14724e] transition active:scale-[0.98]"
+        >
+          再試行
+        </button>
+      </div>
+    );
   }
 
   return (

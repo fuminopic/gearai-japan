@@ -34,9 +34,9 @@ type ProfileFieldValues = {
 
 type ProfileSettingsFormProps = {
   email: string;
-  gearCount: number;
   displayName: string;
   initialAvatarUrl: string;
+  avatarSlot?: React.ReactNode;
   gender: string;
   ageRange: string;
   mountaineeringExperience: string;
@@ -47,9 +47,9 @@ type ProfileSettingsFormProps = {
 
 export function ProfileSettingsForm({
   email,
-  gearCount,
   displayName,
   initialAvatarUrl,
+  avatarSlot,
   gender,
   ageRange,
   mountaineeringExperience,
@@ -99,7 +99,9 @@ export function ProfileSettingsForm({
         <UnsavedChangesGuard />
 
         <ProfileSection title="基本情報" icon={UserRound}>
-          <ProfileAvatarEditor displayName={profileValues.nickname} initialAvatarUrl={initialAvatarUrl} />
+          {avatarSlot ?? (
+            <ProfileAvatarEditor displayName={profileValues.nickname} initialAvatarUrl={initialAvatarUrl} />
+          )}
           <ProfileTextRow
             label="ニックネーム"
             name="display_name"
@@ -180,7 +182,7 @@ export function ProfileSettingsForm({
             <ChevronRight aria-hidden className="h-5 w-5 text-stone-400" />
           </button>
         </form>
-        <AccountDeleteButton gearCount={gearCount} variant="row" />
+        <AccountDeleteButton variant="row" />
       </ProfileSection>
 
       <button

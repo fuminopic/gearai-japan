@@ -1,6 +1,5 @@
 import {
   ChevronRight,
-  Edit3,
   KeyRound,
   LogOut,
   ShieldCheck,
@@ -11,11 +10,26 @@ import Link from "next/link";
 
 import { AccountDeleteButton } from "@/components/account-delete-button";
 import { AppMenuDrawer } from "@/components/app-menu-drawer";
+import { ProfileEditLauncher } from "@/components/profile-edit-launcher";
 import { Notice } from "@/components/ui/notice";
 import { signOut } from "@/lib/actions/auth";
-import { getProfileAvatarSignedUrl, getProfileDetails } from "@/lib/data/profile";
+import {
+  getProfileAvatarSignedUrl,
+  getProfileDetails,
+  getStoredProfileAvatarPath
+} from "@/lib/data/profile";
 import { requireUser } from "@/lib/data/gear";
-import { getMetadataString } from "@/lib/profile-options";
+import {
+  AGE_RANGE_OPTIONS,
+  FAVORITE_REGION_OPTIONS,
+  GENDER_OPTIONS,
+  MOUNTAINEERING_EXPERIENCE_OPTIONS,
+  MOUNTAINEERING_GENRE_OPTIONS,
+  USUAL_TRIP_STYLE_OPTIONS,
+  getMetadataString,
+  getProfileOptionValue,
+  getProfileOptionValueFromArray
+} from "@/lib/profile-options";
 
 type ProfilePageProps = {
   searchParams: Promise<{
@@ -85,13 +99,37 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
           </div>
         </div>
 
-        <Link
-          href="/profile/edit"
-          className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#14724e] px-4 text-sm font-bold text-white transition active:scale-[0.98]"
-        >
-          <Edit3 aria-hidden className="h-4 w-4" />
-          プロフィールを編集
-        </Link>
+        <ProfileEditLauncher
+          email={user.email ?? ""}
+          displayName={displayName}
+          hasAvatar={Boolean(getStoredProfileAvatarPath(profile, user.id, metadata))}
+          gender={getProfileOptionValue(profile?.gender, metadata, "profile_gender", GENDER_OPTIONS)}
+          ageRange={getProfileOptionValue(profile?.ageRange, metadata, "profile_age_range", AGE_RANGE_OPTIONS)}
+          mountaineeringExperience={getProfileOptionValue(
+            profile?.mountaineeringExperience,
+            metadata,
+            "mountaineering_experience",
+            MOUNTAINEERING_EXPERIENCE_OPTIONS
+          )}
+          mountaineeringGenre={getProfileOptionValueFromArray(
+            profile?.mountaineeringGenres,
+            metadata,
+            "mountaineering_genres",
+            MOUNTAINEERING_GENRE_OPTIONS
+          )}
+          usualTripStyle={getProfileOptionValueFromArray(
+            profile?.usualTripStyles,
+            metadata,
+            "usual_trip_styles",
+            USUAL_TRIP_STYLE_OPTIONS
+          )}
+          favoriteRegion={getProfileOptionValueFromArray(
+            profile?.favoriteRegions,
+            metadata,
+            "favorite_regions",
+            FAVORITE_REGION_OPTIONS
+          )}
+        />
       </section>
 
       <Link

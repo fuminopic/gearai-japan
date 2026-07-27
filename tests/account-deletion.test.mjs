@@ -60,6 +60,7 @@ test("account deletion UI requires two confirmations and defaults final focus to
   assert.match(accountDeleteButtonSource, /cancelButtonRef\.current\?\.focus\(\)/);
   assert.match(accountDeleteButtonSource, /deleteAccount\(\)/);
   assert.match(accountDeleteButtonSource, /bg-red-700/);
+  assert.match(accountDeleteButtonSource, /z-\[100\]/);
 });
 
 test("account deletion server action clears user storage before auth deletion cascades profile data", () => {

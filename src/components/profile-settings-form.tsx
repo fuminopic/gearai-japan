@@ -36,7 +36,9 @@ type ProfileSettingsFormProps = {
   email: string;
   displayName: string;
   initialAvatarUrl: string;
+  initialHasAvatar?: boolean;
   avatarSlot?: React.ReactNode;
+  onDirtyChange?: (isDirty: boolean) => void;
   gender: string;
   ageRange: string;
   mountaineeringExperience: string;
@@ -49,7 +51,9 @@ export function ProfileSettingsForm({
   email,
   displayName,
   initialAvatarUrl,
+  initialHasAvatar,
   avatarSlot,
+  onDirtyChange,
   gender,
   ageRange,
   mountaineeringExperience,
@@ -86,21 +90,32 @@ export function ProfileSettingsForm({
         usualTripStyle: state.profile.usualTripStyles[0] ?? "",
         favoriteRegion: state.profile.favoriteRegions[0] ?? ""
       });
+      onDirtyChange?.(false);
       hapticSuccess();
       router.refresh();
     } else {
       hapticError();
     }
-  }, [router, state]);
+  }, [onDirtyChange, router, state]);
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <form id="profile-settings-form" action={formAction} className="space-y-4">
+      <form
+        id="profile-settings-form"
+        action={formAction}
+        onInput={() => onDirtyChange?.(true)}
+        onChange={() => onDirtyChange?.(true)}
+        className="space-y-4"
+      >
         <UnsavedChangesGuard />
 
         <ProfileSection title="基本情報" icon={UserRound}>
           {avatarSlot ?? (
-            <ProfileAvatarEditor displayName={profileValues.nickname} initialAvatarUrl={initialAvatarUrl} />
+            <ProfileAvatarEditor
+              displayName={profileValues.nickname}
+              initialAvatarUrl={initialAvatarUrl}
+              initialHasAvatar={initialHasAvatar}
+            />
           )}
           <ProfileTextRow
             label="ニックネーム"
@@ -393,7 +408,7 @@ function ProfileDialog({
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-[60] flex items-end bg-black/40 px-4 pb-[calc(env(safe-area-inset-bottom)+7rem)] pt-4 sm:items-center sm:justify-center sm:p-4">
+    <div className="fixed inset-0 z-[100] flex items-end bg-black/40 px-4 pb-[calc(env(safe-area-inset-bottom)+7rem)] pt-4 sm:items-center sm:justify-center sm:p-4">
       <section
         role="dialog"
         aria-modal="true"

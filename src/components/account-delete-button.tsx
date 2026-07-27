@@ -60,7 +60,7 @@ export function AccountDeleteButton({ variant = "button" }: AccountDeleteButtonP
           role="dialog"
           aria-modal="true"
           aria-labelledby="account-delete-dialog-title"
-          className="fixed inset-0 z-50 flex items-end bg-black/40 px-4 py-5 sm:items-center sm:justify-center"
+          className="fixed inset-0 z-[100] flex items-end bg-black/40 px-4 py-5 sm:items-center sm:justify-center"
         >
           <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl">
             <div className="flex items-start gap-3">

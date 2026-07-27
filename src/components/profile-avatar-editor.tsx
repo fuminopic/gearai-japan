@@ -17,14 +17,17 @@ import { createClient } from "@/lib/supabase/client";
 type ProfileAvatarEditorProps = {
   displayName: string;
   initialAvatarUrl: string;
+  initialHasAvatar?: boolean;
 };
 
 export function ProfileAvatarEditor({
   displayName,
-  initialAvatarUrl
+  initialAvatarUrl,
+  initialHasAvatar = false
 }: ProfileAvatarEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
+  const [hasAvatar, setHasAvatar] = useState(Boolean(initialAvatarUrl) || initialHasAvatar);
   const [isWorking, setIsWorking] = useState(false);
   const [feedback, setFeedback] = useState<{
     tone: "success" | "error";
@@ -79,6 +82,7 @@ export function ProfileAvatarEditor({
       }
 
       setAvatarUrl(URL.createObjectURL(compressedFile));
+      setHasAvatar(true);
       setFeedback({ tone: "success", message: "プロフィール画像を更新しました。" });
       hapticSuccess();
     } catch (caught) {
@@ -100,7 +104,7 @@ export function ProfileAvatarEditor({
   }
 
   async function handleDelete() {
-    if (isWorking || !avatarUrl) {
+    if (isWorking || !hasAvatar) {
       return;
     }
 
@@ -114,6 +118,7 @@ export function ProfileAvatarEditor({
       }
 
       setAvatarUrl("");
+      setHasAvatar(false);
       setFeedback({ tone: "success", message: "プロフィール画像を削除しました。" });
       hapticSuccess();
     } catch (caught) {
@@ -169,9 +174,9 @@ export function ProfileAvatarEditor({
             className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-[#14724e] px-3 text-sm font-bold text-[#14724e] transition active:scale-[0.98] disabled:opacity-60"
           >
             <Camera aria-hidden className="h-4 w-4" />
-            {avatarUrl ? "画像を変更" : "画像を追加"}
+            {hasAvatar ? "画像を変更" : "画像を追加"}
           </button>
-          {avatarUrl ? (
+          {hasAvatar ? (
             <button
               type="button"
               onClick={() => void handleDelete()}

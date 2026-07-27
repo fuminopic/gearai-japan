@@ -9,6 +9,10 @@ const profileSettingsFormSource = readFileSync(
   "utf8"
 );
 const avatarEditorSource = readFileSync("src/components/profile-avatar-editor.tsx", "utf8");
+const profileEditLauncherSource = readFileSync(
+  "src/components/profile-edit-launcher.tsx",
+  "utf8"
+);
 const profileOptionsSource = readFileSync("src/lib/profile-options.ts", "utf8");
 const profileDataSource = readFileSync("src/lib/data/profile.ts", "utf8");
 const authActionsSource = readFileSync("src/lib/actions/auth.ts", "utf8");
@@ -26,7 +30,6 @@ const profileDetailsMigrationSource = readFileSync(
 test("my page stays focused on profile, insurance, and account entry points", () => {
   for (const copy of [
     "マイページ",
-    "プロフィールを編集",
     "山岳保険のご案内、保険情報の入力",
     "メールアドレス",
     "パスワード管理",
@@ -36,6 +39,7 @@ test("my page stays focused on profile, insurance, and account entry points", ()
   }
 
   assert.match(profilePageSource, /getProfileAvatarSignedUrl/);
+  assert.match(profileEditLauncherSource, /プロフィールを編集/);
   assert.match(profilePageSource, /<img src=\{avatarUrl\}/);
   assert.match(profilePageSource, /\/profile\/insurance/);
   assert.match(profilePageSource, /signOut/);
@@ -74,7 +78,7 @@ test("profile settings present compact single-choice profile rows", () => {
   assert.match(profileSettingsFormSource, /role="radiogroup"/);
   assert.match(profileSettingsFormSource, /aria-checked=\{checked\}/);
   assert.doesNotMatch(profileSettingsFormSource, /label="選択しない"/);
-  assert.match(profileSettingsFormSource, /z-\[60\]/);
+  assert.match(profileSettingsFormSource, /z-\[100\]/);
   assert.match(profileSettingsFormSource, /safe-area-inset-bottom\)\+7rem/);
   assert.match(profileSettingsFormSource, /avatarSlot/);
   assert.match(profileSettingsFormSource, /<AccountDeleteButton variant="row"/);
@@ -188,6 +192,36 @@ test("profile edit keeps the form path free of account-delete counting and strea
   assert.match(profileEditPageSource, /<ProfileAvatarSlot/);
   assert.match(profileEditPageSource, /getProfileAvatarSignedUrl/);
   assert.match(profileEditPageSource, /initialAvatarUrl=""/);
+});
+
+test("profile edit opens immediately from the current page state without waiting for another private RSC request", () => {
+  assert.match(profilePageSource, /<ProfileEditLauncher/);
+  assert.match(profilePageSource, /hasAvatar=\{Boolean\(getStoredProfileAvatarPath/);
+  assert.match(profilePageSource, /getProfileOptionValue\(profile\?\.gender/);
+  assert.match(profilePageSource, /getProfileOptionValueFromArray\(/);
+
+  assert.match(profileEditLauncherSource, /window\.history\.pushState\(null, "", "\/profile\/edit"\)/);
+  assert.match(profileEditLauncherSource, /<ProfileSettingsForm/);
+  assert.match(profileEditLauncherSource, /initialAvatarUrl=""/);
+  assert.match(profileEditLauncherSource, /initialHasAvatar=\{hasAvatar\}/);
+  assert.match(profileEditLauncherSource, /onDirtyChange=\{setIsDirty\}/);
+  assert.match(profileEditLauncherSource, /data-testid="profile-edit-instant-layer"/);
+  assert.match(profileEditLauncherSource, /z-\[70\]/);
+  assert.match(profileEditLauncherSource, /handlePopState/);
+  assert.match(profileEditLauncherSource, /入力を破棄しますか？/);
+
+  assert.doesNotMatch(profileEditLauncherSource, /router\.prefetch/);
+  assert.doesNotMatch(profileEditLauncherSource, /localStorage/);
+  assert.doesNotMatch(profileEditLauncherSource, /getProfileAvatarSignedUrl/);
+  assert.doesNotMatch(profileEditLauncherSource, /createClient/);
+  assert.doesNotMatch(profileEditLauncherSource, /requireUser/);
+
+  assert.match(profileSettingsFormSource, /onDirtyChange\?\.\(false\)/);
+  assert.match(profileSettingsFormSource, /onInput=\{\(\) => onDirtyChange\?\.\(true\)\}/);
+  assert.match(profileSettingsFormSource, /onChange=\{\(\) => onDirtyChange\?\.\(true\)\}/);
+  assert.match(avatarEditorSource, /initialHasAvatar\?: boolean/);
+  assert.match(avatarEditorSource, /const \[hasAvatar, setHasAvatar\]/);
+  assert.match(avatarEditorSource, /!hasAvatar/);
 });
 
 test("memo is no longer rendered, edited, or saved", () => {

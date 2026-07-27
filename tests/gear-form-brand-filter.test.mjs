@@ -43,7 +43,8 @@ test("manual gear entry offers photography only as an Other subcategory while le
   assert.match(gearDataSource, /const PRODUCT_CATEGORY_KEYS = \[[\s\S]*"other"/);
   assert.doesNotMatch(gearDataSource, /"photography"/);
   assert.match(gearDataSource, /from\("gear_subcategories"\)[\s\S]*order\("sort_order"/);
-  assert.match(gearFormSource, /subcategories\.filter\(\(item\) => item\.category_id === categoryId\)/);
+  assert.match(gearFormSource, /setSubcategoryId\(product\.subcategory_id \?\? ""\)/);
+  assert.match(gearFormSource, /name="subcategory_id" value=\{subcategoryId\}/);
   assert.match(gearFormSource, /!gear\?\.gear_categories[\s\S]*categories\.some/);
   assert.match(photographyConsolidationMigrationSource, /where category\.name_en = 'other'/);
   assert.match(photographyConsolidationMigrationSource, /set is_default = false/);
@@ -113,10 +114,20 @@ test("gear add form replaces scanning shortcuts with manual registration and pho
 });
 
 test("manual gear form keeps only preparation fields and collapses notes and URL", () => {
+  const manualFormSource = gearFormSource.slice(
+    gearFormSource.indexOf("{manualMode ? ("),
+    gearFormSource.indexOf("{shouldShowGearDetails ? (")
+  );
+
   assert.match(gearFormSource, /その他の情報/);
   assert.match(gearFormSource, /name="memo"/);
   assert.match(gearFormSource, /name="official_url"/);
   assert.match(gearFormSource, /name="weight_type"/);
+  assert.doesNotMatch(manualFormSource, />モデル</);
+  assert.doesNotMatch(manualFormSource, />サブカテゴリー</);
+  // 目录装备与既有手动装备的分类数据仍随隐藏字段提交，移除的是手动表单控件。
+  assert.match(gearFormSource, /name="model" value=\{model\}/);
+  assert.match(gearFormSource, /name="subcategory_id" value=\{subcategoryId\}/);
   assert.doesNotMatch(gearFormSource, /メーカー希望小売価格|name="status"|name="size"|name="volume"|name="capacity"|name="color"|name="material"/);
   assert.doesNotMatch(gearActionSource, /msrp_jpy:|purchase_price_jpy:|purchase_date:|size:|volume:|capacity:|color:|material:|status:/);
 });

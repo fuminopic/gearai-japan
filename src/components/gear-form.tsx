@@ -55,7 +55,6 @@ type GearFormProps = {
 
 export function GearForm({
   categories,
-  subcategories,
   products,
   action,
   gear,
@@ -95,10 +94,6 @@ export function GearForm({
   const manualEntryRef = useRef<HTMLElement>(null);
   const router = useRouter();
 
-  const subcategoriesForCategory = useMemo(
-    () => subcategories.filter((item) => item.category_id === categoryId),
-    [categoryId, subcategories]
-  );
   const categoryOptions = useMemo(() => {
     if (
       !gear?.gear_categories ||
@@ -119,29 +114,6 @@ export function GearForm({
       }
     ];
   }, [categories, gear]);
-  const subcategoryOptions = useMemo(() => {
-    if (
-      !gear?.subcategory_id ||
-      !gear.gear_subcategories ||
-      subcategoriesForCategory.some(
-        (subcategory) => subcategory.id === gear.subcategory_id
-      )
-    ) {
-      return subcategoriesForCategory;
-    }
-
-    return [
-      ...subcategoriesForCategory,
-      {
-        id: gear.subcategory_id,
-        category_id: gear.category_id,
-        name_ja: gear.gear_subcategories.name_ja,
-        name_en: gear.gear_subcategories.name_en,
-        sort_order: Number.MAX_SAFE_INTEGER,
-        created_at: gear.created_at
-      }
-    ];
-  }, [gear, subcategoriesForCategory]);
   const brandOptions = useMemo(() => {
     return getProductBrandOptions(products);
   }, [products]);
@@ -687,16 +659,6 @@ export function GearForm({
               </label>
 
               <label className="block">
-                <span className="text-sm font-medium text-stone-700">モデル</span>
-                <input
-                  value={model}
-                  onChange={(event) => setModel(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                  placeholder="例：MINI2"
-                />
-              </label>
-
-              <label className="block">
                 <span className="text-sm font-medium text-stone-700">カテゴリー</span>
                 <select
                   required
@@ -711,22 +673,6 @@ export function GearForm({
                   {categoryOptions.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name_ja}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="block">
-                <span className="text-sm font-medium text-stone-700">サブカテゴリー</span>
-                <select
-                  value={subcategoryId}
-                  onChange={(event) => setSubcategoryId(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                >
-                  <option value="">サブカテゴリーを選択</option>
-                  {subcategoryOptions.map((subcategory) => (
-                    <option key={subcategory.id} value={subcategory.id}>
-                      {subcategory.name_ja}
                     </option>
                   ))}
                 </select>

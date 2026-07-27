@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { canonicalizeBrandName } from "@/lib/brand-normalization";
 import { requireUser } from "@/lib/data/gear";
 import { getPlanReturnTo } from "@/lib/plan-return-to";
-import type { GearActionResult, GearStatus, WeightType } from "@/lib/types";
+import type { GearActionResult, WeightType } from "@/lib/types";
 import { toNumber } from "@/lib/utils/format";
 
 // 注意:createGear / updateGear 不再在成功时直接 redirect()。
@@ -134,7 +134,6 @@ export async function deleteGear(id: string, formData: FormData) {
 
 function getGearPayload(formData: FormData) {
   const officialWeight = toNumber(formData.get("official_weight_grams"));
-  const msrp = toNumber(formData.get("msrp_jpy"));
   const storedWeight = officialWeight ?? 0;
   const brand = optionalString(formData.get("brand"));
 
@@ -148,19 +147,9 @@ function getGearPayload(formData: FormData) {
     weight_grams: Math.max(0, Math.round(storedWeight)),
     official_weight_grams:
       officialWeight === null ? null : Math.max(0, Math.round(officialWeight)),
-    measured_weight_grams: null,
-    msrp_jpy: msrp === null ? null : Math.round(msrp),
-    purchase_price_jpy: null,
-    size: optionalString(formData.get("size")),
-    volume: optionalString(formData.get("volume")),
-    color: optionalString(formData.get("color")),
-    material: optionalString(formData.get("material")),
-    capacity: optionalString(formData.get("capacity")),
     official_url: optionalString(formData.get("official_url")),
     image_url: optionalString(formData.get("image_url")),
     image_storage_path: optionalString(formData.get("image_storage_path")),
-    purchase_date: null,
-    status: String(formData.get("status") ?? "owned") as GearStatus,
     weight_type: String(formData.get("weight_type") ?? "base") as WeightType,
     memo: optionalString(formData.get("memo"))
   };

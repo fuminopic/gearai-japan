@@ -52,11 +52,11 @@ test("pack toggle applies optimistically and rolls back when the server rejects"
   assert.match(controlsSource, /if \(inFlightRef\.current\.has\(gearId\)\) \{\s*return;/);
 });
 
-test("wishlist gear cannot be packed, matching the server rule", () => {
-  // addPackItems は所有ギアしか受け付けない
+test("My Gear keeps the existing pack integrity check without rendering ownership UI", () => {
+  // 旧データとの境界として addPackItems は owned 行だけを受け付ける。
   assert.match(packActionsSource, /\.eq\("status", "owned"\)/);
-  // UI 側も同じ条件で無効化する(押せてしまってから失敗する、を避ける)
-  assert.match(gearListSource, /disabled=\{item\.status !== "owned"\}/);
+  // マイギアは実際に持つ装備だけを読むため、一覧には状態に応じた UI がない。
+  assert.doesNotMatch(gearListSource, /item\.status|wishlist|所有|欲しい/);
   assert.match(controlsSource, /disabled=\{disabled \|\| pending\}/);
   assert.match(controlsSource, /cursor-not-allowed/);
 });

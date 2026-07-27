@@ -411,9 +411,8 @@ test("home typography and green palette follow the latest visual direction", () 
   assert.doesNotMatch(dashboardPlanChecklistSummarySource, /#3B5B44|#3A5A40/);
 });
 
-test("home gear strip shows every owned item, not just the newest eight", () => {
-  // 上の指標「マイギア N点」は ownedCount。カード列が最新8件で頭打ちだと
-  // 指標の数とカードの枚数が合わず、途中で止まる。owned 全件を出す。
+test("home gear strip shows every My Gear item, not just the newest eight", () => {
+  // 上の指標「マイギア N点」とカード列が食い違わないよう、全件を出す。
   assert.match(dashboardSource, /gear\.map\(\(item\) => \(/);
   assert.doesNotMatch(dashboardSource, /slice\(0, 8\)/);
   assert.match(dashboardSource, /summary\.gearItems/);
@@ -425,6 +424,6 @@ test("home gear strip shows every owned item, not just the newest eight", () => 
     new URL("../src/lib/data/dashboard.ts", import.meta.url),
     "utf8"
   );
-  assert.match(dataSource, /gearItems: ownedGear\.map\(toDashboardGear\)/);
+  assert.match(dataSource, /gearItems: gear\.map\(toDashboardGear\)/);
   assert.doesNotMatch(dataSource, /slice\(0, 8\)/);
 });

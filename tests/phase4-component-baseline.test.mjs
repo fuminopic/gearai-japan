@@ -195,8 +195,7 @@ test("gear list component baseline keeps filters, badges, cards, and feedback st
     "GearCard",
     "SummaryStat",
     "FilterLabel",
-    "FilterChip",
-    "StatusChip"
+    "FilterChip"
   ]) {
     assert.match(gearListSource, new RegExp(`function ${componentName}\\b|export function ${componentName}\\b`));
   }
@@ -207,8 +206,6 @@ test("gear list component baseline keeps filters, badges, cards, and feedback st
     "マイギア",
     "カテゴリー",
     "未登録:",
-    "所有",
-    "欲しい",
     "まだギアがありません",
     "ギアを追加",
     "マイギア"
@@ -216,7 +213,7 @@ test("gear list component baseline keeps filters, badges, cards, and feedback st
     assert.match(gearListSource, new RegExp(copy));
   }
 
-  assert.match(gearListSource, /statusLabels\[item\.status\]/);
+  assert.doesNotMatch(gearListSource, /statusLabels|StatusChip|item\.status/);
   assert.match(gearListSource, /buildGearHref/);
   assert.match(gearPageSource, /params\.error/);
   assert.match(gearPageSource, /ギアを登録しました/);
@@ -321,7 +318,7 @@ test("phase 4 records current repeated ui patterns before extracting shared prim
   assert.ok(countMatches(uiSources, /bg-red-50/g) >= 4);
   assert.ok(countMatches(uiSources, /bg-forest-50/g) >= 8);
   assert.ok(countMatches(uiSources, /disabled:opacity/g) >= 4);
-  assert.ok(countMatches(uiSources, /statusLabels|StatusChip|ProductFilterChip|FilterChip/g) >= 5);
+  assert.ok(countMatches(uiSources, /ProductFilterChip|FilterChip/g) >= 4);
 
   for (const emptyStateCopy of [
     "まだ計画はありません",

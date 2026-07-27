@@ -194,15 +194,13 @@ async function requestAIExplanation({
         role: "user",
         content: JSON.stringify({
           trip_input: input,
-          user_owned_gear: gear
-            .filter((item) => item.status === "owned")
-            .map((item) => ({
-              name: item.name,
-              brand: item.brand,
-              category: item.gear_categories?.name_en,
-              subcategory: item.gear_subcategories?.name_en,
-              weight_grams: item.weight_grams
-            })),
+          user_owned_gear: gear.map((item) => ({
+            name: item.name,
+            brand: item.brand,
+            category: item.gear_categories?.name_en,
+            subcategory: item.gear_subcategories?.name_en,
+            weight_grams: item.weight_grams
+          })),
           rule_output: output
         })
       }
@@ -258,7 +256,7 @@ function analyzeOwnedGear(
   output: AIRecommendationOutput,
   gear: UserGear[]
 ): GearAnalysis {
-  const ownedGear = gear.filter((item) => item.status === "owned");
+  const ownedGear = gear;
   const allRecommended = flattenRecommendedItems(output);
   const ownedItems: GearAnalysis["owned_items"] = [];
   const maybeOwnedItems: GearAnalysis["maybe_owned_items"] = [];

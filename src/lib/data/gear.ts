@@ -37,7 +37,7 @@ const PRODUCT_CATEGORY_KEYS = [
 const USER_GEAR_SELECT =
   "*, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_products:product_id(id, brand, model, name_ja, category_id, subcategory_id, official_url, msrp_source_url, last_verified_at, verification_status, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en))";
 const USER_GEAR_MATCHING_SELECT =
-  "id, user_id, product_id, category_id, subcategory_id, name, brand, model, status, weight_grams, weight_type, created_at, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_products:product_id(id, brand, model, name_ja, category_id, subcategory_id, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en))";
+  "id, user_id, product_id, category_id, subcategory_id, name, brand, model, weight_grams, weight_type, created_at, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en), gear_products:product_id(id, brand, model, name_ja, category_id, subcategory_id, gear_categories:category_id(id, name_ja, name_en), gear_subcategories:subcategory_id(id, name_ja, name_en))";
 
 type GearCategoryRow = GearCategory;
 type GearSubcategoryRow = GearSubcategory;
@@ -85,7 +85,6 @@ type SupabaseUserGearPlanningRow = Pick<
   | "name"
   | "brand"
   | "model"
-  | "status"
   | "weight_grams"
   | "weight_type"
   | "created_at"
@@ -236,7 +235,9 @@ export async function getUserGear(filters: GearFilters = {}) {
   let query = supabase
     .from("user_gear")
     .select(USER_GEAR_SELECT)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    // 旧 wishlist 行は削除・変換せず、マイギアには実際に持つ装備だけを表示する。
+    .eq("status", "owned");
 
   if (filters.q) {
     const keyword = filters.q.replaceAll("%", "").trim();
@@ -245,10 +246,6 @@ export async function getUserGear(filters: GearFilters = {}) {
         `name.ilike.%${keyword}%,brand.ilike.%${keyword}%,model.ilike.%${keyword}%,memo.ilike.%${keyword}%`
       );
     }
-  }
-
-  if (filters.status && filters.status !== "all") {
-    query = query.eq("status", filters.status);
   }
 
   if (filters.category && !isRetailGearCategoryId(filters.category)) {
@@ -292,6 +289,7 @@ export async function getUserGearBrands() {
     .from("user_gear")
     .select("brand")
     .eq("user_id", user.id)
+    .eq("status", "owned")
     .not("brand", "is", null)
     .order("brand", { ascending: true });
 

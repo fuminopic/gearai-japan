@@ -5,12 +5,11 @@ import { getUserGear, getUserGearBrands } from "@/lib/data/gear";
 import { getPackGearIds } from "@/lib/data/pack";
 import { buildPackSummary } from "@/lib/pack-summary";
 import { buildGearHref, getPlanReturnTo } from "@/lib/plan-return-to";
-import type { GearFilters, GearStatus } from "@/lib/types";
+import type { GearFilters } from "@/lib/types";
 
 type GearPageProps = {
   searchParams: Promise<{
     q?: string;
-    status?: string;
     category?: string;
     brand?: string;
     sort?: string;
@@ -24,28 +23,24 @@ export default async function GearPage({ searchParams }: GearPageProps) {
   const params = await searchParams;
   const filters: GearFilters = {
     q: params.q,
-    status: isGearStatus(params.status) ? params.status : "all",
     category: params.category,
     brand: params.brand,
     sort: isSort(params.sort) ? params.sort : "newest"
   };
-  const needsSeparateOwnedSummary = hasPartialGearFilters(filters);
+  const needsSeparateGearSummary = hasPartialGearFilters(filters);
 
   // パックは一覧の絞り込みに関係なく全体を見せる(行のスイッチと右下のバーは
   // 常に「パック全体」を指す)。
   //
-  // ここで getMyPack() を呼ぶと、その中で getUserGear({ status: "owned" }) が
-  // もう一度走り、一覧と完全に重複する(画像URLの署名まで二重)。一覧が全 owned
-  // ギアを含む場合は、同じ取得結果から集計して余計な DB / Storage 往復をしない。
-  // 検索・カテゴリー・ブランド・欲しいもの表示では一覧が部分集合なので、その時だけ
-  // 全 owned ギアを別途読む。パックの所属は軽い ID 取得だけで十分。
-  const [brands, gear, separateOwnedGear, packedGearIds] = await Promise.all([
+  // 一覧がマイギア全件なら同じ取得結果で集計し、検索・カテゴリー・ブランドで
+  // 部分集合になる時だけ全件を別途読む。パックの所属は軽い ID 取得だけで十分。
+  const [brands, gear, separateGear, packedGearIds] = await Promise.all([
     getUserGearBrands(),
     getUserGear(filters),
-    needsSeparateOwnedSummary ? getUserGear({ status: "owned" }) : Promise.resolve(null),
+    needsSeparateGearSummary ? getUserGear() : Promise.resolve(null),
     getPackGearIds()
   ]);
-  const summaryGear = separateOwnedGear ?? gear.filter((item) => item.status === "owned");
+  const summaryGear = separateGear ?? gear;
   const packedIdSet = new Set(packedGearIds);
   const packSummary = buildPackSummary(
     summaryGear.filter((item) => packedIdSet.has(item.id))
@@ -100,10 +95,6 @@ export default async function GearPage({ searchParams }: GearPageProps) {
   );
 }
 
-function isGearStatus(value?: string): value is GearStatus | "all" {
-  return value === "owned" || value === "wishlist" || value === "all";
-}
-
 function isSort(value?: string): value is GearFilters["sort"] {
   return value === "newest" || value === "weight";
 }
@@ -112,8 +103,7 @@ function hasPartialGearFilters(filters: GearFilters) {
   return Boolean(
     filters.q?.trim() ||
       filters.category ||
-      filters.brand ||
-      filters.status === "wishlist"
+      filters.brand
   );
 }
 

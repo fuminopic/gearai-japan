@@ -112,21 +112,20 @@ test("gear add form replaces scanning shortcuts with manual registration and pho
   assert.doesNotMatch(gearFormSource, /カメラ/);
 });
 
-test("gear add form keeps official unit price but removes purchase tracking fields", () => {
-  assert.match(gearFormSource, /メーカー希望小売価格/);
-  assert.match(gearFormSource, /公式価格/);
-  assert.doesNotMatch(gearFormSource, /購入価格/);
-  assert.doesNotMatch(gearFormSource, /購入日/);
-  assert.doesNotMatch(gearFormSource, /節約額/);
-  assert.match(gearActionSource, /purchase_price_jpy: null/);
-  assert.match(gearActionSource, /purchase_date: null/);
+test("manual gear form keeps only preparation fields and collapses notes and URL", () => {
+  assert.match(gearFormSource, /その他の情報/);
+  assert.match(gearFormSource, /name="memo"/);
+  assert.match(gearFormSource, /name="official_url"/);
+  assert.match(gearFormSource, /name="weight_type"/);
+  assert.doesNotMatch(gearFormSource, /メーカー希望小売価格|name="status"|name="size"|name="volume"|name="capacity"|name="color"|name="material"/);
+  assert.doesNotMatch(gearActionSource, /msrp_jpy:|purchase_price_jpy:|purchase_date:|size:|volume:|capacity:|color:|material:|status:/);
 });
 
 test("gear form removes measured weight from user-facing detail editing", () => {
   assert.doesNotMatch(gearFormSource, /実測重量/);
   assert.doesNotMatch(gearFormSource, /measuredWeightGrams/);
   assert.doesNotMatch(gearFormSource, /name="measured_weight_grams"/);
-  assert.match(gearActionSource, /measured_weight_grams: null/);
+  assert.doesNotMatch(gearActionSource, /measured_weight_grams:/);
 });
 
 test("gear photo upload uses private storage paths instead of public gear photos", () => {
@@ -152,13 +151,12 @@ test("gear add form separates brand results by product category", () => {
   assert.match(gearFormSource, /自分で登録する/);
 });
 
-test("gear add form treats backpack liters as volume, not people capacity", () => {
+test("catalog presentation keeps backpack liters separate from people capacity without writing either to user gear", () => {
   assert.match(gearDisplaySource, /function getProductVolume/);
   assert.match(gearDisplaySource, /function isBackpackProduct/);
-  assert.match(gearFormSource, /setVolume\(productVolume \?\? ""\)/);
-  assert.match(gearFormSource, /setCapacity\(isBackpackProduct\(product\) \? "" : product\.capacity \?\? ""\)/);
   assert.match(gearDisplaySource, /`\$\{baseName\} \(\$\{productVolume\}\)`/);
   assert.match(gearFormSource, /isBackpackProduct\(product\) \? null : product\.capacity/);
+  assert.doesNotMatch(gearFormSource, /setVolume\(|setCapacity\(/);
 });
 
 test("gear add form sorts product brand filters by visible product count", () => {

@@ -191,8 +191,9 @@ test("pack actions recheck owned ownership, deduplicate, and only remove the rel
   assert.match(packActionsSource, /revalidatePath\("\/dashboard"\)/);
 });
 
-test("pack data filters pack membership through currently owned gear", () => {
-  assert.match(packDataSource, /getUserGear\(\{ status: "owned" \}\)/);
+test("pack data reads the same actual gear collection as My Gear", () => {
+  assert.match(packDataSource, /getUserGear\(\)/);
+  assert.doesNotMatch(packDataSource, /getUserGear\(\{ status:/);
   assert.match(packDataSource, /flatMap/);
   assert.match(packDataSource, /\.from\("user_pack_items"\)/);
   assert.match(packDataSource, /getLatestTripPlan/);
@@ -239,10 +240,10 @@ test("pack pages provide grouped contents, accessible direct removal, and a mult
   assert.doesNotMatch(removeButtonSource, /bg-red-800/);
 });
 
-test("dashboard derives pack metrics and composition only from current owned pack gear", () => {
+test("dashboard derives pack metrics and composition from current My Gear pack items", () => {
   assert.match(dashboardDataSource, /\.from\("user_pack_items"\)/);
-  assert.match(dashboardDataSource, /gear\.filter\(\(item\) => item\.status === "owned"\)/);
-  assert.match(dashboardDataSource, /buildPackSummary\(ownedGear\.filter/);
+  assert.match(dashboardDataSource, /\.eq\("status", "owned"\)/);
+  assert.match(dashboardDataSource, /buildPackSummary\(gear\.filter/);
   assert.match(dashboardPageSource, /packItemCount/);
   assert.match(dashboardPageSource, /packKnownWeightG/);
   assert.match(dashboardPageSource, /パック重量構成/);

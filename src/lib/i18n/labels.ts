@@ -1,6 +1,5 @@
 import type {
   AccommodationStyle,
-  GearStatus,
   GearMatchingConfidence,
   MountainFoundationSeason,
   MountainFoundationStyle,
@@ -11,11 +10,6 @@ import type {
   WeatherRisk,
   WeightType
 } from "@/lib/types";
-
-export const statusLabels: Record<GearStatus, string> = {
-  owned: "所有",
-  wishlist: "欲しい"
-};
 
 export const weightTypeLabels: Record<WeightType, string> = {
   base: "ベース",

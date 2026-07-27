@@ -3,7 +3,7 @@ import { buildPackSummary } from "@/lib/pack-summary";
 import type { DashboardGear, DashboardSummary, UserGear } from "@/lib/types";
 
 const DASHBOARD_GEAR_SELECT =
-  "id,name,brand,model,image_url,image_storage_path,status,category_id,subcategory_id,weight_grams,official_weight_grams,weight_type,created_at,gear_categories:category_id(id,name_ja,name_en),gear_subcategories:subcategory_id(id,name_ja,name_en)";
+  "id,name,brand,model,image_url,image_storage_path,category_id,subcategory_id,weight_grams,official_weight_grams,weight_type,created_at,gear_categories:category_id(id,name_ja,name_en),gear_subcategories:subcategory_id(id,name_ja,name_en)";
 
 type DashboardGearRelationRow = {
   id: string;
@@ -15,7 +15,6 @@ type DashboardGearRow = DashboardGear &
     UserGear,
     | "brand"
     | "model"
-    | "status"
     | "weight_type"
     | "category_id"
     | "subcategory_id"
@@ -39,6 +38,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       .from("user_gear")
       .select(DASHBOARD_GEAR_SELECT)
       .eq("user_id", user.id)
+      .eq("status", "owned")
       .order("created_at", { ascending: false }),
     supabase
       .from("user_pack_items")
@@ -56,23 +56,21 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
 
   const rows = gearResult.data as SupabaseDashboardGearRow[] as DashboardGearRow[];
   const gear = await signDashboardGearImageUrls(supabase, rows);
-  const ownedGear = gear.filter((item) => item.status === "owned");
   const packGearIds = new Set(
     (packItemsResult.data as Array<{ gear_id: string }>).map((item) => item.gear_id)
   );
-  const packSummary = buildPackSummary(ownedGear.filter((item) => packGearIds.has(item.id)));
+  const packSummary = buildPackSummary(gear.filter((item) => packGearIds.has(item.id)));
 
   return {
     totalCount: gear.length,
-    ownedCount: ownedGear.length,
-    wishlistCount: gear.filter((item) => item.status === "wishlist").length,
+    ownedCount: gear.length,
     packItemCount: packSummary.itemCount,
     packKnownWeightG: packSummary.knownWeightG,
     packWeightMissingCount: packSummary.missingWeightCount,
     packMajorCategoryCoverageCount: packSummary.majorCategoryCoverageCount,
     packMajorCategoryTotalCount: packSummary.majorCategoryTotalCount,
     packCategoryWeights: packSummary.categoryWeights,
-    gearItems: ownedGear.map(toDashboardGear)
+    gearItems: gear.map(toDashboardGear)
   };
 }
 
@@ -87,7 +85,7 @@ function toDashboardGear(item: DashboardGearRow): DashboardGear {
 }
 
 // ギア1件につき1往復していたのを、createSignedUrls で1回にまとめる。
-// ホームはカード列に owned 全件を出すので、件数がそのまま往復回数に
+// ホームはカード列にマイギア全件を出すので、件数がそのまま往復回数に
 // なっていた。並び順と件数は入力のまま返す。
 async function signDashboardGearImageUrls(
   supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],

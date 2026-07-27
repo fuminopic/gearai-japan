@@ -12,7 +12,6 @@ export type {
   GearFilters,
   GearPickerProduct,
   GearProduct,
-  GearStatus,
   GearSubcategory,
   UserGear,
   WeightType,
@@ -200,7 +199,6 @@ export type DashboardGear = Pick<
 export type DashboardSummary = {
   totalCount: number;
   ownedCount: number;
-  wishlistCount: number;
   packItemCount: number;
   packKnownWeightG: number;
   packWeightMissingCount: number;
@@ -212,7 +210,7 @@ export type DashboardSummary = {
     weightG: number;
     count: number;
   }>;
-  // 「最近の8件」ではなく、上の指標(ownedCount)と同じ owned 全件。
+  // 「最近の8件」ではなく、上の指標(totalCount)と同じ全件。
   gearItems: DashboardGear[];
 };
 

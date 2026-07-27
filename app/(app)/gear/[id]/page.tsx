@@ -1,6 +1,5 @@
 import { ExternalLink, ImagePlus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import type { ReactNode } from "react";
 
 import { GearImageViewer } from "@/components/gear-image-viewer";
 import { GearPhotoUpload } from "@/components/gear-photo-upload";
@@ -10,12 +9,7 @@ import { deleteGear } from "@/lib/actions/gear";
 import { getUserGearById } from "@/lib/data/gear";
 import { getGearDisplayWeightLabel } from "@/lib/gear-display";
 import { buildGearHref, getPlanReturnTo } from "@/lib/plan-return-to";
-import {
-  statusLabels,
-  verificationStatusLabels,
-  weightTypeLabels
-} from "@/lib/i18n/labels";
-import { formatJpy } from "@/lib/utils/format";
+import { weightTypeLabels } from "@/lib/i18n/labels";
 
 type GearDetailPageProps = {
   params: Promise<{
@@ -33,23 +27,14 @@ export default async function GearDetailPage({
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const returnTo = getPlanReturnTo(query.returnTo);
   const gear = await getUserGearById(id);
-  const verificationStatus =
-    gear.gear_products?.verification_status ?? "unverified";
-  const verification = verificationStatusLabels[verificationStatus];
   const officialUrl = gear.official_url ?? gear.gear_products?.official_url;
-  const msrpSourceUrl = gear.gear_products?.msrp_source_url;
   const categoryLabel = gear.gear_categories?.name_ja ?? "-";
   const subcategoryLabel = gear.gear_subcategories?.name_ja ?? "-";
   const brandLine =
     [gear.brand, gear.model].filter(Boolean).join(" / ") || "ブランド未設定";
   const weightLabel = getGearDisplayWeightLabel(gear);
-  const priceLabel = formatNullableJpy(gear.msrp_jpy);
   const summaryCategoryLabel =
     subcategoryLabel !== "-" ? subcategoryLabel : categoryLabel;
-  const dataSourceLabel = gear.gear_products ? "製品カタログ" : "自分で登録";
-  const dataSourceDescription = gear.gear_products
-    ? "製品カタログの確認情報をもとに表示しています。"
-    : "自分で登録した情報をもとに表示しています。必要に応じて編集してください。";
   // 官方目录装备(有 gear_products 关联)= 只读;自己添加的才可编辑
   const isCatalog = Boolean(gear.gear_products);
   const gearDisplayName = gear.name || brandLine;
@@ -101,10 +86,9 @@ export default async function GearDetailPage({
           <div className="p-5 sm:p-6">
             <p className="text-sm font-bold text-stone-500">{brandLine}</p>
 
-            <div className="mt-5 grid grid-cols-3 gap-2">
+            <div className="mt-5 grid grid-cols-2 gap-2">
               <SummaryPill label="重量" value={weightLabel} />
               <SummaryPill label="カテゴリー" value={summaryCategoryLabel} />
-              <SummaryPill label="所有状態" value={statusLabels[gear.status]} />
             </div>
 
             <dl className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -112,10 +96,6 @@ export default async function GearDetailPage({
               <DetailRow label="モデル" value={gear.model} />
               <DetailRow label="カテゴリー" value={categoryLabel} />
               <DetailRow label="サブカテゴリー" value={subcategoryLabel} />
-              <DetailRow label="容量" value={gear.volume} />
-              <DetailRow label="サイズ" value={gear.size} />
-              <DetailRow label="対応人数" value={gear.capacity} />
-              <DetailRow label="カラー" value={gear.color} />
               <DetailRow
                 label="重量タイプ"
                 value={weightTypeLabels[gear.weight_type]}
@@ -125,68 +105,31 @@ export default async function GearDetailPage({
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-2">
-        <InfoCard title="データ確認" description={dataSourceDescription}>
-          <DetailRow label="データ区分" value={dataSourceLabel} />
-          <DetailRow label="カタログ確認" value={verification.label} />
-          <DetailRow
-            label="確認日"
-            value={formatDateLabel(gear.gear_products?.last_verified_at)}
-          />
-          <div className="pt-1 sm:col-span-2">
-            <dt className="text-sm text-stone-500">公式ページ</dt>
-            <dd className="mt-1">
-              {officialUrl ? (
-                <a
-                  href={officialUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 font-bold text-[#14724e]"
-                >
-                  公式製品ページ
-                  <ExternalLink className="h-4 w-4" />
-                </a>
-              ) : (
-                <span className="font-semibold text-ink">-</span>
-              )}
-            </dd>
-          </div>
-        </InfoCard>
-
-        <InfoCard
-          title="参考情報"
-          description="価格情報は登録データの参考として表示しています。"
-        >
-          <DetailRow
-            label="メーカー希望小売価格"
-            value={priceLabel}
-          />
-          {msrpSourceUrl ? (
-            <div className="pt-1">
-              <dt className="text-sm text-stone-500">価格確認ページ</dt>
-              <dd className="mt-1">
-                <a
-                  href={msrpSourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 font-bold text-[#14724e]"
-                >
-                  価格確認ページ
-                  <ExternalLink className="h-4 w-4" />
-                </a>
-              </dd>
+      {(gear.memo || officialUrl) ? (
+        <details className="rounded-[20px] bg-white p-5 shadow-sm">
+          <summary className="cursor-pointer text-sm font-bold text-[#14724e]">
+            その他の情報
+          </summary>
+          {gear.memo ? (
+            <div className="mt-4">
+              <h2 className="text-sm font-semibold text-stone-700">メモ</h2>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-stone-600">
+                {gear.memo}
+              </p>
             </div>
           ) : null}
-        </InfoCard>
-      </section>
-
-      {gear.memo ? (
-        <section className="rounded-[20px] bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold text-ink">メモ</h2>
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-stone-600">
-            {gear.memo}
-          </p>
-        </section>
+          {officialUrl ? (
+            <a
+              href={officialUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 inline-flex items-center gap-2 font-bold text-[#14724e]"
+            >
+              公式製品ページ
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          ) : null}
+        </details>
       ) : null}
 
       <section className="rounded-[20px] border border-red-100 bg-white p-5 shadow-sm">
@@ -221,26 +164,6 @@ function SummaryPill({ label, value }: { label: string; value: string }) {
   );
 }
 
-function InfoCard({
-  title,
-  description,
-  children
-}: {
-  title: string;
-  description?: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="rounded-[20px] bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold text-ink">{title}</h2>
-      {description ? (
-        <p className="mt-2 text-sm leading-6 text-stone-500">{description}</p>
-      ) : null}
-      <dl className="mt-5 grid gap-4 sm:grid-cols-2">{children}</dl>
-    </section>
-  );
-}
-
 function DetailRow({
   label,
   value
@@ -254,22 +177,4 @@ function DetailRow({
       <dd className="mt-1 font-semibold text-ink">{value || "-"}</dd>
     </div>
   );
-}
-
-function formatNullableJpy(value: number | null) {
-  return value === null ? "-" : formatJpy(value);
-}
-
-function formatDateLabel(value?: string | null) {
-  if (!value) {
-    return "-";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleDateString("ja-JP");
 }

@@ -1,6 +1,5 @@
 import type { VerificationStatus } from "../types";
 
-export type GearStatus = "owned" | "wishlist";
 export type WeightType = "base" | "consumable" | "worn";
 
 export type GearCategory = {
@@ -98,7 +97,6 @@ export type UserGear = {
   image_url: string | null;
   image_storage_path: string | null;
   purchase_date: string | null;
-  status: GearStatus;
   weight_type: WeightType;
   memo: string | null;
   created_at: string;
@@ -125,7 +123,6 @@ export type UserGear = {
 
 export type GearFilters = {
   q?: string;
-  status?: GearStatus | "all";
   category?: string;
   brand?: string;
   sort?: "newest" | "weight";

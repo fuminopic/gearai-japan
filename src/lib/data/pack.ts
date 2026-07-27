@@ -37,7 +37,7 @@ export async function getMyPack(): Promise<MyPack> {
 
 export async function getPackSelectionData() {
   const [ownedGear, packGearIds] = await Promise.all([
-    getUserGear({ status: "owned" }),
+    getUserGear(),
     getPackGearIds()
   ]);
 

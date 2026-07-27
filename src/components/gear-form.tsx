@@ -28,7 +28,6 @@ import {
 } from "@/lib/gear-display";
 import {
   gearSubcategoryLabels,
-  statusLabels,
   weightTypeLabels
 } from "@/lib/i18n/labels";
 import { buildGearHref } from "@/lib/plan-return-to";
@@ -78,13 +77,6 @@ export function GearForm({
   const [officialWeightGrams, setOfficialWeightGrams] = useState(
     String(gear?.official_weight_grams ?? gear?.weight_grams ?? "")
   );
-  const [msrpJpy, setMsrpJpy] = useState(String(gear?.msrp_jpy ?? ""));
-  const [status, setStatus] = useState(gear?.status ?? "owned");
-  const [size, setSize] = useState(gear?.size ?? "");
-  const [volume, setVolume] = useState(gear?.volume ?? "");
-  const [color, setColor] = useState(gear?.color ?? "");
-  const [material, setMaterial] = useState(gear?.material ?? "");
-  const [capacity, setCapacity] = useState(gear?.capacity ?? "");
   const [officialUrl, setOfficialUrl] = useState(gear?.official_url ?? "");
   const [imageUrl, setImageUrl] = useState(gear?.image_url ?? "");
   const [imageStoragePath, setImageStoragePath] = useState(
@@ -328,7 +320,6 @@ export function GearForm({
 
   function applyProduct(product: GearPickerProduct) {
     const productName = product.name_ja ?? product.model;
-    const productVolume = getProductVolume(product);
     setProductId(product.id);
     setCategoryId(product.category_id);
     setSubcategoryId(product.subcategory_id ?? "");
@@ -339,13 +330,6 @@ export function GearForm({
     setOfficialWeightGrams(
       String(product.official_weight_grams ?? product.weight_grams ?? "")
     );
-    setMsrpJpy(String(product.msrp_jpy ?? ""));
-    setStatus("owned");
-    setSize(product.size ?? "");
-    setVolume(productVolume ?? "");
-    setColor(product.color ?? "");
-    setMaterial(product.material ?? "");
-    setCapacity(isBackpackProduct(product) ? "" : product.capacity ?? "");
     setOfficialUrl(product.official_url ?? "");
     setImageUrl(product.image_url ?? "");
     setImageStoragePath("");
@@ -415,13 +399,11 @@ export function GearForm({
 
       if (result.ok) {
         hapticSuccess();
-        if (status === "owned") {
-          captureAnalyticsEvent("gear_mark_owned", {
-            source: "gear_form",
-            category: categoryId,
-            is_catalog_item: Boolean(productId)
-          });
-        }
+        captureAnalyticsEvent("gear_mark_owned", {
+          source: "gear_form",
+          category: categoryId,
+          is_catalog_item: Boolean(productId)
+        });
 
         // 先立刻显示"保存しました",不等目标页整个渲染完再消失
         setSubmitStatus("success");
@@ -469,6 +451,7 @@ export function GearForm({
       <input type="hidden" name="category_id" value={categoryId} />
       <input type="hidden" name="subcategory_id" value={subcategoryId} />
       <input type="hidden" name="official_weight_grams" value={officialWeightGrams} />
+      {!manualMode ? <input type="hidden" name="weight_type" value="base" /> : null}
       <input type="hidden" name="returnTo" value={returnTo ?? ""} />
 
       {!manualMode ? (
@@ -762,6 +745,21 @@ export function GearForm({
                   placeholder="例：398"
                 />
               </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-stone-700">重量タイプ</span>
+                <select
+                  name="weight_type"
+                  defaultValue={gear?.weight_type ?? "base"}
+                  className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                >
+                  {Object.entries(weightTypeLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
 
             <div>
@@ -820,160 +818,30 @@ export function GearForm({
       ) : null}
 
       {shouldShowGearDetails ? (
-        <section className="rounded-[20px] bg-white p-5 shadow-sm">
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold text-ink">登録情報</h2>
-          </div>
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="block">
-            <span className="text-sm font-medium text-stone-700">
-              メーカー希望小売価格（円）
-            </span>
-            <input
-              name="msrp_jpy"
-              type="number"
-              inputMode="numeric"
-              min="0"
-              step="1"
-              value={msrpJpy}
-              onChange={(event) => setMsrpJpy(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-medium text-stone-700">ステータス</span>
-            <select
-              name="status"
-              value={status}
-              onChange={(event) => setStatus(event.target.value as typeof status)}
-              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-            >
-              {Object.entries(statusLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <dl className="mt-4 grid gap-3 rounded-2xl bg-stone-50 p-4 text-sm sm:grid-cols-2">
-          <div>
-            <dt className="text-stone-500">公式価格</dt>
-            <dd className="mt-1 font-semibold text-ink">
-              {Number(msrpJpy) > 0
-                ? formatJpy(Number(msrpJpy))
-                : "-"}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-stone-500">所有状態</dt>
-            <dd className="mt-1 font-semibold text-ink">{statusLabels[status]}</dd>
-          </div>
-        </dl>
-
-        <label className="mt-3 block">
-          <span className="text-sm font-medium text-stone-700">メモ</span>
-          <textarea
-            name="memo"
-            rows={3}
-            defaultValue={gear?.memo ?? ""}
-            className="mt-2 w-full resize-none rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-            placeholder="使用感、買い替え候補、注意点など"
-          />
-        </label>
-        </section>
-      ) : null}
-
-      {shouldShowGearDetails ? (
         <details className="rounded-[20px] bg-white p-5 shadow-sm">
           <summary className="cursor-pointer text-sm font-bold text-[#14724e]">
-            詳細設定
+            その他の情報
           </summary>
-          <div className="mt-4 grid gap-4">
-            <div className="grid gap-3 sm:grid-cols-3">
-              <label className="block">
-                <span className="text-sm font-medium text-stone-700">重量タイプ</span>
-                <select
-                  name="weight_type"
-                  defaultValue={gear?.weight_type ?? "base"}
-                  className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-                >
-                  {Object.entries(weightTypeLabels).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              <label className="block">
-            <span className="text-sm font-medium text-stone-700">サイズ</span>
-            <input
-              name="size"
-              value={size}
-              onChange={(event) => setSize(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-              placeholder="例：M"
-            />
-              </label>
-
-              <label className="block">
-            <span className="text-sm font-medium text-stone-700">容量</span>
-            <input
-              name="volume"
-              value={volume}
-              onChange={(event) => setVolume(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-              placeholder="例：25-35L"
-            />
-              </label>
-
-              <label className="block">
-            <span className="text-sm font-medium text-stone-700">対応人数</span>
-            <input
-              name="capacity"
-              value={capacity}
-              onChange={(event) => setCapacity(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-              placeholder="例：2人用"
-            />
-              </label>
-
-              <label className="block">
-            <span className="text-sm font-medium text-stone-700">カラー</span>
-            <input
-              name="color"
-              value={color}
-              onChange={(event) => setColor(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-            />
-              </label>
-
-              <label className="block">
-            <span className="text-sm font-medium text-stone-700">素材</span>
-            <input
-              name="material"
-              value={material}
-              onChange={(event) => setMaterial(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-            />
-              </label>
-
-              <label className="block">
-            <span className="text-sm font-medium text-stone-700">公式URL</span>
-            <input
-              name="official_url"
-              value={officialUrl}
-              onChange={(event) => setOfficialUrl(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
-            />
-              </label>
-            </div>
+          <div className="mt-4 grid gap-3">
+            <label className="block">
+              <span className="text-sm font-medium text-stone-700">メモ</span>
+              <textarea
+                name="memo"
+                rows={3}
+                defaultValue={gear?.memo ?? ""}
+                className="mt-2 w-full resize-none rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+                placeholder="使用感や注意点など"
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium text-stone-700">公式URL</span>
+              <input
+                name="official_url"
+                value={officialUrl}
+                onChange={(event) => setOfficialUrl(event.target.value)}
+                className="mt-2 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-base outline-none focus:border-forest-500 focus:bg-white"
+              />
+            </label>
           </div>
         </details>
       ) : null}

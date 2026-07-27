@@ -61,7 +61,7 @@ test("gear list normalizes brand filters and historical brand aliases in data la
 test("gear list exposes brand and category-oriented list controls", () => {
   assert.match(gearListSource, /name="brand"/);
   assert.match(gearListSource, /FilterChip/);
-  assert.match(gearListSource, /StatusChip/);
+  assert.doesNotMatch(gearListSource, /StatusChip/);
   assert.match(gearListSource, /buildGearHref/);
   assert.match(gearListSource, /label="ブランド"/);
   assert.match(gearListSource, /のカテゴリー/);
@@ -103,7 +103,6 @@ test("gear filters collapse by default so the gear list reaches the first view",
   for (const marker of [
     'placeholder="ギア名・ブランドで検索"',
     'label="ブランド"',
-    "StatusChip",
     'htmlFor="gear-sort"'
   ]) {
     assert.ok(
@@ -132,11 +131,12 @@ test("gear list groups registered gear by category without changing cards", () =
   assert.match(gearDataSource, /isRetailGearCategoryId/);
   assert.match(gearDataSource, /getRetailGearCategory\(item\)\?\.id === filters\.category/);
   // 無条件の二重 user_gear 読み込みは避ける。ただし表示一覧が部分集合なら
-  // パック集計のために全 owned ギアを別途取る。
+  // パック集計のために全マイギアを別途取る。
   assert.match(gearPageSource, /hasPartialGearFilters\(filters\)/);
-  assert.match(gearPageSource, /needsSeparateOwnedSummary \? getUserGear\(\{ status: "owned" \}\) : Promise\.resolve\(null\)/);
-  assert.match(gearPageSource, /separateOwnedGear \?\? gear\.filter\(\(item\) => item\.status === "owned"\)/);
-  assert.match(gearPageSource, /filters\.status === "wishlist"/);
+  assert.match(gearPageSource, /needsSeparateGearSummary \? getUserGear\(\) : Promise\.resolve\(null\)/);
+  assert.match(gearPageSource, /const summaryGear = separateGear \?\? gear/);
+  assert.doesNotMatch(gearPageSource, /filters\.status|isGearStatus|status\?: string/);
+  assert.doesNotMatch(gearListSource, /name="status"|statusLabels|item\.status|所有|欲しい/);
   assert.doesNotMatch(gearListSource, /総額/);
   assert.doesNotMatch(gearListSource, /高い順/);
   assert.doesNotMatch(gearListSource, /節約/);
@@ -165,28 +165,11 @@ test("gear delete action is kept on the detail page instead of the dense list", 
   assert.match(gearDetailSource, /削除すると元に戻せません。/);
 });
 
-test("gear detail page uses user-facing Japanese labels instead of internal field names", () => {
-  assert.match(gearDetailSource, /データ確認/);
-  assert.match(gearDetailSource, /データ区分/);
-  assert.match(gearDetailSource, /製品カタログ/);
-  assert.match(gearDetailSource, /自分で登録/);
-  assert.match(gearDetailSource, /カタログ確認/);
-  assert.match(gearDetailSource, /確認日/);
-  assert.match(gearDetailSource, /参考情報/);
-  assert.match(gearDetailSource, /価格確認ページ/);
+test("gear detail keeps only preparation-relevant information and collapses notes and URL", () => {
   assert.match(gearDetailSource, /写真未登録/);
-  assert.match(gearDetailSource, /価格情報は登録データの参考として表示しています。/);
-  assert.doesNotMatch(gearDetailSource, /価格・公式情報/);
-  assert.doesNotMatch(gearDetailSource, /<InfoCard title="公式情報"/);
-  assert.doesNotMatch(gearDetailSource, /SummaryPill label="公式価格"/);
-  assert.doesNotMatch(gearDetailSource, /価格ソース/);
-  assert.doesNotMatch(gearDetailSource, /購入価格/);
-  assert.doesNotMatch(gearDetailSource, /購入日/);
-  assert.doesNotMatch(gearDetailSource, /節約額/);
-  assert.doesNotMatch(gearDetailSource, /実測重量/);
-  assert.doesNotMatch(gearDetailSource, />verification_status</);
-  assert.doesNotMatch(gearDetailSource, />last_verified_at</);
-  assert.doesNotMatch(gearDetailSource, />MSRP source</);
+  assert.match(gearDetailSource, /その他の情報/);
+  assert.match(gearDetailSource, /公式製品ページ/);
+  assert.doesNotMatch(gearDetailSource, /所有状態|statusLabels|メーカー希望小売価格|価格確認ページ|容量|サイズ|対応人数|カラー/);
 });
 
 test("gear display helpers avoid showing unknown weights as zero grams", () => {

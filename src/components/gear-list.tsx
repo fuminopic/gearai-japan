@@ -21,7 +21,7 @@ import {
   getRetailGearCategory,
   MAJOR_GEAR_CATEGORIES
 } from "@/lib/gear-major-categories";
-import { statusLabels, weightTypeLabels } from "@/lib/i18n/labels";
+import { weightTypeLabels } from "@/lib/i18n/labels";
 import { buildGearHref } from "@/lib/plan-return-to";
 import type { GearFilters, UserGear } from "@/lib/types";
 import { formatWeight } from "@/lib/utils/format";
@@ -61,8 +61,7 @@ export function GearList({
   const hasActiveFilters = Boolean(
     filters.q ||
       filters.brand ||
-      filters.category ||
-      (filters.status && filters.status !== "all")
+      filters.category
   );
   const visibleBrands = [
     ...new Set([selectedBrand, ...brands].filter((brand): brand is string => Boolean(brand)))
@@ -170,7 +169,6 @@ export function GearList({
               className="min-w-0 flex-1 bg-transparent py-1 text-base outline-none"
               placeholder="ギア名・ブランドで検索"
             />
-            <input type="hidden" name="status" value={filters.status ?? "all"} />
             <input type="hidden" name="brand" value={filters.brand ?? ""} />
             <input type="hidden" name="category" value={filters.category ?? ""} />
             <input type="hidden" name="sort" value={filters.sort ?? "newest"} />
@@ -228,22 +226,9 @@ export function GearList({
           </div>
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
-          <div className="grid grid-cols-3 rounded-xl bg-stone-100 p-1 text-sm font-semibold">
-            <StatusChip href={buildFilteredGearHref(filters, { status: "all" }, returnTo)} active={(filters.status ?? "all") === "all"}>
-              すべて
-            </StatusChip>
-            <StatusChip href={buildFilteredGearHref(filters, { status: "owned" }, returnTo)} active={filters.status === "owned"}>
-              所有
-            </StatusChip>
-            <StatusChip href={buildFilteredGearHref(filters, { status: "wishlist" }, returnTo)} active={filters.status === "wishlist"}>
-              欲しい
-            </StatusChip>
-          </div>
-
-          <form className="flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 py-2">
+        <div className="mt-4">
+          <form className="flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 py-2 sm:ml-auto sm:w-fit">
             <input type="hidden" name="q" value={filters.q ?? ""} />
-            <input type="hidden" name="status" value={filters.status ?? "all"} />
             <input type="hidden" name="brand" value={filters.brand ?? ""} />
             <input type="hidden" name="category" value={filters.category ?? ""} />
             <input type="hidden" name="returnTo" value={returnTo ?? ""} />
@@ -376,9 +361,6 @@ function GearCard({
             <span className="block min-w-0 truncate text-base font-semibold text-ink">
               {item.name}
             </span>
-            <span className="inline-flex h-6 shrink-0 items-center justify-center rounded-md bg-forest-50 px-2 text-[11px] font-semibold leading-none text-forest-700">
-              {statusLabels[item.status]}
-            </span>
           </div>
           <span className="mt-0.5 block truncate text-sm text-stone-500">
             {[item.brand, item.model].filter(Boolean).join(" / ") || "ブランド未設定"}
@@ -401,13 +383,11 @@ function GearCard({
         </div>
       </Link>
 
-      {/* スイッチはリンクの外。行本体をタップ=詳細、スイッチ=パック出し入れ。
-          「欲しい」のギアは addPackItems が受け付けないので無効表示にする。 */}
+      {/* スイッチはリンクの外。行本体をタップ=詳細、スイッチ=パック出し入れ。 */}
       <div className="flex shrink-0 items-center pr-3 sm:pr-4">
         <GearPackToggle
           gearId={item.id}
           weightGrams={getGearWeightGrams(item)}
-          disabled={item.status !== "owned"}
         />
       </div>
     </article>
@@ -497,27 +477,6 @@ function FilterChip({
   );
 }
 
-function StatusChip({
-  href,
-  active,
-  children
-}: {
-  href: Route;
-  active: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`inline-flex h-10 items-center justify-center rounded-lg px-3 text-center leading-none transition ${
-        active ? "bg-white text-ink shadow-sm" : "text-stone-500 hover:text-ink"
-      }`}
-    >
-      {children}
-    </Link>
-  );
-}
-
 function buildFilteredGearHref(
   filters: GearFilters,
   patch: Partial<GearFilters & { brand?: string; category?: string }>,
@@ -528,10 +487,6 @@ function buildFilteredGearHref(
 
   if (next.q) {
     params.set("q", next.q);
-  }
-
-  if (next.status && next.status !== "all") {
-    params.set("status", next.status);
   }
 
   if (next.brand) {

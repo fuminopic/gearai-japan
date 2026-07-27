@@ -247,8 +247,8 @@ test("long forms warn before throwing the input away", () => {
     new URL("../src/components/gear-form.tsx", import.meta.url),
     "utf8"
   );
-  const profileEditSource = readFileSync(
-    new URL("../app/(app)/profile/edit/page.tsx", import.meta.url),
+  const profileSettingsFormSource = readFileSync(
+    new URL("../src/components/profile-settings-form.tsx", import.meta.url),
     "utf8"
   );
   const pageShellSource = readFileSync(
@@ -264,7 +264,7 @@ test("long forms warn before throwing the input away", () => {
   assert.match(pageShellSource, /data-guarded-back=""/);
 
   assert.match(gearFormSource, /<UnsavedChangesGuard \/>/);
-  assert.match(profileEditSource, /<UnsavedChangesGuard \/>/);
+  assert.match(profileSettingsFormSource, /<UnsavedChangesGuard \/>/);
 
   // 数値入力はモバイルで数字キーを出す
   assert.match(gearFormSource, /inputMode="numeric"/);

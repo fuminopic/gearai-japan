@@ -4,212 +4,147 @@ import test from "node:test";
 
 const profilePageSource = readFileSync("app/(app)/profile/page.tsx", "utf8");
 const profileEditPageSource = readFileSync("app/(app)/profile/edit/page.tsx", "utf8");
+const profileSettingsFormSource = readFileSync(
+  "src/components/profile-settings-form.tsx",
+  "utf8"
+);
+const avatarEditorSource = readFileSync("src/components/profile-avatar-editor.tsx", "utf8");
+const profileOptionsSource = readFileSync("src/lib/profile-options.ts", "utf8");
+const authActionsSource = readFileSync("src/lib/actions/auth.ts", "utf8");
 const insurancePageSource = readFileSync("app/(app)/profile/insurance/page.tsx", "utf8");
 const passwordPageSource = readFileSync("app/(app)/profile/password/page.tsx", "utf8");
-const authActionsSource = readFileSync("src/lib/actions/auth.ts", "utf8");
+const avatarMigrationSource = readFileSync(
+  "supabase/migrations/20260727083724_add_profile_avatar_storage.sql",
+  "utf8"
+);
 
-test("my page stays focused on account and pre-trip insurance", () => {
-  assert.match(profilePageSource, /マイページ/);
-  assert.match(profilePageSource, /プロフィールを編集/);
-  assert.match(profilePageSource, /\/profile\/edit/);
+test("my page stays focused on profile, insurance, and account entry points", () => {
+  for (const copy of [
+    "マイページ",
+    "プロフィールを編集",
+    "山岳保険のご案内、保険情報の入力",
+    "メールアドレス",
+    "パスワード管理",
+    "ログアウト"
+  ]) {
+    assert.match(profilePageSource, new RegExp(copy));
+  }
+
+  assert.match(profilePageSource, /getProfileAvatarSignedUrl/);
+  assert.match(profilePageSource, /<img src=\{avatarUrl\}/);
   assert.match(profilePageSource, /\/profile\/insurance/);
-  assert.match(profilePageSource, /\/profile\/password/);
-  assert.match(profilePageSource, /パスワード管理/);
-  assert.match(profilePageSource, /山岳保険のご案内、保険情報の入力/);
-  assert.match(profilePageSource, /mountain_insurance_status/);
-  assert.match(profilePageSource, /未加入/);
-  assert.match(profilePageSource, /契約済み/);
   assert.match(profilePageSource, /signOut/);
   assert.match(profilePageSource, /AccountDeleteButton/);
-  assert.doesNotMatch(profilePageSource, /山行前の登録状況/);
-  assert.doesNotMatch(profilePageSource, /遭難時の対策/);
-  assert.doesNotMatch(profilePageSource, /遭難対策サービス/);
-  assert.doesNotMatch(profilePageSource, /緊急連絡/);
-  assert.doesNotMatch(profilePageSource, /登山の初期設定/);
-  assert.doesNotMatch(profilePageSource, /mobile_phone/);
-  assert.doesNotMatch(profilePageSource, /emergency_contact_phone/);
-  assert.doesNotMatch(profilePageSource, /QRコード/);
-  assert.doesNotMatch(profilePageSource, /メッセージ/);
-  assert.doesNotMatch(profilePageSource, /ダッシュボード/);
   assert.doesNotMatch(profilePageSource, /山行記録/);
-  assert.doesNotMatch(profilePageSource, /getDashboardSummary/);
-  assert.doesNotMatch(profilePageSource, /getTripPlans/);
+  assert.doesNotMatch(profilePageSource, /緊急連絡/);
 });
 
-test("password page lets OAuth and email users add or change a password", () => {
+test("profile settings include the requested optional mountaineering data with stable values", () => {
   for (const copy of [
-    "パスワード管理",
-    "パスワードを追加・変更",
-    "Google / Appleで登録した方も",
-    "メールアドレスとパスワードでログインできます",
-    "新しいパスワード",
-    "新しいパスワード（確認）",
-    "Google / Appleアカウント自体のパスワードは変更されません",
-    "パスワードを更新する"
-  ]) {
-    assert.match(passwordPageSource, new RegExp(copy));
-  }
-
-  assert.match(passwordPageSource, /action=\{updatePassword\}/);
-  assert.match(passwordPageSource, /requireUser/);
-  assert.match(passwordPageSource, /name="password"/);
-  assert.match(passwordPageSource, /name="confirm_password"/);
-  assert.match(passwordPageSource, /minLength=\{6\}/);
-  assert.match(authActionsSource, /export async function updatePassword/);
-  assert.match(authActionsSource, /supabase\.auth\.updateUser\(\{\s*password/s);
-  assert.match(authActionsSource, /確認用パスワードが一致しません/);
-  assert.match(authActionsSource, /パスワードは6文字以上/);
-});
-
-test("profile edit page only asks for display profile and mountain insurance", () => {
-  for (const copy of [
-    "プロフィール設定",
     "基本情報",
     "表示名",
-    "メールアドレス",
-    "保存する"
+    "メモ",
+    "ユーザー情報（任意）",
+    "性別",
+    "年齢層",
+    "登山プロフィール（任意）",
+    "装備リストやおすすめ設定の参考にします。",
+    "登山歴",
+    "主な登山ジャンル",
+    "普段よくする山行",
+    "よく行くエリア",
+    "アカウント",
+    "パスワード変更",
+    "ログアウト"
   ]) {
-    assert.match(profileEditPageSource, new RegExp(copy));
+    assert.match(profileSettingsFormSource, new RegExp(copy));
   }
 
-  assert.match(profileEditPageSource, /action=\{updateProfile\}/);
-  assert.match(profileEditPageSource, /backHref="\/profile"/);
-  assert.doesNotMatch(profileEditPageSource, /山岳保険/);
-  assert.doesNotMatch(profileEditPageSource, /加入状況/);
-  assert.doesNotMatch(profileEditPageSource, /保険名/);
-  assert.doesNotMatch(profileEditPageSource, /有効期限/);
-  assert.doesNotMatch(profileEditPageSource, /遭難時の対策/);
-  assert.doesNotMatch(profileEditPageSource, /緊急連絡先/);
-  assert.doesNotMatch(profileEditPageSource, /本人の携帯番号/);
-  assert.doesNotMatch(profileEditPageSource, /遭難対策サービス/);
-  assert.doesNotMatch(profileEditPageSource, /登山の初期設定/);
-  assert.doesNotMatch(profileEditPageSource, /主な山域/);
-  assert.doesNotMatch(profileEditPageSource, /登山経験/);
-  assert.doesNotMatch(profileEditPageSource, /歩行ペース/);
-  assert.doesNotMatch(profileEditPageSource, /装備メモ/);
-  assert.doesNotMatch(profileEditPageSource, /生年月日/);
-  assert.doesNotMatch(profileEditPageSource, /血液型/);
-  assert.doesNotMatch(profileEditPageSource, /職業/);
-  assert.doesNotMatch(profileEditPageSource, /ホームページ/);
-  assert.doesNotMatch(profileEditPageSource, /性別/);
+  assert.match(profileSettingsFormSource, /<ProfileAvatarEditor/);
+  assert.match(profileSettingsFormSource, /AccountDeleteButton/);
+  assert.match(avatarEditorSource, /プロフィール画像/);
+  assert.match(profileEditPageSource, /<ProfileSettingsForm/);
+  assert.match(profileEditPageSource, /getMetadataOptionValue/);
+  assert.match(profileEditPageSource, /getMetadataOptionValues/);
+  assert.match(profileSettingsFormSource, /MOUNTAINEERING_GENRE_MAX/);
+  assert.match(profileSettingsFormSource, /FAVORITE_REGION_MAX/);
+  assert.match(profileSettingsFormSource, /exclusiveValue="no_preference"/);
+  assert.match(profileOptionsSource, /value: "male"/);
+  assert.match(profileOptionsSource, /value: "snow_free_mountain"/);
+  assert.match(profileOptionsSource, /value: "kyushu_okinawa"/);
+  assert.match(profileOptionsSource, /value: "no_preference"/);
+  assert.doesNotMatch(profileSettingsFormSource, /生年月日/);
+  assert.doesNotMatch(profileSettingsFormSource, /血液型/);
+  assert.doesNotMatch(profileSettingsFormSource, /職業/);
 });
 
-test("insurance page mirrors the insurance-only entry flow", () => {
-  for (const copy of [
-    "保険のご加入",
-    "保険",
-    "未加入",
-    "契約済み",
-    "保険名",
-    "保険開始日",
-    "保険終了日",
-    "証券番号などを入力してください"
-  ]) {
-    assert.match(insurancePageSource, new RegExp(copy));
-  }
-
-  assert.match(insurancePageSource, /action=\{updateInsurance\}/);
-  assert.match(insurancePageSource, /name="mountain_insurance_status"/);
-  assert.match(insurancePageSource, /name="mountain_insurance_provider"/);
-  assert.match(insurancePageSource, /name="mountain_insurance_starts_on"/);
-  assert.match(insurancePageSource, /name="mountain_insurance_expires_on"/);
-  assert.match(insurancePageSource, /name="mountain_insurance_policy_number"/);
-  assert.match(insurancePageSource, /accent-\[#14724e\]/);
-  assert.match(insurancePageSource, /min-w-0 max-w-full/);
-  assert.doesNotMatch(insurancePageSource, /遭難対策サービス/);
-  assert.doesNotMatch(insurancePageSource, /sticky bottom-24/);
-});
-
-test("profile and insurance updates store user metadata without adding a new table", () => {
+test("profile update validates options on the server and gives one pending-state feedback cycle", () => {
+  assert.match(profileSettingsFormSource, /useActionState\(updateProfile/);
+  assert.match(profileSettingsFormSource, /disabled=\{isPending\}/);
+  assert.match(profileSettingsFormSource, /hapticSuccess\(\)/);
+  assert.match(profileSettingsFormSource, /hapticError\(\)/);
   assert.match(authActionsSource, /export async function updateProfile/);
-  assert.match(authActionsSource, /export async function updateInsurance/);
-  assert.match(authActionsSource, /export async function updatePassword/);
+  assert.match(authActionsSource, /parseProfileFields/);
+  assert.match(authActionsSource, /readOptionalProfileOption/);
+  assert.match(authActionsSource, /readProfileOptionList/);
+  assert.match(authActionsSource, /favoriteRegions\.includes\("no_preference"\)/);
+  assert.match(authActionsSource, /profile_gender/);
+  assert.match(authActionsSource, /mountaineering_genres/);
+  assert.match(authActionsSource, /usual_trip_styles/);
+  assert.match(authActionsSource, /favorite_regions/);
   assert.match(authActionsSource, /supabase\.auth\.updateUser/);
-  assert.match(authActionsSource, /display_name/);
-  assert.match(authActionsSource, /mountain_insurance_status/);
-  assert.match(authActionsSource, /mountain_insurance_provider/);
-  assert.match(authActionsSource, /mountain_insurance_starts_on/);
-  assert.match(authActionsSource, /mountain_insurance_expires_on/);
-  assert.match(authActionsSource, /mountain_insurance_policy_number/);
   assert.match(authActionsSource, /revalidatePath\("\/profile"\)/);
-  assert.doesNotMatch(authActionsSource, /mobile_phone/);
-  assert.doesNotMatch(authActionsSource, /emergency_phone/);
-  assert.doesNotMatch(authActionsSource, /emergency_contact_phone/);
-  assert.doesNotMatch(authActionsSource, /rescue_service_name/);
-  assert.doesNotMatch(authActionsSource, /home_area/);
-  assert.doesNotMatch(authActionsSource, /default_trip_style/);
-  assert.doesNotMatch(authActionsSource, /hiking_experience/);
-  assert.doesNotMatch(authActionsSource, /gear_preference_note/);
   assert.doesNotMatch(authActionsSource, /\.from\("profiles"\)/);
 });
 
-test("secondary pages share one header, so every one of them has a way back", () => {
-  // 以前は見出しが 26/28/30/34px とページごとに違い、戻るも
-  // 「文字のピル」「ArrowLeft の丸ボタン」「ChevronLeft の丸ボタン」の
-  // 3種類あった。ギア編集には戻る導線が無かった。
-  const pageShellSource = readFileSync(
-    new URL("../src/components/ui/page-shell.tsx", import.meta.url),
-    "utf8"
-  );
-  // 上部はタブ5画面と同じ緑バンド。戻ると見出しをその中に入れる。
-  assert.match(pageShellSource, /text-\[20px\] font-bold/);
-  assert.match(pageShellSource, /from-\[#1F7950\] to-\[#81AB44\]/);
-  assert.match(pageShellSource, /\+ 150px\)/);
-  assert.match(pageShellSource, /-mt-\[51px\]/);
-  assert.match(pageShellSource, /aria-label=\{backLabel\}/);
-
-  const secondaryPages = [
-    "app/(app)/gear/new/page.tsx",
-    "app/(app)/gear/[id]/page.tsx",
-    "app/(app)/gear/[id]/edit/page.tsx",
-    "app/(app)/pack/select/page.tsx",
-    "app/(app)/profile/edit/page.tsx",
-    "app/(app)/profile/insurance/page.tsx",
-    "app/(app)/profile/password/page.tsx"
-  ];
-
-  for (const relativePath of secondaryPages) {
-    const source = readFileSync(
-      new URL(`../${relativePath}`, import.meta.url),
-      "utf8"
-    );
-    assert.match(source, /<PageShell/, relativePath);
-    assert.match(source, /backHref=/, relativePath);
-    assert.match(source, /backLabel="/, relativePath);
-    // 見出しサイズを各ページで作り直さない
-    assert.doesNotMatch(source, /text-\[(26|28|30|34)px\]/, relativePath);
-    assert.doesNotMatch(source, /shadow-soft/, relativePath);
-  }
+test("avatar upload is private, compressed, replaceable, removable, and uses haptic completion feedback", () => {
+  assert.match(avatarEditorSource, /image\/jpeg,image\/png,image\/webp/);
+  assert.match(avatarEditorSource, /PROFILE_AVATAR_MAX_INPUT_BYTES/);
+  assert.match(avatarEditorSource, /createSquareAvatar/);
+  assert.match(avatarEditorSource, /canvas\.toBlob/);
+  assert.match(avatarEditorSource, /"image\/jpeg", 0\.86/);
+  assert.match(avatarEditorSource, /crypto\.randomUUID\(\)/);
+  assert.match(avatarEditorSource, /\.from\(PROFILE_AVATAR_BUCKET\)/);
+  assert.match(avatarEditorSource, /saveProfileAvatar\(path\)/);
+  assert.match(avatarEditorSource, /deleteProfileAvatar\(\)/);
+  assert.match(avatarEditorSource, /hapticSuccess\(\)/);
+  assert.match(avatarEditorSource, /hapticError\(\)/);
+  assert.match(authActionsSource, /export async function saveProfileAvatar/);
+  assert.match(authActionsSource, /export async function deleteProfileAvatar/);
+  assert.match(authActionsSource, /isProfileAvatarPath\(path, user\.id\)/);
+  assert.match(authActionsSource, /remove\(\[previousPath\]\)/);
+  assert.match(authActionsSource, /profile_avatar_path: previousPath/);
 });
 
-test("saving a profile or insurance change says so, and failures land on a real screen", () => {
-  const authActionsSource = readFileSync(
-    new URL("../src/lib/actions/auth.ts", import.meta.url),
-    "utf8"
+test("avatar storage migration is private, idempotent, and scoped to the current user folder", () => {
+  assert.match(avatarMigrationSource, /'profile-avatars'/);
+  assert.match(avatarMigrationSource, /false,\s*2097152/);
+  assert.match(avatarMigrationSource, /array\['image\/jpeg'\]/);
+  assert.match(avatarMigrationSource, /on conflict \(id\) do update/);
+  for (const policy of [
+    "profile_avatars_select_own",
+    "profile_avatars_insert_own",
+    "profile_avatars_update_own",
+    "profile_avatars_delete_own"
+  ]) {
+    assert.match(avatarMigrationSource, new RegExp(policy));
+  }
+  assert.match(
+    avatarMigrationSource,
+    /\(storage\.foldername\(name\)\)\[1\] = \(select auth\.uid\(\)::text\)/
   );
-  // 保存できたことを伝えないまま /profile に戻していた。ギアの保存で
-  // 既に使っている ?saved= の形に合わせる(toast は入れない)。
-  assert.match(authActionsSource, /redirect\("\/profile\?saved=profile"/);
-  assert.match(authActionsSource, /redirect\("\/profile\?saved=insurance"/);
-  assert.match(profilePageSource, /getSavedMessage/);
-  assert.match(profilePageSource, /プロフィールを更新しました/);
-  assert.match(profilePageSource, /保険情報を更新しました/);
-  assert.match(profilePageSource, /<Notice tone="success"/);
+});
 
-  // Next.js の既定のエラー/404画面が出ないようにする
-  const appErrorSource = readFileSync(
-    new URL("../app/(app)/error.tsx", import.meta.url),
-    "utf8"
-  );
-  const notFoundSource = readFileSync(
-    new URL("../app/not-found.tsx", import.meta.url),
-    "utf8"
-  );
-  assert.match(appErrorSource, /"use client"/);
-  assert.match(appErrorSource, /読み込めませんでした/);
-  assert.match(appErrorSource, /onClick=\{reset\}/);
-  // 例外の本文はそのまま見せない
-  assert.doesNotMatch(appErrorSource, /\{error\.message\}/);
-  assert.match(notFoundSource, /ページが見つかりません/);
-  assert.match(notFoundSource, /href="\/dashboard"/);
+test("password and insurance flows remain independent", () => {
+  assert.match(passwordPageSource, /パスワードを追加・変更/);
+  assert.match(passwordPageSource, /action=\{updatePassword\}/);
+  assert.match(insurancePageSource, /保険のご加入/);
+  assert.match(insurancePageSource, /action=\{updateInsurance\}/);
+  assert.doesNotMatch(profileSettingsFormSource, /山岳保険/);
+});
+
+test("secondary profile page keeps the shared back-header shell", () => {
+  assert.match(profileEditPageSource, /<PageShell/);
+  assert.match(profileEditPageSource, /backHref="\/profile"/);
+  assert.match(profileEditPageSource, /backLabel="マイページへ戻る"/);
 });

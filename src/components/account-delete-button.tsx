@@ -75,7 +75,7 @@ export function AccountDeleteButton({ gearCount }: AccountDeleteButtonProps) {
                       <li>登録したメールアドレス・パスワード</li>
                       <li>マイギアのデータ（{gearCount}点）</li>
                       <li>山行計画データ</li>
-                      <li>アップロードしたギア写真</li>
+                      <li>アップロードしたギア写真・プロフィール画像</li>
                     </ul>
                   </div>
                 ) : (

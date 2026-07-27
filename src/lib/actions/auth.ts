@@ -6,6 +6,20 @@ import type { Route } from "next";
 import { redirect } from "next/navigation";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  AGE_RANGE_OPTIONS,
+  FAVORITE_REGION_MAX,
+  FAVORITE_REGION_OPTIONS,
+  GENDER_OPTIONS,
+  MOUNTAINEERING_EXPERIENCE_OPTIONS,
+  MOUNTAINEERING_GENRE_MAX,
+  MOUNTAINEERING_GENRE_OPTIONS,
+  PROFILE_AVATAR_BUCKET,
+  USUAL_TRIP_STYLE_OPTIONS,
+  getProfileAvatarPath,
+  isProfileAvatarPath,
+  type ProfileOption
+} from "@/lib/profile-options";
 import { createClient } from "@/lib/supabase/server";
 
 export async function signUp(formData: FormData) {
@@ -97,6 +111,17 @@ export async function deleteAccount() {
 
     if (storageError) {
       redirect(`/profile?error=${encodeURIComponent(storageError.message)}`);
+    }
+  }
+
+  const profileAvatarPath = getProfileAvatarPath(user.user_metadata, user.id);
+  if (profileAvatarPath) {
+    const { error: avatarStorageError } = await admin.storage
+      .from(PROFILE_AVATAR_BUCKET)
+      .remove([profileAvatarPath]);
+
+    if (avatarStorageError) {
+      redirect(`/profile?error=${encodeURIComponent(avatarStorageError.message)}`);
     }
   }
 
@@ -225,27 +250,129 @@ async function getRequestOrigin() {
   return "http://localhost:3000";
 }
 
-export async function updateProfile(formData: FormData) {
+export type ProfileActionState = {
+  ok: boolean;
+  message: string;
+};
+
+export async function updateProfile(
+  _previousState: ProfileActionState,
+  formData: FormData
+): Promise<ProfileActionState> {
   const supabase = await createClient();
   const displayName = cleanText(formData.get("display_name"), 40);
   const selfIntroduction = cleanText(formData.get("self_introduction"), 220);
+  const profileFields = parseProfileFields(formData);
+
+  if (!profileFields.ok) {
+    return profileFields;
+  }
 
   const { error } = await supabase.auth.updateUser({
     data: {
       display_name: displayName,
-      self_introduction: selfIntroduction
+      self_introduction: selfIntroduction,
+      profile_gender: profileFields.data.gender,
+      profile_age_range: profileFields.data.ageRange,
+      mountaineering_experience: profileFields.data.mountaineeringExperience,
+      mountaineering_genres: profileFields.data.mountaineeringGenres,
+      usual_trip_styles: profileFields.data.usualTripStyles,
+      favorite_regions: profileFields.data.favoriteRegions
     }
   });
 
   if (error) {
-    redirect(`/profile/edit?error=${encodeURIComponent(error.message)}` as Route);
+    return { ok: false, message: "プロフィールを保存できませんでした。もう一度お試しください。" };
   }
 
   revalidatePath("/profile");
   revalidatePath("/profile/edit");
-  // 保存できたことを伝えないまま戻していた。ギアの保存と同じ
-  // ?saved= の形に揃える。
-  redirect("/profile?saved=profile" as Route);
+  return { ok: true, message: "プロフィールを保存しました。" };
+}
+
+export async function saveProfileAvatar(path: string): Promise<ProfileActionState> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError
+  } = await supabase.auth.getUser();
+
+  if (userError || !user || !isProfileAvatarPath(path, user.id)) {
+    return { ok: false, message: "プロフィール画像を確認できませんでした。" };
+  }
+
+  const previousPath = getProfileAvatarPath(user.user_metadata, user.id);
+  const { error: updateError } = await supabase.auth.updateUser({
+    data: { profile_avatar_path: path }
+  });
+
+  if (updateError) {
+    return { ok: false, message: "プロフィール画像を保存できませんでした。" };
+  }
+
+  if (previousPath && previousPath !== path) {
+    const { error: removeError } = await supabase.storage
+      .from(PROFILE_AVATAR_BUCKET)
+      .remove([previousPath]);
+
+    if (removeError) {
+      await supabase.auth.updateUser({
+        data: { profile_avatar_path: previousPath }
+      });
+      await supabase.storage.from(PROFILE_AVATAR_BUCKET).remove([path]);
+      return {
+        ok: false,
+        message: "以前のプロフィール画像を削除できませんでした。もう一度お試しください。"
+      };
+    }
+  }
+
+  revalidatePath("/profile");
+  revalidatePath("/profile/edit");
+  return { ok: true, message: "プロフィール画像を更新しました。" };
+}
+
+export async function deleteProfileAvatar(): Promise<ProfileActionState> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return { ok: false, message: "ログイン状態を確認できませんでした。" };
+  }
+
+  const previousPath = getProfileAvatarPath(user.user_metadata, user.id);
+  if (!previousPath) {
+    return { ok: true, message: "プロフィール画像は設定されていません。" };
+  }
+
+  const { error: updateError } = await supabase.auth.updateUser({
+    data: { profile_avatar_path: null }
+  });
+
+  if (updateError) {
+    return { ok: false, message: "プロフィール画像を削除できませんでした。" };
+  }
+
+  const { error: removeError } = await supabase.storage
+    .from(PROFILE_AVATAR_BUCKET)
+    .remove([previousPath]);
+
+  if (removeError) {
+    await supabase.auth.updateUser({
+      data: { profile_avatar_path: previousPath }
+    });
+    return {
+      ok: false,
+      message: "プロフィール画像を削除できませんでした。もう一度お試しください。"
+    };
+  }
+
+  revalidatePath("/profile");
+  revalidatePath("/profile/edit");
+  return { ok: true, message: "プロフィール画像を削除しました。" };
 }
 
 export async function updateInsurance(formData: FormData) {
@@ -319,6 +446,103 @@ function cleanText(value: FormDataEntryValue | null, maxLength: number) {
   }
 
   return value.trim().slice(0, maxLength);
+}
+
+function parseProfileFields(formData: FormData):
+  | { ok: true; data: ProfileFields }
+  | { ok: false; message: string } {
+  const gender = readOptionalProfileOption(formData, "profile_gender", GENDER_OPTIONS);
+  const ageRange = readOptionalProfileOption(formData, "profile_age_range", AGE_RANGE_OPTIONS);
+  const mountaineeringExperience = readOptionalProfileOption(
+    formData,
+    "mountaineering_experience",
+    MOUNTAINEERING_EXPERIENCE_OPTIONS
+  );
+  const mountaineeringGenres = readProfileOptionList(
+    formData,
+    "mountaineering_genres",
+    MOUNTAINEERING_GENRE_OPTIONS,
+    MOUNTAINEERING_GENRE_MAX
+  );
+  const usualTripStyles = readProfileOptionList(
+    formData,
+    "usual_trip_styles",
+    USUAL_TRIP_STYLE_OPTIONS
+  );
+  const favoriteRegions = readProfileOptionList(
+    formData,
+    "favorite_regions",
+    FAVORITE_REGION_OPTIONS,
+    FAVORITE_REGION_MAX
+  );
+
+  if (
+    gender === null ||
+    ageRange === null ||
+    mountaineeringExperience === null ||
+    mountaineeringGenres === null ||
+    usualTripStyles === null ||
+    favoriteRegions === null
+  ) {
+    return { ok: false, message: "選択内容を確認してから保存してください。" };
+  }
+
+  if (favoriteRegions.includes("no_preference") && favoriteRegions.length > 1) {
+    return { ok: false, message: "「特に決まっていない」は単独で選択してください。" };
+  }
+
+  return {
+    ok: true,
+    data: {
+      gender,
+      ageRange,
+      mountaineeringExperience,
+      mountaineeringGenres,
+      usualTripStyles,
+      favoriteRegions
+    }
+  };
+}
+
+type ProfileFields = {
+  gender: string;
+  ageRange: string;
+  mountaineeringExperience: string;
+  mountaineeringGenres: string[];
+  usualTripStyles: string[];
+  favoriteRegions: string[];
+};
+
+function readOptionalProfileOption(
+  formData: FormData,
+  name: string,
+  options: readonly ProfileOption[]
+) {
+  const value = cleanText(formData.get(name), 40);
+  return value === "" || options.some((option) => option.value === value) ? value : null;
+}
+
+function readProfileOptionList(
+  formData: FormData,
+  name: string,
+  options: readonly ProfileOption[],
+  max?: number
+) {
+  const values = formData
+    .getAll(name)
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim());
+  const uniqueValues = Array.from(new Set(values));
+
+  if (
+    uniqueValues.length !== values.length ||
+    (max !== undefined && uniqueValues.length > max) ||
+    uniqueValues.some((value) => !options.some((option) => option.value === value))
+  ) {
+    return null;
+  }
+
+  return uniqueValues;
 }
 
 function getLoginErrorMessage(message: string) {

@@ -13,7 +13,9 @@ import { AccountDeleteButton } from "@/components/account-delete-button";
 import { AppMenuDrawer } from "@/components/app-menu-drawer";
 import { Notice } from "@/components/ui/notice";
 import { signOut } from "@/lib/actions/auth";
+import { getProfileAvatarSignedUrl } from "@/lib/data/profile";
 import { requireUser } from "@/lib/data/gear";
+import { getMetadataString } from "@/lib/profile-options";
 
 type ProfilePageProps = {
   searchParams: Promise<{
@@ -35,10 +37,10 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const insuranceProvider = getMetadataString(metadata, "mountain_insurance_provider");
   const insuranceExpiresOn = getMetadataString(metadata, "mountain_insurance_expires_on");
   const hasInsurance = insuranceStatus === "active";
-  const { count: gearCount } = await supabase
-    .from("user_gear")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", user.id);
+  const [{ count: gearCount }, avatarUrl] = await Promise.all([
+    supabase.from("user_gear").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+    getProfileAvatarSignedUrl(supabase, user.id, metadata)
+  ]);
 
   // ホーム/ギアと同じ骨格。バンド safe+150 / カード -51 → カード上端 safe+99 で
   // 他タブと一致する。eyebrow と 34px の見出しは、カード内 16px の見出しに置き換え。
@@ -68,8 +70,13 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
           <h1 className="text-base font-bold">マイページ</h1>
         </div>
         <div className="flex items-start gap-4">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-forest-50 text-[#14724e]">
-            <UserRound aria-hidden className="h-8 w-8" />
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-forest-50 text-xl font-bold text-[#14724e]">
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt="プロフィール画像" className="h-full w-full object-cover" />
+            ) : (
+              <UserRound aria-hidden className="h-8 w-8" />
+            )}
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-2xl font-bold leading-tight tracking-normal text-ink">
@@ -198,12 +205,4 @@ function getDisplayName(
     email?.split("@")[0] ||
     "YAMAJITAKU USER"
   );
-}
-
-function getMetadataString(
-  metadata: Record<string, unknown> | null | undefined,
-  key: string
-) {
-  const value = metadata?.[key];
-  return typeof value === "string" ? value : "";
 }

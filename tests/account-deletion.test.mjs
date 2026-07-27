@@ -65,6 +65,8 @@ test("account deletion server action verifies current user and deletes storage p
   assert.match(authActionsSource, /if \(userError \|\| !user\)/);
   assert.match(authActionsSource, /createAdminClient\(\)/);
   assert.match(authActionsSource, /\.from\("gear-images"\)/);
+  assert.match(authActionsSource, /getProfileAvatarPath\(user\.user_metadata, user\.id\)/);
+  assert.match(authActionsSource, /\.from\(PROFILE_AVATAR_BUCKET\)/);
   assert.match(authActionsSource, /\.list\(userId/);
   assert.match(authActionsSource, /\.remove\(storagePaths\)/);
   assert.match(authActionsSource, /admin\.auth\.admin\.deleteUser\(user\.id\)/);

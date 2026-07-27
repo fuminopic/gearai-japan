@@ -73,6 +73,8 @@ test("profile settings present compact single-choice profile rows", () => {
   assert.match(profileSettingsFormSource, /<ProfileDialog/);
   assert.match(profileSettingsFormSource, /role="radiogroup"/);
   assert.match(profileSettingsFormSource, /aria-checked=\{checked\}/);
+  assert.match(profileSettingsFormSource, /z-\[60\]/);
+  assert.match(profileSettingsFormSource, /safe-area-inset-bottom\)\+7rem/);
   assert.match(profileSettingsFormSource, /<AccountDeleteButton gearCount=\{gearCount\} variant="row"/);
   assert.match(profileSettingsFormSource, /form="profile-settings-form"/);
   assert.match(profileOptionsSource, /value: "male"/);
@@ -188,6 +190,7 @@ test("memo is no longer rendered, edited, or saved", () => {
 test("avatar upload is private, compressed, replaceable, removable, and uses haptic completion feedback", () => {
   assert.match(avatarEditorSource, /image\/jpeg,image\/png,image\/webp/);
   assert.match(avatarEditorSource, /PROFILE_AVATAR_MAX_INPUT_BYTES/);
+  assert.doesNotMatch(avatarEditorSource, /JPEG・PNG・WebP（10MBまで）/);
   assert.match(avatarEditorSource, /createSquareAvatar/);
   assert.match(avatarEditorSource, /canvas\.toBlob/);
   assert.match(avatarEditorSource, /"image\/jpeg", 0\.86/);

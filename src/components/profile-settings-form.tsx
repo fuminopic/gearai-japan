@@ -397,12 +397,12 @@ function ProfileDialog({
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/40 p-4 sm:items-center sm:justify-center">
+    <div className="fixed inset-0 z-[60] flex items-end bg-black/40 px-4 pb-[calc(env(safe-area-inset-bottom)+7rem)] pt-4 sm:items-center sm:justify-center sm:p-4">
       <section
         role="dialog"
         aria-modal="true"
         aria-label={`${title}を選択`}
-        className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl"
+        className="max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-8rem)] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-5 shadow-xl"
       >
         <div className="mb-4 flex items-center justify-between gap-3">
           <h3 className="text-lg font-bold text-ink">{title}</h3>

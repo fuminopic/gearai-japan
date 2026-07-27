@@ -181,11 +181,7 @@ export function ProfileAvatarEditor({
               <Trash2 aria-hidden className="h-4 w-4" />
               画像を削除
             </button>
-          ) : (
-            <p className="text-xs font-semibold leading-relaxed text-stone-500">
-              JPEG・PNG・WebP（10MBまで）
-            </p>
-          )}
+          ) : null}
         </div>
       </div>
       {feedback ? (

@@ -1,8 +1,6 @@
 import {
   PROFILE_AVATAR_BUCKET,
-  getProfileAvatarPath,
-  isProfileAvatarPath,
-  type ProfileMetadata
+  isProfileAvatarPath
 } from "@/lib/profile-options";
 import type { createClient } from "@/lib/supabase/server";
 
@@ -72,23 +70,21 @@ export async function getProfileDetails(
 
 export function getStoredProfileAvatarPath(
   profile: ProfileDetails | null,
-  userId: string,
-  metadata: ProfileMetadata
+  userId: string
 ) {
   if (profile?.avatarStoragePath && isProfileAvatarPath(profile.avatarStoragePath, userId)) {
     return profile.avatarStoragePath;
   }
 
-  return getProfileAvatarPath(metadata, userId);
+  return "";
 }
 
 export async function getProfileAvatarSignedUrl(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
-  metadata: ProfileMetadata,
   profile: ProfileDetails | null = null
 ) {
-  const path = getStoredProfileAvatarPath(profile, userId, metadata);
+  const path = getStoredProfileAvatarPath(profile, userId);
   if (!path) {
     return "";
   }

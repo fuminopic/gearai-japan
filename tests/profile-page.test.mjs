@@ -41,6 +41,7 @@ test("my page stays focused on profile, insurance, and account entry points", ()
   assert.match(profilePageSource, /getProfileAvatarSignedUrl/);
   assert.match(profileEditLauncherSource, /プロフィールを編集/);
   assert.match(profilePageSource, /<img src=\{avatarUrl\}/);
+  assert.match(profilePageSource, /const avatarInitial = displayName\.trim\(\)\.slice\(0, 1\)\.toUpperCase\(\) \|\| "Y"/);
   assert.match(profilePageSource, /\/profile\/insurance/);
   assert.match(profilePageSource, /signOut/);
   assert.match(profilePageSource, /AccountDeleteButton/);
@@ -194,15 +195,16 @@ test("profile edit keeps the form path free of account-delete counting and strea
   assert.match(profileEditPageSource, /initialAvatarUrl=""/);
 });
 
-test("profile edit opens immediately from the current page state without waiting for another private RSC request", () => {
+test("profile edit opens immediately with the current private avatar URL instead of an empty fallback", () => {
   assert.match(profilePageSource, /<ProfileEditLauncher/);
-  assert.match(profilePageSource, /hasAvatar=\{Boolean\(getStoredProfileAvatarPath/);
+  assert.match(profilePageSource, /initialAvatarUrl=\{avatarUrl\}/);
+  assert.match(profilePageSource, /hasAvatar=\{Boolean\(getStoredProfileAvatarPath\(profile, user\.id\)\)\}/);
   assert.match(profilePageSource, /getProfileOptionValue\(profile\?\.gender/);
   assert.match(profilePageSource, /getProfileOptionValueFromArray\(/);
 
   assert.match(profileEditLauncherSource, /window\.history\.pushState\(null, "", "\/profile\/edit"\)/);
   assert.match(profileEditLauncherSource, /<ProfileSettingsForm/);
-  assert.match(profileEditLauncherSource, /initialAvatarUrl=""/);
+  assert.match(profileEditLauncherSource, /initialAvatarUrl=\{initialAvatarUrl\}/);
   assert.match(profileEditLauncherSource, /initialHasAvatar=\{hasAvatar\}/);
   assert.match(profileEditLauncherSource, /onDirtyChange=\{setIsDirty\}/);
   assert.match(profileEditLauncherSource, /data-testid="profile-edit-instant-layer"/);
@@ -221,6 +223,9 @@ test("profile edit opens immediately from the current page state without waiting
   assert.match(profileSettingsFormSource, /onChange=\{\(\) => onDirtyChange\?\.\(true\)\}/);
   assert.match(avatarEditorSource, /initialHasAvatar\?: boolean/);
   assert.match(avatarEditorSource, /const \[hasAvatar, setHasAvatar\]/);
+  assert.match(avatarEditorSource, /useEffect\(\(\) => \{\s*setAvatarUrl\(initialAvatarUrl\)/);
+  assert.match(avatarEditorSource, /useRouter\(\)/);
+  assert.match(avatarEditorSource, /router\.refresh\(\)/);
   assert.match(avatarEditorSource, /!hasAvatar/);
 });
 
@@ -254,7 +259,7 @@ test("avatar upload is private, compressed, replaceable, removable, and uses hap
   assert.match(authActionsSource, /profile_avatar_path: previousPath/);
 });
 
-test("profile details have a queryable, user-owned canonical record with legacy metadata fallback", () => {
+test("profile details have a queryable, user-owned canonical record and avatar source", () => {
   for (const column of [
     "gender text",
     "age_range text",
@@ -285,7 +290,23 @@ test("profile details have a queryable, user-owned canonical record with legacy 
   assert.match(profileDetailsMigrationSource, /cardinality\(coalesce\(mountaineering_genres/);
   assert.match(profileDetailsMigrationSource, /'no_preference' = any/);
   assert.match(profileDataSource, /getStoredProfileAvatarPath/);
-  assert.match(profileDataSource, /getProfileAvatarPath\(metadata, userId\)/);
+  assert.match(profileDataSource, /profile\?\.avatarStoragePath/);
+  assert.doesNotMatch(profileDataSource, /getProfileAvatarPath/);
+  assert.doesNotMatch(profileDataSource, /profile_avatar_path/);
+  assert.match(authActionsSource, /getStoredProfileAvatarPath\(profile, user\.id\)/);
+  assert.doesNotMatch(authActionsSource, /getStoredProfileAvatarPath\(profile, user\.id, user\.user_metadata\)/);
+});
+
+test("avatar save, replacement, deletion, refresh, and re-entry share the canonical path and signed URL", () => {
+  assert.match(profileDataSource, /createSignedUrl\(path, 60 \* 60\)/);
+  assert.match(profilePageSource, /getProfileAvatarSignedUrl\(supabase, user\.id, profile\)/);
+  assert.match(profileEditPageSource, /getProfileAvatarSignedUrl\(supabase, userId, profile\)/);
+  assert.match(avatarEditorSource, /setAvatarUrl\(URL\.createObjectURL\(compressedFile\)\)/);
+  assert.match(avatarEditorSource, /setAvatarUrl\(""\)/);
+  assert.match(avatarEditorSource, /setHasAvatar\(false\)/);
+  assert.match(avatarEditorSource, /router\.refresh\(\)/);
+  assert.match(authActionsSource, /revalidatePath\("\/profile"\)/);
+  assert.match(authActionsSource, /revalidatePath\("\/profile\/edit"\)/);
 });
 
 test("avatar storage migration is private, idempotent, and scoped to the current user folder", () => {

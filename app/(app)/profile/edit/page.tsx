@@ -43,7 +43,7 @@ export default async function ProfileEditPage() {
           <Suspense
             fallback={<ProfileAvatarEditor displayName={displayName} initialAvatarUrl="" />}
           >
-            <ProfileAvatarSlot displayName={displayName} userId={user.id} metadata={metadata} profile={profile} />
+            <ProfileAvatarSlot displayName={displayName} userId={user.id} profile={profile} />
           </Suspense>
         }
         gender={getProfileOptionValue(profile?.gender, metadata, "profile_gender", GENDER_OPTIONS)}
@@ -80,16 +80,14 @@ export default async function ProfileEditPage() {
 async function ProfileAvatarSlot({
   displayName,
   userId,
-  metadata,
   profile
 }: {
   displayName: string;
   userId: string;
-  metadata: Record<string, unknown>;
   profile: ProfileDetails | null;
 }) {
   const supabase = await createClient();
-  const avatarUrl = await getProfileAvatarSignedUrl(supabase, userId, metadata, profile);
+  const avatarUrl = await getProfileAvatarSignedUrl(supabase, userId, profile);
 
   return <ProfileAvatarEditor displayName={displayName} initialAvatarUrl={avatarUrl} />;
 }

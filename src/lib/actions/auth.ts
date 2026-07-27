@@ -9,7 +9,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import {
   getProfileDetails,
   getStoredProfileAvatarPath,
-  isProfileDetailsSchemaUnavailable,
   profileDetailsFromRow,
   profileDetailsSelect,
   type ProfileDetails,
@@ -378,13 +377,13 @@ export async function saveProfileAvatar(path: string): Promise<ProfileActionStat
   }
 
   const profile = await getProfileDetails(supabase, user.id);
-  const previousPath = getStoredProfileAvatarPath(profile, user.id, user.user_metadata);
+  const previousPath = getStoredProfileAvatarPath(profile, user.id);
   const { error: profileError } = await supabase
     .from("profiles")
     .update({ avatar_storage_path: path })
     .eq("id", user.id);
 
-  if (profileError && !isProfileDetailsSchemaUnavailable(profileError)) {
+  if (profileError) {
     return { ok: false, message: "プロフィール画像を保存できませんでした。" };
   }
 
@@ -439,7 +438,7 @@ export async function deleteProfileAvatar(): Promise<ProfileActionState> {
   }
 
   const profile = await getProfileDetails(supabase, user.id);
-  const previousPath = getStoredProfileAvatarPath(profile, user.id, user.user_metadata);
+  const previousPath = getStoredProfileAvatarPath(profile, user.id);
   if (!previousPath) {
     return { ok: true, message: "プロフィール画像は設定されていません。" };
   }
@@ -449,7 +448,7 @@ export async function deleteProfileAvatar(): Promise<ProfileActionState> {
     .update({ avatar_storage_path: null })
     .eq("id", user.id);
 
-  if (profileError && !isProfileDetailsSchemaUnavailable(profileError)) {
+  if (profileError) {
     return { ok: false, message: "プロフィール画像を削除できませんでした。" };
   }
 

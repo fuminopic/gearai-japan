@@ -2,8 +2,7 @@ import {
   ChevronRight,
   KeyRound,
   LogOut,
-  ShieldCheck,
-  UserRound
+  ShieldCheck
 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
@@ -51,7 +50,8 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const insuranceExpiresOn = getMetadataString(metadata, "mountain_insurance_expires_on");
   const hasInsurance = insuranceStatus === "active";
   const profile = await getProfileDetails(supabase, user.id);
-  const avatarUrl = await getProfileAvatarSignedUrl(supabase, user.id, metadata, profile);
+  const avatarUrl = await getProfileAvatarSignedUrl(supabase, user.id, profile);
+  const avatarInitial = displayName.trim().slice(0, 1).toUpperCase() || "Y";
 
   // ホーム/ギアと同じ骨格。バンド safe+150 / カード -51 → カード上端 safe+99 で
   // 他タブと一致する。eyebrow と 34px の見出しは、カード内 16px の見出しに置き換え。
@@ -86,7 +86,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={avatarUrl} alt="プロフィール画像" className="h-full w-full object-cover" />
             ) : (
-              <UserRound aria-hidden className="h-8 w-8" />
+              avatarInitial
             )}
           </div>
           <div className="min-w-0 flex-1">
@@ -102,7 +102,8 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         <ProfileEditLauncher
           email={user.email ?? ""}
           displayName={displayName}
-          hasAvatar={Boolean(getStoredProfileAvatarPath(profile, user.id, metadata))}
+          initialAvatarUrl={avatarUrl}
+          hasAvatar={Boolean(getStoredProfileAvatarPath(profile, user.id))}
           gender={getProfileOptionValue(profile?.gender, metadata, "profile_gender", GENDER_OPTIONS)}
           ageRange={getProfileOptionValue(profile?.ageRange, metadata, "profile_age_range", AGE_RANGE_OPTIONS)}
           mountaineeringExperience={getProfileOptionValue(

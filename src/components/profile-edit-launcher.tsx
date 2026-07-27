@@ -9,6 +9,7 @@ import { ProfileSettingsForm } from "@/components/profile-settings-form";
 type ProfileEditLauncherProps = {
   email: string;
   displayName: string;
+  initialAvatarUrl: string;
   hasAvatar: boolean;
   gender: string;
   ageRange: string;
@@ -21,6 +22,7 @@ type ProfileEditLauncherProps = {
 export function ProfileEditLauncher({
   email,
   displayName,
+  initialAvatarUrl,
   hasAvatar,
   gender,
   ageRange,
@@ -131,7 +133,7 @@ export function ProfileEditLauncher({
               <ProfileSettingsForm
                 email={email}
                 displayName={displayName}
-                initialAvatarUrl=""
+                initialAvatarUrl={initialAvatarUrl}
                 initialHasAvatar={hasAvatar}
                 gender={gender}
                 ageRange={ageRange}

@@ -1,7 +1,8 @@
 "use client";
 
 import { Camera, Loader2, Trash2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { deleteProfileAvatar, saveProfileAvatar } from "@/lib/actions/auth";
 import { hapticError, hapticSuccess } from "@/lib/haptics";
@@ -25,6 +26,7 @@ export function ProfileAvatarEditor({
   initialAvatarUrl,
   initialHasAvatar = false
 }: ProfileAvatarEditorProps) {
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
   const [hasAvatar, setHasAvatar] = useState(Boolean(initialAvatarUrl) || initialHasAvatar);
@@ -35,6 +37,11 @@ export function ProfileAvatarEditor({
   } | null>(null);
 
   const initial = displayName.trim().slice(0, 1).toUpperCase() || "Y";
+
+  useEffect(() => {
+    setAvatarUrl(initialAvatarUrl);
+    setHasAvatar(Boolean(initialAvatarUrl) || initialHasAvatar);
+  }, [initialAvatarUrl, initialHasAvatar]);
 
   async function handleFile(file: File | null) {
     if (!file || isWorking) {
@@ -85,6 +92,7 @@ export function ProfileAvatarEditor({
       setHasAvatar(true);
       setFeedback({ tone: "success", message: "プロフィール画像を更新しました。" });
       hapticSuccess();
+      router.refresh();
     } catch (caught) {
       console.error("Profile avatar upload failed:", caught);
       setFeedback({
@@ -121,6 +129,7 @@ export function ProfileAvatarEditor({
       setHasAvatar(false);
       setFeedback({ tone: "success", message: "プロフィール画像を削除しました。" });
       hapticSuccess();
+      router.refresh();
     } catch (caught) {
       console.error("Profile avatar delete failed:", caught);
       setFeedback({

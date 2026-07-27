@@ -332,12 +332,6 @@ function ProfileOptionRow({
             aria-label={label}
             className="overflow-hidden rounded-xl border border-stone-100"
           >
-            <ProfileChoice
-              label="選択しない"
-              value=""
-              checked={value === ""}
-              onSelect={() => selectValue("")}
-            />
             {options.map((option) => (
               <ProfileChoice
                 key={option.value}

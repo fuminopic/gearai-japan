@@ -73,6 +73,7 @@ test("profile settings present compact single-choice profile rows", () => {
   assert.match(profileSettingsFormSource, /<ProfileDialog/);
   assert.match(profileSettingsFormSource, /role="radiogroup"/);
   assert.match(profileSettingsFormSource, /aria-checked=\{checked\}/);
+  assert.doesNotMatch(profileSettingsFormSource, /label="選択しない"/);
   assert.match(profileSettingsFormSource, /z-\[60\]/);
   assert.match(profileSettingsFormSource, /safe-area-inset-bottom\)\+7rem/);
   assert.match(profileSettingsFormSource, /<AccountDeleteButton gearCount=\{gearCount\} variant="row"/);

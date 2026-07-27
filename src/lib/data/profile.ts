@@ -16,7 +16,7 @@ export type ProfileDetails = {
   avatarStoragePath: string | null;
 };
 
-type ProfileDetailsRow = {
+export type ProfileDetailsRow = {
   gender: string | null;
   age_range: string | null;
   mountaineering_experience: string | null;
@@ -26,8 +26,22 @@ type ProfileDetailsRow = {
   avatar_storage_path: string | null;
 };
 
-const profileDetailsSelect =
+export const profileDetailsSelect =
   "gender, age_range, mountaineering_experience, mountaineering_genres, usual_trip_styles, favorite_regions, avatar_storage_path";
+
+export function profileDetailsFromRow(data: ProfileDetailsRow): ProfileDetails {
+  return {
+    gender: data.gender,
+    ageRange: data.age_range,
+    mountaineeringExperience: data.mountaineering_experience,
+    mountaineeringGenres: Array.isArray(data.mountaineering_genres)
+      ? data.mountaineering_genres
+      : [],
+    usualTripStyles: Array.isArray(data.usual_trip_styles) ? data.usual_trip_styles : [],
+    favoriteRegions: Array.isArray(data.favorite_regions) ? data.favorite_regions : [],
+    avatarStoragePath: data.avatar_storage_path
+  };
+}
 
 export async function getProfileDetails(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -53,17 +67,7 @@ export async function getProfileDetails(
     return null;
   }
 
-  return {
-    gender: data.gender,
-    ageRange: data.age_range,
-    mountaineeringExperience: data.mountaineering_experience,
-    mountaineeringGenres: Array.isArray(data.mountaineering_genres)
-      ? data.mountaineering_genres
-      : [],
-    usualTripStyles: Array.isArray(data.usual_trip_styles) ? data.usual_trip_styles : [],
-    favoriteRegions: Array.isArray(data.favorite_regions) ? data.favorite_regions : [],
-    avatarStoragePath: data.avatar_storage_path
-  };
+  return profileDetailsFromRow(data);
 }
 
 export function getStoredProfileAvatarPath(

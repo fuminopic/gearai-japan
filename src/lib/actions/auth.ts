@@ -9,12 +9,17 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import {
   getProfileDetails,
   getStoredProfileAvatarPath,
-  isProfileDetailsSchemaUnavailable
+  isProfileDetailsSchemaUnavailable,
+  profileDetailsFromRow,
+  profileDetailsSelect,
+  type ProfileDetails,
+  type ProfileDetailsRow
 } from "@/lib/data/profile";
 import {
   AGE_RANGE_OPTIONS,
   FAVORITE_REGION_MAX,
   FAVORITE_REGION_OPTIONS,
+  PROFILE_DETAILS_METADATA_VERSION,
   GENDER_OPTIONS,
   MOUNTAINEERING_EXPERIENCE_OPTIONS,
   MOUNTAINEERING_GENRE_MAX,
@@ -273,6 +278,7 @@ async function getRequestOrigin() {
 export type ProfileActionState = {
   ok: boolean;
   message: string;
+  profile?: ProfileDetails;
 };
 
 export async function updateProfile(
@@ -297,7 +303,12 @@ export async function updateProfile(
     return { ok: false, message: "ログイン状態を確認できませんでした。" };
   }
 
-  const { error: profileError } = await supabase
+  const previousProfile = await getProfileDetails(supabase, user.id);
+  if (!previousProfile) {
+    return { ok: false, message: "プロフィールを読み込めませんでした。もう一度お試しください。" };
+  }
+
+  const { data: savedRow, error: profileError } = await supabase
     .from("profiles")
     .update({
       gender: profileFields.data.gender || null,
@@ -307,32 +318,50 @@ export async function updateProfile(
       usual_trip_styles: profileFields.data.usualTripStyles,
       favorite_regions: profileFields.data.favoriteRegions
     })
-    .eq("id", user.id);
+    .eq("id", user.id)
+    .select(profileDetailsSelect)
+    .single<ProfileDetailsRow>();
 
-  if (profileError && !isProfileDetailsSchemaUnavailable(profileError)) {
+  if (profileError || !savedRow) {
     return { ok: false, message: "プロフィールを保存できませんでした。もう一度お試しください。" };
   }
 
-  const { error } = await supabase.auth.updateUser({
+  const savedProfile = profileDetailsFromRow(savedRow);
+
+  const { error: metadataError } = await supabase.auth.updateUser({
     data: {
       display_name: displayName,
       self_introduction: selfIntroduction,
-      profile_gender: profileFields.data.gender,
-      profile_age_range: profileFields.data.ageRange,
-      mountaineering_experience: profileFields.data.mountaineeringExperience,
-      mountaineering_genres: profileFields.data.mountaineeringGenres,
-      usual_trip_styles: profileFields.data.usualTripStyles,
-      favorite_regions: profileFields.data.favoriteRegions
+      // These legacy keys are a migration fallback only. Clear them after the
+      // canonical profile row has been written so they cannot resurrect values.
+      profile_gender: null,
+      profile_age_range: null,
+      mountaineering_experience: null,
+      mountaineering_genres: null,
+      usual_trip_styles: null,
+      favorite_regions: null,
+      profile_details_version: PROFILE_DETAILS_METADATA_VERSION
     }
   });
 
-  if (error) {
+  if (metadataError) {
+    await supabase
+      .from("profiles")
+      .update({
+        gender: previousProfile.gender,
+        age_range: previousProfile.ageRange,
+        mountaineering_experience: previousProfile.mountaineeringExperience,
+        mountaineering_genres: previousProfile.mountaineeringGenres,
+        usual_trip_styles: previousProfile.usualTripStyles,
+        favorite_regions: previousProfile.favoriteRegions
+      })
+      .eq("id", user.id);
     return { ok: false, message: "プロフィールを保存できませんでした。もう一度お試しください。" };
   }
 
   revalidatePath("/profile");
   revalidatePath("/profile/edit");
-  return { ok: true, message: "プロフィールを保存しました。" };
+  return { ok: true, message: "プロフィールを保存しました。", profile: savedProfile };
 }
 
 export async function saveProfileAvatar(path: string): Promise<ProfileActionState> {

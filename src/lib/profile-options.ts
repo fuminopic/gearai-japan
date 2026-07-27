@@ -72,6 +72,11 @@ export const FAVORITE_REGION_OPTIONS = [
 export const MOUNTAINEERING_GENRE_MAX = 3;
 export const FAVORITE_REGION_MAX = 3;
 
+// This marker does not hold profile data. It only distinguishes a legacy Auth
+// metadata record from a profile that has already been saved to public.profiles.
+// It lets an intentionally empty canonical field remain empty on later reads.
+export const PROFILE_DETAILS_METADATA_VERSION = 1;
+
 export type ProfileMetadata = Record<string, unknown> | null | undefined;
 
 export function getMetadataString(metadata: ProfileMetadata, key: string) {
@@ -114,6 +119,10 @@ export function getProfileOptionValue(
     return storedValue;
   }
 
+  if (hasCanonicalProfileDetails(metadata)) {
+    return "";
+  }
+
   return getMetadataOptionValue(metadata, metadataKey, options);
 }
 
@@ -133,12 +142,16 @@ export function getProfileOptionValues(
       )
     );
 
-    if (values.length > 0) {
+    if (values.length > 0 || hasCanonicalProfileDetails(metadata)) {
       return values;
     }
   }
 
   return getMetadataOptionValues(metadata, metadataKey, options);
+}
+
+function hasCanonicalProfileDetails(metadata: ProfileMetadata) {
+  return metadata?.profile_details_version === PROFILE_DETAILS_METADATA_VERSION;
 }
 
 export function getProfileAvatarPath(metadata: ProfileMetadata, userId: string) {

@@ -2,12 +2,13 @@
 
 import { KeyRound, Loader2, LogOut, Mountain, UserRound, UsersRound } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 
 import { AccountDeleteButton } from "@/components/account-delete-button";
 import { ProfileAvatarEditor } from "@/components/profile-avatar-editor";
 import { UnsavedChangesGuard } from "@/components/ui/unsaved-changes-guard";
-import { signOut, updateProfile } from "@/lib/actions/auth";
+import { signOut, updateProfile, type ProfileActionState } from "@/lib/actions/auth";
 import { hapticError, hapticSuccess } from "@/lib/haptics";
 import {
   AGE_RANGE_OPTIONS,
@@ -21,7 +22,16 @@ import {
   type ProfileOption
 } from "@/lib/profile-options";
 
-const initialProfileActionState = { ok: false, message: "" };
+const initialProfileActionState: ProfileActionState = { ok: false, message: "" };
+
+type ProfileFieldValues = {
+  gender: string;
+  ageRange: string;
+  mountaineeringExperience: string;
+  mountaineeringGenres: string[];
+  usualTripStyles: string[];
+  favoriteRegions: string[];
+};
 
 type ProfileSettingsFormProps = {
   email: string;
@@ -51,18 +61,38 @@ export function ProfileSettingsForm({
   favoriteRegions
 }: ProfileSettingsFormProps) {
   const [state, formAction, isPending] = useActionState(updateProfile, initialProfileActionState);
+  const router = useRouter();
+  const [profileValues, setProfileValues] = useState<ProfileFieldValues>(() => ({
+    gender,
+    ageRange,
+    mountaineeringExperience,
+    mountaineeringGenres,
+    usualTripStyles,
+    favoriteRegions
+  }));
 
   useEffect(() => {
     if (!state.message) {
       return;
     }
 
-    if (state.ok) {
+    if (state.ok && state.profile) {
+      // The Server Action returns the database row that actually committed.
+      // Do not rebuild these values from stale props or legacy metadata.
+      setProfileValues({
+        gender: state.profile.gender ?? "",
+        ageRange: state.profile.ageRange ?? "",
+        mountaineeringExperience: state.profile.mountaineeringExperience ?? "",
+        mountaineeringGenres: state.profile.mountaineeringGenres,
+        usualTripStyles: state.profile.usualTripStyles,
+        favoriteRegions: state.profile.favoriteRegions
+      });
       hapticSuccess();
+      router.refresh();
     } else {
       hapticError();
     }
-  }, [state]);
+  }, [router, state]);
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
@@ -97,13 +127,15 @@ export function ProfileSettingsForm({
           <ProfileSelect
             label="性別"
             name="profile_gender"
-            defaultValue={gender}
+            value={profileValues.gender}
+            onValueChange={(value) => setProfileValues((current) => ({ ...current, gender: value }))}
             options={GENDER_OPTIONS}
           />
           <ProfileSelect
             label="年齢層"
             name="profile_age_range"
-            defaultValue={ageRange}
+            value={profileValues.ageRange}
+            onValueChange={(value) => setProfileValues((current) => ({ ...current, ageRange: value }))}
             options={AGE_RANGE_OPTIONS}
           />
         </ProfileSection>
@@ -116,27 +148,39 @@ export function ProfileSettingsForm({
           <ProfileSelect
             label="登山歴"
             name="mountaineering_experience"
-            defaultValue={mountaineeringExperience}
+            value={profileValues.mountaineeringExperience}
+            onValueChange={(value) =>
+              setProfileValues((current) => ({ ...current, mountaineeringExperience: value }))
+            }
             options={MOUNTAINEERING_EXPERIENCE_OPTIONS}
           />
           <ProfileMultiSelect
             label="主な登山ジャンル"
             name="mountaineering_genres"
             options={MOUNTAINEERING_GENRE_OPTIONS}
-            initialValues={mountaineeringGenres}
+            values={profileValues.mountaineeringGenres}
+            onValuesChange={(values) =>
+              setProfileValues((current) => ({ ...current, mountaineeringGenres: values }))
+            }
             max={MOUNTAINEERING_GENRE_MAX}
           />
           <ProfileMultiSelect
             label="普段よくする山行"
             name="usual_trip_styles"
             options={USUAL_TRIP_STYLE_OPTIONS}
-            initialValues={usualTripStyles}
+            values={profileValues.usualTripStyles}
+            onValuesChange={(values) =>
+              setProfileValues((current) => ({ ...current, usualTripStyles: values }))
+            }
           />
           <ProfileMultiSelect
             label="よく行くエリア"
             name="favorite_regions"
             options={FAVORITE_REGION_OPTIONS}
-            initialValues={favoriteRegions}
+            values={profileValues.favoriteRegions}
+            onValuesChange={(values) =>
+              setProfileValues((current) => ({ ...current, favoriteRegions: values }))
+            }
             max={FAVORITE_REGION_MAX}
             exclusiveValue="no_preference"
           />
@@ -265,12 +309,14 @@ function ProfileTextArea({
 function ProfileSelect({
   label,
   name,
-  defaultValue,
+  value,
+  onValueChange,
   options
 }: {
   label: string;
   name: string;
-  defaultValue: string;
+  value: string;
+  onValueChange: (value: string) => void;
   options: readonly ProfileOption[];
 }) {
   return (
@@ -278,7 +324,8 @@ function ProfileSelect({
       <span className="text-sm font-bold text-ink">{label}</span>
       <select
         name={name}
-        defaultValue={defaultValue}
+        value={value}
+        onChange={(event) => onValueChange(event.target.value)}
         className="mt-2 h-11 w-full rounded-xl border border-stone-200 bg-stone-50 px-3 text-base font-semibold text-stone-800 outline-none focus:border-[#14724e] focus:bg-white sm:mt-0 sm:text-sm"
       >
         <option value="">選択しない</option>
@@ -296,41 +343,38 @@ function ProfileMultiSelect({
   label,
   name,
   options,
-  initialValues,
+  values,
+  onValuesChange,
   max,
   exclusiveValue
 }: {
   label: string;
   name: string;
   options: readonly ProfileOption[];
-  initialValues: string[];
+  values: string[];
+  onValuesChange: (values: string[]) => void;
   max?: number;
   exclusiveValue?: string;
 }) {
-  const [values, setValues] = useState(initialValues);
   const isAtLimit = max !== undefined && values.length >= max;
   const hasExclusiveValue = exclusiveValue ? values.includes(exclusiveValue) : false;
 
   function toggle(value: string) {
-    setValues((current) => {
-      if (current.includes(value)) {
-        return current.filter((entry) => entry !== value);
-      }
+    if (values.includes(value)) {
+      onValuesChange(values.filter((entry) => entry !== value));
+      return;
+    }
 
-      if (exclusiveValue && value === exclusiveValue) {
-        return [value];
-      }
+    if (exclusiveValue && (value === exclusiveValue || values.includes(exclusiveValue))) {
+      onValuesChange([value]);
+      return;
+    }
 
-      if (exclusiveValue && current.includes(exclusiveValue)) {
-        return [value];
-      }
+    if (max !== undefined && values.length >= max) {
+      return;
+    }
 
-      if (max !== undefined && current.length >= max) {
-        return current;
-      }
-
-      return [...current, value];
-    });
+    onValuesChange([...values, value]);
   }
 
   return (

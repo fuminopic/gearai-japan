@@ -107,6 +107,53 @@ test("profile update validates options on the server and gives one pending-state
   assert.match(profileOptionsSource, /getProfileOptionValues/);
 });
 
+test("profile save treats the returned public.profiles row as the form's canonical state", () => {
+  assert.match(authActionsSource, /\.select\(profileDetailsSelect\)\s*\.single<ProfileDetailsRow>\(\)/);
+  assert.match(authActionsSource, /const savedProfile = profileDetailsFromRow\(savedRow\)/);
+  assert.match(authActionsSource, /profile: savedProfile/);
+
+  assert.match(profileSettingsFormSource, /const \[profileValues, setProfileValues\]/);
+  assert.match(profileSettingsFormSource, /state\.ok && state\.profile/);
+  assert.match(profileSettingsFormSource, /setProfileValues\(\{/);
+  assert.match(profileSettingsFormSource, /router\.refresh\(\)/);
+  assert.match(profileSettingsFormSource, /value=\{profileValues\.gender\}/);
+  assert.match(profileSettingsFormSource, /value=\{profileValues\.ageRange\}/);
+  assert.match(profileSettingsFormSource, /value=\{profileValues\.mountaineeringExperience\}/);
+  assert.match(profileSettingsFormSource, /values=\{profileValues\.mountaineeringGenres\}/);
+  assert.match(profileSettingsFormSource, /values=\{profileValues\.usualTripStyles\}/);
+  assert.match(profileSettingsFormSource, /values=\{profileValues\.favoriteRegions\}/);
+  assert.doesNotMatch(profileSettingsFormSource, /initialValues=/);
+});
+
+test("legacy metadata is a one-way fallback and cannot overwrite a saved canonical profile", () => {
+  assert.match(profileOptionsSource, /PROFILE_DETAILS_METADATA_VERSION = 1/);
+  assert.match(profileOptionsSource, /hasCanonicalProfileDetails\(metadata\)/);
+  assert.match(
+    profileOptionsSource,
+    /values\.length > 0 \|\| hasCanonicalProfileDetails\(metadata\)/
+  );
+  assert.match(authActionsSource, /profile_gender: null/);
+  assert.match(authActionsSource, /profile_age_range: null/);
+  assert.match(authActionsSource, /mountaineering_experience: null/);
+  assert.match(authActionsSource, /mountaineering_genres: null/);
+  assert.match(authActionsSource, /usual_trip_styles: null/);
+  assert.match(authActionsSource, /favorite_regions: null/);
+  assert.match(authActionsSource, /profile_details_version: PROFILE_DETAILS_METADATA_VERSION/);
+});
+
+test("all six canonical profile columns use the expected database mappings", () => {
+  for (const mapping of [
+    "gender: profileFields.data.gender || null",
+    "age_range: profileFields.data.ageRange || null",
+    "mountaineering_experience: profileFields.data.mountaineeringExperience || null",
+    "mountaineering_genres: profileFields.data.mountaineeringGenres",
+    "usual_trip_styles: profileFields.data.usualTripStyles",
+    "favorite_regions: profileFields.data.favoriteRegions"
+  ]) {
+    assert.match(authActionsSource, new RegExp(mapping.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+});
+
 test("avatar upload is private, compressed, replaceable, removable, and uses haptic completion feedback", () => {
   assert.match(avatarEditorSource, /image\/jpeg,image\/png,image\/webp/);
   assert.match(avatarEditorSource, /PROFILE_AVATAR_MAX_INPUT_BYTES/);

@@ -59,17 +59,25 @@ test("account deletion UI requires two confirmations and defaults final focus to
   assert.match(accountDeleteButtonSource, /bg-red-700/);
 });
 
-test("account deletion server action verifies current user and deletes storage plus auth user", () => {
+test("account deletion server action clears user storage before auth deletion cascades profile data", () => {
   assert.match(authActionsSource, /export async function deleteAccount/);
   assert.match(authActionsSource, /supabase\.auth\.getUser\(\)/);
   assert.match(authActionsSource, /if \(userError \|\| !user\)/);
   assert.match(authActionsSource, /createAdminClient\(\)/);
   assert.match(authActionsSource, /\.from\("gear-images"\)/);
-  assert.match(authActionsSource, /getProfileAvatarPath\(user\.user_metadata, user\.id\)/);
   assert.match(authActionsSource, /\.from\(PROFILE_AVATAR_BUCKET\)/);
-  assert.match(authActionsSource, /\.list\(userId/);
+  assert.match(authActionsSource, /listUserStoragePaths\(admin, "gear-images", user\.id\)/);
+  assert.match(authActionsSource, /listUserStoragePaths\(\s*admin,\s*PROFILE_AVATAR_BUCKET/);
+  assert.match(authActionsSource, /collectStoragePaths/);
   assert.match(authActionsSource, /\.remove\(storagePaths\)/);
+  assert.match(authActionsSource, /\.remove\(profileAvatarPaths\)/);
+  assert.match(authActionsSource, /public\.profiles\.id references auth\.users\(id\) with ON DELETE CASCADE/);
   assert.match(authActionsSource, /admin\.auth\.admin\.deleteUser\(user\.id\)/);
+  assert.ok(
+    authActionsSource.indexOf(".remove(profileAvatarPaths)") <
+      authActionsSource.indexOf("admin.auth.admin.deleteUser(user.id)"),
+    "avatar objects must be removed before Auth deletion cascades profile data"
+  );
   assert.match(authActionsSource, /supabase\.auth\.signOut\(\)/);
   assert.match(authActionsSource, /redirect\("\/login\?deleted=1"\)/);
 });

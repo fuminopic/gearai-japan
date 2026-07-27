@@ -7,6 +7,11 @@ import { redirect } from "next/navigation";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
+  getProfileDetails,
+  getStoredProfileAvatarPath,
+  isProfileDetailsSchemaUnavailable
+} from "@/lib/data/profile";
+import {
   AGE_RANGE_OPTIONS,
   FAVORITE_REGION_MAX,
   FAVORITE_REGION_OPTIONS,
@@ -16,7 +21,6 @@ import {
   MOUNTAINEERING_GENRE_OPTIONS,
   PROFILE_AVATAR_BUCKET,
   USUAL_TRIP_STYLE_OPTIONS,
-  getProfileAvatarPath,
   isProfileAvatarPath,
   type ProfileOption
 } from "@/lib/profile-options";
@@ -98,7 +102,7 @@ export async function deleteAccount() {
 
   const admin = createAdminClient();
 
-  const storagePaths = await listUserGearImagePaths(admin, user.id).catch((error) => {
+  const storagePaths = await listUserStoragePaths(admin, "gear-images", user.id).catch((error) => {
     const message =
       error instanceof Error ? error.message : "アップロード画像を確認できませんでした";
     redirect(`/profile?error=${encodeURIComponent(message)}`);
@@ -114,17 +118,33 @@ export async function deleteAccount() {
     }
   }
 
-  const profileAvatarPath = getProfileAvatarPath(user.user_metadata, user.id);
-  if (profileAvatarPath) {
+  const profileAvatarPaths = await listUserStoragePaths(
+    admin,
+    PROFILE_AVATAR_BUCKET,
+    user.id
+  ).catch((error) => {
+    if (isStorageBucketMissing(error)) {
+      return [];
+    }
+
+    const message =
+      error instanceof Error ? error.message : "プロフィール画像を確認できませんでした";
+    redirect(`/profile?error=${encodeURIComponent(message)}`);
+  });
+
+  if (profileAvatarPaths.length > 0) {
     const { error: avatarStorageError } = await admin.storage
       .from(PROFILE_AVATAR_BUCKET)
-      .remove([profileAvatarPath]);
+      .remove(profileAvatarPaths);
 
     if (avatarStorageError) {
       redirect(`/profile?error=${encodeURIComponent(avatarStorageError.message)}`);
     }
   }
 
+  // public.profiles.id references auth.users(id) with ON DELETE CASCADE. Keeping the
+  // database cleanup inside the final Auth deletion avoids a live user without a profile
+  // if the Auth admin API were to reject the last step.
   const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);
   if (deleteError) {
     redirect(`/profile?error=${encodeURIComponent(deleteError.message)}`);
@@ -268,6 +288,31 @@ export async function updateProfile(
     return profileFields;
   }
 
+  const {
+    data: { user },
+    error: userError
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return { ok: false, message: "ログイン状態を確認できませんでした。" };
+  }
+
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .update({
+      gender: profileFields.data.gender || null,
+      age_range: profileFields.data.ageRange || null,
+      mountaineering_experience: profileFields.data.mountaineeringExperience || null,
+      mountaineering_genres: profileFields.data.mountaineeringGenres,
+      usual_trip_styles: profileFields.data.usualTripStyles,
+      favorite_regions: profileFields.data.favoriteRegions
+    })
+    .eq("id", user.id);
+
+  if (profileError && !isProfileDetailsSchemaUnavailable(profileError)) {
+    return { ok: false, message: "プロフィールを保存できませんでした。もう一度お試しください。" };
+  }
+
   const { error } = await supabase.auth.updateUser({
     data: {
       display_name: displayName,
@@ -301,12 +346,25 @@ export async function saveProfileAvatar(path: string): Promise<ProfileActionStat
     return { ok: false, message: "プロフィール画像を確認できませんでした。" };
   }
 
-  const previousPath = getProfileAvatarPath(user.user_metadata, user.id);
+  const profile = await getProfileDetails(supabase, user.id);
+  const previousPath = getStoredProfileAvatarPath(profile, user.id, user.user_metadata);
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .update({ avatar_storage_path: path })
+    .eq("id", user.id);
+
+  if (profileError && !isProfileDetailsSchemaUnavailable(profileError)) {
+    return { ok: false, message: "プロフィール画像を保存できませんでした。" };
+  }
+
   const { error: updateError } = await supabase.auth.updateUser({
     data: { profile_avatar_path: path }
   });
 
   if (updateError) {
+    if (!profileError) {
+      await supabase.from("profiles").update({ avatar_storage_path: previousPath || null }).eq("id", user.id);
+    }
     return { ok: false, message: "プロフィール画像を保存できませんでした。" };
   }
 
@@ -316,6 +374,12 @@ export async function saveProfileAvatar(path: string): Promise<ProfileActionStat
       .remove([previousPath]);
 
     if (removeError) {
+      if (!profileError) {
+        await supabase
+          .from("profiles")
+          .update({ avatar_storage_path: previousPath })
+          .eq("id", user.id);
+      }
       await supabase.auth.updateUser({
         data: { profile_avatar_path: previousPath }
       });
@@ -343,9 +407,19 @@ export async function deleteProfileAvatar(): Promise<ProfileActionState> {
     return { ok: false, message: "ログイン状態を確認できませんでした。" };
   }
 
-  const previousPath = getProfileAvatarPath(user.user_metadata, user.id);
+  const profile = await getProfileDetails(supabase, user.id);
+  const previousPath = getStoredProfileAvatarPath(profile, user.id, user.user_metadata);
   if (!previousPath) {
     return { ok: true, message: "プロフィール画像は設定されていません。" };
+  }
+
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .update({ avatar_storage_path: null })
+    .eq("id", user.id);
+
+  if (profileError && !isProfileDetailsSchemaUnavailable(profileError)) {
+    return { ok: false, message: "プロフィール画像を削除できませんでした。" };
   }
 
   const { error: updateError } = await supabase.auth.updateUser({
@@ -353,6 +427,12 @@ export async function deleteProfileAvatar(): Promise<ProfileActionState> {
   });
 
   if (updateError) {
+    if (!profileError) {
+      await supabase
+        .from("profiles")
+        .update({ avatar_storage_path: previousPath })
+        .eq("id", user.id);
+    }
     return { ok: false, message: "プロフィール画像を削除できませんでした。" };
   }
 
@@ -361,6 +441,12 @@ export async function deleteProfileAvatar(): Promise<ProfileActionState> {
     .remove([previousPath]);
 
   if (removeError) {
+    if (!profileError) {
+      await supabase
+        .from("profiles")
+        .update({ avatar_storage_path: previousPath })
+        .eq("id", user.id);
+    }
     await supabase.auth.updateUser({
       data: { profile_avatar_path: previousPath }
     });
@@ -558,35 +644,52 @@ function getLoginErrorMessage(message: string) {
   return message;
 }
 
-async function listUserGearImagePaths(
+async function listUserStoragePaths(
   admin: ReturnType<typeof createAdminClient>,
+  bucket: string,
   userId: string
 ) {
   const paths: string[] = [];
+  await collectStoragePaths(admin, bucket, userId, paths);
+
+  return paths;
+}
+
+async function collectStoragePaths(
+  admin: ReturnType<typeof createAdminClient>,
+  bucket: string,
+  directory: string,
+  paths: string[]
+) {
   let offset = 0;
   const limit = 100;
 
   while (true) {
-    const { data, error } = await admin.storage
-      .from("gear-images")
-      .list(userId, {
-        limit,
-        offset
-      });
+    const { data, error } = await admin.storage.from(bucket).list(directory, { limit, offset });
 
     if (error) {
       throw error;
     }
 
-    const files = data ?? [];
-    paths.push(...files.filter((file) => file.id).map((file) => `${userId}/${file.name}`));
+    const entries = data ?? [];
+    for (const entry of entries) {
+      const path = `${directory}/${entry.name}`;
+      if (entry.id) {
+        paths.push(path);
+      } else {
+        await collectStoragePaths(admin, bucket, path, paths);
+      }
+    }
 
-    if (files.length < limit) {
-      break;
+    if (entries.length < limit) {
+      return;
     }
 
     offset += limit;
   }
+}
 
-  return paths;
+function isStorageBucketMissing(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+  return /bucket.*not found|not found.*bucket/i.test(message);
 }

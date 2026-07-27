@@ -10,11 +10,16 @@ const profileSettingsFormSource = readFileSync(
 );
 const avatarEditorSource = readFileSync("src/components/profile-avatar-editor.tsx", "utf8");
 const profileOptionsSource = readFileSync("src/lib/profile-options.ts", "utf8");
+const profileDataSource = readFileSync("src/lib/data/profile.ts", "utf8");
 const authActionsSource = readFileSync("src/lib/actions/auth.ts", "utf8");
 const insurancePageSource = readFileSync("app/(app)/profile/insurance/page.tsx", "utf8");
 const passwordPageSource = readFileSync("app/(app)/profile/password/page.tsx", "utf8");
 const avatarMigrationSource = readFileSync(
   "supabase/migrations/20260727083724_add_profile_avatar_storage.sql",
+  "utf8"
+);
+const profileDetailsMigrationSource = readFileSync(
+  "supabase/migrations/20260727090332_move_profile_details_to_profiles.sql",
   "utf8"
 );
 
@@ -64,8 +69,9 @@ test("profile settings include the requested optional mountaineering data with s
   assert.match(profileSettingsFormSource, /AccountDeleteButton/);
   assert.match(avatarEditorSource, /プロフィール画像/);
   assert.match(profileEditPageSource, /<ProfileSettingsForm/);
-  assert.match(profileEditPageSource, /getMetadataOptionValue/);
-  assert.match(profileEditPageSource, /getMetadataOptionValues/);
+  assert.match(profileEditPageSource, /getProfileDetails/);
+  assert.match(profileEditPageSource, /getProfileOptionValue/);
+  assert.match(profileEditPageSource, /getProfileOptionValues/);
   assert.match(profileSettingsFormSource, /MOUNTAINEERING_GENRE_MAX/);
   assert.match(profileSettingsFormSource, /FAVORITE_REGION_MAX/);
   assert.match(profileSettingsFormSource, /exclusiveValue="no_preference"/);
@@ -88,13 +94,17 @@ test("profile update validates options on the server and gives one pending-state
   assert.match(authActionsSource, /readOptionalProfileOption/);
   assert.match(authActionsSource, /readProfileOptionList/);
   assert.match(authActionsSource, /favoriteRegions\.includes\("no_preference"\)/);
-  assert.match(authActionsSource, /profile_gender/);
-  assert.match(authActionsSource, /mountaineering_genres/);
-  assert.match(authActionsSource, /usual_trip_styles/);
-  assert.match(authActionsSource, /favorite_regions/);
+  assert.match(authActionsSource, /\.from\("profiles"\)/);
+  assert.match(authActionsSource, /gender: profileFields\.data\.gender \|\| null/);
+  assert.match(authActionsSource, /mountaineering_genres: profileFields\.data\.mountaineeringGenres/);
+  assert.match(authActionsSource, /usual_trip_styles: profileFields\.data\.usualTripStyles/);
+  assert.match(authActionsSource, /favorite_regions: profileFields\.data\.favoriteRegions/);
   assert.match(authActionsSource, /supabase\.auth\.updateUser/);
   assert.match(authActionsSource, /revalidatePath\("\/profile"\)/);
-  assert.doesNotMatch(authActionsSource, /\.from\("profiles"\)/);
+  assert.match(profileDataSource, /getProfileDetails/);
+  assert.match(profileDataSource, /isProfileDetailsSchemaUnavailable/);
+  assert.match(profileOptionsSource, /getProfileOptionValue/);
+  assert.match(profileOptionsSource, /getProfileOptionValues/);
 });
 
 test("avatar upload is private, compressed, replaceable, removable, and uses haptic completion feedback", () => {
@@ -113,7 +123,43 @@ test("avatar upload is private, compressed, replaceable, removable, and uses hap
   assert.match(authActionsSource, /export async function deleteProfileAvatar/);
   assert.match(authActionsSource, /isProfileAvatarPath\(path, user\.id\)/);
   assert.match(authActionsSource, /remove\(\[previousPath\]\)/);
+  assert.match(authActionsSource, /avatar_storage_path: path/);
+  assert.match(authActionsSource, /avatar_storage_path: null/);
   assert.match(authActionsSource, /profile_avatar_path: previousPath/);
+});
+
+test("profile details have a queryable, user-owned canonical record with legacy metadata fallback", () => {
+  for (const column of [
+    "gender text",
+    "age_range text",
+    "mountaineering_experience text",
+    "mountaineering_genres text[]",
+    "usual_trip_styles text[]",
+    "favorite_regions text[]",
+    "avatar_storage_path text"
+  ]) {
+    assert.match(profileDetailsMigrationSource, new RegExp(column.replace(/[\[\]]/g, "\\$&")));
+  }
+
+  for (const constraint of [
+    "profiles_gender_allowed",
+    "profiles_age_range_allowed",
+    "profiles_mountaineering_experience_allowed",
+    "profiles_mountaineering_genres_allowed",
+    "profiles_usual_trip_styles_allowed",
+    "profiles_favorite_regions_allowed",
+    "profiles_avatar_storage_path_owned"
+  ]) {
+    assert.match(profileDetailsMigrationSource, new RegExp(constraint));
+  }
+
+  assert.match(profileDetailsMigrationSource, /profiles_select_own/);
+  assert.match(profileDetailsMigrationSource, /profiles_update_own/);
+  assert.match(profileDetailsMigrationSource, /\(select auth\.uid\(\)\) = id/);
+  assert.match(profileDetailsMigrationSource, /cardinality\(coalesce\(mountaineering_genres/);
+  assert.match(profileDetailsMigrationSource, /'no_preference' = any/);
+  assert.match(profileDataSource, /getStoredProfileAvatarPath/);
+  assert.match(profileDataSource, /getProfileAvatarPath\(metadata, userId\)/);
 });
 
 test("avatar storage migration is private, idempotent, and scoped to the current user folder", () => {

@@ -13,7 +13,7 @@ import { AccountDeleteButton } from "@/components/account-delete-button";
 import { AppMenuDrawer } from "@/components/app-menu-drawer";
 import { Notice } from "@/components/ui/notice";
 import { signOut } from "@/lib/actions/auth";
-import { getProfileAvatarSignedUrl } from "@/lib/data/profile";
+import { getProfileAvatarSignedUrl, getProfileDetails } from "@/lib/data/profile";
 import { requireUser } from "@/lib/data/gear";
 import { getMetadataString } from "@/lib/profile-options";
 
@@ -37,10 +37,11 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const insuranceProvider = getMetadataString(metadata, "mountain_insurance_provider");
   const insuranceExpiresOn = getMetadataString(metadata, "mountain_insurance_expires_on");
   const hasInsurance = insuranceStatus === "active";
-  const [{ count: gearCount }, avatarUrl] = await Promise.all([
+  const [{ count: gearCount }, profile] = await Promise.all([
     supabase.from("user_gear").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-    getProfileAvatarSignedUrl(supabase, user.id, metadata)
+    getProfileDetails(supabase, user.id)
   ]);
+  const avatarUrl = await getProfileAvatarSignedUrl(supabase, user.id, metadata, profile);
 
   // ホーム/ギアと同じ骨格。バンド safe+150 / カード -51 → カード上端 safe+99 で
   // 他タブと一致する。eyebrow と 34px の見出しは、カード内 16px の見出しに置き換え。

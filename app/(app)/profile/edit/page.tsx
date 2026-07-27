@@ -1,6 +1,6 @@
 import { ProfileSettingsForm } from "@/components/profile-settings-form";
 import { PageShell } from "@/components/ui/page-shell";
-import { getProfileAvatarSignedUrl } from "@/lib/data/profile";
+import { getProfileAvatarSignedUrl, getProfileDetails } from "@/lib/data/profile";
 import { requireUser } from "@/lib/data/gear";
 import {
   AGE_RANGE_OPTIONS,
@@ -9,18 +9,19 @@ import {
   MOUNTAINEERING_EXPERIENCE_OPTIONS,
   MOUNTAINEERING_GENRE_OPTIONS,
   USUAL_TRIP_STYLE_OPTIONS,
-  getMetadataOptionValue,
-  getMetadataOptionValues,
+  getProfileOptionValue,
+  getProfileOptionValues,
   getMetadataString
 } from "@/lib/profile-options";
 
 export default async function ProfileEditPage() {
   const { supabase, user } = await requireUser();
   const metadata = user.user_metadata;
-  const [avatarUrl, gearCountResult] = await Promise.all([
-    getProfileAvatarSignedUrl(supabase, user.id, metadata),
+  const [profile, gearCountResult] = await Promise.all([
+    getProfileDetails(supabase, user.id),
     supabase.from("user_gear").select("id", { count: "exact", head: true }).eq("user_id", user.id)
   ]);
+  const avatarUrl = await getProfileAvatarSignedUrl(supabase, user.id, metadata, profile);
   const displayName = getDisplayName(user.email, metadata);
 
   return (
@@ -36,24 +37,28 @@ export default async function ProfileEditPage() {
         displayName={displayName}
         selfIntroduction={getMetadataString(metadata, "self_introduction")}
         initialAvatarUrl={avatarUrl}
-        gender={getMetadataOptionValue(metadata, "profile_gender", GENDER_OPTIONS)}
-        ageRange={getMetadataOptionValue(metadata, "profile_age_range", AGE_RANGE_OPTIONS)}
-        mountaineeringExperience={getMetadataOptionValue(
+        gender={getProfileOptionValue(profile?.gender, metadata, "profile_gender", GENDER_OPTIONS)}
+        ageRange={getProfileOptionValue(profile?.ageRange, metadata, "profile_age_range", AGE_RANGE_OPTIONS)}
+        mountaineeringExperience={getProfileOptionValue(
+          profile?.mountaineeringExperience,
           metadata,
           "mountaineering_experience",
           MOUNTAINEERING_EXPERIENCE_OPTIONS
         )}
-        mountaineeringGenres={getMetadataOptionValues(
+        mountaineeringGenres={getProfileOptionValues(
+          profile?.mountaineeringGenres,
           metadata,
           "mountaineering_genres",
           MOUNTAINEERING_GENRE_OPTIONS
         )}
-        usualTripStyles={getMetadataOptionValues(
+        usualTripStyles={getProfileOptionValues(
+          profile?.usualTripStyles,
           metadata,
           "usual_trip_styles",
           USUAL_TRIP_STYLE_OPTIONS
         )}
-        favoriteRegions={getMetadataOptionValues(
+        favoriteRegions={getProfileOptionValues(
+          profile?.favoriteRegions,
           metadata,
           "favorite_regions",
           FAVORITE_REGION_OPTIONS

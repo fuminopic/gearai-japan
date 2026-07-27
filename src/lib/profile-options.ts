@@ -104,6 +104,43 @@ export function getMetadataOptionValues(
   );
 }
 
+export function getProfileOptionValue(
+  storedValue: unknown,
+  metadata: ProfileMetadata,
+  metadataKey: string,
+  options: readonly ProfileOption[]
+) {
+  if (typeof storedValue === "string" && options.some((option) => option.value === storedValue)) {
+    return storedValue;
+  }
+
+  return getMetadataOptionValue(metadata, metadataKey, options);
+}
+
+export function getProfileOptionValues(
+  storedValues: unknown,
+  metadata: ProfileMetadata,
+  metadataKey: string,
+  options: readonly ProfileOption[]
+) {
+  if (Array.isArray(storedValues)) {
+    const allowed = new Set(options.map((option) => option.value));
+    const values = Array.from(
+      new Set(
+        storedValues.filter(
+          (entry): entry is string => typeof entry === "string" && allowed.has(entry)
+        )
+      )
+    );
+
+    if (values.length > 0) {
+      return values;
+    }
+  }
+
+  return getMetadataOptionValues(metadata, metadataKey, options);
+}
+
 export function getProfileAvatarPath(metadata: ProfileMetadata, userId: string) {
   const path = getMetadataString(metadata, "profile_avatar_path");
   return isProfileAvatarPath(path, userId) ? path : "";

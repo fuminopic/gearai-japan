@@ -253,7 +253,9 @@ test("home hero streams the saved plan checklist gauge without blocking first pa
   assert.match(dashboardSource, /trip\.progress/);
   assert.match(dashboardSource, /trip\.mountain_name/);
   assert.match(dashboardSource, /userId=\{trip\.user_id\}/);
-  assert.match(dashboardSource, /src="\/generic-hills\.jpg"/);
+  assert.match(dashboardSource, /empty-trip-hero-design\.png/);
+  assert.match(dashboardSource, /aspect-\[319\/152\]/);
+  assert.match(dashboardSource, /aria-label="山行計画を作成"/);
   assert.doesNotMatch(dashboardSource, /getTripMountainImageUrl/);
   assert.doesNotMatch(dashboardSource, /getMountainImageUrl/);
   assert.doesNotMatch(dashboardSource, /getMountainHeroImage/);
@@ -390,7 +392,7 @@ test("home hero can display saved trip date and memo without price information",
   assert.match(dashboardPlanMetaSource, /localMeta\?\.plannedEndDate/);
   assert.match(dashboardPlanMetaSource, /formatPlanDate\(displayDate, displayEndDate, style\)/);
   assert.match(dashboardPlanMetaSource, /function PlanDatePart/);
-  assert.match(dashboardSource, /flex items-end gap-2 overflow-hidden/);
+  assert.match(dashboardSource, /flex items-center justify-between gap-2 border-b/);
   assert.match(dashboardPlanMetaSource, /text-\[18px\]/);
   assert.match(dashboardPlanMetaSource, /h-\[18px\] w-\[18px\]/);
   assert.match(dashboardPlanMetaSource, /style === "DAY_HIKE"/);
@@ -403,7 +405,8 @@ test("home typography and green palette follow the latest visual direction", () 
   assert.match(tailwindConfigSource, /700: "#14724e"/);
   assert.match(tailwindConfigSource, /fontFamily/);
   assert.match(tailwindConfigSource, /maru/);
-  assert.match(dashboardSource, /font-sans text-\[#14724e\]/);
+  assert.match(dashboardSource, /empty-trip-hero-design\.png/);
+  assert.match(dashboardSource, /aria-label="山行計画を作成"/);
   assert.match(dashboardSource, /font-din/);
   assert.match(dashboardSource, /from-\[#1F7950\] to-\[#81AB44\]/);
   assert.doesNotMatch(dashboardSource, /#3B5B44|#3A5A40/);

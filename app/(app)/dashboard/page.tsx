@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import { Backpack, ChevronRight, Mountain, Package } from "lucide-react";
+import { Backpack, ChevronRight, Package } from "lucide-react";
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -225,55 +225,22 @@ function HeroGaugeSkeleton({ mountainName }: { mountainName: string }) {
 
 function EmptyTripHero() {
   return (
-    <section className="relative h-48 w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-white to-[#EAF2ED] shadow-sm">
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/generic-hills.jpg"
-          fill
-          className="object-cover object-bottom opacity-80"
-          alt="background"
-        />
-      </div>
-      <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#E8F0E8]/40 via-white/90 to-white" />
-      <div className="relative z-20 flex flex-col justify-between p-5 h-full">
-        <div>
-          <HeroTitle />
-          <h2 className="mt-3 text-2xl font-bold leading-tight tracking-normal">
-            まだ計画はありません
-          </h2>
-          <p className="mt-2 text-xs font-medium leading-6">
-            次の登山に向けて
-            <br />
-            装備チェックを始めましょう
-          </p>
-        </div>
-
-        <Link
-          href={planRoute}
-          className="inline-flex w-[200px] items-center justify-center rounded-2xl bg-[#14724e] py-3 text-xs font-bold text-white shadow-sm transition active:scale-95"
-        >
-          山行計画を作成
-        </Link>
-      </div>
+    <section className="relative aspect-[319/152] w-full overflow-hidden rounded-[20px] bg-white shadow-sm">
+      <Image
+        src="/empty-trip-hero-design.png"
+        alt=""
+        fill
+        priority
+        className="pointer-events-none object-cover"
+      />
+      <h2 className="sr-only">まだ計画はありません</h2>
+      <p className="sr-only">行きたい山は決まっていますか？ 計画を作成して、準備を進めましょう。</p>
+      <Link
+        href={planRoute}
+        aria-label="山行計画を作成"
+        className="absolute left-[4.1%] top-[73%] h-[17.5%] w-[37%] rounded-[14px] outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-black"
+      />
     </section>
-  );
-}
-
-function HeroTitle({ trip }: { trip?: SavedTripPlan }) {
-  return (
-    <div className="flex items-end gap-2 overflow-hidden font-sans text-[#14724e]">
-      <Mountain className="mb-0.5 h-5 w-5 fill-[#14724e] text-[#14724e]" />
-      <span className="shrink-0 pb-[3px] text-sm font-bold leading-none">次回の山行</span>
-      {trip ? (
-        <DashboardPlanMeta
-          planId={trip.id}
-          plannedDate={trip.planned_date}
-          plannedEndDate={trip.planned_end_date}
-          tripMemo={trip.trip_memo}
-          style={trip.style}
-        />
-      ) : null}
-    </div>
   );
 }
 

@@ -805,12 +805,42 @@ test("mountain picker starts from Japan Hyakumeizan and avoids a nested scroll t
   assert.match(tripPlanningFormSource, /text-\[18px\]/);
   assert.match(tripPlanningFormSource, /<Check className=/);
   assert.doesNotMatch(tripPlanningFormSource, /ChevronRight/);
-  // 既定の高尾山は既定の絞り込み(百名山)に入らず、リスト内のチェック丸が
-  // どこにも出なかった。検索窓の上に「選択中」を常駐させて可視化する。
+  // 選択済みの山は検索窓の上に常駐させて可視化する。
   assert.match(tripPlanningFormSource, /選択中/);
   assert.doesNotMatch(tripPlanningUiSource, /山行計画/);
   assert.doesNotMatch(tripPlanningUiSource, /パック計画/);
   assert.doesNotMatch(tripPlanningFormSource, /max-h-72/);
+});
+
+test("new trip planning starts without a mountain while saved plans keep their mountain", () => {
+  assert.match(
+    planPageContentSource,
+    /const hydratedMountainParam = params\.mountain \?\? selectedSavedPlan\?\.mountain_slug \?\? undefined/
+  );
+  assert.match(
+    planPageContentSource,
+    /function getSelectedMountainSlug\([\s\S]*?\) \{[\s\S]*?return "";[\s\S]*?\}/
+  );
+  assert.match(
+    planPageContentSource,
+    /function getSelectedMountain\([\s\S]*?\) \{[\s\S]*?\) \?\? null[\s\S]*?\}/
+  );
+  assert.doesNotMatch(
+    planPageContentSource.slice(
+      planPageContentSource.indexOf("function getSelectedMountainSlug"),
+      planPageContentSource.indexOf("function MountainCurrentPlanStatusNotice")
+    ),
+    /takao-san|mountains\.find\(\(mountain\) => !isPlanningBlockedMountain/
+  );
+  assert.match(
+    tripPlanningFormSource,
+    /function getAvailableMountainSlug\([\s\S]*?\) \{[\s\S]*?return "";[\s\S]*?\}/
+  );
+  assert.match(tripPlanningFormSource, /\?\? null;/);
+  assert.match(tripPlanningFormSource, /山を選ぶ/);
+  assert.doesNotMatch(tripPlanningFormSource, /前回/);
+  assert.doesNotMatch(tripPlanLocalMetaSource, /mountain/i);
+  assert.doesNotMatch(tripPlanStorageSource, /mountain/i);
 });
 
 test("plan id hydration links home and history to the exact saved plan", () => {

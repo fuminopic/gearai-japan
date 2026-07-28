@@ -243,19 +243,7 @@ function getSelectedMountainSlug(
     return slug;
   }
 
-  if (
-    mountains.some(
-      (mountain) =>
-        mountain.slug === "takao-san" && !isPlanningBlockedMountain(mountain, currentPlanStatuses)
-    )
-  ) {
-    return "takao-san";
-  }
-
-  return (
-    mountains.find((mountain) => !isPlanningBlockedMountain(mountain, currentPlanStatuses))?.slug ??
-    ""
-  );
+  return "";
 }
 
 function getSelectedMountain(
@@ -267,9 +255,7 @@ function getSelectedMountain(
     mountains.find(
       (mountain) =>
         mountain.slug === slug && !isPlanningBlockedMountain(mountain, currentPlanStatuses)
-    ) ??
-    mountains.find((mountain) => !isPlanningBlockedMountain(mountain, currentPlanStatuses)) ??
-    null
+    ) ?? null
   );
 }
 

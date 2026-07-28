@@ -148,13 +148,8 @@ export function TripPlanningForm({
   const [selectedArea, setSelectedArea] = useState<MountainAreaFilter>("ALL");
   const [visibleMountainCount, setVisibleMountainCount] = useState(3);
   const selectedMountain = useMemo(() => {
-    return (
-      selectableMountains.find((mountain) => mountain.slug === mountainSlug) ??
-      selectableMountains.find(
-        (mountain) => !isPlanningBlockedMountain(mountain, blockedMountainSlugSet)
-      )
-    );
-  }, [blockedMountainSlugSet, mountainSlug, selectableMountains]);
+    return selectableMountains.find((mountain) => mountain.slug === mountainSlug) ?? null;
+  }, [mountainSlug, selectableMountains]);
   const filteredMountains = useMemo(() => {
     return getFilteredMountains(
       selectableMountains,
@@ -319,7 +314,14 @@ export function TripPlanningForm({
                   変更
                 </button>
               </div>
-            ) : null}
+            ) : (
+              <div className="mt-2 flex items-center gap-3 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-bold text-stone-600">
+                <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-400">
+                  <Mountain className="h-3.5 w-3.5" aria-hidden="true" />
+                </span>
+                山を選ぶ
+              </div>
+            )}
 
             <div className="relative mt-2">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
@@ -620,10 +622,7 @@ function getAvailableMountainSlug(
     return slug;
   }
 
-  return (
-    mountains.find((mountain) => !isPlanningBlockedMountain(mountain, blockedMountainSlugs))
-      ?.slug ?? ""
-  );
+  return "";
 }
 
 function isPlanningBlockedMountain(

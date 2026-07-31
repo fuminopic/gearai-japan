@@ -13,6 +13,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             if let bridgeViewController = self?.window?.rootViewController as? CAPBridgeViewController {
                 bridgeViewController.webView?.allowsBackForwardNavigationGestures = true
             }
+
+            #if DEBUG
+            self?.loadNotificationPoCWhenRequested()
+            #endif
         }
 
         return true
@@ -100,5 +104,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             rootViewController.dismiss(animated: true)
         }
     }
+
+    #if DEBUG
+    /// Debug-only Local Notifications proof-of-connection entry point.
+    ///
+    /// Pass `-YamajitakuNotificationPoC` from the Xcode Run scheme. This loads
+    /// a bundled `capacitor://localhost` page and therefore never exposes a
+    /// Capacitor plugin to the remote www.yamajitaku.com application.
+    private func loadNotificationPoCWhenRequested() {
+        guard ProcessInfo.processInfo.arguments.contains("-YamajitakuNotificationPoC") else {
+            return
+        }
+
+        guard
+            let bridgeViewController = window?.rootViewController as? CAPBridgeViewController,
+            let pocUrl = URL(string: "capacitor://localhost/notification-poc.html")
+        else {
+            NSLog("[NotificationPoC] launch failed: CAPBridgeViewController or bundled page unavailable")
+            return
+        }
+
+        let isRegistered = bridgeViewController.bridge?.plugin(withName: "LocalNotifications") != nil
+        NSLog("[NotificationPoC] launch requested; LocalNotifications registered=%@", isRegistered ? "true" : "false")
+        bridgeViewController.webView?.load(URLRequest(url: pocUrl))
+    }
+    #endif
 
 }

@@ -33,6 +33,12 @@ const config: CapacitorConfig = {
       launchAutoHide: true,
       backgroundColor: "#FAFAF8",
       showSpinner: false
+    },
+    // The debug-only local Notification PoC needs a visible foreground result.
+    // This is also the intended iOS presentation policy for a future reminder;
+    // it does not enable or request notification permission by itself.
+    LocalNotifications: {
+      presentationOptions: ["badge", "sound", "banner", "list"]
     }
   }
 };

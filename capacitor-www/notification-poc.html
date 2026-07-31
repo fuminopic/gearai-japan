@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0d1512" />
+    <title>通知テスト</title>
+    <style>
+      :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+      body { margin: 0; min-height: 100vh; background: #0d1512; color: #fff; }
+      main { max-width: 480px; margin: 0 auto; padding: calc(env(safe-area-inset-top) + 32px) 24px calc(env(safe-area-inset-bottom) + 32px); }
+      h1 { font-size: 25px; margin: 0 0 10px; }
+      p { color: #c6d1cb; line-height: 1.55; }
+      .notice { border: 1px solid #2c5d49; background: #123427; border-radius: 14px; padding: 14px; font-size: 14px; }
+      .actions { display: grid; gap: 12px; margin: 24px 0; }
+      button { min-height: 48px; border: 0; border-radius: 12px; padding: 10px 14px; background: #1b824f; color: #fff; font: inherit; font-weight: 650; }
+      button.secondary { background: #23352c; }
+      button.danger { background: #6a3333; }
+      pre { min-height: 190px; max-height: 360px; overflow: auto; margin: 0; border-radius: 12px; padding: 14px; background: #07100c; color: #d3e7dc; font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; word-break: break-word; }
+      .muted { font-size: 13px; color: #9db0a5; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>ローカル通知 PoC</h1>
+      <p>Debug ビルド専用のローカル画面です。計画・ログイン・リモート Web には接続しません。</p>
+      <div class="notice">権限リクエストは「通知を許可する」をタップした場合にのみ実行します。</div>
+      <div class="actions">
+        <button id="check" type="button">権限状態を確認</button>
+        <button id="request" type="button">通知を許可する</button>
+        <button id="schedule" type="button">2分後のテスト通知を予約</button>
+        <button id="pending" class="secondary" type="button">保留中の通知を確認</button>
+        <button id="cancel" class="danger" type="button">テスト通知を取り消す</button>
+      </div>
+      <p class="muted">テスト通知 ID: <span id="notification-id"></span></p>
+      <pre id="log" aria-live="polite"></pre>
+    </main>
+    <script>
+      (function () {
+        var TEST_NOTIFICATION_ID = 902026073;
+        var TEST_DELAY_MS = 2 * 60 * 1000;
+        var $ = function (id) { return document.getElementById(id); };
+        $("notification-id").textContent = String(TEST_NOTIFICATION_ID);
+
+        function safeValue(value) {
+          try { return JSON.stringify(value); } catch (_) { return String(value); }
+        }
+
+        function log(event, value) {
+          var line = new Date().toISOString() + " [NotificationPoC] " + event + (value === undefined ? "" : " " + safeValue(value));
+          $("log").textContent += line + "\n";
+          $("log").scrollTop = $("log").scrollHeight;
+          console.log("[NotificationPoC]", event, value === undefined ? "" : value);
+        }
+
+        function logError(event, error) {
+          var message = error && error.message ? error.message : String(error);
+          log(event, { error: message });
+          console.error("[NotificationPoC]", event, error);
+        }
+
+        function getNotifications() {
+          var capacitor = window.Capacitor;
+          var plugin = capacitor && capacitor.Plugins && capacitor.Plugins.LocalNotifications;
+          if (!plugin) {
+            log("plugin unavailable", {
+              platform: capacitor && capacitor.getPlatform ? capacitor.getPlatform() : "unknown",
+              hasCapacitor: Boolean(capacitor)
+            });
+            return null;
+          }
+          return plugin;
+        }
+
+        async function checkPermissions() {
+          var notifications = getNotifications();
+          if (!notifications) return null;
+          try {
+            var result = await notifications.checkPermissions();
+            log("checkPermissions result", result);
+            return result;
+          } catch (error) {
+            logError("checkPermissions failed", error);
+            return null;
+          }
+        }
+
+        async function requestPermissions() {
+          var notifications = getNotifications();
+          if (!notifications) return;
+          log("requestPermissions user action");
+          try {
+            var result = await notifications.requestPermissions();
+            log("requestPermissions result", result);
+            await checkPermissions();
+          } catch (error) {
+            logError("requestPermissions failed", error);
+          }
+        }
+
+        async function scheduleTestNotification() {
+          var notifications = getNotifications();
+          if (!notifications) return;
+          var permission = await checkPermissions();
+          if (!permission || permission.display !== "granted") {
+            log("schedule skipped", { reason: "permission is not granted", display: permission && permission.display });
+            return;
+          }
+
+          var scheduledAt = new Date(Date.now() + TEST_DELAY_MS);
+          try {
+            await notifications.cancel({ notifications: [{ id: TEST_NOTIFICATION_ID }] });
+            var result = await notifications.schedule({
+              notifications: [{
+                id: TEST_NOTIFICATION_ID,
+                title: "山支度 通知テスト",
+                body: "ローカル通知の PoC が正常に届きました。",
+                schedule: { at: scheduledAt },
+                extra: { kind: "yamajitaku-local-notification-poc" }
+              }]
+            });
+            log("schedule result", { notificationId: TEST_NOTIFICATION_ID, scheduledAt: scheduledAt.toISOString(), result: result });
+            await getPendingNotifications();
+          } catch (error) {
+            logError("schedule failed", error);
+          }
+        }
+
+        async function getPendingNotifications() {
+          var notifications = getNotifications();
+          if (!notifications) return;
+          try {
+            var result = await notifications.getPending();
+            var testNotifications = (result.notifications || []).filter(function (notification) {
+              return notification.id === TEST_NOTIFICATION_ID;
+            });
+            log("getPending result", { count: (result.notifications || []).length, testNotifications: testNotifications });
+          } catch (error) {
+            logError("getPending failed", error);
+          }
+        }
+
+        async function cancelTestNotification() {
+          var notifications = getNotifications();
+          if (!notifications) return;
+          try {
+            await notifications.cancel({ notifications: [{ id: TEST_NOTIFICATION_ID }] });
+            log("cancel result", { notificationId: TEST_NOTIFICATION_ID });
+            await getPendingNotifications();
+          } catch (error) {
+            logError("cancel failed", error);
+          }
+        }
+
+        $("check").addEventListener("click", checkPermissions);
+        $("request").addEventListener("click", requestPermissions);
+        $("schedule").addEventListener("click", scheduleTestNotification);
+        $("pending").addEventListener("click", getPendingNotifications);
+        $("cancel").addEventListener("click", cancelTestNotification);
+
+        var capacitor = window.Capacitor;
+        log("PoC page loaded", {
+          platform: capacitor && capacitor.getPlatform ? capacitor.getPlatform() : "unknown",
+          isNative: Boolean(capacitor && capacitor.isNativePlatform && capacitor.isNativePlatform()),
+          pluginRegistered: Boolean(getNotifications())
+        });
+        void checkPermissions();
+      })();
+    </script>
+  </body>
+</html>

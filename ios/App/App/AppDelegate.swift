@@ -170,6 +170,14 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
     private static let deferredKey = "yamajitaku.notifications.promptDeferred"
     private static let nextIdentifierKey = "yamajitaku.notifications.nextIdentifier"
 
+    #if DEBUG
+    private static let fastReminderArgument = "-YamajitakuFastTripReminder"
+    private static let fastReminderDelay: TimeInterval? =
+        ProcessInfo.processInfo.arguments.contains(fastReminderArgument) ? 120 : nil
+    #else
+    private static let fastReminderDelay: TimeInterval? = nil
+    #endif
+
     private weak var bridge: CAPBridgeProtocol?
     private weak var webView: WKWebView?
     private var pendingRoute: String?
@@ -271,7 +279,14 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
 
     private func reconcile(reminders: [Reminder], scope: String, pendingById: [Int: [String: Any]], completion: @escaping ([String: Any]) -> Void) {
         let now = Date()
-        let desired = reminders.filter { reminder in
+        let isFastReminderMode = Self.fastReminderDelay != nil
+        let effectiveReminders = reminders.map { reminder in
+            guard let delay = Self.fastReminderDelay else { return reminder }
+            return reminder.replacingOneOffSchedule(
+                at: debugScheduleDate(for: reminder, scope: scope, now: now, delay: delay)
+            )
+        }
+        let desired = effectiveReminders.filter { reminder in
             if reminder.isPast(now) {
                 NSLog("[NativeNotifications] skipped past reminder")
                 return false
@@ -303,13 +318,54 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
             if existingFingerprint != reminder.fingerprint { schedules.append(reminder) }
         }
 
+        let immediate = isFastReminderMode
+            ? []
+            : reminders.compactMap { reminder in
+                reminder.isPast(now) ? reminder.immediate?.payload : nil
+            }
+
         cancel(Array(cancellationIds)) { [weak self] in
             guard let self else { return }
-            self.schedule(schedules, scope: scope) { scheduled in
-                NSLog("[NativeNotifications] reconcile complete scheduled=%d cancelled=%d", scheduled, cancellationIds.count)
-                completion(["scheduled": scheduled, "cancelled": cancellationIds.count, "skippedPast": reminders.count - desired.count])
+            self.invokePlugin("checkPermissions", options: [:]) { permission in
+                let isGranted = permission["display"] as? String == "granted"
+                let complete: (Int) -> Void = { scheduled in
+                    NSLog("[NativeNotifications] reconcile complete scheduled=%d cancelled=%d immediate=%d fastMode=%@", scheduled, cancellationIds.count, immediate.count, isFastReminderMode ? "true" : "false")
+                    completion([
+                        "scheduled": scheduled,
+                        "cancelled": cancellationIds.count,
+                        "skippedPast": reminders.count - desired.count,
+                        "immediate": immediate,
+                        "fastMode": isFastReminderMode
+                    ])
+                }
+
+                guard isGranted else {
+                    NSLog("[NativeNotifications] reconcile scheduling skipped: permission=%@", permission["display"] as? String ?? "unknown")
+                    complete(0)
+                    return
+                }
+
+                self.schedule(schedules, scope: scope, completion: complete)
             }
         }
+    }
+
+    private func debugScheduleDate(for reminder: Reminder, scope: String, now: Date, delay: TimeInterval) -> Date {
+        let defaults = UserDefaults.standard
+        let sourceKey = "yamajitaku.notifications.fast-source.\(scope).\(reminder.key)"
+        let dateKey = "yamajitaku.notifications.fast-at.\(scope).\(reminder.key)"
+        let sourceFingerprint = reminder.fingerprint
+        let existingDate = Date(timeIntervalSince1970: defaults.double(forKey: dateKey))
+
+        if defaults.string(forKey: sourceKey) == sourceFingerprint, existingDate > now {
+            return existingDate
+        }
+
+        let date = now.addingTimeInterval(delay)
+        defaults.set(sourceFingerprint, forKey: sourceKey)
+        defaults.set(date.timeIntervalSince1970, forKey: dateKey)
+        NSLog("[NativeNotifications] DEBUG fast reminder key=%@ at=%@", reminder.key, ISO8601DateFormatter().string(from: date))
+        return date
     }
 
     private func schedule(_ reminders: [Reminder], scope: String, completion: @escaping (Int) -> Void) {
@@ -463,10 +519,20 @@ private struct Reminder {
     let body: String
     let route: String
     let schedule: Schedule
+    let immediate: ImmediateChecklistReminder?
 
     enum Schedule {
         case once(Date)
         case weekly(weekday: Int, hour: Int, minute: Int)
+    }
+
+    private init(key: String, title: String, body: String, route: String, schedule: Schedule, immediate: ImmediateChecklistReminder?) {
+        self.key = key
+        self.title = title
+        self.body = body
+        self.route = route
+        self.schedule = schedule
+        self.immediate = immediate
     }
 
     init?(_ payload: [String: Any]) {
@@ -479,6 +545,7 @@ private struct Reminder {
               schedulePayload["timeZone"] as? String == "Asia/Tokyo",
               let kind = schedulePayload["kind"] as? String else { return nil }
         self.key = key; self.title = title; self.body = body; self.route = route
+        immediate = (payload["immediate"] as? [String: Any]).flatMap(ImmediateChecklistReminder.init)
         if kind == "once", let at = schedulePayload["at"] as? String, let date = ISO8601DateFormatter().date(from: at) {
             schedule = .once(date)
         } else if kind == "weekly", let weekday = schedulePayload["weekday"] as? Int, let hour = schedulePayload["hour"] as? Int, let minute = schedulePayload["minute"] as? Int, (1...7).contains(weekday), (0...23).contains(hour), (0...59).contains(minute) {
@@ -491,6 +558,10 @@ private struct Reminder {
         case .once(let date): return ["at": date, "repeats": false]
         case .weekly(let weekday, let hour, let minute): return ["on": ["weekday": weekday, "hour": hour, "minute": minute], "repeats": true]
         }
+    }
+
+    func replacingOneOffSchedule(at date: Date) -> Reminder {
+        Reminder(key: key, title: title, body: body, route: route, schedule: .once(date), immediate: immediate)
     }
 
     func isPast(_ now: Date) -> Bool {
@@ -513,6 +584,28 @@ private struct Reminder {
         }
         let input = "\(key)|\(title)|\(body)|\(route)|\(representation)"
         return SHA256.hash(data: Data(input.utf8)).map { String(format: "%02x", $0) }.joined()
+    }
+}
+
+private struct ImmediateChecklistReminder {
+    let title: String
+    let body: String
+    let route: String
+
+    init?(_ payload: [String: Any]) {
+        guard let title = payload["title"] as? String, !title.isEmpty, title.count <= 120,
+              let body = payload["body"] as? String, !body.isEmpty, body.count <= 240,
+              let route = payload["route"] as? String,
+              NativeNotificationsBridge.isValidRoute(route, key: NativeNotificationsBridge.planId(from: route)) else {
+            return nil
+        }
+        self.title = title
+        self.body = body
+        self.route = route
+    }
+
+    var payload: [String: Any] {
+        ["title": title, "body": body, "route": route]
     }
 }
 

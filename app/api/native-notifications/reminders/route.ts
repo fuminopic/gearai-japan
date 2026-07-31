@@ -14,7 +14,9 @@ export async function GET() {
   return NextResponse.json(
     {
       scope: user.id,
-      reminders: plans.map(buildTripPlanReminder).filter((value) => value !== null)
+      reminders: plans
+        .map((plan) => buildTripPlanReminder(plan))
+        .filter((value) => value !== null)
     },
     { headers: { "Cache-Control": "private, no-store" } }
   );

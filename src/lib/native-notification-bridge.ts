@@ -6,6 +6,20 @@ type NativeBridge = {
   invoke: (command: string, payload?: unknown) => Promise<unknown>;
 };
 
+export type NativeImmediateChecklistReminder = {
+  title: string;
+  body: string;
+  route: string;
+};
+
+export type NativeReminderSyncResult = {
+  scheduled: number;
+  cancelled: number;
+  skippedPast: number;
+  fastMode: boolean;
+  immediate: NativeImmediateChecklistReminder[];
+};
+
 declare global {
   interface Window {
     YamajitakuNativeNotifications?: NativeBridge;
@@ -77,10 +91,39 @@ export async function reconcileNativeTripReminders() {
     throw new Error("通知用の山行計画の形式が不正です。");
   }
 
-  return nativeBridge.invoke("reconcile", {
+  const result = await nativeBridge.invoke("reconcile", {
     scope: payload.scope,
     reminders: payload.reminders as NativeReminderConfig[]
   });
+
+  return asNativeReminderSyncResult(result);
+}
+
+function asNativeReminderSyncResult(value: unknown): NativeReminderSyncResult | null {
+  if (!value || typeof value !== "object") return null;
+  const result = value as Partial<NativeReminderSyncResult>;
+  const immediate = Array.isArray(result.immediate)
+    ? result.immediate.filter(isNativeImmediateChecklistReminder)
+    : [];
+
+  return {
+    scheduled: typeof result.scheduled === "number" ? result.scheduled : 0,
+    cancelled: typeof result.cancelled === "number" ? result.cancelled : 0,
+    skippedPast: typeof result.skippedPast === "number" ? result.skippedPast : 0,
+    fastMode: result.fastMode === true,
+    immediate
+  };
+}
+
+function isNativeImmediateChecklistReminder(value: unknown): value is NativeImmediateChecklistReminder {
+  if (!value || typeof value !== "object") return false;
+  const reminder = value as Partial<NativeImmediateChecklistReminder>;
+  return (
+    typeof reminder.title === "string" &&
+    typeof reminder.body === "string" &&
+    typeof reminder.route === "string" &&
+    /^\/plan\?id=[0-9a-f-]{36}&focus=checklist$/i.test(reminder.route)
+  );
 }
 
 export function notifyTripPlanReminderSync(kind: "created" | "updated" | "deleted") {

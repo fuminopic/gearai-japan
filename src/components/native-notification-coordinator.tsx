@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import type { Route } from "next";
 import { useCallback, useEffect, useState } from "react";
 
 import { ConfirmDialog, confirmButtonClassName } from "@/components/ui/confirm-dialog";
@@ -7,6 +9,7 @@ import {
   getNativeNotificationPermission,
   getNativeNotificationPromptDeferred,
   hasNativeNotificationBridge,
+  type NativeImmediateChecklistReminder,
   openNativeNotificationSettings,
   reconcileNativeTripReminders,
   requestNativeNotificationPermission,
@@ -20,14 +23,17 @@ const permissionDescription =
   "山行日の前日に、装備チェックのリマインダーをお送りします。";
 
 export function NativeNotificationCoordinator() {
+  const router = useRouter();
   const [dialog, setDialog] = useState<DialogKind>(null);
   const [isPending, setIsPending] = useState(false);
+  const [immediateReminder, setImmediateReminder] =
+    useState<NativeImmediateChecklistReminder | null>(null);
 
-  const reconcileIfGranted = useCallback(async () => {
+  const reconcileReminders = useCallback(async () => {
     const permission = await getNativeNotificationPermission();
-    if (permission === "granted") {
-      await reconcileNativeTripReminders();
-    }
+    const syncResult = await reconcileNativeTripReminders();
+    const nextImmediate = syncResult?.immediate[0] ?? null;
+    if (nextImmediate) setImmediateReminder(nextImmediate);
     return permission;
   }, []);
 
@@ -36,7 +42,7 @@ export function NativeNotificationCoordinator() {
 
     void (async () => {
       try {
-        const permission = await reconcileIfGranted();
+        const permission = await reconcileReminders();
         if (permission !== "prompt") return;
         if (!(await getNativeNotificationPromptDeferred())) {
           setDialog("permission");
@@ -50,7 +56,7 @@ export function NativeNotificationCoordinator() {
       const kind = (event as CustomEvent<{ kind?: string }>).detail?.kind;
       void (async () => {
         try {
-          const permission = await reconcileIfGranted();
+          const permission = await reconcileReminders();
           if (permission === "prompt" && kind === "created") setDialog("permission");
           if (permission === "denied" && kind === "created") setDialog("settings");
         } catch (error) {
@@ -60,7 +66,7 @@ export function NativeNotificationCoordinator() {
     };
     const onVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        void reconcileIfGranted().catch((error) =>
+        void reconcileReminders().catch((error) =>
           console.info("[NativeNotifications] foreground sync unavailable", error)
         );
       }
@@ -72,14 +78,14 @@ export function NativeNotificationCoordinator() {
       window.removeEventListener("yamajitaku:trip-plan-reminder-sync", onReminderSync);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [reconcileIfGranted]);
+  }, [reconcileReminders]);
 
   async function requestPermission() {
     setIsPending(true);
     try {
       await setNativeNotificationPromptDeferred(false);
       const permission = await requestNativeNotificationPermission();
-      if (permission === "granted") await reconcileNativeTripReminders();
+      if (permission === "granted") await reconcileReminders();
       setDialog(null);
     } catch (error) {
       console.info("[NativeNotifications] permission request failed", error);
@@ -98,10 +104,17 @@ export function NativeNotificationCoordinator() {
     }
   }
 
+  function openImmediateChecklist() {
+    if (!immediateReminder) return;
+    const route = immediateReminder.route;
+    setImmediateReminder(null);
+    router.push(route as Route);
+  }
+
   return (
     <>
       <ConfirmDialog
-        open={dialog === "permission"}
+        open={dialog === "permission" && immediateReminder === null}
         title={permissionTitle}
         description={permissionDescription}
         cancelLabel="あとで"
@@ -112,7 +125,7 @@ export function NativeNotificationCoordinator() {
         </button>
       </ConfirmDialog>
       <ConfirmDialog
-        open={dialog === "settings"}
+        open={dialog === "settings" && immediateReminder === null}
         title="通知がオフになっています"
         description="山行前日のリマインダーを受け取るには、設定で通知をオンにしてください。"
         cancelLabel="今はしない"
@@ -120,6 +133,17 @@ export function NativeNotificationCoordinator() {
       >
         <button type="button" onClick={() => void openNativeNotificationSettings()} className={confirmButtonClassName.replace("bg-red-600", "bg-[#14724e]")}>
           設定を開く
+        </button>
+      </ConfirmDialog>
+      <ConfirmDialog
+        open={immediateReminder !== null}
+        title={immediateReminder?.title ?? ""}
+        description={immediateReminder?.body}
+        cancelLabel="あとで"
+        onCancel={() => setImmediateReminder(null)}
+      >
+        <button type="button" onClick={openImmediateChecklist} className={confirmButtonClassName.replace("bg-red-600", "bg-[#14724e]")}>
+          チェックリストを確認
         </button>
       </ConfirmDialog>
     </>

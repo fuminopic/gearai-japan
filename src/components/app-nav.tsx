@@ -6,6 +6,7 @@ import { AppBottomNav } from "@/components/app-bottom-nav";
 import { HideOnBrandShell } from "@/components/app-chrome";
 import { AppLogo } from "@/components/app-logo";
 import { AppMenuDrawer } from "@/components/app-menu-drawer";
+import { NativeNotificationCoordinator } from "@/components/native-notification-coordinator";
 import { AppRoutePrefetcher } from "@/components/app-route-prefetcher";
 import { NavigationFeedback } from "@/components/navigation-feedback";
 import { PlanAwareGearLink } from "@/components/plan-aware-gear-link";
@@ -26,6 +27,7 @@ export function AppNav() {
     <>
       <NavigationFeedback />
       <AppRoutePrefetcher />
+      <NativeNotificationCoordinator />
 
       {/* ホーム/マイギアは自前の緑バンドを持つので、この白ヘッダーは出さない。
           遷移中も含めて確実に隠すため、CSS ではなくパス名で判定する。 */}

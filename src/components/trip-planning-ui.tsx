@@ -69,6 +69,7 @@ import {
   requirementSlotLabels
 } from "@/lib/i18n/labels";
 import { hapticError, hapticLight, hapticSelection, hapticSuccess } from "@/lib/haptics";
+import { notifyTripPlanReminderSync } from "@/lib/native-notification-bridge";
 import { mountainCurrentPlanStatusStaleMessage } from "@/lib/mountain-current-plan-status";
 import {
   getPlanFoodWater,
@@ -583,6 +584,7 @@ export function TripPlanningUI({
         );
         setDateSaveState("success");
         hapticSuccess();
+        notifyTripPlanReminderSync("updated");
         // updateTripPlan は /plan を再検証する。表示中の日付は draft に反映済み
         // なので、ここで追加の RSC refresh は不要。
       } catch (saveError) {
@@ -1087,6 +1089,7 @@ function SavePlanButton({
         }
 
         hapticSuccess();
+        notifyTripPlanReminderSync(planId ? "updated" : "created");
         router.push("/dashboard");
       } catch (saveError) {
         hapticError();
@@ -1166,7 +1169,12 @@ export function PlanHistorySection({
       <div className="flex items-center justify-between gap-3 border-b border-[#EEEDE6] pb-3">
         <h2 className="text-base font-bold text-ink">計画履歴</h2>
         {plans.length > 0 ? (
-          <form action={clearTripPlans}>
+          <form
+            action={async () => {
+              await clearTripPlans();
+              notifyTripPlanReminderSync("deleted");
+            }}
+          >
             <ConfirmSubmitButton
               title="保存済みプランをすべて削除しますか？"
               description="削除すると元に戻せません。"
@@ -1199,7 +1207,12 @@ export function PlanHistorySection({
                     {formatSavedPlanMeta(record)}
                   </p>
                 </Link>
-                <form action={deleteTripPlan}>
+                <form
+                  action={async (formData) => {
+                    await deleteTripPlan(formData);
+                    notifyTripPlanReminderSync("deleted");
+                  }}
+                >
                   <input type="hidden" name="id" value={record.id} />
                   <ConfirmSubmitButton
                     title="この計画を削除しますか？"

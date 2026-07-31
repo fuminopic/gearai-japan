@@ -693,8 +693,9 @@ test("plan history supports Supabase-backed delete and clear all actions", () =>
   assert.match(tripPlanningUiSource, /title="保存済みプランをすべて削除しますか？"/);
   assert.doesNotMatch(tripPlanningUiSource, /Delete/);
   assert.doesNotMatch(tripPlanningUiSource, /一键删除/);
-  assert.match(tripPlanningUiSource, /action=\{deleteTripPlan\}/);
-  assert.match(tripPlanningUiSource, /action=\{clearTripPlans\}/);
+  assert.match(tripPlanningUiSource, /await deleteTripPlan\(formData\)/);
+  assert.match(tripPlanningUiSource, /await clearTripPlans\(\)/);
+  assert.match(tripPlanningUiSource, /notifyTripPlanReminderSync\("deleted"\)/);
   assert.match(planActionsSource, /from\("trip_plans"\)/);
   assert.match(planActionsSource, /\.delete\(\)/);
   assert.match(planActionsSource, /revalidatePath\("\/plan"\)/);

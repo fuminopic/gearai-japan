@@ -11,15 +11,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     private var nativeNotificationsBridge: NativeNotificationsBridge?
     private var nativeNotificationDelegate: NativeNotificationDelegate?
+    private var pendingNotificationRoute: String?
+
+    func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        configureNativeNotificationDelegate()
+        return true
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Install the delegate before the remote page is available. iOS can
-        // deliver a local-notification tap while a terminated app is launching.
-        let notificationDelegate = NativeNotificationDelegate(
-            onOpen: { [weak self] route in self?.nativeNotificationsBridge?.openNotificationRoute(route) }
-        )
-        UNUserNotificationCenter.current().delegate = notificationDelegate
-        nativeNotificationDelegate = notificationDelegate
+        configureNativeNotificationDelegate()
 
         DispatchQueue.main.async { [weak self] in
             if let bridgeViewController = self?.window?.rootViewController as? CAPBridgeViewController {
@@ -35,6 +35,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
+    /// iOS can deliver a notification response during a cold launch. Register
+    /// before launch finishes, rather than waiting for Capacitor or the remote
+    /// page to become available.
+    private func configureNativeNotificationDelegate() {
+        if nativeNotificationDelegate == nil {
+            nativeNotificationDelegate = NativeNotificationDelegate(
+                onOpen: { [weak self] route in self?.openNativeNotificationRoute(route) }
+            )
+        }
+        // Capacitor creates its own notification router during startup. Reassign
+        // our forwarding delegate synchronously in both launch callbacks so a
+        // notification tap that cold-launches the app cannot be consumed before
+        // the Web → Native route queue is ready.
+        UNUserNotificationCenter.current().delegate = nativeNotificationDelegate
+    }
+
     private func installNativeNotificationsBridge(on bridgeViewController: CAPBridgeViewController) {
         guard let bridge = bridgeViewController.bridge, let webView = bridgeViewController.webView else {
             NSLog("[NativeNotifications] bridge install skipped: Capacitor bridge unavailable")
@@ -48,6 +64,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         nativeNotificationDelegate?.router = bridge.notificationRouter
         UNUserNotificationCenter.current().delegate = nativeNotificationDelegate
         NSLog("[NativeNotifications] bridge installed; LocalNotifications registered=%@", bridge.plugin(withName: "LocalNotifications") != nil ? "true" : "false")
+        deliverPendingNotificationRoute()
+    }
+
+    private func openNativeNotificationRoute(_ route: String) {
+        guard NativeNotificationsBridge.isValidRoute(route, key: NativeNotificationsBridge.planId(from: route)) else {
+            NSLog("[NativeNotifications] ignored invalid notification route")
+            return
+        }
+
+        guard let nativeNotificationsBridge else {
+            pendingNotificationRoute = route
+            UserDefaults.standard.set(route, forKey: NativeNotificationsBridge.pendingRouteStorageKey)
+            NSLog("[NativeNotifications] queued notification route until bridge installation")
+            return
+        }
+
+        nativeNotificationsBridge.openNotificationRoute(route)
+    }
+
+    private func deliverPendingNotificationRoute() {
+        let route = pendingNotificationRoute ?? UserDefaults.standard.string(forKey: NativeNotificationsBridge.pendingRouteStorageKey)
+        guard let route else { return }
+        pendingNotificationRoute = nil
+        nativeNotificationsBridge?.openNotificationRoute(route)
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
@@ -169,6 +209,7 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
     private static let markerValue = "v1"
     private static let deferredKey = "yamajitaku.notifications.promptDeferred"
     private static let nextIdentifierKey = "yamajitaku.notifications.nextIdentifier"
+    fileprivate static let pendingRouteStorageKey = "yamajitaku.notifications.pendingRoute"
 
     #if DEBUG
     private static let fastReminderArgument = "-YamajitakuFastTripReminder"
@@ -194,6 +235,11 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
         controller.addUserScript(
             WKUserScript(source: Self.bootstrapScript, injectionTime: .atDocumentStart, forMainFrameOnly: true)
         )
+        if let route = UserDefaults.standard.string(forKey: Self.pendingRouteStorageKey),
+           Self.isValidRoute(route, key: Self.planId(from: route)) {
+            pendingRoute = route
+            NSLog("[NativeNotifications] restored pending notification route")
+        }
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -241,15 +287,64 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
 
     func openNotificationRoute(_ route: String) {
         guard Self.isValidRoute(route, key: Self.planId(from: route)) else { return }
+        UserDefaults.standard.set(route, forKey: Self.pendingRouteStorageKey)
         pendingRoute = route
         sendRoute(route)
     }
 
     private func sendRoute(_ route: String) {
-        guard isAllowedRemotePage(webView?.url), let encoded = jsonLiteral(route) else { return }
-        webView?.evaluateJavaScript("window.dispatchEvent(new CustomEvent('yamajitaku-native-notification-route', { detail: { route: \(encoded) } }));") { [weak self] _, _ in
-            self?.pendingRoute = nil
+        guard let currentURL = webView?.url else {
+            return
         }
+
+        // On a cold launch, start from the bundled login shell. Let that shell
+        // preserve its established session handoff but give it the validated
+        // checklist path, so it can skip an otherwise unnecessary dashboard
+        // request before opening the plan.
+        if isLocalShellPage(currentURL), let handoffURL = localRouteHandoffURL(route) {
+            NSLog("[NativeNotifications] handing cold launch directly to checklist")
+            webView?.load(URLRequest(url: handoffURL))
+            return
+        }
+
+        guard
+            isAllowedRemotePage(currentURL),
+            let destinationURL = URL(string: route, relativeTo: currentURL)?.absoluteURL
+        else { return }
+
+        // A notification tap can cold-launch while the remote page is still
+        // hydrating. Navigate the validated in-app URL natively rather than
+        // relying on a JavaScript custom-event listener in that document.
+        if !isCurrentRoute(route, url: currentURL) {
+            NSLog("[NativeNotifications] loading checklist route")
+            webView?.load(URLRequest(url: destinationURL))
+            return
+        }
+
+        pendingRoute = nil
+        UserDefaults.standard.removeObject(forKey: Self.pendingRouteStorageKey)
+    }
+
+    private func isLocalShellPage(_ url: URL) -> Bool {
+        url.scheme == "capacitor" && url.host == "localhost"
+    }
+
+    private func localRouteHandoffURL(_ route: String) -> URL? {
+        var components = URLComponents()
+        components.scheme = "capacitor"
+        components.host = "localhost"
+        components.path = "/"
+        components.queryItems = [URLQueryItem(name: "notification_route", value: route)]
+        return components.url
+    }
+
+    private func isCurrentRoute(_ route: String, url: URL) -> Bool {
+        guard let routeComponents = URLComponents(string: route),
+              let urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return false
+        }
+        return routeComponents.path == urlComponents.path
+            && routeComponents.queryItems == urlComponents.queryItems
     }
 
     private func reconcile(_ payload: [String: Any], completion: @escaping ([String: Any]) -> Void) {
@@ -371,7 +466,7 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
     private func schedule(_ reminders: [Reminder], scope: String, completion: @escaping (Int) -> Void) {
         guard !reminders.isEmpty else { completion(0); return }
         let occupied: Set<Int> = []
-        let notifications: [[String: Any]] = reminders.map { reminder in
+        let notifications: JSArray = reminders.map { reminder -> JSObject in
             let id = notificationIdentifier(scope: scope, key: reminder.key, occupied: occupied)
             NSLog("[NativeNotifications] scheduling id=%d %@", id, reminder.logSchedule)
             return [
@@ -397,7 +492,8 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
 
     private func cancel(_ ids: [Int], completion: @escaping () -> Void) {
         guard !ids.isEmpty else { completion(); return }
-        invokePlugin("cancel", options: ["notifications": ids.map { ["id": $0] }]) { _ in completion() }
+        let notifications: JSArray = ids.map { id in ["id": id] as JSObject }
+        invokePlugin("cancel", options: ["notifications": notifications]) { _ in completion() }
     }
 
     private func notificationIdentifier(scope: String, key: String, occupied: Set<Int>) -> Int {
@@ -412,7 +508,7 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
         return next
     }
 
-    private func invokePlugin(_ method: String, options: [String: Any], completion: @escaping ([String: Any]) -> Void) {
+    private func invokePlugin(_ method: String, options: JSObject, completion: @escaping ([String: Any]) -> Void) {
         guard let plugin = bridge?.plugin(withName: "LocalNotifications") else {
             NSLog("[NativeNotifications] LocalNotifications plugin unavailable")
             completion(["error": "plugin unavailable"])
@@ -458,8 +554,11 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
     }
 
     private func isAllowedRemotePage(_ url: URL?) -> Bool {
-        guard let url, url.scheme == "https", let host = url.host?.lowercased() else { return false }
-        return Self.allowedHosts.contains(host)
+        guard let url else { return false }
+        if url.scheme == "https", let host = url.host?.lowercased(), Self.allowedHosts.contains(host) {
+            return true
+        }
+        return false
     }
 
     fileprivate static func isValidRoute(_ route: String, key: String?) -> Bool {
@@ -467,7 +566,12 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
               let components = URLComponents(string: route), components.scheme == nil,
               components.host == nil, components.path == "/plan" else { return false }
         let values = Dictionary(uniqueKeysWithValues: (components.queryItems ?? []).map { ($0.name, $0.value ?? "") })
-        return values["id"] == key && values["focus"] == "checklist" && values.count == 2
+        guard values["id"] == key, values.count == 2 else { return false }
+        // `focus=checklist` was emitted by the first release candidate. Keep
+        // accepting it so a notification already pending on a device remains
+        // safe, while all new reminders use the dedicated, faster checklist
+        // route below.
+        return values["view"] == "checklist" || values["focus"] == "checklist"
     }
 
     fileprivate static func planId(from route: String) -> String? {
@@ -477,11 +581,6 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
     private func jsonString(_ value: Any) -> String? {
         guard JSONSerialization.isValidJSONObject(value), let data = try? JSONSerialization.data(withJSONObject: value), let string = String(data: data, encoding: .utf8) else { return nil }
         return string
-    }
-
-    private func jsonLiteral(_ value: String) -> String? {
-        guard let data = try? JSONEncoder().encode(value) else { return nil }
-        return String(data: data, encoding: .utf8)
     }
 
     private static let bootstrapScript = """
@@ -506,7 +605,7 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
       });
       window.addEventListener('yamajitaku-native-notification-route', event => {
         const route = event.detail && event.detail.route;
-        if (typeof route === 'string' && /^\\/plan\\?id=[0-9a-f-]{36}&focus=checklist$/i.test(route)) location.assign(route);
+        if (typeof route === 'string' && /^\\/plan\\?id=[0-9a-f-]{36}&(?:view|focus)=checklist$/i.test(route)) location.assign(route);
       });
       handler.postMessage({ command: 'ready', requestId: 'ready', payload: {} });
     })();
@@ -546,14 +645,29 @@ private struct Reminder {
               let kind = schedulePayload["kind"] as? String else { return nil }
         self.key = key; self.title = title; self.body = body; self.route = route
         immediate = (payload["immediate"] as? [String: Any]).flatMap(ImmediateChecklistReminder.init)
-        if kind == "once", let at = schedulePayload["at"] as? String, let date = ISO8601DateFormatter().date(from: at) {
+        if kind == "once", let at = schedulePayload["at"] as? String, let date = Self.date(from: at) {
             schedule = .once(date)
         } else if kind == "weekly", let weekday = schedulePayload["weekday"] as? Int, let hour = schedulePayload["hour"] as? Int, let minute = schedulePayload["minute"] as? Int, (1...7).contains(weekday), (0...23).contains(hour), (0...59).contains(minute) {
             schedule = .weekly(weekday: weekday, hour: hour, minute: minute)
         } else { return nil }
     }
 
-    var pluginSchedule: [String: Any] {
+    /// Web `Date#toISOString()` includes fractional seconds. Accept that
+    /// canonical representation as well as a valid ISO-8601 timestamp
+    /// without them for trusted bridge clients.
+    private static func date(from value: String) -> Date? {
+        fractionalDateFormatter.date(from: value) ?? dateFormatter.date(from: value)
+    }
+
+    private static let fractionalDateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+
+    private static let dateFormatter = ISO8601DateFormatter()
+
+    var pluginSchedule: JSObject {
         switch schedule {
         case .once(let date): return ["at": date, "repeats": false]
         case .weekly(let weekday, let hour, let minute): return ["on": ["weekday": weekday, "hour": hour, "minute": minute], "repeats": true]
@@ -627,7 +741,11 @@ private final class NativeNotificationDelegate: NSObject, UNUserNotificationCent
            let extra = response.notification.request.content.userInfo["cap_extra"] as? [String: Any],
            extra["yamajitakuNativeReminder"] as? String == "v1",
            let route = extra["route"] as? String {
-            onOpen(route)
+            if Thread.isMainThread {
+                onOpen(route)
+            } else {
+                DispatchQueue.main.sync { self.onOpen(route) }
+            }
         }
         guard let router else { completionHandler(); return }
         router.userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler)

@@ -122,7 +122,7 @@ function isNativeImmediateChecklistReminder(value: unknown): value is NativeImme
     typeof reminder.title === "string" &&
     typeof reminder.body === "string" &&
     typeof reminder.route === "string" &&
-    /^\/plan\?id=[0-9a-f-]{36}&focus=checklist$/i.test(reminder.route)
+    /^\/plan\?id=[0-9a-f-]{36}&view=checklist$/i.test(reminder.route)
   );
 }
 

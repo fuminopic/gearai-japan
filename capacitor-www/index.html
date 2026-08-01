@@ -397,6 +397,14 @@
         var initParams = new URLSearchParams(window.location.search);
         var oauthAccess = initParams.get("access_token");
         var oauthRefresh = initParams.get("refresh_token");
+        // Native notification taps are validated before this path is passed to
+        // the bundled shell. On a cold launch it replaces only the ordinary
+        // dashboard destination; the established local-session handoff stays
+        // exactly the same.
+        var notificationRoute = initParams.get("notification_route");
+        if (!/^\/plan\?id=[0-9a-f-]{36}&(?:view|focus)=checklist$/i.test(notificationRoute || "")) {
+          notificationRoute = null;
+        }
         if (oauthAccess && oauthRefresh) {
           // OAuth deep-link return: the native layer loaded this local page with
           // the tokens. Store the session locally (so the user stays signed in
@@ -409,14 +417,15 @@
           // Reopen (signed in before): do NOT validate/refresh the local token
           // here. After prolonged use it can be stale/rotated; refreshing it may
           // fail (and can revoke the whole session), causing a false logout.
-          // Instead go straight to the remote dashboard and let the remote's own
-          // cookie session authenticate (the fresher, authoritative copy). The
-          // service worker serves the cached dashboard for a near-instant open.
-          // If the remote session is genuinely expired, /dashboard bounces to
+          // Instead go straight to the remote app and let the remote's own
+          // cookie session authenticate (the fresher, authoritative copy). A
+          // validated notification route can replace only the normal dashboard
+          // target, avoiding a dashboard -> checklist double navigation.
+          // If the remote session is genuinely expired, the target bounces to
           // /login -> back here (?login=1) to sign in again.
           try { window.name = "yamajitaku-native"; } catch (e) {}
           $("splash").classList.add("show");
-          window.location.replace(REMOTE + "/dashboard");
+          window.location.replace(REMOTE + (notificationRoute || "/dashboard"));
         }
       })();
     </script>

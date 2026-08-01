@@ -53,7 +53,12 @@ export function buildTripPlanReminder(
     return null;
   }
 
-  const route = `/plan?id=${plan.id}&focus=checklist`;
+  // A notification is an explicit "open the checklist now" action. Route it
+  // to the dedicated checklist view instead of loading the complete plan page
+  // and waiting for its scroll-to-checklist effect. This keeps the cold native
+  // handoff focused on the user-visible destination without changing plan data
+  // or authentication.
+  const route = `/plan?id=${plan.id}&view=checklist`;
 
   return {
     key: plan.id,

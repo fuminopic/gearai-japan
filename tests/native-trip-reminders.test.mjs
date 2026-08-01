@@ -83,11 +83,13 @@ test("native bridge is domain-limited, validates payloads, and delegates to the 
   assert.match(appDelegate, /reconcile scheduling skipped/);
 });
 
-test("notification actions route only to the existing plan checklist URL", () => {
+test("notification actions use the dedicated checklist URL and preserve already pending legacy routes", () => {
   assert.match(appDelegate, /components\.path == "\/plan"/);
+  assert.match(reminders, /view=checklist/);
+  assert.match(appDelegate, /values\["view"\] == "checklist"/);
   assert.match(appDelegate, /values\["focus"\] == "checklist"/);
   assert.match(appDelegate, /yamajitaku-native-notification-route/);
-  assert.match(tripPlanningUi, /shouldFocusChecklist = searchParams\.get\("focus"\) === "checklist"/);
+  assert.match(tripPlanningUi, /planView === "checklist"/);
 });
 
 test("trip create, update, and delete each request a native reconcile after server success", () => {

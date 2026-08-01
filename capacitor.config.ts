@@ -21,7 +21,12 @@ const config: CapacitorConfig = {
     // (the app already uses viewport-fit=cover). "automatic" instead reserves a
     // safe-area band that exposed the webview background as a blank strip.
     contentInset: "never",
-    scrollEnabled: true
+    scrollEnabled: true,
+    // AppDelegate owns the UNUserNotificationCenter delegate so notification
+    // taps received during a cold launch can be queued for the trusted bridge.
+    // NativeNotificationDelegate still forwards normal plugin events to
+    // Capacitor's NotificationRouter.
+    handleApplicationNotifications: false
   },
   plugins: {
     SplashScreen: {

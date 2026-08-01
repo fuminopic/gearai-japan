@@ -1,8 +1,11 @@
 import type { SavedTripPlan } from "@/lib/types";
 
-export const tripReminderTitle = "山行前日の準備をお知らせします";
+export const tripReminderTitle = "明日の山、準備はできていますか？";
 export const tripReminderBody =
-  "山行日の前日に、装備チェックのリマインダーをお送りします。";
+  "安心して出発できるように、持ち物をひと目だけ確認しておきましょう。";
+export const weekendPlanReminderTitle = "今週末、山の予定はありますか？";
+export const weekendPlanReminderBody =
+  "予定が決まっていたら、山支度で少しずつ準備を始めましょう。";
 export const tripReminderTodayTitle = "本日の登山予定";
 export const tripReminderTomorrowTitle = "明日の登山予定";
 export const tripReminderImmediateBody =
@@ -23,18 +26,25 @@ export type NativeReminderConfig = {
         timeZone: "Asia/Tokyo";
       };
   immediate?: {
+    key: string;
+    plannedDate: string;
     title: string;
     body: string;
     route: string;
   };
 };
 
+type ReminderPlan = Pick<
+  SavedTripPlan,
+  "id" | "planned_date" | "planned_end_date"
+>;
+
 /**
  * Convert a date-only trip date into an absolute 20:00 JST reminder on its
  * previous calendar day. This deliberately never uses the device timezone.
  */
 export function buildTripPlanReminder(
-  plan: Pick<SavedTripPlan, "id" | "planned_date">,
+  plan: ReminderPlan,
   now = new Date()
 ): NativeReminderConfig | null {
   const plannedDate = plan.planned_date;
@@ -74,8 +84,80 @@ export function buildTripPlanReminder(
       plannedDate,
       reminderUtc,
       now,
-      route
+      route,
+      plan.id
     )
+  };
+}
+
+/**
+ * Native reminder configuration remains authored by the authenticated Web
+ * application. Besides each saved trip's previous-evening reminder, we add at
+ * most one one-off Thursday prompt for the next weekend that has no plan.
+ */
+export function buildNativeTripReminders(
+  plans: ReminderPlan[],
+  now = new Date()
+) {
+  const tripReminders = plans
+    .map((plan) => buildTripPlanReminder(plan, now))
+    .filter((value): value is NativeReminderConfig => value !== null);
+  const weekendReminder = buildWeekendPlanReminder(plans, now);
+
+  return weekendReminder ? [...tripReminders, weekendReminder] : tripReminders;
+}
+
+/**
+ * Schedule only the next upcoming Thursday at 19:30 JST. When this week's
+ * cutoff has passed, this deliberately moves to next Thursday instead of
+ * backfilling a notification immediately.
+ */
+export function buildWeekendPlanReminder(
+  plans: ReminderPlan[],
+  now = new Date()
+): NativeReminderConfig | null {
+  const today = japaneseCalendarDate(now);
+  const daysUntilThursday = (4 - today.getUTCDay() + 7) % 7;
+  let thursday = addDays(today, daysUntilThursday);
+  const cutoff = Date.UTC(
+    thursday.getUTCFullYear(),
+    thursday.getUTCMonth(),
+    thursday.getUTCDate(),
+    10,
+    30,
+    0
+  );
+
+  if (now.getTime() >= cutoff) {
+    thursday = addDays(thursday, 7);
+  }
+
+  const saturday = dateOnly(thursday, 2);
+  const sunday = dateOnly(thursday, 3);
+  if (plans.some((plan) => overlapsWeekend(plan, saturday, sunday))) {
+    return null;
+  }
+
+  const key = `weekend-plan-${dateOnly(thursday)}`;
+  const at = Date.UTC(
+    thursday.getUTCFullYear(),
+    thursday.getUTCMonth(),
+    thursday.getUTCDate(),
+    10,
+    30,
+    0
+  );
+
+  return {
+    key,
+    title: weekendPlanReminderTitle,
+    body: weekendPlanReminderBody,
+    route: "/plan",
+    schedule: {
+      kind: "once",
+      at: new Date(at).toISOString(),
+      timeZone: "Asia/Tokyo"
+    }
   };
 }
 
@@ -88,7 +170,8 @@ function buildImmediateChecklistReminder(
   plannedDate: string,
   reminderUtc: number,
   now: Date,
-  route: string
+  route: string,
+  key: string
 ) {
   if (reminderUtc > now.getTime()) {
     return undefined;
@@ -99,6 +182,8 @@ function buildImmediateChecklistReminder(
 
   if (dayOffset === 0) {
     return {
+      key,
+      plannedDate,
       title: tripReminderTodayTitle,
       body: tripReminderImmediateBody,
       route
@@ -107,6 +192,8 @@ function buildImmediateChecklistReminder(
 
   if (dayOffset === 1) {
     return {
+      key,
+      plannedDate,
       title: tripReminderTomorrowTitle,
       body: tripReminderImmediateBody,
       route
@@ -117,12 +204,41 @@ function buildImmediateChecklistReminder(
 }
 
 function japaneseDateOnly(now: Date) {
-  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return [jst.getUTCFullYear(), jst.getUTCMonth() + 1, jst.getUTCDate()]
+  return dateOnly(japaneseCalendarDate(now));
+}
+
+function japaneseCalendarDate(now: Date) {
+  return new Date(now.getTime() + 9 * 60 * 60 * 1000);
+}
+
+function dateOnly(date: Date, offsetDays = 0) {
+  const next = new Date(date.getTime());
+  next.setUTCDate(next.getUTCDate() + offsetDays);
+  return [next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate()]
     .map((value, index) =>
       index === 0 ? String(value) : String(value).padStart(2, "0")
     )
     .join("-");
+}
+
+function addDays(date: Date, days: number) {
+  const next = new Date(date.getTime());
+  next.setUTCDate(next.getUTCDate() + days);
+  return next;
+}
+
+function overlapsWeekend(plan: ReminderPlan, saturday: string, sunday: string) {
+  const start = plan.planned_date;
+  if (!isDateOnly(start) || start === null) return false;
+  const plannedEndDate = plan.planned_end_date;
+  const end = isDateOnly(plannedEndDate) && plannedEndDate !== null && plannedEndDate >= start
+    ? plannedEndDate
+    : start;
+  return start <= sunday && end >= saturday;
+}
+
+function isDateOnly(value: string | null) {
+  return Boolean(value?.match(/^\d{4}-\d{2}-\d{2}$/));
 }
 
 function dateOnlyOffsetDays(left: string, right: string) {

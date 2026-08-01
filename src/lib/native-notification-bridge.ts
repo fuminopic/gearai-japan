@@ -7,12 +7,15 @@ type NativeBridge = {
 };
 
 export type NativeImmediateChecklistReminder = {
+  key: string;
+  plannedDate: string;
   title: string;
   body: string;
   route: string;
 };
 
 export type NativeReminderSyncResult = {
+  scope: string;
   scheduled: number;
   cancelled: number;
   skippedPast: number;
@@ -66,6 +69,13 @@ export async function openNativeNotificationSettings() {
   await bridge()?.invoke("openSettings");
 }
 
+export async function markNativeImmediateRemindersShown(
+  scope: string,
+  keys: string[]
+) {
+  await bridge()?.invoke("markImmediateShown", { scope, keys });
+}
+
 export async function reconcileNativeTripReminders() {
   const nativeBridge = bridge();
   if (!nativeBridge) return null;
@@ -107,6 +117,7 @@ function asNativeReminderSyncResult(value: unknown): NativeReminderSyncResult | 
     : [];
 
   return {
+    scope: typeof result.scope === "string" ? result.scope : "",
     scheduled: typeof result.scheduled === "number" ? result.scheduled : 0,
     cancelled: typeof result.cancelled === "number" ? result.cancelled : 0,
     skippedPast: typeof result.skippedPast === "number" ? result.skippedPast : 0,
@@ -119,6 +130,10 @@ function isNativeImmediateChecklistReminder(value: unknown): value is NativeImme
   if (!value || typeof value !== "object") return false;
   const reminder = value as Partial<NativeImmediateChecklistReminder>;
   return (
+    typeof reminder.key === "string" &&
+    /^[0-9a-f-]{36}$/i.test(reminder.key) &&
+    typeof reminder.plannedDate === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/.test(reminder.plannedDate) &&
     typeof reminder.title === "string" &&
     typeof reminder.body === "string" &&
     typeof reminder.route === "string" &&

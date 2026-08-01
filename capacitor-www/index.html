@@ -402,7 +402,7 @@
         // dashboard destination; the established local-session handoff stays
         // exactly the same.
         var notificationRoute = initParams.get("notification_route");
-        if (!/^\/plan\?id=[0-9a-f-]{36}&(?:view|focus)=checklist$/i.test(notificationRoute || "")) {
+        if (notificationRoute !== "/plan" && !/^\/plan\?id=[0-9a-f-]{36}&(?:view|focus)=checklist$/i.test(notificationRoute || "")) {
           notificationRoute = null;
         }
         if (oauthAccess && oauthRefresh) {

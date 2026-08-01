@@ -9,6 +9,7 @@ import {
   getNativeNotificationPermission,
   getNativeNotificationPromptDeferred,
   hasNativeNotificationBridge,
+  markNativeImmediateRemindersShown,
   type NativeImmediateChecklistReminder,
   openNativeNotificationSettings,
   reconcileNativeTripReminders,
@@ -17,6 +18,14 @@ import {
 } from "@/lib/native-notification-bridge";
 
 type DialogKind = "permission" | "settings" | null;
+
+type ImmediateReminderDialog = {
+  scope: string;
+  keys: string[];
+  title: string;
+  body: string;
+  route: string;
+};
 
 const permissionTitle = "山行前日の準備をお知らせします";
 const permissionDescription =
@@ -27,13 +36,14 @@ export function NativeNotificationCoordinator() {
   const [dialog, setDialog] = useState<DialogKind>(null);
   const [isPending, setIsPending] = useState(false);
   const [immediateReminder, setImmediateReminder] =
-    useState<NativeImmediateChecklistReminder | null>(null);
+    useState<ImmediateReminderDialog | null>(null);
 
   const reconcileReminders = useCallback(async () => {
     const permission = await getNativeNotificationPermission();
     const syncResult = await reconcileNativeTripReminders();
-    const nextImmediate = syncResult?.immediate[0] ?? null;
-    if (nextImmediate) setImmediateReminder(nextImmediate);
+    setImmediateReminder(
+      syncResult ? buildImmediateReminderDialog(syncResult.scope, syncResult.immediate) : null
+    );
     return permission;
   }, []);
 
@@ -104,9 +114,32 @@ export function NativeNotificationCoordinator() {
     }
   }
 
-  function openImmediateChecklist() {
+  async function markImmediateReminderShown() {
+    if (!immediateReminder) return;
+    await markNativeImmediateRemindersShown(
+      immediateReminder.scope,
+      immediateReminder.keys
+    );
+  }
+
+  async function dismissImmediateReminder() {
+    try {
+      await markImmediateReminderShown();
+    } catch (error) {
+      console.info("[NativeNotifications] immediate reminder acknowledgement failed", error);
+    } finally {
+      setImmediateReminder(null);
+    }
+  }
+
+  async function openImmediateChecklist() {
     if (!immediateReminder) return;
     const route = immediateReminder.route;
+    try {
+      await markImmediateReminderShown();
+    } catch (error) {
+      console.info("[NativeNotifications] immediate reminder acknowledgement failed", error);
+    }
     setImmediateReminder(null);
     router.push(route as Route);
   }
@@ -140,12 +173,44 @@ export function NativeNotificationCoordinator() {
         title={immediateReminder?.title ?? ""}
         description={immediateReminder?.body}
         cancelLabel="あとで"
-        onCancel={() => setImmediateReminder(null)}
+        onCancel={() => void dismissImmediateReminder()}
       >
-        <button type="button" onClick={openImmediateChecklist} className={confirmButtonClassName.replace("bg-red-600", "bg-[#14724e]")}>
+        <button type="button" onClick={() => void openImmediateChecklist()} className={confirmButtonClassName.replace("bg-red-600", "bg-[#14724e]")}>
           チェックリストを確認
         </button>
       </ConfirmDialog>
     </>
   );
+}
+
+function buildImmediateReminderDialog(
+  scope: string,
+  reminders: NativeImmediateChecklistReminder[]
+): ImmediateReminderDialog | null {
+  if (!/^[0-9a-f-]{36}$/i.test(scope) || reminders.length === 0) {
+    return null;
+  }
+
+  const sorted = [...reminders].sort((left, right) =>
+    left.plannedDate.localeCompare(right.plannedDate)
+  );
+  const first = sorted[0];
+
+  if (sorted.length === 1) {
+    return {
+      scope,
+      keys: [first.key],
+      title: first.title,
+      body: first.body,
+      route: first.route
+    };
+  }
+
+  return {
+    scope,
+    keys: sorted.map((reminder) => reminder.key),
+    title: "確認が必要な山行があります",
+    body: "出発前にチェックリストを確認しましょう。",
+    route: first.route
+  };
 }

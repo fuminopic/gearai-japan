@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getTripPlans } from "@/lib/data/trip-plans";
 import { requireUser } from "@/lib/data/gear";
-import { buildTripPlanReminder } from "@/lib/native-trip-reminders";
+import { buildNativeTripReminders } from "@/lib/native-trip-reminders";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,9 +14,7 @@ export async function GET() {
   return NextResponse.json(
     {
       scope: user.id,
-      reminders: plans
-        .map((plan) => buildTripPlanReminder(plan))
-        .filter((value) => value !== null)
+      reminders: buildNativeTripReminders(plans)
     },
     { headers: { "Cache-Control": "private, no-store" } }
   );

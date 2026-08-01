@@ -68,7 +68,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     private func openNativeNotificationRoute(_ route: String) {
-        guard NativeNotificationsBridge.isValidRoute(route, key: NativeNotificationsBridge.planId(from: route)) else {
+        guard NativeNotificationsBridge.isValidNotificationRoute(route) else {
             NSLog("[NativeNotifications] ignored invalid notification route")
             return
         }
@@ -209,6 +209,8 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
     private static let markerValue = "v1"
     private static let deferredKey = "yamajitaku.notifications.promptDeferred"
     private static let nextIdentifierKey = "yamajitaku.notifications.nextIdentifier"
+    private static let immediateShownPrefix = "yamajitaku.notifications.immediateShown."
+    private static let immediateShownActiveScopeKey = "yamajitaku.notifications.immediateShown.activeScope"
     fileprivate static let pendingRouteStorageKey = "yamajitaku.notifications.pendingRoute"
 
     #if DEBUG
@@ -236,7 +238,7 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
             WKUserScript(source: Self.bootstrapScript, injectionTime: .atDocumentStart, forMainFrameOnly: true)
         )
         if let route = UserDefaults.standard.string(forKey: Self.pendingRouteStorageKey),
-           Self.isValidRoute(route, key: Self.planId(from: route)) {
+           Self.isValidNotificationRoute(route) {
             pendingRoute = route
             NSLog("[NativeNotifications] restored pending notification route")
         }
@@ -273,6 +275,8 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
             guard let deferred = payload["deferred"] as? Bool else { reply(requestId, error: "invalid deferred payload"); return }
             UserDefaults.standard.set(deferred, forKey: Self.deferredKey)
             reply(requestId, result: ["deferred": deferred])
+        case "markImmediateShown":
+            markImmediateShown(payload) { [weak self] result in self?.reply(requestId, result: result) }
         case "openSettings":
             guard payload.isEmpty else { reply(requestId, error: "invalid settings payload"); return }
             openSettings()
@@ -286,7 +290,7 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
     }
 
     func openNotificationRoute(_ route: String) {
-        guard Self.isValidRoute(route, key: Self.planId(from: route)) else { return }
+        guard Self.isValidNotificationRoute(route) else { return }
         UserDefaults.standard.set(route, forKey: Self.pendingRouteStorageKey)
         pendingRoute = route
         sendRoute(route)
@@ -372,6 +376,23 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
         }
     }
 
+    private func markImmediateShown(_ payload: [String: Any], completion: @escaping ([String: Any]) -> Void) {
+        guard let scope = payload["scope"] as? String, UUID(uuidString: scope) != nil,
+              let keys = payload["keys"] as? [String], !keys.isEmpty, keys.count <= 100,
+              Set(keys).count == keys.count,
+              keys.allSatisfy({ UUID(uuidString: $0) != nil }) else {
+            completion(["error": "invalid immediate acknowledgement"])
+            return
+        }
+
+        resetImmediateShownForAccountSwitch(scope: scope)
+        var shown = immediateShownKeys(scope: scope)
+        shown.formUnion(keys)
+        saveImmediateShownKeys(shown, scope: scope)
+        NSLog("[NativeNotifications] immediate reminder acknowledged scope=%@ count=%d", scope, keys.count)
+        completion(["marked": keys.count])
+    }
+
     private func reconcile(reminders: [Reminder], scope: String, pendingById: [Int: [String: Any]], completion: @escaping ([String: Any]) -> Void) {
         let now = Date()
         let isFastReminderMode = Self.fastReminderDelay != nil
@@ -413,10 +434,19 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
             if existingFingerprint != reminder.fingerprint { schedules.append(reminder) }
         }
 
+        let activeImmediateKeys = Set(reminders.compactMap { reminder in
+            reminder.immediate?.key
+        })
+        resetImmediateShownForAccountSwitch(scope: scope)
+        var shownImmediateKeys = immediateShownKeys(scope: scope)
+        shownImmediateKeys.formIntersection(activeImmediateKeys)
+        saveImmediateShownKeys(shownImmediateKeys, scope: scope)
         let immediate = isFastReminderMode
             ? []
-            : reminders.compactMap { reminder in
-                reminder.isPast(now) ? reminder.immediate?.payload : nil
+            : reminders.compactMap { reminder -> [String: Any]? in
+                guard reminder.isPast(now), let immediate = reminder.immediate,
+                      !shownImmediateKeys.contains(immediate.key) else { return nil }
+                return immediate.payload
             }
 
         cancel(Array(cancellationIds)) { [weak self] in
@@ -426,6 +456,7 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
                 let complete: (Int) -> Void = { scheduled in
                     NSLog("[NativeNotifications] reconcile complete scheduled=%d cancelled=%d immediate=%d fastMode=%@", scheduled, cancellationIds.count, immediate.count, isFastReminderMode ? "true" : "false")
                     completion([
+                        "scope": scope,
                         "scheduled": scheduled,
                         "cancelled": cancellationIds.count,
                         "skippedPast": reminders.count - desired.count,
@@ -508,6 +539,37 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
         return next
     }
 
+    private func immediateShownStorageKey(scope: String) -> String {
+        "\(Self.immediateShownPrefix)\(scope)"
+    }
+
+    private func immediateShownKeys(scope: String) -> Set<String> {
+        let values = UserDefaults.standard.stringArray(forKey: immediateShownStorageKey(scope: scope)) ?? []
+        return Set(values.filter { UUID(uuidString: $0) != nil })
+    }
+
+    private func saveImmediateShownKeys(_ keys: Set<String>, scope: String) {
+        let storageKey = immediateShownStorageKey(scope: scope)
+        if keys.isEmpty {
+            UserDefaults.standard.removeObject(forKey: storageKey)
+        } else {
+            UserDefaults.standard.set(Array(keys).sorted(), forKey: storageKey)
+        }
+    }
+
+    /// The acknowledgement key includes both account scope and plan id. When a
+    /// different account takes over this device, discard stale acknowledgement
+    /// records rather than allowing another account's local state to linger.
+    private func resetImmediateShownForAccountSwitch(scope: String) {
+        let defaults = UserDefaults.standard
+        let previousScope = defaults.string(forKey: Self.immediateShownActiveScopeKey)
+        guard previousScope != scope else { return }
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(Self.immediateShownPrefix) {
+            defaults.removeObject(forKey: key)
+        }
+        defaults.set(scope, forKey: Self.immediateShownActiveScopeKey)
+    }
+
     private func invokePlugin(_ method: String, options: JSObject, completion: @escaping ([String: Any]) -> Void) {
         guard let plugin = bridge?.plugin(withName: "LocalNotifications") else {
             NSLog("[NativeNotifications] LocalNotifications plugin unavailable")
@@ -562,9 +624,12 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
     }
 
     fileprivate static func isValidRoute(_ route: String, key: String?) -> Bool {
-        guard let key, UUID(uuidString: key) != nil,
+        guard let key, isValidReminderKey(key),
               let components = URLComponents(string: route), components.scheme == nil,
               components.host == nil, components.path == "/plan" else { return false }
+        if isWeekendReminderKey(key) {
+            return (components.queryItems ?? []).isEmpty
+        }
         let values = Dictionary(uniqueKeysWithValues: (components.queryItems ?? []).map { ($0.name, $0.value ?? "") })
         guard values["id"] == key, values.count == 2 else { return false }
         // `focus=checklist` was emitted by the first release candidate. Keep
@@ -572,6 +637,19 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
         // safe, while all new reminders use the dedicated, faster checklist
         // route below.
         return values["view"] == "checklist" || values["focus"] == "checklist"
+    }
+
+    fileprivate static func isValidNotificationRoute(_ route: String) -> Bool {
+        if route == "/plan" { return true }
+        return isValidRoute(route, key: planId(from: route))
+    }
+
+    fileprivate static func isValidReminderKey(_ key: String) -> Bool {
+        UUID(uuidString: key) != nil || isWeekendReminderKey(key)
+    }
+
+    private static func isWeekendReminderKey(_ key: String) -> Bool {
+        key.range(of: "^weekend-plan-[0-9]{4}-[0-9]{2}-[0-9]{2}$", options: .regularExpression) != nil
     }
 
     fileprivate static func planId(from route: String) -> String? {
@@ -605,7 +683,7 @@ private final class NativeNotificationsBridge: NSObject, WKScriptMessageHandler 
       });
       window.addEventListener('yamajitaku-native-notification-route', event => {
         const route = event.detail && event.detail.route;
-        if (typeof route === 'string' && /^\\/plan\\?id=[0-9a-f-]{36}&(?:view|focus)=checklist$/i.test(route)) location.assign(route);
+        if (typeof route === 'string' && (route === '/plan' || /^\\/plan\\?id=[0-9a-f-]{36}&(?:view|focus)=checklist$/i.test(route))) location.assign(route);
       });
       handler.postMessage({ command: 'ready', requestId: 'ready', payload: {} });
     })();
@@ -635,7 +713,7 @@ private struct Reminder {
     }
 
     init?(_ payload: [String: Any]) {
-        guard let key = payload["key"] as? String, UUID(uuidString: key) != nil,
+        guard let key = payload["key"] as? String, NativeNotificationsBridge.isValidReminderKey(key),
               let title = payload["title"] as? String, !title.isEmpty, title.count <= 120,
               let body = payload["body"] as? String, !body.isEmpty, body.count <= 240,
               let route = payload["route"] as? String,
@@ -702,24 +780,31 @@ private struct Reminder {
 }
 
 private struct ImmediateChecklistReminder {
+    let key: String
+    let plannedDate: String
     let title: String
     let body: String
     let route: String
 
     init?(_ payload: [String: Any]) {
-        guard let title = payload["title"] as? String, !title.isEmpty, title.count <= 120,
+        guard let key = payload["key"] as? String, UUID(uuidString: key) != nil,
+              let plannedDate = payload["plannedDate"] as? String,
+              plannedDate.range(of: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", options: .regularExpression) != nil,
+              let title = payload["title"] as? String, !title.isEmpty, title.count <= 120,
               let body = payload["body"] as? String, !body.isEmpty, body.count <= 240,
               let route = payload["route"] as? String,
-              NativeNotificationsBridge.isValidRoute(route, key: NativeNotificationsBridge.planId(from: route)) else {
+              NativeNotificationsBridge.isValidRoute(route, key: key) else {
             return nil
         }
+        self.key = key
+        self.plannedDate = plannedDate
         self.title = title
         self.body = body
         self.route = route
     }
 
     var payload: [String: Any] {
-        ["title": title, "body": body, "route": route]
+        ["key": key, "plannedDate": plannedDate, "title": title, "body": body, "route": route]
     }
 }
 

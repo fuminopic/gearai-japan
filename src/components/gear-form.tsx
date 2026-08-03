@@ -27,6 +27,9 @@ import {
   normalizeGearText
 } from "@/lib/gear-display";
 import {
+  getGearPickerCategoryLabel as getProductCategoryLabel
+} from "@/lib/gear-picker-product";
+import {
   gearSubcategoryLabels,
   weightTypeLabels
 } from "@/lib/i18n/labels";
@@ -1098,10 +1101,6 @@ function getProductSearchValues(product: GearPickerProduct) {
     `${product.brand} ${product.model}`,
     ...(product.gear_product_aliases?.map((item) => item.alias) ?? [])
   ].filter((value): value is string => Boolean(value));
-}
-
-function getProductCategoryLabel(product: GearPickerProduct) {
-  return product.gear_categories?.name_ja ?? "その他";
 }
 
 function compareProductPickerItems(

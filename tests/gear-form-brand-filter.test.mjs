@@ -10,6 +10,10 @@ const gearDataSource = readFileSync(
   new URL("../src/lib/data/gear.ts", import.meta.url),
   "utf8"
 );
+const gearPickerProductSource = readFileSync(
+  new URL("../src/lib/gear-picker-product.ts", import.meta.url),
+  "utf8"
+);
 const gearNewPageSource = readFileSync(
   new URL("../app/(app)/gear/new/page.tsx", import.meta.url),
   "utf8"
@@ -73,6 +77,11 @@ test("gear picker serializes only fields used by the form while planning keeps t
   assert.match(gearNewPageSource, /getGearProductsForPicker\(\)/);
   assert.match(gearEditPageSource, /getGearProductsForPicker\(\)/);
   assert.match(gearFormSource, /GearPickerProduct\[\]/);
+  assert.match(gearFormSource, /getGearPickerCategoryLabel/);
+  assert.match(gearDataSource, /normalizeGearPickerProduct/);
+  assert.match(gearPickerProductSource, /Array\.isArray\(relation\)/);
+  assert.match(gearPickerProductSource, /GearPickerCategoryRelation\s*\|\s*GearPickerCategoryRelation\[\]/);
+  assert.match(gearPickerProductSource, /GearPickerSubcategoryRelation\s*\|\s*GearPickerSubcategoryRelation\[\]/);
 });
 
 test("gear add form supports explicit search, suggestions, and real brand logo chips", () => {

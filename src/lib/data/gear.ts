@@ -11,11 +11,14 @@ import {
   getBrandAliasesForQuery,
   normalizeBrandKey
 } from "@/lib/brand-normalization";
+import {
+  normalizeGearPickerProduct,
+  type SupabaseGearPickerProductRow
+} from "@/lib/gear-picker-product";
 import { createClient } from "@/lib/supabase/server";
 import type {
   GearCategory,
   GearFilters,
-  GearPickerProduct,
   GearProduct,
   GearSubcategory,
   UserGear
@@ -44,13 +47,6 @@ type GearSubcategoryRow = GearSubcategory;
 type GearProductRow = GearProduct;
 type GearCategoryRelationRow = Pick<GearCategory, "id" | "name_ja" | "name_en">;
 type GearSubcategoryRelationRow = Pick<GearSubcategory, "id" | "name_ja" | "name_en">;
-type SupabaseGearPickerProductRow = Omit<
-  GearPickerProduct,
-  "gear_categories" | "gear_subcategories"
-> & {
-  gear_categories?: GearCategoryRelationRow[] | null;
-  gear_subcategories?: GearSubcategoryRelationRow[] | null;
-};
 type UserGearProductRelationRow = Pick<
   GearProduct,
   | "id"
@@ -223,11 +219,7 @@ export const getGearProductsForPicker = cache(async function getGearProductsForP
     throw new Error(error.message);
   }
 
-  return (data as SupabaseGearPickerProductRow[]).map((product) => ({
-    ...product,
-    gear_categories: product.gear_categories?.[0] ?? null,
-    gear_subcategories: product.gear_subcategories?.[0] ?? null
-  }));
+  return (data as SupabaseGearPickerProductRow[]).map(normalizeGearPickerProduct);
 });
 
 export async function getUserGear(filters: GearFilters = {}) {

@@ -1,11 +1,12 @@
 import { Suspense } from "react";
 
-import { Backpack, ChevronRight, Package } from "lucide-react";
+import { Backpack, ChevronRight } from "lucide-react";
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
 import { AppMenuDrawer } from "@/components/app-menu-drawer";
+import { HomeGearStrip } from "@/components/home-gear-strip";
 import { DashboardPlanMeta } from "@/components/dashboard-plan-meta";
 import { HeroGauge } from "@/components/hero-gauge";
 import { getOwnedGearForPlanning } from "@/lib/data/gear";
@@ -284,26 +285,7 @@ function OwnedGearSection({
   return (
     <section>
       {hasGear ? (
-        <div className="hide-scrollbar flex snap-x snap-mandatory gap-[11px] overflow-x-auto pb-4">
-          {gear.map((item) => (
-            <div
-              key={item.id}
-              className="relative flex h-[150px] w-[126px] flex-none snap-start flex-col items-center rounded-2xl bg-white px-3 pt-[17px] pb-[52px] shadow-sm"
-            >
-              <div className="flex w-full min-h-0 flex-1 items-center justify-center">
-                <GearImage item={item} />
-              </div>
-              {/* 名字:锁定——绝对定位 + 固定 px 字号 + 固定行高 + 单行截断 */}
-              <p className="absolute inset-x-3 bottom-[27px] truncate text-center text-[12px] font-bold leading-none text-gray-900">
-                {item.name}
-              </p>
-              {/* 克重:锁死在卡底 14px,大小坐标固定,不随任何因素变 */}
-              <p className="absolute inset-x-0 bottom-[14px] text-center font-din text-[11px] font-medium leading-none text-gray-400">
-                {Number(item.weight_grams)} g
-              </p>
-            </div>
-          ))}
-        </div>
+        <HomeGearStrip gear={gear} />
       ) : (
         <div className="flex flex-col items-center justify-center rounded-[28px] bg-white px-5 py-6 text-center shadow-sm">
           <BackpackIllustration />
@@ -437,30 +419,6 @@ function BackpackIllustration() {
     <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-50 text-gray-300">
       <Backpack className="h-10 w-10 stroke-[1.6]" />
     </div>
-  );
-}
-
-// displayScale 手动旋钮:按商品名给一个缩放系数(默认 1.0),让不同形状的商品在框内视觉大小一致。
-// 设计逐个微调,值填这里即可,例:{ "サム 45": 1.1, "Fillo™": 0.9 }
-const GEAR_DISPLAY_SCALE: Record<string, number> = {};
-
-function GearImage({ item }: { item: DashboardGear }) {
-  const scale = GEAR_DISPLAY_SCALE[item.name] ?? 1;
-  return (
-    <>
-      {item.image_url ? (
-        <img
-          src={item.image_url}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className="h-full w-full object-contain mix-blend-multiply"
-          style={scale !== 1 ? { transform: `scale(${scale})` } : undefined}
-        />
-      ) : (
-        <Package className="h-10 w-10 text-gray-300" />
-      )}
-    </>
   );
 }
 

@@ -6,6 +6,14 @@ const dashboardSource = readFileSync(
   new URL("../app/(app)/dashboard/page.tsx", import.meta.url),
   "utf8"
 );
+const homeGearStripSource = readFileSync(
+  new URL("../src/components/home-gear-strip.tsx", import.meta.url),
+  "utf8"
+);
+const homeGearStripInteractionSource = readFileSync(
+  new URL("../src/lib/home-gear-strip-interaction.ts", import.meta.url),
+  "utf8"
+);
 const dashboardPlanChecklistSummarySource = readFileSync(
   new URL("../src/components/dashboard-plan-checklist-summary.tsx", import.meta.url),
   "utf8"
@@ -263,12 +271,16 @@ test("home hero streams the saved plan checklist gauge without blocking first pa
 });
 
 test("home rebuild follows the requested recent gear image layout", () => {
-  assert.match(dashboardSource, /hide-scrollbar flex snap-x snap-mandatory gap-\[11px\] overflow-x-auto pb-4/);
-  assert.match(dashboardSource, /h-\[150px\] w-\[126px\] flex-none snap-start/);
-  assert.match(dashboardSource, /rounded-2xl bg-white px-3 pt-\[17px\] pb-\[52px\] shadow-sm/);
-  assert.match(dashboardSource, /bottom-\[27px\] truncate text-center text-\[12px\] font-bold/);
-  assert.match(dashboardSource, /bottom-\[14px\] text-center font-din text-\[11px\]/);
-  assert.match(dashboardSource, /object-contain/);
+  assert.match(dashboardSource, /<HomeGearStrip gear=\{gear\}/);
+  assert.match(homeGearStripSource, /hide-scrollbar flex snap-x snap-proximity gap-\[11px\] overflow-x-auto/);
+  assert.match(homeGearStripSource, /overscroll-x-contain touch-pan-x/);
+  assert.match(homeGearStripSource, /\[-webkit-overflow-scrolling:touch\]/);
+  assert.doesNotMatch(homeGearStripSource, /snap-mandatory/);
+  assert.match(homeGearStripSource, /h-\[150px\] w-\[126px\] flex-none snap-start/);
+  assert.match(homeGearStripSource, /rounded-2xl bg-white px-3 pt-\[17px\] pb-\[52px\] shadow-sm/);
+  assert.match(homeGearStripSource, /bottom-\[27px\] truncate text-center text-\[12px\] font-bold/);
+  assert.match(homeGearStripSource, /bottom-\[14px\] text-center font-din text-\[11px\]/);
+  assert.match(homeGearStripSource, /object-contain/);
   assert.doesNotMatch(dashboardSource, /relativeAddedDate/);
   assert.doesNotMatch(dashboardSource, /日前/);
   assert.doesNotMatch(dashboardSource, /gearFallbackGradient/);
@@ -416,12 +428,12 @@ test("home typography and green palette follow the latest visual direction", () 
 
 test("home gear strip shows every My Gear item, not just the newest eight", () => {
   // 上の指標「マイギア N点」とカード列が食い違わないよう、全件を出す。
-  assert.match(dashboardSource, /gear\.map\(\(item\) => \(/);
+  assert.match(homeGearStripSource, /gear\.map\(\(item\) => \(/);
   assert.doesNotMatch(dashboardSource, /slice\(0, 8\)/);
   assert.match(dashboardSource, /summary\.gearItems/);
   assert.doesNotMatch(dashboardSource, /recentGear/);
   // 件数が増えるので、画像は遅延読み込みにする
-  assert.match(dashboardSource, /loading="lazy"/);
+  assert.match(homeGearStripSource, /loading="lazy"/);
 
   const dataSource = readFileSync(
     new URL("../src/lib/data/dashboard.ts", import.meta.url),
@@ -429,4 +441,20 @@ test("home gear strip shows every My Gear item, not just the newest eight", () =
   );
   assert.match(dataSource, /gearItems: gear\.map\(toDashboardGear\)/);
   assert.doesNotMatch(dataSource, /slice\(0, 8\)/);
+});
+
+test("home gear strip links each card to its existing detail route", () => {
+  assert.match(homeGearStripSource, /href=\{`\/gear\/\$\{item\.id\}` as Route\}/);
+  assert.match(homeGearStripSource, /aria-label=\{`\$\{item\.name\}の詳細を見る`\}/);
+});
+
+test("home gear strip lets native scrolling win over a dragged card click", () => {
+  assert.match(homeGearStripSource, /onPointerDown=\{handlePointerDown\}/);
+  assert.match(homeGearStripSource, /onPointerMove=\{handlePointerMove\}/);
+  assert.match(homeGearStripSource, /onClickCapture=\{handleClickCapture\}/);
+  assert.match(homeGearStripSource, /event\.preventDefault\(\)/);
+  assert.match(homeGearStripSource, /movedBeyondHomeGearTapThreshold/);
+  assert.match(homeGearStripInteractionSource, /HOME_GEAR_DRAG_THRESHOLD_PX = 8/);
+  assert.match(homeGearStripInteractionSource, /Math\.hypot\(/);
+  assert.doesNotMatch(homeGearStripSource, /scrollLeft|scrollTo|onTouch/);
 });

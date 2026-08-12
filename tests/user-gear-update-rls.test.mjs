@@ -11,7 +11,7 @@ const migrationSource = readFileSync(
 );
 const imagePathMigrationSource = readFileSync(
   new URL(
-    "../supabase/migrations/20260812055127_enforce_user_gear_image_storage_path_owner.sql",
+    "../supabase/migrations/20260812055247_enforce_user_gear_image_storage_path_owner.sql",
     import.meta.url
   ),
   "utf8"

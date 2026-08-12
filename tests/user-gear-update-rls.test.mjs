@@ -9,6 +9,13 @@ const migrationSource = readFileSync(
   ),
   "utf8"
 );
+const imagePathMigrationSource = readFileSync(
+  new URL(
+    "../supabase/migrations/20260812055127_enforce_user_gear_image_storage_path_owner.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
 const gearActionsSource = readFileSync(
   new URL("../src/lib/actions/gear.ts", import.meta.url),
   "utf8"
@@ -42,6 +49,26 @@ test("the migration changes only user_gear UPDATE authorization", () => {
   assert.doesNotMatch(migrationSource, /create table|alter table|drop table/i);
   assert.doesNotMatch(migrationSource, /for select|for insert|for delete/i);
   assert.doesNotMatch(migrationSource, /user_pack_items/i);
+});
+
+test("the image-path migration keeps the owner/manual boundary and binds image paths to that owner", () => {
+  assert.match(imagePathMigrationSource, /^begin;/m);
+  assert.match(
+    imagePathMigrationSource,
+    /drop policy if exists "user_gear_update_own" on public\.user_gear;/
+  );
+  assert.match(
+    imagePathMigrationSource,
+    /using \([\s\S]*?\(select auth\.uid\(\)\) = user_id[\s\S]*?and product_id is null[\s\S]*?\)/
+  );
+  assert.match(
+    imagePathMigrationSource,
+    /with check \([\s\S]*?\(select auth\.uid\(\)\) = user_id[\s\S]*?and product_id is null[\s\S]*?image_storage_path is null[\s\S]*?split_part\(image_storage_path, '\/', 1\) = \(select auth\.uid\(\)\)::text[\s\S]*?\)/
+  );
+  assert.doesNotMatch(imagePathMigrationSource, /create table|alter table|drop table/i);
+  assert.doesNotMatch(imagePathMigrationSource, /for select|for insert|for delete/i);
+  assert.doesNotMatch(imagePathMigrationSource, /storage\.objects|storage\.buckets|user_pack_items/i);
+  assert.match(imagePathMigrationSource, /commit;/);
 });
 
 test("existing Web mutations retain the manual-only boundary and Pack writes stay separate", () => {

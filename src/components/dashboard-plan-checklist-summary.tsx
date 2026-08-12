@@ -4,14 +4,13 @@ import { useEffect, useState } from "react";
 
 import {
   applyChecklistStateToChecklist,
-  isSupportedChecklistOnlyId,
   isSupportedRequirementSlot,
   type ChecklistCategory,
   type ChecklistView
 } from "@/lib/plan-checklist";
+import { readTripPlanChecklistOnlyStates } from "@/lib/trip-plan-checklist-item-state-client";
 import {
   readTripPlanCheckedSlots,
-  readTripPlanChecklistOnlyIds,
   readTripPlanUncheckedPackedSlots
 } from "@/lib/trip-plan-storage";
 import type { RequirementSlot } from "@/lib/types";
@@ -30,33 +29,62 @@ export function DashboardPlanChecklistSummary({
   const [hydratedChecklist, setHydratedChecklist] = useState(checklist);
 
   useEffect(() => {
-    if (!checklist) {
+    const checklistToHydrate: ChecklistView | null = checklist;
+
+    if (checklistToHydrate === null) {
       return;
     }
 
+    const checklistForAsync = checklistToHydrate;
     const checkedSlots = readStoredCheckedSlots(planId, userId ?? null);
     const uncheckedPackedSlots = readStoredUncheckedPackedSlots(
       planId,
       userId ?? null
     );
-    const checkedChecklistOnlyIds = readStoredChecklistOnlyIds(
-      planId,
-      userId ?? null
-    );
+    let active = true;
 
-    if (!checkedSlots && !uncheckedPackedSlots && !checkedChecklistOnlyIds) {
-      setHydratedChecklist(checklist);
-      return;
+    async function hydrateChecklist() {
+      let checkedChecklistOnlyIds: string[] | undefined;
+
+      if (userId) {
+        try {
+          const states = await readTripPlanChecklistOnlyStates({ userId, planId });
+          checkedChecklistOnlyIds = states
+            .filter((state) => state.is_checked)
+            .map((state) => state.checklist_item_id);
+        } catch (error) {
+          console.error("Checklist-only state read failed:", error);
+          if (active) {
+            setHydratedChecklist(checklistForAsync);
+          }
+          return;
+        }
+      }
+
+      if (!active) {
+        return;
+      }
+
+      if (!checkedSlots && !uncheckedPackedSlots && !checkedChecklistOnlyIds) {
+        setHydratedChecklist(checklistForAsync);
+        return;
+      }
+
+      setHydratedChecklist(
+        applyChecklistStateToChecklist({
+          checklist: checklistForAsync,
+          checkedSlots,
+          uncheckedPackedSlots,
+          checkedChecklistOnlyIds
+        })
+      );
     }
 
-    setHydratedChecklist(
-      applyChecklistStateToChecklist({
-        checklist,
-        checkedSlots,
-        uncheckedPackedSlots,
-        checkedChecklistOnlyIds
-      })
-    );
+    void hydrateChecklist();
+
+    return () => {
+      active = false;
+    };
   }, [checklist, planId, userId]);
 
   const progress = hydratedChecklist?.summary.percent ?? fallbackProgress;
@@ -94,19 +122,6 @@ function readStoredCheckedSlots(
   }
 
   return result.value.filter(isSupportedRequirementSlot);
-}
-
-function readStoredChecklistOnlyIds(
-  planId: string,
-  userId: string | null
-): string[] | undefined {
-  const result = readTripPlanChecklistOnlyIds({ userId, planId });
-
-  if (result.status === "missing") {
-    return undefined;
-  }
-
-  return result.value.filter(isSupportedChecklistOnlyId);
 }
 
 function readStoredUncheckedPackedSlots(

@@ -131,11 +131,11 @@ test("state, refresh, and cache primitives stay at their necessary boundaries", 
   assert.match(mountainFoundationDataSource, /cache\(/);
 
   assert.match(tripPlanningUiSource, /readTripPlanCheckedSlots/);
-  assert.match(tripPlanningUiSource, /writeTripPlanChecklistOnlyIds/);
+  assert.match(tripPlanningUiSource, /useTripPlanChecklistOnlyState/);
   assert.match(heroGaugeSource, /readTripPlanCheckedSlots/);
-  assert.match(dashboardChecklistSource, /readTripPlanChecklistOnlyIds/);
+  assert.match(dashboardChecklistSource, /readTripPlanChecklistOnlyStates/);
 
-  for (const source of [heroGaugeSource, tripPlanStorageSource]) {
+  for (const source of [tripPlanStorageSource]) {
     assert.match(source, /localStorage/);
   }
 

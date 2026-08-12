@@ -69,6 +69,9 @@ import {
   requirementSlotLabels
 } from "@/lib/i18n/labels";
 import { hapticError, hapticLight, hapticSelection, hapticSuccess } from "@/lib/haptics";
+import {
+  persistTripPlanChecklistOnlyIds
+} from "@/lib/trip-plan-checklist-item-state-client";
 import { notifyTripPlanReminderSync } from "@/lib/native-notification-bridge";
 import { mountainCurrentPlanStatusStaleMessage } from "@/lib/mountain-current-plan-status";
 import {
@@ -101,14 +104,13 @@ import {
 } from "@/lib/trip-plan-local-meta";
 import {
   readTripPlanCheckedSlots,
-  readTripPlanChecklistOnlyIds,
   readTripPlanUncheckedPackedSlots,
   removeTripPlanCheckedSlots,
-  removeTripPlanChecklistOnlyIds,
-  writeTripPlanCheckedSlots,
   writeTripPlanChecklistOnlyIds,
+  writeTripPlanCheckedSlots,
   writeTripPlanUncheckedPackedSlots
 } from "@/lib/trip-plan-storage";
+import { useTripPlanChecklistOnlyState } from "@/hooks/use-trip-plan-checklist-only-state";
 import type {
   GearMatchingOwnedGearMatch,
   GearMatchingResult,
@@ -219,9 +221,6 @@ export function TripPlanningUI({
   const [storedUncheckedPackedSlots, setStoredUncheckedPackedSlots] = useState<
     ScopedRequirementSlots | null
   >(null);
-  const [storedChecklistOnlyIds, setStoredChecklistOnlyIds] = useState<
-    ScopedChecklistOnlyIds | null
-  >(null);
   const [isDateEditorOpen, setIsDateEditorOpen] = useState(false);
   const [dateSaveState, setDateSaveState] = useState<
     "idle" | "saving" | "success" | "error"
@@ -230,6 +229,10 @@ export function TripPlanningUI({
   const activeSavedPlan =
     hydratedPlan?.id === planId ? hydratedPlan : initialSavedPlan;
   const currentPlanUserId = activeSavedPlan?.user_id ?? null;
+  const checklistOnlyState = useTripPlanChecklistOnlyState({
+    userId: currentPlanUserId,
+    planId
+  });
   const effectiveMountainSlug = activeSavedPlan?.mountain_slug ?? selectedMountainSlug;
   const effectiveSeason = activeSavedPlan?.season ?? selectedSeason;
   const effectiveStyle = activeSavedPlan?.style ?? selectedStyle;
@@ -319,13 +322,9 @@ export function TripPlanningUI({
     interactiveChecklistOnlyIds?.scopeKey === uncheckedPackedSlotsScopeKey
       ? interactiveChecklistOnlyIds.ids
       : null;
-  const storedChecklistOnlyIdsForCurrentPlan =
-    storedChecklistOnlyIds?.scopeKey === storedUncheckedPackedSlotsScopeKey
-      ? storedChecklistOnlyIds.ids
-      : null;
-  const currentChecklistOnlyIds =
-    interactiveChecklistOnlyIdsForCurrentPlan ??
-    (planId ? storedChecklistOnlyIdsForCurrentPlan ?? [] : []);
+  const currentChecklistOnlyIds = planId
+    ? checklistOnlyState.checkedIds
+    : interactiveChecklistOnlyIdsForCurrentPlan ?? [];
   const currentProgressValue = plan
     ? calculateChecklistProgress(
         plan,
@@ -378,14 +377,6 @@ export function TripPlanningUI({
         ? {
             scopeKey: `saved:${planId}`,
             slots: readStoredUncheckedPackedSlots(planId, currentPlanUserId)
-          }
-        : null
-    );
-    setStoredChecklistOnlyIds(
-      planId
-        ? {
-            scopeKey: `saved:${planId}`,
-            ids: readStoredChecklistOnlyIds(planId, currentPlanUserId)
           }
         : null
     );
@@ -612,6 +603,19 @@ export function TripPlanningUI({
         />
       ) : null}
 
+      {isSavedPlanMode && checklistOnlyState.status === "error" ? (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900">
+          <span>確認状態を保存できませんでした。</span>
+          <button
+            type="button"
+            onClick={checklistOnlyState.retry}
+            className="shrink-0 rounded-full border border-amber-300 bg-white px-3 py-1.5 font-bold text-amber-900 transition active:scale-95"
+          >
+            再試行
+          </button>
+        </div>
+      ) : null}
+
       {!plan && !isSavedPlanMode && !isFullChecklistView ? (
         <TripPlanningForm
           mountains={mountains}
@@ -685,11 +689,16 @@ export function TripPlanningUI({
                   slots
                 })
               }
-              onChecklistOnlyIdsChange={(ids) =>
-                setInteractiveChecklistOnlyIds({
-                  scopeKey: uncheckedPackedSlotsScopeKey,
-                  ids
-                })
+              onChecklistOnlyIdsChange={(ids) => {
+                if (!planId) {
+                  setInteractiveChecklistOnlyIds({
+                    scopeKey: uncheckedPackedSlotsScopeKey,
+                    ids
+                  });
+                }
+              }}
+              onChecklistOnlyItemChange={
+                planId ? checklistOnlyState.setItemChecked : undefined
               }
               planId={planId}
               userId={currentPlanUserId}
@@ -1080,7 +1089,25 @@ function SavePlanButton({
             uncheckedPackedSlots,
             userId
           );
-          writeStoredChecklistOnlyIds(savedPlanId, checklistOnlyIds, userId);
+          if (userId) {
+            try {
+              await persistTripPlanChecklistOnlyIds({
+                userId,
+                planId: savedPlanId,
+                checkedIds: checklistOnlyIds
+              });
+            } catch (checklistStateError) {
+              // The plan itself is already saved. Keep the migration input
+              // locally so a later visit can retry without losing a manual
+              // confirmation made during this first save.
+              console.error("Checklist-only state persistence failed:", checklistStateError);
+              writeTripPlanChecklistOnlyIds({
+                userId,
+                planId: savedPlanId,
+                value: checklistOnlyIds
+              });
+            }
+          }
           writeTripPlanLocalMeta(savedPlanId, {
             plannedDate,
             plannedEndDate,
@@ -1401,25 +1428,6 @@ function writeStoredUncheckedPackedSlots(
   });
 }
 
-function readStoredChecklistOnlyIds(planId: string, userId: string | null) {
-  return uniqueChecklistOnlyIds(
-    readTripPlanChecklistOnlyIds({ userId, planId }).value
-  );
-}
-
-function writeStoredChecklistOnlyIds(
-  planId: string,
-  checklistOnlyIds: string[],
-  userId: string | null
-) {
-  if (checklistOnlyIds.length === 0) {
-    removeTripPlanChecklistOnlyIds({ userId, planId });
-    return;
-  }
-
-  writeTripPlanChecklistOnlyIds({ userId, planId, value: checklistOnlyIds });
-}
-
 function TripPlanningResult({
   plan,
   foodWater,
@@ -1439,7 +1447,8 @@ function TripPlanningResult({
   onPreparationCompletionChange,
   onCheckedSlotsChange,
   onUncheckedPackedSlotsChange,
-  onChecklistOnlyIdsChange
+  onChecklistOnlyIdsChange,
+  onChecklistOnlyItemChange
 }: {
   plan: PackRequirementPlan;
   foodWater: PlanFoodWater;
@@ -1460,6 +1469,7 @@ function TripPlanningResult({
   onCheckedSlotsChange?: (checkedSlots: RequirementSlot[]) => void;
   onUncheckedPackedSlotsChange?: (uncheckedPackedSlots: RequirementSlot[]) => void;
   onChecklistOnlyIdsChange?: (checklistOnlyIds: string[]) => void;
+  onChecklistOnlyItemChange?: (checklistItemId: string, isChecked: boolean) => void;
 }) {
   const [checkedSlots, setCheckedSlots] = useState<RequirementSlot[]>(() => {
     return filterCheckedSlotsForPlan(initialCheckedSlots, plan);
@@ -1671,11 +1681,8 @@ function TripPlanningResult({
 
       const nextChecklistOnlyIds = uniqueChecklistOnlyIds(Array.from(nextIds));
 
-      if (planId) {
-        writeStoredChecklistOnlyIds(planId, nextChecklistOnlyIds, userId);
-      }
-
       onChecklistOnlyIdsChange?.(nextChecklistOnlyIds);
+      onChecklistOnlyItemChange?.(id, nextIds.has(id));
 
       return nextChecklistOnlyIds;
     });

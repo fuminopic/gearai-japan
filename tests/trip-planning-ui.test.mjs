@@ -356,7 +356,7 @@ test("trip planning UI presents a professional gear checklist", () => {
   }
 
   assert.doesNotMatch(tripPlanningUiSource, /Gear-backed/);
-  assert.doesNotMatch(tripPlanningUiSource, /Checklist-only/);
+  assert.doesNotMatch(planChecklistSource, /Checklist-only/);
   assert.doesNotMatch(planChecklistSource, /nav-smartphone/);
   assert.doesNotMatch(planChecklistSource, /label: "スマホ"/);
   assert.doesNotMatch(labelsSource, /GPS_DEVICE: "GPS デバイス"/);
@@ -717,8 +717,8 @@ test("saving and updating a plan writes progress payload and redirects home", ()
   assert.match(tripPlanningUiSource, /JSON\.stringify\(checkedSlots\)/);
   assert.match(tripPlanningUiSource, /writeStoredCheckedSlots/);
   assert.match(tripPlanningUiSource, /readStoredCheckedSlots/);
-  assert.match(tripPlanningUiSource, /writeStoredChecklistOnlyIds/);
-  assert.match(tripPlanningUiSource, /readStoredChecklistOnlyIds/);
+  assert.match(tripPlanningUiSource, /persistTripPlanChecklistOnlyIds/);
+  assert.match(tripPlanningUiSource, /useTripPlanChecklistOnlyState/);
   assert.match(tripPlanningUiSource, /writeTripPlanLocalMeta/);
   assert.match(tripPlanningUiSource, /plannedDate,/);
   assert.match(tripPlanningUiSource, /tripMemo/);

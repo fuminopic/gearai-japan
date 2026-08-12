@@ -88,6 +88,46 @@ export function buildLegacyTripPlanChecklistOnlyStorageKey(planId: string) {
   return `yamajitaku:trip-plan:checklist-only:${planId}`;
 }
 
+export function buildTripPlanChecklistOnlySupabaseMigrationStorageKey(
+  userId: string,
+  planId: string
+) {
+  return `yamajitaku:${TRIP_PLAN_STORAGE_VERSION}:user:${userId}:trip-plan:${planId}:checklist-only-supabase-migrated`;
+}
+
+export function hasTripPlanChecklistOnlySupabaseMigration({
+  userId,
+  planId
+}: TripPlanMetaStorageInput) {
+  const storage = getLocalStorage();
+
+  if (!storage || !userId) {
+    return false;
+  }
+
+  return (
+    storage.getItem(
+      buildTripPlanChecklistOnlySupabaseMigrationStorageKey(userId, planId)
+    ) === "1"
+  );
+}
+
+export function markTripPlanChecklistOnlySupabaseMigrationComplete({
+  userId,
+  planId
+}: TripPlanMetaStorageInput) {
+  const storage = getLocalStorage();
+
+  if (!storage || !userId) {
+    return;
+  }
+
+  storage.setItem(
+    buildTripPlanChecklistOnlySupabaseMigrationStorageKey(userId, planId),
+    "1"
+  );
+}
+
 export function readTripPlanMeta({
   userId,
   planId

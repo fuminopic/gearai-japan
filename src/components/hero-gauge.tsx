@@ -4,14 +4,13 @@ import { useEffect, useState } from "react";
 
 import {
   applyChecklistStateToChecklist,
-  isSupportedChecklistOnlyId,
   isSupportedRequirementSlot,
   type ChecklistCategoryId,
   type ChecklistView
 } from "@/lib/plan-checklist";
+import { readTripPlanChecklistOnlyStates } from "@/lib/trip-plan-checklist-item-state-client";
 import {
   readTripPlanCheckedSlots,
-  readTripPlanChecklistOnlyIds,
   readTripPlanUncheckedPackedSlots
 } from "@/lib/trip-plan-storage";
 import type { RequirementSlot } from "@/lib/types";
@@ -25,8 +24,8 @@ const HERO_STATUS_ROWS: { id: ChecklistCategoryId; label: string; color: string 
   { id: "ACTION_GEAR", label: "行動装備", color: "#FFDB00" }
 ];
 
-// gauge の % と状態行の「残り N 項」は、計画ページと同じく localStorage の
-// 勾選状態を hydrate して算出する(サーバ値=所有装備ベースだけだと手動チェックが反映されない)。
+// gauge の % と状態行の「残り N 項」は、計画ページと同じく手動確認を
+// hydrate して算出する(サーバ値=所有装備ベースだけだと手動チェックが反映されない)。
 export function HeroGauge({
   checklist,
   planId,
@@ -45,34 +44,63 @@ export function HeroGauge({
   const [hydrated, setHydrated] = useState<ChecklistView | null>(checklist);
 
   useEffect(() => {
-    if (!checklist) {
+    const checklistToHydrate: ChecklistView | null = checklist;
+
+    if (checklistToHydrate === null) {
       setHydrated(null);
       return;
     }
 
+    const checklistForAsync = checklistToHydrate;
     const checkedSlots = readStoredCheckedSlots(planId, userId ?? null);
     const uncheckedPackedSlots = readStoredUncheckedPackedSlots(
       planId,
       userId ?? null
     );
-    const checkedChecklistOnlyIds = readStoredChecklistOnlyIds(
-      planId,
-      userId ?? null
-    );
+    let active = true;
 
-    if (!checkedSlots && !uncheckedPackedSlots && !checkedChecklistOnlyIds) {
-      setHydrated(checklist);
-      return;
+    async function hydrateChecklist() {
+      let checkedChecklistOnlyIds: string[] | undefined;
+
+      if (userId) {
+        try {
+          const states = await readTripPlanChecklistOnlyStates({ userId, planId });
+          checkedChecklistOnlyIds = states
+            .filter((state) => state.is_checked)
+            .map((state) => state.checklist_item_id);
+        } catch (error) {
+          console.error("Checklist-only state read failed:", error);
+          if (active) {
+            setHydrated(checklistForAsync);
+          }
+          return;
+        }
+      }
+
+      if (!active) {
+        return;
+      }
+
+      if (!checkedSlots && !uncheckedPackedSlots && !checkedChecklistOnlyIds) {
+        setHydrated(checklistForAsync);
+        return;
+      }
+
+      setHydrated(
+        applyChecklistStateToChecklist({
+          checklist: checklistForAsync,
+          checkedSlots,
+          uncheckedPackedSlots,
+          checkedChecklistOnlyIds
+        })
+      );
     }
 
-    setHydrated(
-      applyChecklistStateToChecklist({
-        checklist,
-        checkedSlots,
-        uncheckedPackedSlots,
-        checkedChecklistOnlyIds
-      })
-    );
+    void hydrateChecklist();
+
+    return () => {
+      active = false;
+    };
   }, [checklist, planId, userId]);
 
   // 清单可用时始终以当前装备与确认状态重算的进度为准；仅在清单不可用时回退保存值。
@@ -212,19 +240,6 @@ function readStoredCheckedSlots(
   }
 
   return result.value.filter(isSupportedRequirementSlot);
-}
-
-function readStoredChecklistOnlyIds(
-  planId: string,
-  userId: string | null
-): string[] | undefined {
-  const result = readTripPlanChecklistOnlyIds({ userId, planId });
-
-  if (result.status === "missing") {
-    return undefined;
-  }
-
-  return result.value.filter(isSupportedChecklistOnlyId);
 }
 
 function readStoredUncheckedPackedSlots(

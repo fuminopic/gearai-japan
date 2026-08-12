@@ -295,8 +295,8 @@ test("trip planning ui component baseline keeps save, checklist, history, and ch
 
   assert.match(tripPlanningUiSource, /readTripPlanCheckedSlots/);
   assert.match(tripPlanningUiSource, /writeTripPlanCheckedSlots/);
-  assert.match(tripPlanningUiSource, /readTripPlanChecklistOnlyIds/);
-  assert.match(tripPlanningUiSource, /writeTripPlanChecklistOnlyIds/);
+  assert.match(tripPlanningUiSource, /useTripPlanChecklistOnlyState/);
+  assert.match(tripPlanningUiSource, /persistTripPlanChecklistOnlyIds/);
   assert.match(tripPlanningUiSource, /checkedChecklistOnlyIds: checklistOnlyIds/);
 });
 
